@@ -1,0 +1,36 @@
+.popup-link {
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.popup-link-out,
+.popup-link-out:hover,
+.popup-link-out:active,
+.popup-link-out:visited {
+    display: block;
+    text-decoration: none;
+    color: black;
+    white-space: nowrap;
+}
+
+.error_popup {
+    display: none;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index:+1;
+    width:100%;
+}
+
+@keyframes wiggle {
+    0% { transform: rotate(0deg); }
+    33% { transform: rotate(-5deg); }
+    66% { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.horn {
+    width: 80px;
+    animation-name: wiggle;
+    animation-duration: 1s;
+}
