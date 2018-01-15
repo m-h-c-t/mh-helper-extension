@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Jack's MH Helper Options</title>
+    <meta charset="utf-8">
+    <base href="/">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body class="text-center">
+    <div class="container well">
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-body text-left">
+                    <label style="width:100%">
+                        Display success messages
+                        <input type="checkbox" id="success_messages" class="pull-right">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-body text-left">
+                    <label style="width:100%">
+                        Display error messages
+                        <input type="checkbox" id="error_messages" class="pull-right">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="row text-center">
+            <div id="save_status" class="alert-success text-center" style="visibility: hidden;width:100%;">Options saved!</div>
+            <button class="btn btn-default" id="save">Save</button>
+        </div>
+        <script type="text/javascript" src="scripts/options.js"></script>
+    </div>
+</body>
+</html>

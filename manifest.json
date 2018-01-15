@@ -1,0 +1,43 @@
+{
+    "manifest_version": 2,
+    "author": "Jack Smith",
+    "name": "Jack's MouseHunt Helper",
+    "description": "This extension provides useful links and tracks MouseHunt horn calls for tools like rate calculators.",
+    "version": "1.12.22",
+    "icons": {
+        "16": "images/icon16.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+    },
+    "browser_action": {
+        "default_icon": "images/icon32.png",
+        "default_popup": "popup.html"
+    },
+
+    "permissions": [
+        "tabs",
+        "*://www.mousehuntgame.com/*",
+        "storage"
+    ],
+
+    "content_scripts": [{
+        "all_frames" : true,
+        "matches": ["*://www.mousehuntgame.com/*"],
+        "js": ["scripts/content.js"]
+    }],
+
+    "web_accessible_resources": [
+        "scripts/main.js",
+        "third_party/tsitus/crebookmarklet.min.js",
+        "third_party/tsitus/setupbookmarklet.min.js"
+    ],
+
+    "background": {
+        "scripts": ["scripts/background.js"]
+    },
+
+    "options_ui": {
+        "page": "options.html",
+        "chrome_style": true
+    }
+}
