@@ -446,8 +446,12 @@
                 }
                 break;
             case "Bristle Woods Rift":
-                if (message.mouse === "Absolute Acolyte") {
-                    message.stage = "Acolyte";
+                if (message.mouse === "Absolute Acolyte" && message.caught === 1) {
+                    message.stage.stage_name = "Acolyte";
+                    message.stage.has_hourglass = true
+                    message.stage.chamber_status = 'closed'
+                    message.stage.obelisk_charged = true
+                    message.stage.acolyte_sand_drained = true
                 }
                 break;
             case "Burroughs Rift":
@@ -1082,10 +1086,22 @@
     }
 
     function getBristleWoodsRiftStage(message, response, journal) {
-        if (response.user.quests.QuestRiftBristleWoods.chamber_name === "Rift Acolyte Tower") {
-            message.stage = "Entrance";
+        message.stage = {}
+        var quest = response.user.quests.QuestRiftBristleWoods
+        if (quest.chamber_name === "Rift Acolyte Tower") {
+            message.stage.chamber_name = "Entrance";
         } else {
-            message.stage = response.user.quests.QuestRiftBristleWoods.chamber_name;
+            message.stage.chamber_name = quest.chamber_name;
+        }
+        for (var key in quest.status_effects) {
+            if (!quest.status_effects.hasOwnProperty(key)) continue
+            message.stage['effect_'+key] = quest.status_effects[key]
+        }
+        message.stage.has_hourglass = quest.items.rift_hourglass_stat_item.quantity === 1
+        message.stage.chamber_status = quest.chamber_status
+        if (quest.chamber_name === 'Acolyte') {
+          message.stage.obelisk_charged = quest.obelisk_percent === 100
+          message.stage.acolyte_sand_drained = message.stage.obelisk_charged && quest.acolyte_sand === 0
         }
 
         return message;
