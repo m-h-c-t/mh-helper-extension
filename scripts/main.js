@@ -255,7 +255,8 @@
 
         message = fixLGLocations(message, response, journal);
         message = getStage(message, response, journal);
-        message = fixTransitionMice(message, response, journal); // Must be after get stage to fix bad stages
+        message = getHuntDetails(message, response, journal);
+        message = fixTransitionMice(message, response, journal); // Must be after get stage and get details to fix bad stages
 
         if (!message || !message.location || !message.location.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(2)");
@@ -446,8 +447,14 @@
                 }
                 break;
             case "Bristle Woods Rift":
-                if (message.mouse === "Absolute Acolyte") {
+                if (message.mouse === "Absolute Acolyte" && message.caught === 1) {
                     message.stage = "Acolyte";
+                    if (message.hunt_details) {
+                        message.hunt_details.has_hourglass = true
+                        message.hunt_details.chamber_status = 'closed'
+                        message.hunt_details.obelisk_charged = true
+                        message.hunt_details.acolyte_sand_drained = true
+                    }
                 }
                 break;
             case "Burroughs Rift":
@@ -1086,6 +1093,36 @@
             message.stage = "Entrance";
         } else {
             message.stage = response.user.quests.QuestRiftBristleWoods.chamber_name;
+        }
+
+        return message;
+    }
+
+    function getHuntDetails(message, response, journal) {
+        if (!message) {
+            return "";
+        }
+        switch (response.user.location) {
+            case "Bristle Woods Rift":
+                message = getBristleWoodsRiftHuntDetails(message, response, journal);
+                break;
+        }
+
+        return message;
+    }
+
+    function getBristleWoodsRiftHuntDetails(message, response, journal) {
+        message.hunt_details = {}
+        var quest = response.user.quests.QuestRiftBristleWoods
+        for (var key in quest.status_effects) {
+            if (!quest.status_effects.hasOwnProperty(key)) continue
+            message.hunt_details['effect_'+key] = quest.status_effects[key] === 'active'
+        }
+        message.hunt_details.has_hourglass = quest.items.rift_hourglass_stat_item.quantity >= 1
+        message.hunt_details.chamber_status = quest.chamber_status
+        if (quest.chamber_name === 'Acolyte') {
+            message.hunt_details.obelisk_charged = quest.obelisk_percent === 100
+            message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0
         }
 
         return message;
