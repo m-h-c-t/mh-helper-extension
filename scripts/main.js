@@ -248,6 +248,7 @@
         }
 
         message = getMainHuntInfo(message, response, journal);
+        message = fixM400Catch(message, response, journal);
         if (!message || !message.location || !message.location.name || !message.cheese.name || !message.trap.name || !message.base.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
             return;
@@ -369,13 +370,13 @@
         }
 
         // Cheese
-        if (!response.user.bait_name) {
+        if (response.user.bait_name) {
+            message.cheese = {};
+            message.cheese.name = response.user.bait_name.replace(/\ cheese/i, '');
+            message.cheese.id = response.user.bait_item_id;
+        } else {
             console.log('MH Helper: Missing Cheese');
-            return "";
         }
-        message.cheese = {};
-        message.cheese.name = response.user.bait_name.replace(/\ cheese/i, '');
-        message.cheese.id = response.user.bait_item_id;
 
         // Shield (true / false)
         message.shield = response.user.has_shield;
@@ -403,6 +404,15 @@
         }
 
         return message;
+    }
+
+    function fixM400Catch(message, response, journal) {
+        // when M400 is caught, the cheese is disarmed, but it's only attracted to Fusion Fondue
+        if (message.caught && message.mouse === 'M400') {
+            message.cheese = {}
+            message.cheese.name = 'Fusion Fondue'
+            message.cheese.id = 1386
+        }
     }
 
     function fixLGLocations(message, response, journal) {
