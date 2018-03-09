@@ -671,6 +671,9 @@
             case "Zokor":
                 message = getZokorStage(message, response, journal);
                 break;
+            case "Mysterious Anomaly":
+                message = getMysteriousAnomalyStage(message, response, journal);
+                break;
         }
 
         return message;
@@ -1098,6 +1101,12 @@
         return message;
     }
 
+    function getMysteriousAnomalyStage(message, response, journal) {
+        message.stage = response.user.quests.QuestBirthday2018.current_year;
+
+        return message;
+    }
+
     function getHuntDetails(message, response, journal) {
         if (!message) {
             return "";
@@ -1105,6 +1114,9 @@
         switch (response.user.location) {
             case "Bristle Woods Rift":
                 message = getBristleWoodsRiftHuntDetails(message, response, journal);
+                break;
+            case "Mysterious Anomaly":
+                message = getMysteriousAnomalyHuntDetails(message, response, journal);
                 break;
         }
 
@@ -1124,6 +1136,15 @@
             message.hunt_details.obelisk_charged = quest.obelisk_percent === 100
             message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0
         }
+
+        return message;
+    }
+
+    function getMysteriousAnomalyHuntDetails(message, response, journal) {
+        message.hunt_details = {};
+        var quest = response.user.quests.QuestBirthday2018;
+        message.hunt_details.boss_status = quest.boss_status;
+        message.hunt_details.furthest_year = quest.furthest_year;
 
         return message;
     }
