@@ -330,7 +330,7 @@
         };
 
         // Get UUID
-        $.get(base_domain_url + "/uuid.php", basic_info)
+        $.post(base_domain_url + "/uuid.php", basic_info)
             .done(function (data) {
                 if (data) {
                     message.uuid = data;
