@@ -248,8 +248,7 @@
         }
 
         message = getMainHuntInfo(message, response, journal);
-        message = fixM400Catch(message, response, journal);
-        if (!message || !message.location || !message.location.name || !message.cheese.name || !message.trap.name || !message.base.name) {
+        if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
             return;
         }
@@ -259,7 +258,7 @@
         message = getHuntDetails(message, response, journal);
         message = fixTransitionMice(message, response, journal); // Must be after get stage and get details to fix bad stages
 
-        if (!message || !message.location || !message.location.name) {
+        if (!message || !message.location || !message.location.name || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(2)");
             return;
         }
@@ -370,12 +369,10 @@
         }
 
         // Cheese
+        message.cheese = {};
         if (response.user.bait_name) {
-            message.cheese = {};
             message.cheese.name = response.user.bait_name.replace(/\ cheese/i, '');
             message.cheese.id = response.user.bait_item_id;
-        } else {
-            console.log('MH Helper: Missing Cheese');
         }
 
         // Shield (true / false)
@@ -404,15 +401,6 @@
         }
 
         return message;
-    }
-
-    function fixM400Catch(message, response, journal) {
-        // when M400 is caught, the cheese is disarmed, but it's only attracted to Fusion Fondue
-        if (message.caught && message.mouse === 'M400') {
-            message.cheese = {}
-            message.cheese.name = 'Fusion Fondue'
-            message.cheese.id = 1386
-        }
     }
 
     function fixLGLocations(message, response, journal) {
@@ -448,6 +436,8 @@
         if (!message) {
             return "";
         }
+
+        // Check by Location
         switch (message.location.name) {
             case "Acolyte Realm":
                 if (message.mouse === "Realm Ripper") {
@@ -607,6 +597,13 @@
                     message.stage.lagoon = "DL 50";
                 }
                 break;
+        }
+
+        // Check by Mouse
+        // when M400 is caught, the cheese is disarmed, but it's only attracted to Fusion Fondue
+        if (message.caught && message.mouse === 'M400') {
+            message.cheese.name = 'Fusion Fondue'
+            message.cheese.id = 1386
         }
 
         return message;
