@@ -3,9 +3,10 @@
 (function () {
     'use strict';
 
-    var db_url = "https://mhhunthelper.agiletravels.com/intake.php";
-    var map_intake_url = "https://mhhunthelper.agiletravels.com/map_intake.php";
-    var convertible_intake_url = "https://mhhunthelper.agiletravels.com/convertible_intake.php";
+    var base_domain_url = "https://mhhunthelper.agiletravels.com";
+    var db_url = base_domain_url + "/intake.php";
+    var map_intake_url = base_domain_url + "/map_intake.php";
+    var convertible_intake_url = base_domain_url + "/convertible_intake.php";
 
     if (!window.jQuery) {
         console.log("MHHH: Can't find jQuery, exiting.");
@@ -45,7 +46,7 @@
                 $(".hornbutton a").click();
             }
             return;
-		}
+        }
 
         if (['tsitu_cre', 'tsitu_setup'].indexOf(ev.data.jacks_message) !== -1) {
             getBookmarklet(ev.data.file_link);
@@ -102,7 +103,7 @@
             .done(function (data) {
                 if (data) {
                     if (!data.treasure_map || data.treasure_map.view_state === "noMap") {
-						new_window.close();
+                        new_window.close();
                         alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
                         return;
                     }
@@ -169,10 +170,10 @@
 
     // Listening router
     $(document).ajaxSuccess(function (event, xhr, ajaxOptions) {
-    //   /* Method        */ ajaxOptions.type
-    //   /* URL           */ ajaxOptions.url
-    //   /* Response body */ xhr.responseText
-    //   /* Request body  */ ajaxOptions.data
+    // /* Method */ ajaxOptions.type
+    // /* URL */ ajaxOptions.url
+    // /* Response body */ xhr.responseText
+    // /* Request body */ ajaxOptions.data
 
         if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/turns/activeturn.php") !== -1) {
             recordHunt(xhr);
@@ -195,6 +196,8 @@
         map.name = map.name.replace(/rare\ /i, '');
         map.name = map.name.replace(/common\ /i, '');
         map.name = map.name.replace(/Ardouous/i, 'Arduous');
+        map.user_id = xhr.responseJSON.user.user_id;
+        map.entry_timestamp = Math.round(Date.now()/1000);
 
         map.extension_version = formatVersion(mhhh_version);
 
@@ -208,6 +211,7 @@
         var message = {};
         var journal = {};
         message.extension_version = formatVersion(mhhh_version);
+        message.user_id = response.user.user_id;
 
         if (!response.active_turn || !response.success || !response.journal_markup) {
             window.console.log("MHHH: Missing Info (trap check or friend hunt)(1)");
@@ -217,8 +221,14 @@
         for (var i=0; i < response.journal_markup.length; i++) {
             var journal_entry = response.journal_markup[i].render_data;
             if (journal_entry.css_class.indexOf("relicHunter_catch") !== -1) {
-                message.rh_environment = journal_entry.environment;
-                sendMessageToServer(db_url, message);
+                var rh_message = message; // to not set rh flag on regular
+                                            // hunt payload
+                rh_message.rh_environment = journal_entry.environment;
+                rh_message.entry_timestamp = journal_entry.entry_timestamp;
+                // Check if rh was caught after reset
+                if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0,0,0,0)/1000)) {
+                    sendMessageToServer(db_url, rh_message);
+                }
                 continue;
             }
 
@@ -305,7 +315,8 @@
             items: items.map(getItem.bind(null)),
             extension_version: formatVersion(mhhh_version),
             asset_package_hash: response.asset_package_hash,
-            user_id: response.user.user_id
+            user_id: response.user.user_id,
+            entry_timestamp: Math.round(Date.now()/1000)
         };
 
         // Send to database
@@ -313,6 +324,22 @@
     }
 
     function sendMessageToServer(url, message) {
+        var basic_info = {
+                user_id: message.user_id,
+                entry_timestamp: message.entry_timestamp
+        };
+
+        // Get UUID
+        $.get(base_domain_url + "/uuid.php", basic_info)
+            .done(function (data) {
+                if (data) {
+                    message.uuid = data;
+                    sendAlready(url, message);
+                }
+            });
+    }
+
+    function sendAlready(url, message) {
         // Send to database
         $.post(url, message)
             .done(function (data) {
@@ -330,9 +357,6 @@
 
         // Entry Timestamp
         message.entry_timestamp = journal.render_data.entry_timestamp;
-
-        // User ID
-        message.user_id = response.user.user_id;
 
         // Location
         if (!response.user.location) {
@@ -541,16 +565,16 @@
                     return "";
                 }
                 break;
-			case "Moussu Picchu":
-				if (message.mouse === "Ful'Mina, The Mountain Queen") {
+            case "Moussu Picchu":
+                if (message.mouse === "Ful'Mina, The Mountain Queen") {
                     if (message.stage.rain === "Rain medium") {
-						message.stage.rain = "Rain high";
-					}
-					if (message.stage.wind === "Wind medium") {
-						message.stage.wind = "Wind high";
-					}
+                        message.stage.rain = "Rain high";
+                    }
+                    if (message.stage.wind === "Wind medium") {
+                        message.stage.wind = "Wind high";
+                    }
                 }
-				break;
+                break;
             case "Sand Dunes":
                 if (message.mouse === "Grubling") {
                     message.stage = "Stampede";
@@ -846,7 +870,7 @@
             return '';
         }
 
-        //switch on current depth after checking what phase has for generals
+        // switch on current depth after checking what phase has for generals
         switch (response.user.quests.QuestIceberg.current_phase) {
             case "Treacherous Tunnels":
                 message.stage = "0-300ft";
@@ -1223,9 +1247,9 @@
         return {
             id: item.item_id,
             name: item.name,
-            //type: item.type,
+            // type: item.type,
             quantity: item.quantity
-            //class: item.class || item.classification
+            // class: item.class || item.classification
         }
     }
 
