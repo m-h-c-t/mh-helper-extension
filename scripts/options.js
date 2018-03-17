@@ -2,9 +2,11 @@
 function save_options() {
     var success_messages = document.getElementById('success_messages').checked;
     var error_messages = document.getElementById('error_messages').checked;
+    var track_crowns = document.getElementById('track_crowns').checked;
     chrome.storage.sync.set({
         success_messages: success_messages,
-        error_messages: error_messages
+        error_messages: error_messages,
+        track_crowns: track_crowns
     }, function() {
         document.getElementById('save_status').style.visibility = "visible";
         setTimeout(function() {
@@ -19,10 +21,12 @@ function restore_options() {
     // Use default values
     chrome.storage.sync.get({
         success_messages: true,
-        error_messages: true
+        error_messages: true,
+        track_crowns: true
     }, function(items) {
         document.getElementById('success_messages').checked = items.success_messages;
         document.getElementById('error_messages').checked = items.error_messages;
+        document.getElementById('track_crowns').checked = items.track_crowns;
     });
 }
 document.addEventListener('DOMContentLoaded', restore_options);

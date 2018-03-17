@@ -53,21 +53,19 @@ window.addEventListener("message",
         if (event.data.jacks_settings_request !== 1) {
             return;
         }
+        chrome.storage.sync.get({
+            success_messages: true, // defaults
+            error_messages: true, // defaults
+            track_crowns: true // defaults
+        }, function (items) {
+            event.source.postMessage(
+                {
+                    jacks_settings_response: 1,
+                    settings: items
+                },
+                event.origin);
+        });
 
-        if (event.data.get_options === "messages") {
-            chrome.storage.sync.get({
-                success_messages: true, // defaults
-                error_messages: true // defaults
-            }, function (items) {
-                event.source.postMessage(
-                    {
-                        jacks_settings_response: 1,
-                        get_options: "messages",
-                        settings: items
-                    },
-                    event.origin);
-            });
-        }
     },
     false
 );

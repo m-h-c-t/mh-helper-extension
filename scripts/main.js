@@ -131,20 +131,15 @@
     }
 
     function showFlashMessage(type, message) {
-        window.addEventListener("message", function(event) {
-            if (event.data.jacks_settings_response !== 1 || event.data.get_options !== "messages") {
-                return;
-            }
-
-            if ((type === 'success' && event.data.settings.success_messages)
-                || (type !== 'success' && event.data.settings.error_messages)){
-                displayFlashMessage(type, message);
-            }
-        }, false);
-        window.postMessage({jacks_settings_request: 1, get_options: "messages"}, "*");
+        getSettings(settings => displayFlashMessage(settings, type, message));
     }
 
-    function displayFlashMessage(type, message) {
+    function displayFlashMessage(settings, type, message) {
+
+        if ((type === 'success' && !event.data.settings.success_messages)
+            || (type !== 'success' && !event.data.settings.error_messages)){
+            return;
+        }
         var mhhh_flash_message_div = $('#mhhh_flash_message_div');
         mhhh_flash_message_div.text("Jack's MH Helper: " + message);
 
@@ -181,8 +176,49 @@
             recordMap(xhr);
         } else if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/users/useconvertible.php") !== -1) {
             recordConvertible(xhr);
+        } else if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges") !== -1) {
+            getSettings(settings => recordCrowns(settings, xhr));
         }
     });
+
+    // Get settings
+    function getSettings(callback) {
+        window.addEventListener("message", function listenSettings(event) {
+            if (event.data.jacks_settings_response !== 1) {
+                return;
+            }
+
+            if (callback && typeof(callback) === "function") {
+                window.removeEventListener("message", listenSettings);
+                callback(event.data.settings);
+            }
+        }, false);
+        window.postMessage({jacks_settings_request: 1}, "*");
+    }
+
+    // Record Crowns
+    function recordCrowns(settings, xhr) {
+        if (!settings.track_crowns) {
+            return;
+        }
+        if (!xhr.responseJSON.user.sn_user_id || !Object.keys(xhr.responseJSON.mouse_data).length) {
+            return;
+        }
+
+        var payload = {};
+        payload.user = xhr.responseJSON.user.sn_user_id;
+        payload.timestamp = Math.round(Date.now()/1000);
+        payload.mice = [];
+
+        $.each(xhr.responseJSON.mouse_data, function(key, value) {
+            payload.mice.push({"name": value.name, "count": value.num_catches});
+        });
+
+        $.post('https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
+            {'main': JSON.stringify(payload)});
+
+        showFlashMessage("success", "Thank you for submitting crowns!");
+    }
 
     // Record map mice
     function recordMap(xhr) {
@@ -314,7 +350,7 @@
             convertible: getItem(convertible),
             items: items.map(getItem.bind(null)),
             extension_version: formatVersion(mhhh_version),
-            asset_package_hash: response.asset_package_hash,
+            asset_package_hash: Date.now(),
             user_id: response.user.user_id,
             entry_timestamp: Math.round(Date.now()/1000)
         };
