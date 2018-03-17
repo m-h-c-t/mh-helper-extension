@@ -177,7 +177,7 @@
         } else if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/users/useconvertible.php") !== -1) {
             recordConvertible(xhr);
         } else if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges") !== -1) {
-            getSettings(settings => recordCrowns(settings, xhr));
+            getSettings(settings => recordCrowns(settings, xhr, ajaxOptions.url));
         }
     });
 
@@ -197,16 +197,17 @@
     }
 
     // Record Crowns
-    function recordCrowns(settings, xhr) {
+    function recordCrowns(settings, xhr, url) {
         if (!settings.track_crowns) {
             return;
         }
-        if (!xhr.responseJSON.user.sn_user_id || !Object.keys(xhr.responseJSON.mouse_data).length) {
+        var url_params = url.match(/snuid=([0-9]+)/);
+        if (!url_params || !Object.keys(xhr.responseJSON.mouse_data).length) {
             return;
         }
 
         var payload = {};
-        payload.user = xhr.responseJSON.user.sn_user_id;
+        payload.user = url_params[1];
         payload.timestamp = Math.round(Date.now()/1000);
         payload.mice = [];
 
