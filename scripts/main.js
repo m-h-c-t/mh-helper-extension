@@ -211,8 +211,12 @@
         payload.timestamp = Math.round(Date.now()/1000);
         payload.mice = [];
 
-        $.each(xhr.responseJSON.mouse_data, function(key, value) {
-            payload.mice.push({"name": value.name, "count": value.num_catches});
+        payload.bronze = 0;
+        payload.silver = 0;
+        payload.gold = 0;
+
+        $.each(xhr.responseJSON.badges, function(key, value) {
+            payload[value.type] = value.mice.length;
         });
 
         $.post('https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
