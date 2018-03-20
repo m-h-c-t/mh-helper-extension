@@ -3,7 +3,7 @@
     "author": "Jack Smith",
     "name": "Jack's MouseHunt Helper",
     "description": "This extension provides useful links and tracks MouseHunt horn calls for tools like rate calculators.",
-    "version": "1.12.28",
+    "version": "1.12.29",
     "icons": {
         "16": "images/icon16.png",
         "48": "images/icon48.png",
@@ -28,8 +28,8 @@
 
     "web_accessible_resources": [
         "scripts/main.js",
-        "third_party/tsitus/crebookmarklet.min.js",
-        "third_party/tsitus/setupbookmarklet.min.js"
+        "third_party/tsitus/crebookmarklet",
+        "third_party/tsitus/setupbookmarklet"
     ],
 
     "background": {
