@@ -49,35 +49,21 @@
         }
 
         if (['tsitu_cre', 'tsitu_setup'].indexOf(ev.data.jacks_message) !== -1) {
-            getBookmarklet(ev.data.file_link);
+            openBookmarklet(ev.data.file_link);
             return;
         }
 
     }, false);
 
-    function getBookmarklet(url) {
+    function openBookmarklet(url) {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
-                var js_script = xhr.responseText;
-                attachToMHPage(js_script);
+                document.location.href = xhr.responseText;
             }
         };
         xhr.send();
-    }
-
-    function attachToMHPage(js_script) {
-        var script_element = document.createElement('script');
-        var script_code = document.createTextNode("function jacks_bookmarklet_run() { " + js_script + "document.getElementById(\"jacks_attached_script\").outerHTML='';}");
-        script_element.appendChild(script_code);
-        script_element.setAttribute("id", "jacks_attached_script");
-        script_element.type = 'text/javascript';
-        script_element.onload = function() {
-            this.remove();
-        };
-        document.body.appendChild(script_element);
-        document.location.href="javascript:jacks_bookmarklet_run();";
     }
 
     // Get map mice
@@ -136,8 +122,8 @@
 
     function displayFlashMessage(settings, type, message) {
 
-        if ((type === 'success' && !event.data.settings.success_messages)
-            || (type !== 'success' && !event.data.settings.error_messages)){
+        if ((type === 'success' && !settings.success_messages)
+            || (type !== 'success' && !settings.error_messages)) {
             return;
         }
         var mhhh_flash_message_div = $('#mhhh_flash_message_div');
