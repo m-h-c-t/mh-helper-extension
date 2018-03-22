@@ -22,7 +22,7 @@ function sendMessageToScript(tab_id, button_pressed) {
 document.addEventListener('DOMContentLoaded', function() {
     var version_element = document.getElementById("version");
     if (version_element) {
-        version_element.innerText = chrome.runtime.getManifest().version;
+        version_element.innerText = ' v' + chrome.runtime.getManifest().version;
     }
     findOpenMHTab("huntTimer", updateHuntTimer, true);
 

@@ -41,9 +41,13 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
         // Forwards messages from popup to main script
         window.postMessage({ "jacks_message": request.jacks_link, "file_link": file_link }, "*");
     } else if (request.jacks_link === "huntTimer") {
-        var hunt_timer = document.getElementById('huntTimer');
-        if (hunt_timer != null) { // Must have this check for Firefox
-            sendResponse(hunt_timer.textContent);
+        if (document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0].style.display !== '') {
+            sendResponse("King's Reward");
+        } else {
+            var hunt_timer = document.getElementById('huntTimer');
+            if (hunt_timer != null) { // Must have this check for Firefox
+                sendResponse(hunt_timer.textContent);
+            }
         }
     }
 });
@@ -56,6 +60,9 @@ window.addEventListener("message",
         chrome.storage.sync.get({
             success_messages: true, // defaults
             error_messages: true, // defaults
+            icon_timer: true, // defaults
+            horn_sound: false, // defaults
+            horn_alert: false, // defaults
             track_crowns: true // defaults
         }, function (items) {
             event.source.postMessage(
