@@ -100,12 +100,17 @@ function icon_timer_updateBadge(tab_id, settings) {
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color:'#222'});
                 response = response.replace(':', '');
-                response = parseInt(response);
-                if (response > 59) {
-                    response = Math.floor(response/100) + 'm';
+                var response_int = parseInt(response);
+                if (response.indexOf('min') !== -1) {
+                    response = response_int + 'm';
                 } else {
-                    response += 's';
+                    if (response_int > 59) {
+                        response = Math.floor(response_int/100) + 'm';
+                    } else {
+                        response = response_int + 's';
+                    }
                 }
+
                 chrome.browserAction.setBadgeText({text: response});
             } else { // reset in case user turns icon_timer off
                 chrome.browserAction.setBadgeText({text: ''});
