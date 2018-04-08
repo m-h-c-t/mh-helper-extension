@@ -48,7 +48,7 @@
             return;
         }
 
-        if (['tsitu_cre', 'tsitu_setup'].indexOf(ev.data.jacks_message) !== -1) {
+        if (['tsitu_cre', 'tsitu_setup', 'tsitu_loader'].indexOf(ev.data.jacks_message) !== -1) {
             openBookmarklet(ev.data.file_link);
             return;
         }

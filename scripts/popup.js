@@ -26,7 +26,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     findOpenMHTab("huntTimer", updateHuntTimer, true);
 
-    var buttons = ['mhmh', 'tsitu_map', 'userhistory', 'ryonn', 'horn', 'tsitu_cre', 'tsitu_setup'];
+    var buttons = [
+        'mhmh',
+        'tsitu_map',
+        'userhistory',
+        'ryonn',
+        'horn',
+        'tsitu_cre',
+        'tsitu_setup',
+        'tsitu_loader'
+    ];
     buttons.forEach(function(id) {
         var button_element = document.getElementById(id);
         if (!button_element) {
@@ -34,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         button_element.addEventListener('click', function() {
             findOpenMHTab(id, sendMessageToScript);
+            window.close();
         });
     });
 });
