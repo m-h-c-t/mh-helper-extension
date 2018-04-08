@@ -28,6 +28,18 @@ s.onload = function() {
 };
 (document.head || document.documentElement).appendChild(s);
 
+// Display Tsitu's Loader
+chrome.storage.sync.get({
+    tsitu_loader_on: false
+}, function (items) {
+    if (items.tsitu_loader_on) {
+        // There must be a better way of doing this
+        window.postMessage({
+            "jacks_message": 'tsitu_loader',
+            "file_link": chrome.runtime.getURL('third_party/tsitus/bookmarkletloader')
+        }, "*");
+    }
+});
 
 // Handles messages from popup
 chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {

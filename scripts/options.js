@@ -6,13 +6,15 @@ function save_options() {
     var horn_sound = document.getElementById('horn_sound').checked;
     var horn_alert = document.getElementById('horn_alert').checked;
     var track_crowns = document.getElementById('track_crowns').checked;
+    var tsitu_loader_on = document.getElementById('tsitu_loader_on').checked;
     chrome.storage.sync.set({
         success_messages: success_messages,
         error_messages: error_messages,
         icon_timer: icon_timer,
         horn_sound: horn_sound,
         horn_alert: horn_alert,
-        track_crowns: track_crowns
+        track_crowns: track_crowns,
+        tsitu_loader_on: tsitu_loader_on
     }, function() {
         document.getElementById('save_status').style.visibility = "visible";
         setTimeout(function() {
@@ -31,7 +33,8 @@ function restore_options() {
         icon_timer: true,
         horn_sound: false,
         horn_alert: false,
-        track_crowns: true
+        track_crowns: true,
+        tsitu_loader_on: false
     }, function(items) {
         document.getElementById('success_messages').checked = items.success_messages;
         document.getElementById('error_messages').checked = items.error_messages;
@@ -39,6 +42,7 @@ function restore_options() {
         document.getElementById('horn_sound').checked = items.horn_sound;
         document.getElementById('horn_alert').checked = items.horn_alert;
         document.getElementById('track_crowns').checked = items.track_crowns;
+        document.getElementById('tsitu_loader_on').checked = items.tsitu_loader_on;
     });
 }
 document.addEventListener('DOMContentLoaded', restore_options);
