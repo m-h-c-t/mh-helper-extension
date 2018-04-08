@@ -93,7 +93,7 @@ function icon_timer_updateBadge(tab_id, settings) {
         } else if (response === "King's Reward") {
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color:'#F00'});
-                chrome.browserAction.setBadgeText({text: 'KR'});
+                chrome.browserAction.setBadgeText({text: 'RRRRR'});
             }
             notification_done = true;
         } else {
