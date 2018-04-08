@@ -49,6 +49,9 @@
         }
 
         if (['tsitu_cre', 'tsitu_setup', 'tsitu_loader'].indexOf(ev.data.jacks_message) !== -1) {
+            if ('tsitu_loader' === ev.data.jacks_message) {
+                window.tsitu_loader_offset = ev.data.tsitu_loader_offset;
+            }
             openBookmarklet(ev.data.file_link);
             return;
         }

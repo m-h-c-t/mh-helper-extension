@@ -30,12 +30,14 @@ s.onload = function() {
 
 // Display Tsitu's Loader
 chrome.storage.sync.get({
-    tsitu_loader_on: false
+    tsitu_loader_on: false,
+    tsitu_loader_offset: 80
 }, function (items) {
     if (items.tsitu_loader_on) {
         // There must be a better way of doing this
         window.postMessage({
             "jacks_message": 'tsitu_loader',
+            "tsitu_loader_offset": items.tsitu_loader_offset,
             "file_link": chrome.runtime.getURL('third_party/tsitus/bookmarkletloader')
         }, "*");
     }
