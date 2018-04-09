@@ -36,15 +36,7 @@
         }
 
         if (ev.data.jacks_message === 'horn') {
-            if ($("#huntTimer").text() !== "Ready!") {
-                return;
-            }
-
-            if ($(".mousehuntHud-huntersHorn").length) { // FreshCoat™ Layout
-                $(".mousehuntHud-huntersHorn").click();
-            } else if ($(".hornbutton a").length) { // Old Layout
-                $(".hornbutton a").click();
-            }
+            sound_horn();
             return;
         }
 
@@ -56,7 +48,27 @@
             return;
         }
 
+        if (ev.data.jacks_message === 'show_horn_alert') {
+            var sound_the_horn = confirm("Horn is Ready! Sound it?");
+            if (sound_the_horn) {
+                sound_horn();
+            }
+            return;
+        }
+
     }, false);
+
+    function sound_horn() {
+        if ($("#huntTimer").text() !== "Ready!") {
+            return;
+        }
+
+        if ($(".mousehuntHud-huntersHorn").length) { // FreshCoat™ Layout
+            $(".mousehuntHud-huntersHorn").click();
+        } else if ($(".hornbutton a").length) { // Old Layout
+            $(".hornbutton a").click();
+        }
+    }
 
     function openBookmarklet(url) {
         var xhr = new XMLHttpRequest();

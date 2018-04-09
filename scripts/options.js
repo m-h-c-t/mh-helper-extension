@@ -7,6 +7,7 @@ function save_options() {
     var custom_sound = document.getElementById('custom_sound').value.trim();
     var horn_volume = document.getElementById('horn_volume').value;
     var horn_alert = document.getElementById('horn_alert').checked;
+    var horn_webalert = document.getElementById('horn_webalert').checked;
     var track_crowns = document.getElementById('track_crowns').checked;
     var tsitu_loader_on = document.getElementById('tsitu_loader_on').checked;
     var tsitu_loader_offset = document.getElementById('tsitu_loader_offset').value;
@@ -18,6 +19,7 @@ function save_options() {
         custom_sound: custom_sound,
         horn_volume: horn_volume,
         horn_alert: horn_alert,
+        horn_webalert: horn_webalert,
         track_crowns: track_crowns,
         tsitu_loader_on: tsitu_loader_on,
         tsitu_loader_offset: tsitu_loader_offset
@@ -41,6 +43,7 @@ function restore_options() {
         custom_sound: '',
         horn_volume: 100,
         horn_alert: false,
+        horn_webalert: false,
         track_crowns: true,
         tsitu_loader_on: false,
         tsitu_loader_offset: 80
@@ -52,6 +55,7 @@ function restore_options() {
         document.getElementById('custom_sound').value = items.custom_sound;
         document.getElementById('horn_volume').value = items.horn_volume;
         document.getElementById('horn_alert').checked = items.horn_alert;
+        document.getElementById('horn_webalert').checked = items.horn_webalert;
         document.getElementById('track_crowns').checked = items.track_crowns;
         document.getElementById('tsitu_loader_on').checked = items.tsitu_loader_on;
         document.getElementById('tsitu_loader_offset').value = items.tsitu_loader_offset;

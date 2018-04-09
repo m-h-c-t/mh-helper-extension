@@ -45,6 +45,7 @@ function check_settings(callback) {
         custom_sound: '', // defaults
         horn_volume: 100, // defaults
         horn_alert: false, // defaults
+        horn_webalert: false, // defaults
         track_crowns: true // defaults
     }, function (settings) {
         callback(settings);
@@ -61,6 +62,7 @@ function icon_timer_find_open_mh_tab(settings) {
     });
 }
 
+// Notifications
 function icon_timer_updateBadge(tab_id, settings) {
     if (tab_id === false) {
         chrome.browserAction.setBadgeText({text: ''});
@@ -97,6 +99,9 @@ function icon_timer_updateBadge(tab_id, settings) {
                         message: "MouseHunt Horn is ready!!! Good luck!"
                     }
                 );
+            }
+            if (settings.horn_webalert && !notification_done) {
+                chrome.tabs.sendMessage(tab_id, {jacks_link: "show_horn_alert"});
             }
             notification_done = true;
         } else if (response === "King's Reward") {

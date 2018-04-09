@@ -74,6 +74,8 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
                 sendResponse(hunt_timer.textContent);
             }
         }
+    } else if (request.jacks_link === "show_horn_alert") {
+        window.postMessage({ "jacks_message": request.jacks_link }, "*");
     }
 });
 
@@ -90,6 +92,7 @@ window.addEventListener("message",
             custom_sound: '', // defaults
             horn_volume: 100, // defaults
             horn_alert: false, // defaults
+            horn_webalert: false, // defaults
             track_crowns: true // defaults
         }, function (items) {
             event.source.postMessage(
