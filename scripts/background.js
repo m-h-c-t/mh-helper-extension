@@ -42,6 +42,8 @@ function check_settings(callback) {
         error_messages: true, // defaults
         icon_timer: true, // defaults
         horn_sound: false, // defaults
+        custom_sound: '', // defaults
+        horn_volume: 100, // defaults
         horn_alert: false, // defaults
         track_crowns: true // defaults
     }, function (settings) {
@@ -75,7 +77,14 @@ function icon_timer_updateBadge(tab_id, settings) {
                 chrome.browserAction.setBadgeText({text: '🎺'});
             }
             if (settings.horn_sound && !notification_done) {
-                var myAudio = new Audio(sound_file);
+                var myAudio;
+                if (settings.custom_sound) {
+                    myAudio = new Audio(settings.custom_sound);
+                } else {
+                    myAudio = new Audio(sound_file);
+                }
+
+                myAudio.volume = (settings.horn_volume / 100).toFixed(2);
                 myAudio.play();
             }
             if (settings.horn_alert && !notification_done) {
@@ -93,7 +102,7 @@ function icon_timer_updateBadge(tab_id, settings) {
         } else if (response === "King's Reward") {
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color:'#F00'});
-                chrome.browserAction.setBadgeText({text: 'RRRRR'});
+                chrome.browserAction.setBadgeText({text: 'RRRRRRR'});
             }
             notification_done = true;
         } else {

@@ -87,6 +87,8 @@ window.addEventListener("message",
             error_messages: true, // defaults
             icon_timer: true, // defaults
             horn_sound: false, // defaults
+            custom_sound: '', // defaults
+            horn_volume: 100, // defaults
             horn_alert: false, // defaults
             track_crowns: true // defaults
         }, function (items) {
