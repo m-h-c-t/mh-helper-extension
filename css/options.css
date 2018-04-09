@@ -1,0 +1,23 @@
+body {
+	min-width: 400px;
+}
+
+.container.well {
+	background-color: #bbb;
+	margin-bottom: 0;
+	max-height: 500px;
+	overflow: auto;
+}
+
+#horn_volume {
+	display: inherit;
+}
+
+.alert-success.text-center {
+	visibility: hidden;
+	width: 100%;
+}
+
+#tsitu_loader_offset {
+	width: 100%;
+}

@@ -7,9 +7,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/options.css">
 </head>
 <body class="text-center">
-    <div class="container well" style="background-color:#bbb;margin-bottom:0;">
+    <div class="container well">
         <div class="row">
             <div class="panel panel-default">
                 <div class="panel-body text-left">
@@ -47,7 +48,7 @@
                         <input type="text" id="custom_sound" placeholder="http://example.com/my.mp3">
                     </label>
                     <label style="width:100%">
-                        Sound Volume: <output for="horn_volume_range" id="horn_volume" style="display:inherit;">100</output>%
+                        Sound Volume: <output for="horn_volume_range" id="horn_volume">100</output>%
                         <input type="range" min="0" max="100" value="100" id="horn_volume_range" step="1" class="pull-right">
                     </label>
                 </div>
@@ -93,7 +94,7 @@
         </div>
 
         <div class="row text-center">
-            <div id="save_status" class="alert-success text-center" style="visibility: hidden;width:100%;">Options saved!</div>
+            <div id="save_status" class="alert-success text-center">Options saved!</div>
             <button class="btn btn-default" id="save">Save</button>
         </div>
         <script type="text/javascript" src="scripts/options.js"></script>
