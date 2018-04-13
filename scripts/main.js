@@ -1188,6 +1188,9 @@
             case "Bristle Woods Rift":
                 message = getBristleWoodsRiftHuntDetails(message, response, journal);
                 break;
+            case "Sunken City":
+                message = getSunkenCityHuntDetails(message, response, journal);
+                break;
             case "Mysterious Anomaly":
                 message = getMysteriousAnomalyHuntDetails(message, response, journal);
                 break;
@@ -1209,6 +1212,25 @@
             message.hunt_details.obelisk_charged = quest.obelisk_percent === 100
             message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0
         }
+
+        return message;
+    }
+
+    function getSunkenCityHuntDetails(message, response, journal) {
+        for (var i=0; i < response.journal_markup.length; i++) {
+            var journal_entry = response.journal_markup[i].render_data;
+            if (journal_entry.text.match("I finished exploring")) {
+                // Hunter exited a zone, and it gets complicated to determine what was previous zone,
+                // so just skip recording any zone
+                return message
+            }
+        }
+
+        message.hunt_details = {};
+
+        var quest = response.user.quests.QuestSunkenCity;
+        message.hunt_details.stage = quest.stage;
+        message.hunt_details.zone = quest.zone_name;
 
         return message;
     }
