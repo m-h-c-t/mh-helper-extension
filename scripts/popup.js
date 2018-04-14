@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         button_element.addEventListener('click', function() {
             findOpenMHTab(id, sendMessageToScript);
-            window.close();
         });
     });
 });

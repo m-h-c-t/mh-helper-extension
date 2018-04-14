@@ -14,13 +14,19 @@
         <div class="row">
             <div class="panel panel-default">
                 <div class="panel-body text-left">
-                    <label style="width:100%">
+                    <label class="full_width">
                         Display success messages
-                        <input type="checkbox" id="success_messages" class="pull-right" checked>
+                        <div class="switch pull-right">
+                            <input type="checkbox" id="success_messages" class="pull-right" checked>
+                            <span class="slider round"></span>
+                        </div>
                     </label>
-                    <label style="width:100%">
+                    <label class="full_width">
                         Display error messages
-                        <input type="checkbox" id="error_messages" class="pull-right" checked>
+                        <div class="switch pull-right">
+                            <input type="checkbox" id="error_messages" class="pull-right" checked>
+                            <span class="slider round"></span>
+                        </div>
                     </label>
                 </div>
             </div>
@@ -28,9 +34,12 @@
         <div class="row">
             <div class="panel panel-default">
                 <div class="panel-body text-left">
-                    <label style="width:100%">
+                    <label class="full_width">
                         Display icon timer
-                        <input type="checkbox" id="icon_timer" class="pull-right" checked>
+                        <div class="switch pull-right">
+	                        <input type="checkbox" id="icon_timer" class="pull-right" checked>
+	                        <span class="slider round"></span>
+                        </div>
                     </label>
                 </div>
             </div>
@@ -38,18 +47,24 @@
         <div class="row">
             <div class="panel panel-default">
                 <div class="panel-body text-left">
-                    <label style="width:100%">
+                    <label class="full_width">
                         Play sound when Horn is ready
-                        <input type="checkbox" id="horn_sound" class="pull-right">
+                        <div class="switch pull-right">
+	                        <input type="checkbox" id="horn_sound" class="pull-right">
+	                        <span class="slider round"></span>
+                        </div>
                     </label>
-                    <label style="width:100%">
+                    <label class="full_width">
                         Custom sound (default=none)<br/>
                         <button id="play_sound" class="pull-right">▶️</button>
                         <input type="text" id="custom_sound" placeholder="http://example.com/my.mp3">
                     </label>
-                    <label style="width:100%">
-                        Sound Volume: <output for="horn_volume_range" id="horn_volume">100</output>%
-                        <input type="range" min="0" max="100" value="100" id="horn_volume_range" step="1" class="pull-right">
+                    <label class="full_width">
+                        Sound Volume:
+                        <div class="pull-right">
+                            <output for="horn_volume" id="horn_volume_output" class="range_output"></output>%
+                        </div>
+                        <input type="range" min="0" max="100" value="100" id="horn_volume" step="1" class="pull-right input_range">
                     </label>
                 </div>
             </div>
@@ -57,13 +72,19 @@
         <div class="row">
             <div class="panel panel-default">
                 <div class="panel-body text-left">
-                    <label style="width:100%">
+                    <label class="full_width">
                         Desktop Notification when horn is ready
-                        <input type="checkbox" id="horn_alert" class="pull-right">
+                        <div class="switch pull-right">
+	                        <input type="checkbox" id="horn_alert" class="pull-right">
+	                        <span class="slider round"></span>
+                        </div>
                     </label>
-                    <label style="width:100%">
+                    <label class="full_width">
                         Webpage Notification when horn is ready
-                        <input type="checkbox" id="horn_webalert" class="pull-right">
+                        <div class="switch pull-right">
+	                        <input type="checkbox" id="horn_webalert" class="pull-right">
+	                        <span class="slider round"></span>
+                        </div>
                     </label>
                 </div>
             </div>
@@ -71,9 +92,12 @@
         <div class="row">
             <div class="panel panel-default">
                 <div class="panel-body text-left">
-                    <label style="width:100%">
+                    <label class="full_width">
                         Track Crowns
-                        <input type="checkbox" id="track_crowns" class="pull-right" checked>
+                        <div class="switch pull-right">
+	                        <input type="checkbox" id="track_crowns" class="pull-right" checked>
+	                        <span class="slider round"></span>
+                        </div>
                     </label>
                 </div>
             </div>
@@ -81,13 +105,19 @@
         <div class="row">
             <div class="panel panel-default">
                 <div class="panel-body text-left">
-                    <label style="width:100%">
+                    <label class="full_width">
                         Show Tsitu's Loader
-                        <input type="checkbox" id="tsitu_loader_on" class="pull-right">
+                        <div class="switch pull-right">
+	                        <input type="checkbox" id="tsitu_loader_on" class="pull-right">
+	                        <span class="slider round"></span>
+                        </div>
                     </label>
-                    <label style="width:100%">
-                        Tsitu's Loader Offset (% from left)
-                        <input type="number" id="tsitu_loader_offset" class="pull-right">
+                    <label class="full_width">
+                        Tsitu's Loader distance from the left
+                        <div class="pull-right">
+                            <output for="tsitu_loader_offset" id="tsitu_loader_offset_output" class="range_output"></output>%
+                        </div>
+                        <input type="range" min="0" max="100" value="100" id="tsitu_loader_offset" step="1" class="input_range">
                     </label>
                 </div>
             </div>

@@ -54,11 +54,13 @@ function restore_options() {
         document.getElementById('horn_sound').checked = items.horn_sound;
         document.getElementById('custom_sound').value = items.custom_sound;
         document.getElementById('horn_volume').value = items.horn_volume;
+        document.getElementById('horn_volume_output').value = items.horn_volume;
         document.getElementById('horn_alert').checked = items.horn_alert;
         document.getElementById('horn_webalert').checked = items.horn_webalert;
         document.getElementById('track_crowns').checked = items.track_crowns;
         document.getElementById('tsitu_loader_on').checked = items.tsitu_loader_on;
         document.getElementById('tsitu_loader_offset').value = items.tsitu_loader_offset;
+        document.getElementById('tsitu_loader_offset_output').value = items.tsitu_loader_offset;
     });
 }
 document.addEventListener('DOMContentLoaded', restore_options);
@@ -66,9 +68,12 @@ document.getElementById('save').addEventListener('click', save_options);
 
 // Volume
 function update_range_output() {
-    document.querySelector("#horn_volume").value = this.value;
+    document.querySelector("output[for=" + this.id).value = this.value;
 }
-document.getElementById('horn_volume_range').addEventListener('input', update_range_output);
+
+document.querySelectorAll('.input_range').forEach(function(item) {
+    item.addEventListener('input', update_range_output);
+});
 
 // Play sound -- TODO: find a way to play files locally
 function play_my_sound() {
