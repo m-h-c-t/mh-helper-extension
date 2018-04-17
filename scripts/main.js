@@ -992,7 +992,7 @@
         var search_string;
         $.each(zokor_stages, function(key, value) {
             search_string = new RegExp(key, "i");
-            if (zokor_district.indexOf(search_string) !== -1) {
+            if (zokor_district.search(search_string) !== -1) {
                 message.stage = value;
                 return false;
             }
