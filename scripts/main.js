@@ -252,19 +252,14 @@
         var response = JSON.parse(xhr.responseText);
         var message = {};
         var journal = {};
-        message.extension_version = formatVersion(mhhh_version);
-        message.user_id = response.user.user_id;
-
-        if (!response.active_turn || !response.success || !response.journal_markup) {
-            window.console.log("MHHH: Missing Info (trap check or friend hunt)(1)");
-            return;
-        }
 
         for (var i=0; i < response.journal_markup.length; i++) {
             var journal_entry = response.journal_markup[i].render_data;
-            if (journal_entry.css_class.indexOf("relicHunter_catch") !== -1) {
-                var rh_message = message; // to not set rh flag on regular
+            if (journal_entry.css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
+                var rh_message = {}; // to not set rh flag on regular
                                             // hunt payload
+                rh_message.extension_version = formatVersion(mhhh_version);
+                rh_message.user_id = response.user.user_id;
                 rh_message.rh_environment = journal_entry.environment;
                 rh_message.entry_timestamp = journal_entry.entry_timestamp;
                 // Check if rh was caught after reset
@@ -294,11 +289,18 @@
             }
         }
 
+        if (!response.active_turn || !response.success || !response.journal_markup) {
+            window.console.log("MHHH: Missing Info (trap check or friend hunt)(1)");
+            return;
+        }
+
         if (Object.keys(journal).length === 0) {
             window.console.log("MHHH: Missing Info (trap check or friend hunt)(2)");
             return;
         }
 
+        message.extension_version = formatVersion(mhhh_version);
+        message.user_id = response.user.user_id;
         message = getMainHuntInfo(message, response, journal);
         if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
@@ -365,25 +367,25 @@
         sendMessageToServer(convertible_intake_url, record);
     }
 
-    function sendMessageToServer(url, message) {
+    function sendMessageToServer(url, final_message) {
         var basic_info = {
-                user_id: message.user_id,
-                entry_timestamp: message.entry_timestamp
+                user_id: final_message.user_id,
+                entry_timestamp: final_message.entry_timestamp
         };
 
         // Get UUID
         $.post(base_domain_url + "/uuid.php", basic_info)
             .done(function (data) {
                 if (data) {
-                    message.uuid = data;
-                    sendAlready(url, message);
+                    final_message.uuid = data;
+                    sendAlready(url, final_message);
                 }
             });
     }
 
-    function sendAlready(url, message) {
+    function sendAlready(url, fin_message) {
         // Send to database
-        $.post(url, message)
+        $.post(url, fin_message)
             .done(function (data) {
                 if (data) {
                     var response = JSON.parse(data);
