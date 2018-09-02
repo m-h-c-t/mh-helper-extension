@@ -99,13 +99,18 @@
         }
 
         var new_window = window.open('');
-        var payload = {view_state: "hasMap", action: "info", uh: user.unique_hash, last_read_journal_entry_id: lastReadJournalEntryId};
+        var payload = {map_id: user.quests.QuestRelicHunter.default_map_id, action: "map_info", uh: user.unique_hash, last_read_journal_entry_id: lastReadJournalEntryId};
         $.post('https://www.mousehuntgame.com/managers/ajax/users/relichunter.php', payload, null, 'json')
             .done(function (data) {
                 if (data) {
                     if (!data.treasure_map || data.treasure_map.view_state === "noMap") {
                         new_window.close();
                         alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
+                        return;
+                    }
+                    if (data.treasure_map.map_class != 'treasure') {
+                        new_window.close();
+                        alert('This seems to be a new kind of map and not yet supported.');
                         return;
                     }
                     var mice = getMapMice(data, true);
@@ -118,15 +123,14 @@
     function getMapMice(data, uncaught_only) {
         var mice = [];
         $.each(data.treasure_map.groups, function(key, group) {
-            if (!uncaught_only) {
-                $.each(group.mice, function(key, mouse) {
-                    mice.push(mouse.name);
-                });
-            } else if (group.is_uncaught) {
-                $.each(group.mice, function(key, mouse) {
-                    mice.push(mouse.name);
-                });
+            if (uncaught_only && group.name.indexOf('Uncaught mice ') == -1) {
+                return;
             }
+
+            $.each(group.goals, function(key, mouse) {
+                mice.push(mouse.name);
+            });
+
         });
         return mice;
     }
@@ -1287,13 +1291,20 @@
                 case 'Ancient Hourglas':
                     message.loot[i].name = 'Ancient Hourglass';
                     break;
-                case 'Shard of Glas':
+                case 'Shards of Glass':
                     message.loot[i].name = 'Shard of Glass';
                     break;
                 case 'Bolts of Cloth':
                     message.loot[i].name = 'Bolt of Cloth';
                     break;
+                case "Flamin' Spice Leaves":
+                case "Hot Spice Leaves":
+                case "Medium Spice Leaves":
+                case "Mild Spice Leaves":
+                    message.loot[i].name = message.loot[i].name.replace(' Leaves', ' Leaf');
+                    break;
             }
+
             if (message.loot[i].name.indexOf(' of Gold ') !== -1) {
                 var loot_name = message.loot[i].name;
                 var loot_amount = loot_name.substring(loot_name.indexOf('(')+1, loot_name.indexOf(')'));
