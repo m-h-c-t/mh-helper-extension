@@ -1200,6 +1200,15 @@
             case "Mysterious Anomaly":
                 message = getMysteriousAnomalyHuntDetails(message, response, journal);
                 break;
+            case "Gnawnian Express Station":
+                message = getGnawnianExpressStationHuntDetails(message, response, journal);
+                break;
+            case "Claw Shot City":
+                message = getClawShotCityHuntDetails(message, response, journal);
+                break;
+            case "Harbour":
+                message = getHarbourHuntDetails(message, response, journal);
+                break;
         }
 
         return message;
@@ -1246,6 +1255,40 @@
         var quest = response.user.quests.QuestBirthday2018;
         message.hunt_details.boss_status = quest.boss_status;
         message.hunt_details.furthest_year = quest.furthest_year;
+
+        return message;
+    }
+
+    function getGnawnianExpressStationHuntDetails(message, response, journal) {
+        message.hunt_details = {};
+        var quest = response.user.quests.QuestTrainStation;
+        if (quest.minigame) {
+            // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
+            message.hunt_details.supply_rush = quest.minigame.supply_hoarder_turns > 0;
+        }
+
+        return message;
+    }
+
+    function getClawShotCityHuntDetails(message, response, journal) {
+        message.hunt_details = {};
+        var quest = response.user.quests.QuestClawShotCity;
+        /**
+         * !poster_active && !has_wanted_poster => Bounty Hunter can be attracted
+         * !poster_active && has_wanted_poster => Bounty Hunter is not attracted
+         * poster_active && !has_wanted_poster => On a Wanted Poster
+         */
+        message.hunt_details.poster_active = quest.map_active;
+        message.hunt_details.has_wanted_poster = quest.has_wanted_poster;
+
+        return message;
+    }
+
+    function getHarbourHuntDetails(message, response, journal) {
+        message.hunt_details = {};
+        var quest = response.user.quests.QuestHarbour;
+        // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
+        message.hunt_details.pirate_crew = (quest.status === "searchStarted" && !quest.can_claim);
 
         return message;
     }
