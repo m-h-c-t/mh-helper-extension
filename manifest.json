@@ -29,8 +29,6 @@
 
     "web_accessible_resources": [
         "scripts/main.js",
-        "third_party/tsitus/crebookmarklet",
-        "third_party/tsitus/setupbookmarklet",
         "third_party/tsitus/bookmarkletloader",
         "images/icon128.png"
     ],

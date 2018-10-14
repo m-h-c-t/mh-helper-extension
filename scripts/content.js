@@ -48,19 +48,12 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
     if ([
         "userhistory",
         "mhmh",
-        "tsitu_map",
         "ryonn",
         "horn",
-        "tsitu_cre",
-        "tsitu_setup",
         "tsitu_loader"
     ].indexOf(request.jacks_link) !== -1) {
         var file_link = '';
-        if (request.jacks_link == "tsitu_cre") {
-            file_link = chrome.extension.getURL('third_party/tsitus/crebookmarklet');
-        } else if (request.jacks_link == "tsitu_setup") {
-            file_link = chrome.extension.getURL('third_party/tsitus/setupbookmarklet');
-        } else if (request.jacks_link == "tsitu_loader") {
+        if (request.jacks_link == "tsitu_loader") {
             file_link = chrome.extension.getURL('third_party/tsitus/bookmarkletloader');
         }
         // Forwards messages from popup to main script

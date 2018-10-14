@@ -28,12 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var buttons = [
         'mhmh',
-        'tsitu_map',
         'userhistory',
         'ryonn',
         'horn',
-        'tsitu_cre',
-        'tsitu_setup',
         'tsitu_loader'
     ];
     buttons.forEach(function(id) {

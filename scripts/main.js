@@ -29,7 +29,6 @@
         }
 
         if (ev.data.jacks_message === 'mhmh'
-            || ev.data.jacks_message === 'tsitu_map'
             || ev.data.jacks_message === 'ryonn') {
             openMapMiceSolver(ev.data.jacks_message);
             return;
@@ -40,10 +39,8 @@
             return;
         }
 
-        if (['tsitu_cre', 'tsitu_setup', 'tsitu_loader'].indexOf(ev.data.jacks_message) !== -1) {
-            if ('tsitu_loader' === ev.data.jacks_message) {
-                window.tsitu_loader_offset = ev.data.tsitu_loader_offset;
-            }
+        if ('tsitu_loader' === ev.data.jacks_message) {
+            window.tsitu_loader_offset = ev.data.tsitu_loader_offset;
             openBookmarklet(ev.data.file_link);
             return;
         }
@@ -88,9 +85,6 @@
         if (solver === 'mhmh') {
             url = 'https://mhmaphelper.agiletravels.com/mice/';
             glue = '+';
-        } else if (solver === 'tsitu_map') {
-            url = 'https://tsitu.github.io/MH-Tools/map.html?mice=';
-            glue = '/';
         } else if (solver === 'ryonn') {
             url = 'http://dbgames.info/mousehunt/tavern?q=';
             glue = ';';
