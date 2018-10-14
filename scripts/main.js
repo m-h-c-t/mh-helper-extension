@@ -768,9 +768,9 @@
         var quest = response.user.quests.QuestHarbour;
         // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
         if (quest.status === "searchStarted" && !quest.can_claim) {
-            message.stage = "Hunting Pirates";
+            message.stage = "On Bounty";
         } else {
-            message.stage = "No Pirates";
+            message.stage = "No Bounty";
         }
 
         return message;

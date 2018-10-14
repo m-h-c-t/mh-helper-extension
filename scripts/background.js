@@ -101,6 +101,7 @@ function icon_timer_updateBadge(tab_id, settings) {
                 );
             }
             if (settings.horn_webalert && !notification_done) {
+                chrome.tabs.update(tab_id, {'active': true});
                 chrome.tabs.sendMessage(tab_id, {jacks_link: "show_horn_alert"});
             }
             notification_done = true;
