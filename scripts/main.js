@@ -695,6 +695,9 @@
             case "Burroughs Rift":
                 message = getBurroughsRiftStage(message, response, journal);
                 break;
+            case "Claw Shot City":
+                message = getClawShotCityStage(message, response, journal);
+                break;
             case "Cursed City":
             case "Lost City":
                 message = getLostCityStage(message, response, journal);
@@ -716,6 +719,9 @@
                 break;
             case "Gnawnian Express Station":
                 message = getTrainStage(message, response, journal);
+                break;
+            case "Harbour":
+                message = getHarbourStage(message, response, journal);
                 break;
             case "Iceberg":
                 message = getIcebergStage(message, response, journal);
@@ -753,6 +759,40 @@
             case "Mysterious Anomaly":
                 message = getMysteriousAnomalyStage(message, response, journal);
                 break;
+        }
+
+        return message;
+    }
+
+    function getHarbourStage(message, response, journal) {
+        var quest = response.user.quests.QuestHarbour;
+        // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
+        if (quest.status === "searchStarted" && !quest.can_claim) {
+            message.stage = "Hunting Pirates";
+        } else {
+            message.stage = "No Pirates";
+        }
+
+        return message;
+    }
+
+    function getClawShotCityStage(message, response, journal) {
+
+        var quest = response.user.quests.QuestClawShotCity;
+        /**
+         * !poster_active && !has_wanted_poster => Bounty Hunter can be attracted
+         * !poster_active && has_wanted_poster => Bounty Hunter is not attracted
+         * poster_active && !has_wanted_poster => On a Wanted Poster
+         */
+        // message.hunt_details.poster_active = quest.map_active;
+        // message.hunt_details.has_wanted_poster = quest.has_wanted_poster;
+
+        if (!quest.map_active && !quest.has_wanted_poster) {
+            message.stage = "No poster";
+        } else if (!quest.map_active && quest.has_wanted_poster) {
+            message.stage = "Has poster";
+        } else {
+            message.stage = "Using poster";
         }
 
         return message;
@@ -1112,17 +1152,26 @@
     }
 
     function getTrainStage(message, response, journal) {
+
         if (response.user.quests.QuestTrainStation.on_train) {
             switch (response.user.quests.QuestTrainStation.phase_name) {
                 case "Supply Depot":
-                    message.stage = "1st Phase";
+                    message.stage = "1. Supply Depot";
                     break;
                 case "Raider River":
-                    message.stage = "2nd Phase";
+                    message.stage = "2. Raider River";
                     break;
                 case "Daredevil Canyon":
-                    message.stage = "3rd Phase";
+                    message.stage = "3. Daredevil Canyon";
                     break;
+            }
+
+            var quest = response.user.quests.QuestTrainStation;
+            if (quest.minigame && quest.minigame.supply_hoarder_turns > 0) {
+                // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
+                message.stage += " - Rush";
+            } else {
+                message.stage += " - No Rush";
             }
         } else {
             message.stage = "Station";
@@ -1200,15 +1249,6 @@
             case "Mysterious Anomaly":
                 message = getMysteriousAnomalyHuntDetails(message, response, journal);
                 break;
-            case "Gnawnian Express Station":
-                message = getGnawnianExpressStationHuntDetails(message, response, journal);
-                break;
-            case "Claw Shot City":
-                message = getClawShotCityHuntDetails(message, response, journal);
-                break;
-            case "Harbour":
-                message = getHarbourHuntDetails(message, response, journal);
-                break;
         }
 
         return message;
@@ -1255,40 +1295,6 @@
         var quest = response.user.quests.QuestBirthday2018;
         message.hunt_details.boss_status = quest.boss_status;
         message.hunt_details.furthest_year = quest.furthest_year;
-
-        return message;
-    }
-
-    function getGnawnianExpressStationHuntDetails(message, response, journal) {
-        message.hunt_details = {};
-        var quest = response.user.quests.QuestTrainStation;
-        if (quest.minigame) {
-            // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
-            message.hunt_details.supply_rush = quest.minigame.supply_hoarder_turns > 0;
-        }
-
-        return message;
-    }
-
-    function getClawShotCityHuntDetails(message, response, journal) {
-        message.hunt_details = {};
-        var quest = response.user.quests.QuestClawShotCity;
-        /**
-         * !poster_active && !has_wanted_poster => Bounty Hunter can be attracted
-         * !poster_active && has_wanted_poster => Bounty Hunter is not attracted
-         * poster_active && !has_wanted_poster => On a Wanted Poster
-         */
-        message.hunt_details.poster_active = quest.map_active;
-        message.hunt_details.has_wanted_poster = quest.has_wanted_poster;
-
-        return message;
-    }
-
-    function getHarbourHuntDetails(message, response, journal) {
-        message.hunt_details = {};
-        var quest = response.user.quests.QuestHarbour;
-        // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
-        message.hunt_details.pirate_crew = (quest.status === "searchStarted" && !quest.can_claim);
 
         return message;
     }
