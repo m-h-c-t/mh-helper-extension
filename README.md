@@ -10,3 +10,8 @@ This is the a Browser Extension (Chrome/FF/Opera). It helps collect hunt info fo
 Special thanks to all who helped. Few honorable mentions: Tehhowch, Aardwolf, Tsitu's tools team, Loaf, Groupsky, Nick (HornTracker), and many others who helped with advice, ideas, and otherwise. Also thanks to contributors and discord mods.
 
 This tool uses some of the [Tsitu's scripts](https://github.com/tsitu/MH-Tools/) to autopopulate their site from extension.
+
+<kbd align="center">
+<img src="https://user-images.githubusercontent.com/8228441/46922950-0a6e1800-cfce-11e8-9981-1ad2eb80db9f.PNG" width="49%">
+<img src="https://user-images.githubusercontent.com/8228441/46922951-0b06ae80-cfce-11e8-8b0f-7a41f69b734b.PNG" width="49%">
+</kbd>
