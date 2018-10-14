@@ -780,12 +780,10 @@
 
         var quest = response.user.quests.QuestClawShotCity;
         /**
-         * !poster_active && !has_wanted_poster => Bounty Hunter can be attracted
-         * !poster_active && has_wanted_poster => Bounty Hunter is not attracted
-         * poster_active && !has_wanted_poster => On a Wanted Poster
+         * !map_active && !has_wanted_poster => Bounty Hunter can be attracted
+         * !map_active && has_wanted_poster => Bounty Hunter is not attracted
+         * map_active && !has_wanted_poster => On a Wanted Poster
          */
-        // message.hunt_details.poster_active = quest.map_active;
-        // message.hunt_details.has_wanted_poster = quest.has_wanted_poster;
 
         if (!quest.map_active && !quest.has_wanted_poster) {
             message.stage = "No poster";
@@ -989,23 +987,34 @@
     }
 
     function getSunkenCityStage(message, response, journal) {
-        if (!response.user.quests.QuestSunkenCity.is_diving) {
+        var quest = response.user.quests.QuestSunkenCity;
+        if (!quest.is_diving) {
             message.stage = "Docked";
             return message;
         }
 
+        for (var i=0; i < response.journal_markup.length; i++) {
+            var journal_entry = response.journal_markup[i].render_data;
+            if (journal_entry.text.match("I finished exploring")) {
+                // Hunter exited a zone, and it gets complicated to determine what was previous zone,
+                // so just skip recording any zone
+                return false
+            }
+        }
+
         // "if else" faster than "switch" calculations
-        var depth = response.user.quests.QuestSunkenCity.distance;
+        var depth = quest.distance;
+        message.stage = quest.zone_name;
         if (depth < 2000) {
-            message.stage = "0-2km";
+            message.stage += " 0-2km";
         } else if (depth < 10000) {
-            message.stage = "2-10km";
+            message.stage += " 2-10km";
         } else if (depth < 15000) {
-            message.stage = "10-15km";
+            message.stage += " 10-15km";
         } else if (depth < 25000) {
-            message.stage = "15-25km";
+            message.stage += " 15-25km";
         } else if (depth >= 25000) {
-            message.stage = "25km+";
+            message.stage += " 25km+";
         }
 
         return message;
@@ -1243,9 +1252,6 @@
             case "Bristle Woods Rift":
                 message = getBristleWoodsRiftHuntDetails(message, response, journal);
                 break;
-            case "Sunken City":
-                message = getSunkenCityHuntDetails(message, response, journal);
-                break;
             case "Mysterious Anomaly":
                 message = getMysteriousAnomalyHuntDetails(message, response, journal);
                 break;
@@ -1267,25 +1273,6 @@
             message.hunt_details.obelisk_charged = quest.obelisk_percent === 100
             message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0
         }
-
-        return message;
-    }
-
-    function getSunkenCityHuntDetails(message, response, journal) {
-        for (var i=0; i < response.journal_markup.length; i++) {
-            var journal_entry = response.journal_markup[i].render_data;
-            if (journal_entry.text.match("I finished exploring")) {
-                // Hunter exited a zone, and it gets complicated to determine what was previous zone,
-                // so just skip recording any zone
-                return message
-            }
-        }
-
-        message.hunt_details = {};
-
-        var quest = response.user.quests.QuestSunkenCity;
-        message.hunt_details.stage = quest.stage;
-        message.hunt_details.zone = quest.zone_name;
 
         return message;
     }
