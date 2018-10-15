@@ -15,20 +15,15 @@ let mhhhOptions = [ // `let` scope to avoid adding to window while still being g
     {name: 'tsitu_loader_offset_output', p: 'value'}
 ];
 function save_options() {
-    let currentOptions = mhhhOptions.map(function (opt) {
-        return {name: opt.name, val: document.getElementById(opt.name)[opt.p]};
-    }).reduce(function (acc, obj) {
-        acc[obj.name] = obj.val;
-        return acc;
-    }, {});
+    let currentOptions = mhhhOptions
+        .map(opt => ({name: opt.name, val: document.getElementById(opt.name)[opt.p]}))
+        .reduce((acc, obj) => (acc[obj.name] = obj.val, acc), {});
     // Trim the custom sound (can this instead be done when defocusing after user data entry?)
     currentOptions.custom_sound = currentOptions.custom_sound.trim();
 
-    chrome.storage.sync.set(currentOptions, function() {
+    chrome.storage.sync.set(currentOptions, () => {
         document.getElementById('save_status').style.visibility = "visible";
-        setTimeout(function() {
-            document.getElementById('save_status').style.visibility = "hidden";
-        }, 2000);
+        setTimeout(() => document.getElementById('save_status').style.visibility = "hidden", 2000);
     });
 }
 
@@ -36,16 +31,11 @@ function save_options() {
 // stored in chrome.storage.
 function restore_options() {
     // Use default values where available.
-    let defaultOptions = mhhhOptions.filter(function (prop) {
-        return prop.default !== undefined;
-    }).reduce(function (acc, prop) {
-        acc[prop.name] = prop.default;
-        return acc;
-    }, {});
-    chrome.storage.sync.get(defaultOptions, function(items) {
-        mhhhOptions.forEach(function (prop) {
-            document.getElementById(prop.name)[prop.p] = items[prop.name];
-        });
+    let defaultOptions = mhhhOptions
+      .filter(prop => prop.default !== undefined)
+      .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
+    chrome.storage.sync.get(defaultOptions, items => {
+        mhhhOptions.forEach(prop => document.getElementById(prop.name)[prop.p] = items[prop.name]);
     });
 }
 document.addEventListener('DOMContentLoaded', restore_options);
@@ -56,9 +46,9 @@ function update_range_output() {
     document.querySelector("output[for=" + this.id).value = this.value;
 }
 
-document.querySelectorAll('.input_range').forEach(function(item) {
-    item.addEventListener('input', update_range_output);
-});
+document.querySelectorAll('.input_range').forEach(
+    item => item.addEventListener('input', update_range_output)
+);
 
 // Play sound -- TODO: find a way to play files locally
 function play_my_sound() {

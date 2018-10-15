@@ -1,12 +1,11 @@
 // Update check
-chrome.runtime.onUpdateAvailable.addListener(function(details) {
+chrome.runtime.onUpdateAvailable.addListener(details => {
     console.log("MHHH: updating to version " + details.version);
     chrome.runtime.reload();
 });
 
 var time_interval = 7200 * 1000; // seconds * 1000
-window.setInterval(function() {
-    chrome.runtime.requestUpdateCheck(function(status) {
+window.setInterval(() => chrome.runtime.requestUpdateCheck(status => {
         if (status == "update_available") {
             console.log("MHHH: update pending...");
         } else if (status == "no_update") {
@@ -14,24 +13,19 @@ window.setInterval(function() {
         } else if (status == "throttled") {
             console.log("MHHH: Oops, update check failed.");
         }
-    });
-}, time_interval);
+    }),
+time_interval);
 
 // Refreshes mh pages when new version is installed
-chrome.runtime.onInstalled.addListener(function(details) {
-    chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, function(tabs) {
-        tabs.forEach(function (tab) {
-            chrome.tabs.reload(tab.id)
-        });
-    });
-});
+chrome.runtime.onInstalled.addListener(details => chrome.tabs.query(
+    {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
+    tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
+));
 
 // icon_timer, horn_sound and horn_alert
 var sound_file = chrome.extension.getURL('sounds/bell.mp3');
 var notification_done = false;
-setInterval(function() {
-    check_settings(icon_timer_find_open_mh_tab);
-}, 1000);
+setInterval(() => check_settings(icon_timer_find_open_mh_tab), 1000);
 
 
 function check_settings(callback) {
@@ -45,13 +39,13 @@ function check_settings(callback) {
         horn_alert: false, // defaults
         horn_webalert: false, // defaults
         track_crowns: true // defaults
-    }, function (settings) {
-        callback(settings);
-    });
+    },
+    settings => callback(settings));
 }
 
 function icon_timer_find_open_mh_tab(settings) {
-    chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, function(found_tabs) {
+    chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
+    found_tabs => {
         if (found_tabs.length > 0) {
             icon_timer_updateBadge(found_tabs[0].id, settings);
         } else {
@@ -67,7 +61,7 @@ function icon_timer_updateBadge(tab_id, settings) {
         return;
     }
 
-    chrome.tabs.sendMessage(tab_id, {jacks_link: "huntTimer"}, function (response) {
+    chrome.tabs.sendMessage(tab_id, {jacks_link: "huntTimer"}, response => {
         if (typeof response === 'undefined') {
             chrome.browserAction.setBadgeText({text: ''});
             notification_done = true;

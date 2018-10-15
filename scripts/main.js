@@ -15,7 +15,7 @@
     var mhhh_version = $("#mhhh_version").val();
 
     // Listening for calls
-    window.addEventListener('message', function (ev) {
+    window.addEventListener('message', ev => {
         if (ev.data.jacks_message === null) {
             return;
         }
@@ -70,7 +70,7 @@
     function openBookmarklet(url) {
         let xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
-        xhr.onreadystatechange = function () {
+        xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
                 document.location.href = xhr.responseText;
             }
@@ -100,7 +100,7 @@
             last_read_journal_entry_id: lastReadJournalEntryId
         };
         $.post('https://www.mousehuntgame.com/managers/ajax/users/relichunter.php', payload, null, 'json')
-            .done(function (data) {
+            .done(data => {
                 if (data) {
                     if (!data.treasure_map || data.treasure_map.view_state === "noMap") {
                         new_window.close();
@@ -121,15 +121,12 @@
     // Extract map mice from a map
     function getMapMice(data, uncaught_only) {
         let mice = [];
-        $.each(data.treasure_map.groups, function (key, group) {
+        $.each(data.treasure_map.groups, (key, group) => {
             if (uncaught_only && group.name.indexOf('Uncaught mice ') === -1) {
                 return;
             }
 
-            $.each(group.goals, function (key, mouse) {
-                mice.push(mouse.name);
-            });
-
+            $.each(group.goals, (key, mouse) => mice.push(mouse.name));
         });
         return mice;
     }
@@ -159,15 +156,13 @@
             mhhh_flash_message_div.css('border', '1px solid darkgoldenrod');
         }
 
-        mhhh_flash_message_div.fadeIn(function () {
-            setTimeout(function () {
-                $('#mhhh_flash_message_div').fadeOut();
-            }, 1500);
+        mhhh_flash_message_div.fadeIn(() => {
+            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500);
         });
     }
 
     // Listening router
-    $(document).ajaxSuccess(function (event, xhr, ajaxOptions) {
+    $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
     // /* Method */ ajaxOptions.type
     // /* URL */ ajaxOptions.url
     // /* Response body */ xhr.responseText
@@ -218,9 +213,7 @@
         payload.silver = 0;
         payload.gold = 0;
 
-        $.each(xhr.responseJSON.badges, function(key, value) {
-            payload[value.type] = value.mice.length;
-        });
+        $.each(xhr.responseJSON.badges, (key, value) => payload[value.type] = value.mice.length);
 
         $.post('https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
             {'main': JSON.stringify(payload)});
@@ -374,7 +367,7 @@
 
         // Get UUID
         $.post(base_domain_url + "/uuid.php", basic_info)
-            .done(function (data) {
+            .done(data => {
                 if (data) {
                     final_message.uuid = data;
                     sendAlready(url, final_message);
@@ -385,7 +378,7 @@
     function sendAlready(url, fin_message) {
         // Send to database
         $.post(url, fin_message)
-            .done(function (data) {
+            .done(data => {
                 if (data) {
                     let response = JSON.parse(data);
                     showFlashMessage(response.status, response.message);
@@ -807,18 +800,19 @@
     }
 
     function getFestiveCometStage(message, response, journal) {
-        if (!response.user.quests.QuestWinterHunt2017) {
+        let quest = response.user.quests.QuestWinterHunt2017;
+        if (!quest) {
             return message;
         }
 
-        if (response.user.quests.QuestWinterHunt2017.comet.at_boss === true) {
+        if (quest.comet.at_boss === true) {
             message.stage = "Core";
             return message;
         }
 
-        message.stage = response.user.quests.QuestWinterHunt2017.comet.phase_name;
-        for (let key in response.user.quests.QuestWinterHunt2017.comet.phases) {
-            if (response.user.quests.QuestWinterHunt2017.comet.phases[key].status === "active") {
+        message.stage = quest.comet.phase_name;
+        for (let key in quest.comet.phases) {
+            if (quest.comet.phases[key].status === "active") {
                 message.stage += ' (' + key.replace(/phase_/, '') + ')';
                 break;
             }
@@ -1050,7 +1044,7 @@
 
         let zokor_district = response.user.quests.QuestAncientCity.district_name;
 
-        $.each(zokor_stages, function (key, value) {
+        $.each(zokor_stages, (key, value) => {
             let search_string = new RegExp(key, "i");
             if (zokor_district.search(search_string) !== -1) {
                 message.stage = value;
@@ -1116,7 +1110,7 @@
             grand_duke:           'Grand Duke/Duchess',
             archduke_archduchess: 'Archduke/Archduchess'
         };
-        $.each(titles, function(title, level) {
+        $.each(titles, (title, level) => {
             if (!level.active) {
                 return true; // Continue
             }
@@ -1302,7 +1296,7 @@
         let loot_array = loot_text.split(/,\s|\sand\s/g);
         // let render_array = desc.split(/<a\s/);
 
-        message.loot = loot_array.map(function (item_text) {
+        message.loot = loot_array.map(item_text => {
             let loot_obj = {
                 amount: item_text.match(/(\d+,?)+/i)[0].replace(/,/i, '')
             };

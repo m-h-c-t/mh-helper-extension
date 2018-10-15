@@ -23,7 +23,7 @@ document.body.appendChild(mhhh_flash_message_div);
 // Inject main script
 var s = document.createElement('script');
 s.src = chrome.extension.getURL('scripts/main.js');
-s.onload = function() {
+s.onload = function () {
     this.remove();
 };
 (document.head || document.documentElement).appendChild(s);
@@ -32,7 +32,7 @@ s.onload = function() {
 chrome.storage.sync.get({
     tsitu_loader_on: false,
     tsitu_loader_offset: 80
-}, function (items) {
+}, items => {
     if (items.tsitu_loader_on) {
         // There must be a better way of doing this
         window.postMessage({
@@ -44,7 +44,7 @@ chrome.storage.sync.get({
 });
 
 // Handles messages from popup
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if ([
         "userhistory",
         "mhmh",
@@ -73,7 +73,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 window.addEventListener("message",
-    function (event) {
+    event => {
         if (event.data.jacks_settings_request !== 1) {
             return;
         }
@@ -88,9 +88,8 @@ window.addEventListener("message",
             horn_alert: false, // defaults
             horn_webalert: false, // defaults
             track_crowns: true // defaults
-        }, function (items) {
-            event.source.postMessage({ jacks_settings_response: 1, settings: items }, event.origin);
-        });
+        },
+        items => event.source.postMessage({ jacks_settings_response: 1, settings: items }, event.origin));
     },
     false
 );
