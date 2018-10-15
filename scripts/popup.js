@@ -1,6 +1,6 @@
 function findOpenMHTab(button_pressed, callback, silent) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, function(tabs) {
-        if ( tabs.length > 0 ) {
+        if (tabs.length > 0) {
             callback(tabs[0].id, button_pressed);
         }
         else if (!silent) {
@@ -20,13 +20,13 @@ function sendMessageToScript(tab_id, button_pressed) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var version_element = document.getElementById("version");
+    let version_element = document.getElementById("version");
     if (version_element) {
         version_element.innerText = ' v' + chrome.runtime.getManifest().version;
     }
     findOpenMHTab("huntTimer", updateHuntTimer, true);
 
-    var buttons = [
+    let buttons = [
         'mhmh',
         'userhistory',
         'ryonn',
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'tsitu_loader'
     ];
     buttons.forEach(function(id) {
-        var button_element = document.getElementById(id);
+        let button_element = document.getElementById(id);
         if (!button_element) {
             return;
         }
@@ -58,16 +58,16 @@ function updateHuntTimerField(tab, huntTimerField) {
 }
 
 function updateHuntTimer(tab, button_pressed) {
-    var huntTimerField = document.getElementById("huntTimer");
+    let huntTimerField = document.getElementById("huntTimer");
     updateHuntTimerField(tab, huntTimerField); // Fire now
     setInterval(updateHuntTimerField, 1000, tab, huntTimerField); // Continue firing each second
 }
 
 function displayErrorPopup(message) {
-    var error_popup = document.getElementById('error_popup');
+    let error_popup = document.getElementById('error_popup');
     error_popup.innerText = message;
     error_popup.style.display = 'block';
-    setTimeout( function(){
+    setTimeout(function() {
         error_popup.style.display = 'none';
     }, 2000);
 }

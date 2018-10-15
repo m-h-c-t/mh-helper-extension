@@ -18,13 +18,11 @@ window.setInterval(function() {
 }, time_interval);
 
 // Refreshes mh pages when new version is installed
-chrome.runtime.onInstalled.addListener( function(details) {
+chrome.runtime.onInstalled.addListener(function(details) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, function(tabs) {
-        if ( tabs.length > 0 ) {
-            for(i = 0; i<tabs.length; i++) {
-                chrome.tabs.reload(tabs[i].id);
-            }
-        }
+        tabs.forEach(function (tab) {
+            chrome.tabs.reload(tab.id)
+        });
     });
 });
 
@@ -54,7 +52,7 @@ function check_settings(callback) {
 
 function icon_timer_find_open_mh_tab(settings) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, function(found_tabs) {
-        if ( found_tabs.length > 0 ) {
+        if (found_tabs.length > 0) {
             icon_timer_updateBadge(found_tabs[0].id, settings);
         } else {
             icon_timer_updateBadge(false, settings);
@@ -75,17 +73,11 @@ function icon_timer_updateBadge(tab_id, settings) {
             notification_done = true;
         } else if (response === "Ready!") {
             if (settings.icon_timer) {
-                chrome.browserAction.setBadgeBackgroundColor({color:'#9b7617'});
+                chrome.browserAction.setBadgeBackgroundColor({color: '#9b7617'});
                 chrome.browserAction.setBadgeText({text: '🎺'});
             }
             if (settings.horn_sound && !notification_done) {
-                var myAudio;
-                if (settings.custom_sound) {
-                    myAudio = new Audio(settings.custom_sound);
-                } else {
-                    myAudio = new Audio(sound_file);
-                }
-
+                let myAudio = new Audio(settings.custom_sound || sound_file);
                 myAudio.volume = (settings.horn_volume / 100).toFixed(2);
                 myAudio.play();
             }
@@ -107,20 +99,20 @@ function icon_timer_updateBadge(tab_id, settings) {
             notification_done = true;
         } else if (response === "King's Reward") {
             if (settings.icon_timer) {
-                chrome.browserAction.setBadgeBackgroundColor({color:'#F00'});
+                chrome.browserAction.setBadgeBackgroundColor({color: '#F00'});
                 chrome.browserAction.setBadgeText({text: 'RRRRRRR'});
             }
             notification_done = true;
         } else {
             if (settings.icon_timer) {
-                chrome.browserAction.setBadgeBackgroundColor({color:'#222'});
+                chrome.browserAction.setBadgeBackgroundColor({color: '#222'});
                 response = response.replace(':', '');
-                var response_int = parseInt(response);
+                let response_int = parseInt(response);
                 if (response.indexOf('min') !== -1) {
                     response = response_int + 'm';
                 } else {
                     if (response_int > 59) {
-                        response = Math.floor(response_int/100) + 'm';
+                        response = Math.floor(response_int / 100) + 'm';
                     } else {
                         response = response_int + 's';
                     }

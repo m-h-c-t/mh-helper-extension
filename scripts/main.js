@@ -15,8 +15,8 @@
     var mhhh_version = $("#mhhh_version").val();
 
     // Listening for calls
-    window.addEventListener('message', function(ev){
-        if (null === ev.data.jacks_message) {
+    window.addEventListener('message', function (ev) {
+        if (ev.data.jacks_message === null) {
             return;
         }
         if (typeof user.user_id === 'undefined') {
@@ -24,7 +24,7 @@
             return;
         }
         if (ev.data.jacks_message === 'userhistory') {
-            window.open('https://mhhunthelper.agiletravels.com/searchByUser.php?user=' + user.user_id);
+            window.open(base_domain_url + '/searchByUser.php?user=' + user.user_id);
             return;
         }
 
@@ -46,7 +46,7 @@
         }
 
         if (ev.data.jacks_message === 'show_horn_alert') {
-            var sound_the_horn = confirm("Horn is Ready! Sound it?");
+            let sound_the_horn = confirm("Horn is Ready! Sound it?");
             if (sound_the_horn) {
                 sound_horn();
             }
@@ -68,9 +68,9 @@
     }
 
     function openBookmarklet(url) {
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 document.location.href = xhr.responseText;
             }
@@ -80,8 +80,8 @@
 
     // Get map mice
     function openMapMiceSolver(solver) {
-        var url = '';
-        var glue = '';
+        let url = '';
+        let glue = '';
         if (solver === 'mhmh') {
             url = 'https://mhmaphelper.agiletravels.com/mice/';
             glue = '+';
@@ -92,8 +92,13 @@
             return;
         }
 
-        var new_window = window.open('');
-        var payload = {map_id: user.quests.QuestRelicHunter.default_map_id, action: "map_info", uh: user.unique_hash, last_read_journal_entry_id: lastReadJournalEntryId};
+        let new_window = window.open('');
+        let payload = {
+            map_id: user.quests.QuestRelicHunter.default_map_id,
+            action: "map_info",
+            uh: user.unique_hash,
+            last_read_journal_entry_id: lastReadJournalEntryId
+        };
         $.post('https://www.mousehuntgame.com/managers/ajax/users/relichunter.php', payload, null, 'json')
             .done(function (data) {
                 if (data) {
@@ -107,7 +112,7 @@
                         alert('This seems to be a new kind of map and not yet supported.');
                         return;
                     }
-                    var mice = getMapMice(data, true);
+                    let mice = getMapMice(data, true);
                     new_window.location = encodeURI(url + mice.join(glue));
                 }
             });
@@ -115,13 +120,13 @@
 
     // Extract map mice from a map
     function getMapMice(data, uncaught_only) {
-        var mice = [];
-        $.each(data.treasure_map.groups, function(key, group) {
-            if (uncaught_only && group.name.indexOf('Uncaught mice ') == -1) {
+        let mice = [];
+        $.each(data.treasure_map.groups, function (key, group) {
+            if (uncaught_only && group.name.indexOf('Uncaught mice ') === -1) {
                 return;
             }
 
-            $.each(group.goals, function(key, mouse) {
+            $.each(group.goals, function (key, mouse) {
                 mice.push(mouse.name);
             });
 
@@ -134,12 +139,11 @@
     }
 
     function displayFlashMessage(settings, type, message) {
-
         if ((type === 'success' && !settings.success_messages)
             || (type !== 'success' && !settings.error_messages)) {
             return;
         }
-        var mhhh_flash_message_div = $('#mhhh_flash_message_div');
+        let mhhh_flash_message_div = $('#mhhh_flash_message_div');
         mhhh_flash_message_div.text("Jack's MH Helper: " + message);
 
         mhhh_flash_message_div.css('left', 'calc(50% - ' + (mhhh_flash_message_div.width() / 2) + 'px)');
@@ -155,8 +159,8 @@
             mhhh_flash_message_div.css('border', '1px solid darkgoldenrod');
         }
 
-        mhhh_flash_message_div.fadeIn(function() {
-            setTimeout(function() {
+        mhhh_flash_message_div.fadeIn(function () {
+            setTimeout(function () {
                 $('#mhhh_flash_message_div').fadeOut();
             }, 1500);
         });
@@ -200,14 +204,14 @@
         if (!settings.track_crowns) {
             return;
         }
-        var url_params = url.match(/snuid=([0-9]+)/);
+        let url_params = url.match(/snuid=([0-9]+)/);
         if (!url_params || !Object.keys(xhr.responseJSON.mouse_data).length) {
             return;
         }
 
-        var payload = {};
+        let payload = {};
         payload.user = url_params[1];
-        payload.timestamp = Math.round(Date.now()/1000);
+        payload.timestamp = Math.round(Date.now() / 1000);
         payload.mice = [];
 
         payload.bronze = 0;
@@ -229,7 +233,7 @@
         if (!xhr.responseJSON.treasure_map || !xhr.responseJSON.treasure_map.board_id || !xhr.responseJSON.treasure_map.name) {
             return;
         }
-        var map = {};
+        let map = {};
         map.mice = getMapMice(xhr.responseJSON);
         map.id = xhr.responseJSON.treasure_map.board_id;
         map.name = xhr.responseJSON.treasure_map.name.replace(/\ treasure/i, '');
@@ -247,21 +251,20 @@
 
     // Record successful hunt
     function recordHunt(xhr) {
-        var response = JSON.parse(xhr.responseText);
-        var message = {};
-        var journal = {};
+        let response = JSON.parse(xhr.responseText);
+        let journal = {};
 
-        for (var i=0; i < response.journal_markup.length; i++) {
+        for (let i = 0; i < response.journal_markup.length; i++) {
             let journal_render_data = response.journal_markup[i].render_data;
             if (journal_render_data.css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
-                var rh_message = {}; // to not set rh flag on regular
-                                            // hunt payload
-                rh_message.extension_version = formatVersion(mhhh_version);
-                rh_message.user_id = response.user.user_id;
-                rh_message.rh_environment = journal_render_data.environment;
-                rh_message.entry_timestamp = journal_render_data.entry_timestamp;
+                let rh_message = { // to not set rh flag on regular hunt payload
+                    extension_version: formatVersion(mhhh_version),
+                    user_id: response.user.user_id,
+                    rh_environment: journal_render_data.environment,
+                    entry_timestamp: journal_render_data.entry_timestamp
+                };
                 // Check if rh was caught after reset
-                if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0,0,0,0)/1000)) {
+                if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
                     sendMessageToServer(db_url, rh_message);
                 }
                 continue;
@@ -293,8 +296,10 @@
             return;
         }
 
-        message.extension_version = formatVersion(mhhh_version);
-        message.user_id = response.user.user_id;
+        let message = {
+            extension_version: formatVersion(mhhh_version),
+            user_id: response.user.user_id
+        };
         message = getMainHuntInfo(message, response, journal);
         if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
@@ -325,10 +330,10 @@
             return;
         }
 
-        var response = xhr.responseJSON;
+        let response = xhr.responseJSON;
 
-        var convertible;
-        for (var key in response.items) {
+        let convertible;
+        for (let key in response.items) {
             if (!response.items.hasOwnProperty(key)) continue;
             if (convertible) {
                 window.console.log("MHHH: Multiple items are not supported (yet)");
@@ -342,19 +347,19 @@
             return;
         }
 
-        var message = xhr.responseJSON.messageData.message_model.messages[0];
+        let message = xhr.responseJSON.messageData.message_model.messages[0];
         if (!message.isNew || !message.messageData || !message.messageData.items || message.messageData.items.length === 0) {
             return;
         }
-        var items = message.messageData.items;
+        let items = message.messageData.items;
 
-        var record = {
+        let record = {
             convertible: getItem(convertible),
             items: items.map(getItem.bind(null)),
             extension_version: formatVersion(mhhh_version),
             asset_package_hash: Date.now(),
             user_id: response.user.user_id,
-            entry_timestamp: Math.round(Date.now()/1000)
+            entry_timestamp: Math.round(Date.now() / 1000)
         };
 
         // Send to database
@@ -362,9 +367,9 @@
     }
 
     function sendMessageToServer(url, final_message) {
-        var basic_info = {
-                user_id: final_message.user_id,
-                entry_timestamp: final_message.entry_timestamp
+        let basic_info = {
+            user_id: final_message.user_id,
+            entry_timestamp: final_message.entry_timestamp
         };
 
         // Get UUID
@@ -382,7 +387,7 @@
         $.post(url, fin_message)
             .done(function (data) {
                 if (data) {
-                    var response = JSON.parse(data);
+                    let response = JSON.parse(data);
                     showFlashMessage(response.status, response.message);
                 }
             });
@@ -446,7 +451,7 @@
         message.attraction_bonus = Math.round(response.user.trap_attraction_bonus*100);
 
         // Caught / Attracted / Mouse
-        var outcome = journal.render_data.text;
+        let outcome = journal.render_data.text;
         if (journal.render_data.css_class.indexOf('catchsuccess') !== -1) {
             message.caught = 1;
             message.attracted = 1;
@@ -771,7 +776,7 @@
     }
 
     function getHarbourStage(message, response, journal) {
-        var quest = response.user.quests.QuestHarbour;
+        let quest = response.user.quests.QuestHarbour;
         // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
         if (quest.status === "searchStarted" && !quest.can_claim) {
             message.stage = "On Bounty";
@@ -783,8 +788,7 @@
     }
 
     function getClawShotCityStage(message, response, journal) {
-
-        var quest = response.user.quests.QuestClawShotCity;
+        let quest = response.user.quests.QuestClawShotCity;
         /**
          * !map_active && !has_wanted_poster => Bounty Hunter can be attracted
          * !map_active && has_wanted_poster => Bounty Hunter is not attracted
@@ -813,7 +817,7 @@
         }
 
         message.stage = response.user.quests.QuestWinterHunt2017.comet.phase_name;
-        for (var key in response.user.quests.QuestWinterHunt2017.comet.phases) {
+        for (let key in response.user.quests.QuestWinterHunt2017.comet.phases) {
             if (response.user.quests.QuestWinterHunt2017.comet.phases[key].status === "active") {
                 message.stage += ' (' + key.replace(/phase_/, '') + ')';
                 break;
@@ -832,12 +836,11 @@
     }
 
     function getWhiskerWoodsRiftStage(message, response, journal) {
-        var clearing = response.user.quests.QuestRiftWhiskerWoods.zones.clearing.level;
-        var tree = response.user.quests.QuestRiftWhiskerWoods.zones.tree.level;
-        var lagoon = response.user.quests.QuestRiftWhiskerWoods.zones.lagoon.level;
+        let clearing = response.user.quests.QuestRiftWhiskerWoods.zones.clearing.level;
+        let tree = response.user.quests.QuestRiftWhiskerWoods.zones.tree.level;
+        let lagoon = response.user.quests.QuestRiftWhiskerWoods.zones.lagoon.level;
 
         message.stage = {};
-
         if (0 <= clearing && clearing <= 24) {
             message.stage.clearing = 'CC 0-24';
         } else if (25 <= clearing && clearing <= 49) {
@@ -890,7 +893,7 @@
 
     function getBalacksCoveStage(message, response, journal) {
         if (response.user.viewing_atts.tide) {
-            var tide = response.user.viewing_atts.tide;
+            let tide = response.user.viewing_atts.tide;
             message.stage = tide.substr(0, 1).toUpperCase() + tide.substr(1);
             if (message.stage === "Med") {
                 message.stage = "Medium";
@@ -920,7 +923,7 @@
 
     function getLivingGardenStage(message, response, journal) {
         if (response.user.quests.QuestLivingGarden.minigame.bucket_state) {
-            var bucket = response.user.quests.QuestLivingGarden.minigame.bucket_state;
+            let bucket = response.user.quests.QuestLivingGarden.minigame.bucket_state;
             if (bucket === "filling") {
                 message.stage = "Not Pouring";
             } else {
@@ -959,7 +962,7 @@
 
     function getIcebergStage(message, response, journal) {
         if (!response.user.quests.QuestIceberg.current_phase) {
-            return '';
+            return "";
         }
 
         // switch on current depth after checking what phase has for generals
@@ -993,23 +996,20 @@
     }
 
     function getSunkenCityStage(message, response, journal) {
-        var quest = response.user.quests.QuestSunkenCity;
+        let quest = response.user.quests.QuestSunkenCity;
         if (!quest.is_diving) {
             message.stage = "Docked";
             return message;
         }
 
-        for (var i=0; i < response.journal_markup.length; i++) {
-            var journal_entry = response.journal_markup[i].render_data;
-            if (journal_entry.text.indexOf("I finished exploring") !== -1) {
-                // Hunter exited a zone, and it gets complicated to determine what was previous zone,
-                // so just skip recording any zone
-                return false;
-            }
+        // If the hunter exited a zone, it gets complicated to determine what was the previous zone,
+        // so just skip recording any zone
+        if (response.journal_markup.some(markup => markup.render_data.text.indexOf("I finished exploring") !== -1)) {
+            return "";
         }
 
         // "if else" faster than "switch" calculations
-        var depth = quest.distance;
+        let depth = quest.distance;
         message.stage = quest.zone_name;
         if (depth < 2000) {
             message.stage += " 0-2km";
@@ -1031,7 +1031,7 @@
             return message;
         }
 
-        var zokor_stages = {
+        let zokor_stages = {
             "Garden":     "Farming 0+",
             "Study":      "Scholar 15+",
             "Shrine":     "Fealty 15+",
@@ -1048,11 +1048,10 @@
             "Sanctum":    "Fealty 80+"
         };
 
-        var zokor_district = response.user.quests.QuestAncientCity.district_name;
+        let zokor_district = response.user.quests.QuestAncientCity.district_name;
 
-        var search_string;
-        $.each(zokor_stages, function(key, value) {
-            search_string = new RegExp(key, "i");
+        $.each(zokor_stages, function (key, value) {
+            let search_string = new RegExp(key, "i");
             if (zokor_district.search(search_string) !== -1) {
                 message.stage = value;
                 return false;
@@ -1106,8 +1105,8 @@
     }
 
     function getToxicSpillStage(message, response, journal) {
-        var titles = response.user.quests.QuestPollutionOutbreak.titles;
-        var formatted_titles = {
+        let titles = response.user.quests.QuestPollutionOutbreak.titles;
+        let formatted_titles = {
             hero:                 'Hero',
             knight:               'Knight',
             lord_lady:            'Lord/Lady',
@@ -1128,7 +1127,8 @@
     }
 
     function getBurroughsRiftStage(message, response, journal) {
-        switch (response.user.quests.QuestRiftBurroughs.mist_tier) {
+        let quest = response.user.quests.QuestRiftBurroughs;
+        switch (quest.mist_tier) {
             case "tier_0":
                 message.stage = "Mist 0";
                 break;
@@ -1143,33 +1143,34 @@
                 break;
         }
 
-        if (!response.user.quests.QuestRiftBurroughs.can_mist) {
+        if (!quest.can_mist) {
             return message;
         }
 
         // Correcting edge cases, still doesn't cover mist level 1->0
-        if (response.user.quests.QuestRiftBurroughs.is_misting) {
-            if (response.user.quests.QuestRiftBurroughs.mist_released === 1) {
+        if (quest.is_misting) {
+            if (quest.mist_released === 1) {
                 message.stage = "Mist 0";
-            } else if (response.user.quests.QuestRiftBurroughs.mist_released === 6) {
+            } else if (quest.mist_released === 6) {
                 message.stage = "Mist 1-5";
-            } else if (response.user.quests.QuestRiftBurroughs.mist_released === 19) {
+            } else if (quest.mist_released === 19) {
                 message.stage = "Mist 6-18";
             }
         } else {
-            if (response.user.quests.QuestRiftBurroughs.mist_released === 18) {
+            if (quest.mist_released === 18) {
                 message.stage = "Mist 19-20";
-            } else if (response.user.quests.QuestRiftBurroughs.mist_released === 5) {
+            } else if (quest.mist_released === 5) {
                 message.stage = "Mist 6-18";
             }
         }
+
         return message;
     }
 
     function getTrainStage(message, response, journal) {
-
-        if (response.user.quests.QuestTrainStation.on_train) {
-            switch (response.user.quests.QuestTrainStation.phase_name) {
+        let quest = response.user.quests.QuestTrainStation;
+        if (quest.on_train) {
+            switch (quest.phase_name) {
                 case "Supply Depot":
                     message.stage = "1. Supply Depot";
                     break;
@@ -1181,7 +1182,6 @@
                     break;
             }
 
-            var quest = response.user.quests.QuestTrainStation;
             if (quest.minigame && quest.minigame.supply_hoarder_turns > 0) {
                 // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
                 message.stage += " - Rush";
@@ -1196,14 +1196,15 @@
     }
 
     function getFortRoxStage(message, response, journal) {
-        if (response.user.quests.QuestFortRox.is_lair) {
+        let quest = response.user.quests.QuestFortRox;
+        if (quest.is_lair) {
             message.stage = "Heart of the Meteor";
-        } else if (response.user.quests.QuestFortRox.is_dawn) {
+        } else if (quest.is_dawn) {
             message.stage = "Dawn";
-        } else if (response.user.quests.QuestFortRox.is_day) {
+        } else if (quest.is_day) {
             message.stage = "Day";
-        } else if (response.user.quests.QuestFortRox.is_night) {
-            switch (response.user.quests.QuestFortRox.current_stage) {
+        } else if (quest.is_night) {
+            switch (quest.current_stage) {
                 case "stage_one":
                     message.stage = "Twilight";
                     break;
@@ -1221,6 +1222,7 @@
                     break;
             }
         }
+
         return message;
     }
 
@@ -1235,10 +1237,9 @@
     }
 
     function getBristleWoodsRiftStage(message, response, journal) {
-        if (response.user.quests.QuestRiftBristleWoods.chamber_name === "Rift Acolyte Tower") {
+        message.stage = response.user.quests.QuestRiftBristleWoods.chamber_name;
+        if (message.stage === "Rift Acolyte Tower") {
             message.stage = "Entrance";
-        } else {
-            message.stage = response.user.quests.QuestRiftBristleWoods.chamber_name;
         }
 
         return message;
@@ -1268,16 +1269,16 @@
 
     function getBristleWoodsRiftHuntDetails(message, response, journal) {
         message.hunt_details = {}
-        var quest = response.user.quests.QuestRiftBristleWoods
-        for (var key in quest.status_effects) {
+        let quest = response.user.quests.QuestRiftBristleWoods
+        for (let key in quest.status_effects) {
             if (!quest.status_effects.hasOwnProperty(key)) continue
-            message.hunt_details['effect_'+key] = quest.status_effects[key] === 'active'
+            message.hunt_details['effect_' + key] = quest.status_effects[key] === 'active'
         }
-        message.hunt_details.has_hourglass = quest.items.rift_hourglass_stat_item.quantity >= 1
-        message.hunt_details.chamber_status = quest.chamber_status
+        message.hunt_details.has_hourglass = quest.items.rift_hourglass_stat_item.quantity >= 1;
+        message.hunt_details.chamber_status = quest.chamber_status;
         if (quest.chamber_name === 'Acolyte') {
-            message.hunt_details.obelisk_charged = quest.obelisk_percent === 100
-            message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0
+            message.hunt_details.obelisk_charged = quest.obelisk_percent === 100;
+            message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0;
         }
 
         return message;
@@ -1285,7 +1286,7 @@
 
     function getMysteriousAnomalyHuntDetails(message, response, journal) {
         message.hunt_details = {};
-        var quest = response.user.quests.QuestBirthday2018;
+        let quest = response.user.quests.QuestBirthday2018;
         message.hunt_details.boss_status = quest.boss_status;
         message.hunt_details.furthest_year = quest.furthest_year;
 
@@ -1293,28 +1294,23 @@
     }
 
     function getLoot(message, response, journal) {
-        if (journal.render_data.text.indexOf("following loot:") === -1) {
+        let desc = journal.render_data.text;
+        if (desc.indexOf("following loot:") === -1) {
             return message;
         }
-        var loot_text = journal.render_data.text.substring(journal.render_data.text.indexOf("following loot:") + 15);
-        var loot_array = loot_text.split(/,\s|\sand\s/g);
-        var render_array = journal.render_data.text.split(/<a\s/);
+        let loot_text = desc.substring(desc.indexOf("following loot:") + 15);
+        let loot_array = loot_text.split(/,\s|\sand\s/g);
+        // let render_array = desc.split(/<a\s/);
 
-        message.loot = [];
-        for (var i = 0, len = loot_array.length; i < len; i++) {
-
-            message.loot[i] = {};
-            message.loot[i].amount = loot_array[i].match(/(\d+,?)+/i)[0];
-            message.loot[i].amount = message.loot[i].amount.replace(/,/, '');
-            message.loot[i].name = loot_array[i].replace(/^(.*?);">/, '');
-            message.loot[i].name = message.loot[i].name.replace(/<\/a>/, '');
-
-            if (message.loot[i].amount > 1) {
-                message.loot[i].name = message.loot[i].name.replace(/s$/i, '');
-            }
+        message.loot = loot_array.map(function (item_text) {
+            let loot_obj = {
+                amount: item_text.match(/(\d+,?)+/i)[0].replace(/,/i, '')
+            };
+            let name = item_text.replace(/^(.*?);">/, '').replace(/<\/a>/, '');
+            loot_obj.name = (loot_obj.amount > 1) ? name.replace(/s$/i, '') : name;
 
             // Exceptions
-            switch (message.loot[i].name) {
+            switch (loot_obj.name) {
                 case 'Rift-torn Roots':
                 case 'Rift Cherries':
                 case 'Savoury Vegetables':
@@ -1323,42 +1319,43 @@
                 case 'Crumbly Rift Salts':
                 case 'Brain Bits':
                 case 'Plumepearl Herbs':
-                    message.loot[i].name = message.loot[i].name.replace(/s$/i, '');
+                    loot_obj.name = loot_obj.name.replace(/s$/i, '');
                     break;
                 case 'Plates of Fealty':
-                    message.loot[i].name = 'Plate of Fealty';
+                    loot_obj.name = 'Plate of Fealty';
                     break;
                 case 'Cavern Fungi':
-                    message.loot[i].name = 'Cavern Fungus';
+                    loot_obj.name = 'Cavern Fungus';
                     break;
                 case 'Ancient Hourglas':
-                    message.loot[i].name = 'Ancient Hourglass';
+                    loot_obj.name = 'Ancient Hourglass';
                     break;
                 case 'Shards of Glass':
-                    message.loot[i].name = 'Shard of Glass';
+                    loot_obj.name = 'Shard of Glass';
                     break;
                 case 'Bolts of Cloth':
-                    message.loot[i].name = 'Bolt of Cloth';
+                    loot_obj.name = 'Bolt of Cloth';
                     break;
                 case "Flamin' Spice Leaves":
                 case "Hot Spice Leaves":
                 case "Medium Spice Leaves":
                 case "Mild Spice Leaves":
-                    message.loot[i].name = message.loot[i].name.replace(' Leaves', ' Leaf');
+                    loot_obj.name = loot_obj.name.replace(' Leaves', ' Leaf');
                     break;
             }
 
-            if (message.loot[i].name.indexOf(' of Gold ') !== -1) {
-                var loot_name = message.loot[i].name;
-                var loot_amount = loot_name.substring(loot_name.indexOf('(')+1, loot_name.indexOf(')'));
-                message.loot[i].amount = message.loot[i].amount * parseInt(loot_amount.replace(/,/, ''));
-                message.loot[i].name = 'Gold';
+            if (loot_obj.name.indexOf(' of Gold ') !== -1) {
+                let loot_name = loot_obj.name;
+                let loot_amount = loot_name.substring(loot_name.indexOf('(') + 1, loot_name.indexOf(')'));
+                loot_obj.amount = loot_obj.amount * parseInt(loot_amount.replace(/,/, ''));
+                loot_obj.name = 'Gold';
             }
-            // var render_item = render_array.filter(function (render) {
-                // return render.indexOf(loot_item[1]) !== -1
-            // })[0];
-            message.loot[i].lucky = loot_array[i].indexOf('class="lucky"') !== -1
-        }
+            // let render_item = render_array.filter(render => render.indexOf(loot_item[1]) !== -1)[0];
+            // loot_obj.lucky = render_item && render_item.indexOf('class="lucky"') !== -1;
+            loot_obj.lucky = item_text.indexOf('class="lucky"') !== -1;
+
+            return loot_obj;
+        });
 
         return message;
     }
@@ -1370,11 +1367,11 @@
             // type: item.type,
             quantity: item.quantity
             // class: item.class || item.classification
-        }
+        };
     }
 
     function pad(num, size) {
-        var s = String(num);
+        let s = String(num);
         while (s.length < (size || 2)) {s = "0" + s;}
         return s;
     }
