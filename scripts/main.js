@@ -122,7 +122,7 @@
     function getMapMice(data, uncaught_only) {
         let mice = [];
         $.each(data.treasure_map.groups, (key, group) => {
-            if (uncaught_only && group.name.indexOf('Uncaught mice ') === -1) {
+            if (uncaught_only && !group.name.includes('Uncaught mice ')) {
                 return;
             }
 
@@ -168,13 +168,13 @@
     // /* Response body */ xhr.responseText
     // /* Request body */ ajaxOptions.data
 
-        if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/turns/activeturn.php") !== -1) {
+        if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/turns/activeturn.php")) {
             recordHunt(xhr);
-        } else if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/users/relichunter.php") !== -1) {
+        } else if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/relichunter.php")) {
             recordMap(xhr);
-        } else if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/users/useconvertible.php") !== -1) {
+        } else if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
             recordConvertible(xhr);
-        } else if (ajaxOptions.url.indexOf("mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges") !== -1) {
+        } else if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges")) {
             getSettings(settings => recordCrowns(settings, xhr, ajaxOptions.url));
         }
     });
@@ -272,11 +272,10 @@
             }
 
             if (journal_render_data.css_class.search(/(catchfailure|catchsuccess|attractionfailure)/) !== -1 &&
-                journal_render_data.css_class.indexOf('active') !== -1) {
+                journal_render_data.css_class.includes('active')) {
                 journal = response.journal_markup[i];
                 continue;
             }
-
         }
 
         if (!response.active_turn || !response.success || !response.journal_markup) {
@@ -445,19 +444,19 @@
 
         // Caught / Attracted / Mouse
         let outcome = journal.render_data.text;
-        if (journal.render_data.css_class.indexOf('catchsuccess') !== -1) {
+        if (journal.render_data.css_class.includes('catchsuccess')) {
             message.caught = 1;
             message.attracted = 1;
             message.mouse = outcome.replace(/^(.*?)\">/, '');
             message.mouse = message.mouse.replace(/\<\/a\>.*/i, '');
             message.mouse = message.mouse.replace(/\ mouse$/i, '');
-        } else if (journal.render_data.css_class.indexOf('catchfailure') !== -1) {
+        } else if (journal.render_data.css_class.includes('catchfailure')) {
             message.caught = 0;
             message.attracted = 1;
             message.mouse = outcome.replace(/^(.*?)\">/, '');
             message.mouse = message.mouse.replace(/\<\/a\>.*/i, '');
             message.mouse = message.mouse.replace(/\ mouse$/i, '');
-        } else if (journal.render_data.css_class.indexOf('attractionfailure') !== -1) {
+        } else if (journal.render_data.css_class.includes('attractionfailure')) {
             message.caught = 0;
             message.attracted = 0;
         }
@@ -998,7 +997,7 @@
 
         // If the hunter exited a zone, it gets complicated to determine what was the previous zone,
         // so just skip recording any zone
-        if (response.journal_markup.some(markup => markup.render_data.text.indexOf("I finished exploring") !== -1)) {
+        if (response.journal_markup.some(markup => markup.render_data.text.includes("I finished exploring"))) {
             return "";
         }
 
@@ -1289,7 +1288,7 @@
 
     function getLoot(message, response, journal) {
         let desc = journal.render_data.text;
-        if (desc.indexOf("following loot:") === -1) {
+        if (!desc.includes("following loot:")) {
             return message;
         }
         let loot_text = desc.substring(desc.indexOf("following loot:") + 15);
@@ -1338,15 +1337,15 @@
                     break;
             }
 
-            if (loot_obj.name.indexOf(' of Gold ') !== -1) {
+            if (loot_obj.name.includes(' of Gold ')) {
                 let loot_name = loot_obj.name;
                 let loot_amount = loot_name.substring(loot_name.indexOf('(') + 1, loot_name.indexOf(')'));
                 loot_obj.amount = loot_obj.amount * parseInt(loot_amount.replace(/,/, ''));
                 loot_obj.name = 'Gold';
             }
-            // let render_item = render_array.filter(render => render.indexOf(loot_item[1]) !== -1)[0];
-            // loot_obj.lucky = render_item && render_item.indexOf('class="lucky"') !== -1;
-            loot_obj.lucky = item_text.indexOf('class="lucky"') !== -1;
+            // let render_item = render_array.filter(render => render.includes(loot_item[1]))[0];
+            // loot_obj.lucky = render_item && render_item.includes('class="lucky"');
+            loot_obj.lucky = item_text.includes('class="lucky"');
 
             return loot_obj;
         });

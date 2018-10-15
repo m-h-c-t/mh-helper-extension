@@ -102,7 +102,7 @@ function icon_timer_updateBadge(tab_id, settings) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#222'});
                 response = response.replace(':', '');
                 let response_int = parseInt(response);
-                if (response.indexOf('min') !== -1) {
+                if (response.includes('min')) {
                     response = response_int + 'm';
                 } else {
                     if (response_int > 59) {

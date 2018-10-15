@@ -51,7 +51,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         "ryonn",
         "horn",
         "tsitu_loader"
-    ].indexOf(request.jacks_link) !== -1) {
+    ].includes(request.jacks_link)) {
         let file_link = '';
         if (request.jacks_link == "tsitu_loader") {
             file_link = chrome.extension.getURL('third_party/tsitus/bookmarkletloader');
