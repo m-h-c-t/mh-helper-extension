@@ -703,7 +703,7 @@
                 message = getFieryWarpathStage(message, response, journal);
                 break;
             case "Forbidden Grove":
-                message = getFobiddenGroveStage(message, response, journal);
+                message = getForbiddenGroveStage(message, response, journal);
                 break;
             case "Fort Rox":
                 message = getFortRoxStage(message, response, journal);
@@ -725,6 +725,9 @@
                 break;
             case "Living Garden":
                 message = getLivingGardenStage(message, response, journal);
+                break;
+            case "Mousoleum":
+                message = getMousoleumStage(message, response, journal);
                 break;
             case "Moussu Picchu":
                 message = getMoussuPicchuStage(message, response, journal);
@@ -753,6 +756,17 @@
             case "Mysterious Anomaly":
                 message = getMysteriousAnomalyStage(message, response, journal);
                 break;
+        }
+
+        return message;
+    }
+
+    function getMousoleumStage(message, response, journal) {
+        var quest = response.user.quests.QuestMousoleum;
+        if (quest.has_wall) {
+            message.stage = "Has Wall";
+        } else {
+            message.stage = "No Wall";
         }
 
         return message;
@@ -1212,7 +1226,7 @@
         return message;
     }
 
-    function getFobiddenGroveStage(message, response, journal) {
+    function getForbiddenGroveStage(message, response, journal) {
         if (message.mouse === "Realm Ripper") {
             message.stage = "Closed";
         } else {
