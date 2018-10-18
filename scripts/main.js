@@ -450,7 +450,7 @@
         message.attraction_bonus = Math.round(response.user.trap_attraction_bonus*100);
 
         // Caught / Attracted / Mouse
-        var outcome = journal.publish_data.attachment.name;
+        var outcome = journal.render_data.text;
         if (outcome.indexOf('I caught') !== -1) {
             message.caught = 1;
             message.attracted = 1;
