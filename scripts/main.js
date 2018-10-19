@@ -437,23 +437,26 @@
         message.total_luck = user_resp.trap_luck;
         message.attraction_bonus = Math.round(user_resp.trap_attraction_bonus * 100);
 
-        // Caught / Attracted / Mouse
-        let outcome = journal.render_data.text;
-        if (journal.render_data.css_class.includes('catchsuccess')) {
-            message.caught = 1;
-            message.attracted = 1;
-            message.mouse = outcome.replace(/^(.*?)\">/, '');
-            message.mouse = message.mouse.replace(/\<\/a\>.*/i, '');
-            message.mouse = message.mouse.replace(/\ mouse$/i, '');
-        } else if (journal.render_data.css_class.includes('catchfailure')) {
-            message.caught = 0;
-            message.attracted = 1;
-            message.mouse = outcome.replace(/^(.*?)\">/, '');
-            message.mouse = message.mouse.replace(/\<\/a\>.*/i, '');
-            message.mouse = message.mouse.replace(/\ mouse$/i, '');
-        } else if (journal.render_data.css_class.includes('attractionfailure')) {
+        // Caught / Attracted / FTA'd
+        let journal_css = journal.render_data.css_class;
+        if (journal_css.includes('attractionfailure')) {
             message.caught = 0;
             message.attracted = 0;
+        } else if (journal_css.includes('catch')) {
+            message.attracted = 1;
+            if (journal_css.includes('catchsuccess')) {
+                message.caught = 1;
+            } else if (journal_css.includes('catchfailure')) {
+                message.caught = 0;
+            } else {
+                console.log('MH Helper: Unknown "catch" journal css: ' + journal_css);
+                return message;
+            }
+            // Remove HTML tags and other text around the mouse name.
+            message.mouse = journal.render_data.text
+                .replace(/^.*?\">/, '')      // Remove text through the first closing angle bracket >.
+                .replace(/\<\/a\>.*/i, '')   // Remove text after the first <a href>'s closing tag </a>
+                .replace(/\ mouse$/i, '');   // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
 
         return message;
