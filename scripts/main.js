@@ -389,7 +389,6 @@
     }
 
     function getMainHuntInfo(message, response, journal) {
-
         // Entry ID
         message.entry_id = journal.render_data.entry_id;
 
@@ -397,53 +396,46 @@
         message.entry_timestamp = journal.render_data.entry_timestamp;
 
         // Location
-        if (!response.user.location) {
+        let user_resp = response.user;
+        if (!user_resp.location) {
             console.log('MH Helper: Missing Location');
             return "";
         }
-        message.location = {};
-        message.location.name = response.user.location;
-        message.location.id = response.user.environment_id;
+        message.location = {
+            name: user_resp.location,
+            id: user_resp.environment_id
+        };
 
-        // Trap
-        if (!response.user.weapon_name) {
-            console.log('MH Helper: Missing Trap');
+        // Setup components
+        let components = [
+            { prop: 'weapon', message_field: 'trap', required: true, replacer: /\ trap/i },
+            { prop: 'base', message_field: 'base', required: true, replacer: /\ base/i },
+            { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm/i },
+            { prop: 'bait', message_field: 'cheese', required: false, replacer: /\ cheese/i }
+        ];
+        // Some components are required.
+        let missing = components.filter(component => component.required === true && !user_resp.hasOwnProperty(component.prop + '_name'));
+        if (missing.length) {
+            console.log('MH Helper: Missing required setup component:' + missing.map(c => c.message_field).join(', '));
             return "";
         }
-        message.trap = {};
-        message.trap.name = response.user.weapon_name.replace(/\ trap/i, '');
-        message.trap.id = response.user.weapon_item_id;
-
-        // Base
-        if (!response.user.base_name) {
-            console.log('MH Helper: Missing Base');
-            return "";
-        }
-        message.base = {};
-        message.base.name = response.user.base_name.replace(/\ base/i, '');
-        message.base.id = response.user.base_item_id;
-
-        // Charm
-        message.charm = {};
-        if (response.user.trinket_name) {
-            message.charm.name = response.user.trinket_name.replace(/\ charm/i, '');
-            message.charm.id = response.user.trinket_item_id;
-        }
-
-        // Cheese
-        message.cheese = {};
-        if (response.user.bait_name) {
-            message.cheese.name = response.user.bait_name.replace(/\ cheese/i, '');
-            message.cheese.id = response.user.bait_item_id;
-        }
+        // Assign component values to the message.
+        components.forEach(component => {
+            let prop_name = component.prop + '_name';
+            let prop_id = component.prop + '_item_id';
+            message[component.message_field] = {
+                id: user_resp[prop_id],
+                name: user_resp[prop_name].replace(component.replacer, '')
+            };
+        });
 
         // Shield (true / false)
-        message.shield = response.user.has_shield;
+        message.shield = user_resp.has_shield;
 
         // Total Power, Luck, Attraction
-        message.total_power = response.user.trap_power;
-        message.total_luck = response.user.trap_luck;
-        message.attraction_bonus = Math.round(response.user.trap_attraction_bonus*100);
+        message.total_power = user_resp.trap_power;
+        message.total_luck = user_resp.trap_luck;
+        message.attraction_bonus = Math.round(user_resp.trap_attraction_bonus * 100);
 
         // Caught / Attracted / Mouse
         let outcome = journal.render_data.text;
