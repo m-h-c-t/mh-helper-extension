@@ -252,14 +252,14 @@
         var journal = {};
 
         for (var i=0; i < response.journal_markup.length; i++) {
-            var journal_entry = response.journal_markup[i].render_data;
-            if (journal_entry.css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
+            let journal_render_data = response.journal_markup[i].render_data;
+            if (journal_render_data.css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
                 var rh_message = {}; // to not set rh flag on regular
                                             // hunt payload
                 rh_message.extension_version = formatVersion(mhhh_version);
                 rh_message.user_id = response.user.user_id;
-                rh_message.rh_environment = journal_entry.environment;
-                rh_message.entry_timestamp = journal_entry.entry_timestamp;
+                rh_message.rh_environment = journal_render_data.environment;
+                rh_message.entry_timestamp = journal_render_data.entry_timestamp;
                 // Check if rh was caught after reset
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0,0,0,0)/1000)) {
                     sendMessageToServer(db_url, rh_message);
@@ -271,20 +271,16 @@
                 continue;
             }
 
-            if (journal_entry.css_class.search(/linked|passive|misc/) !== -1) {
+            if (journal_render_data.css_class.search(/linked|passive|misc/) !== -1) {
                 continue;
             }
 
-            if (journal_entry.css_class.search(/(catchfailure|catchsuccess|attractionfailure)/) !== -1 &&
-                journal_entry.css_class.indexOf('active') !== -1) {
+            if (journal_render_data.css_class.search(/(catchfailure|catchsuccess|attractionfailure)/) !== -1 &&
+                journal_render_data.css_class.indexOf('active') !== -1) {
                 journal = response.journal_markup[i];
                 continue;
             }
 
-            if (response.journal_markup[i].publish_data.attachment.href.indexOf('journal_Active') !== -1) {
-                journal = response.journal_markup[i];
-                continue;
-            }
         }
 
         if (!response.active_turn || !response.success || !response.journal_markup) {
@@ -450,18 +446,20 @@
         message.attraction_bonus = Math.round(response.user.trap_attraction_bonus*100);
 
         // Caught / Attracted / Mouse
-        var outcome = journal.publish_data.attachment.name;
-        if (outcome.indexOf('I caught') !== -1) {
+        var outcome = journal.render_data.text;
+        if (journal.render_data.css_class.indexOf('catchsuccess') !== -1) {
             message.caught = 1;
             message.attracted = 1;
-            message.mouse = outcome.replace(/i\ caught\ an?\ /i, '');
-            message.mouse = message.mouse.replace(/(\ mouse)?\!/i, '');
-        } else if (outcome.indexOf('I failed to catch') !== -1) {
+            message.mouse = outcome.replace(/^(.*?)\">/, '');
+            message.mouse = message.mouse.replace(/\<\/a\>.*/i, '');
+            message.mouse = message.mouse.replace(/(\ mouse)?/i, '');
+        } else if (journal.render_data.css_class.indexOf('catchfailure') !== -1) {
             message.caught = 0;
             message.attracted = 1;
-            message.mouse = outcome.replace(/i\ failed\ to\ catch\ an?\ /i, '');
-            message.mouse = message.mouse.replace(/(\ mouse)?\./i, '');
-        } else if (outcome.indexOf('I failed to attract') !== -1) {
+            message.mouse = outcome.replace(/^(.*?)\">/, '');
+            message.mouse = message.mouse.replace(/\<\/a\>.*/i, '');
+            message.mouse = message.mouse.replace(/(\ mouse)?/i, '');
+        } else if (journal.render_data.css_class.indexOf('attractionfailure') !== -1) {
             message.caught = 0;
             message.attracted = 0;
         }
@@ -989,10 +987,10 @@
 
         for (var i=0; i < response.journal_markup.length; i++) {
             var journal_entry = response.journal_markup[i].render_data;
-            if (journal_entry.text.match("I finished exploring")) {
+            if (journal_entry.text.indexOf("I finished exploring") !== -1) {
                 // Hunter exited a zone, and it gets complicated to determine what was previous zone,
                 // so just skip recording any zone
-                return false
+                return false;
             }
         }
 
@@ -1281,20 +1279,21 @@
     }
 
     function getLoot(message, response, journal) {
-        if (journal.publish_data.attachment.description.indexOf("following loot:") === -1) {
+        if (journal.render_data.text.indexOf("following loot:") === -1) {
             return message;
         }
-        var loot_text = journal.publish_data.attachment.description.substring(journal.publish_data.attachment.description.indexOf("following loot:") + 15);
+        var loot_text = journal.render_data.text.substring(journal.render_data.text.indexOf("following loot:") + 15);
         var loot_array = loot_text.split(/,\s|\sand\s/g);
         var render_array = journal.render_data.text.split(/<a\s/);
 
         message.loot = [];
         for (var i = 0, len = loot_array.length; i < len; i++) {
-            var loot_item = loot_array[i].split(/\s(.+)/);
 
             message.loot[i] = {};
-            message.loot[i].amount = loot_item[0].replace(/,/i, '');
-            message.loot[i].name = loot_item[1];
+            message.loot[i].amount = loot_array[i].match(/(\d+,?)+/i)[0];
+            message.loot[i].amount = message.loot[i].amount.replace(/,/, '');
+            message.loot[i].name = loot_array[i].replace(/^(.*?);">/, '');
+            message.loot[i].name = message.loot[i].name.replace(/<\/a>/, '');
 
             if (message.loot[i].amount > 1) {
                 message.loot[i].name = message.loot[i].name.replace(/s$/i, '');
@@ -1341,10 +1340,10 @@
                 message.loot[i].amount = message.loot[i].amount * parseInt(loot_amount.replace(/,/, ''));
                 message.loot[i].name = 'Gold';
             }
-            var render_item = render_array.filter(function (render) {
-                return render.indexOf(loot_item[1]) !== -1
-            })[0];
-            message.loot[i].lucky = render_item && render_item.indexOf('class="lucky"') !== -1
+            // var render_item = render_array.filter(function (render) {
+                // return render.indexOf(loot_item[1]) !== -1
+            // })[0];
+            message.loot[i].lucky = loot_array[i].indexOf('class="lucky"') !== -1
         }
 
         return message;
