@@ -1302,7 +1302,7 @@
 
         message.loot = loot_array.map(item_text => {
             let loot_obj = {
-                amount: item_text.match(/(\d+,?)+/i)[0].replace(/,/i, '')
+                amount: item_text.match(/(\d+,?)+/i)[0].replace(/,/g, '')
             };
             let name = item_text.replace(/^(.*?);">/, '').replace(/<\/a>/, '');
             loot_obj.name = (loot_obj.amount > 1) ? name.replace(/s$/i, '') : name;
@@ -1345,7 +1345,7 @@
             if (loot_obj.name.includes(' of Gold ')) {
                 let loot_name = loot_obj.name;
                 let loot_amount = loot_name.substring(loot_name.indexOf('(') + 1, loot_name.indexOf(')'));
-                loot_obj.amount = loot_obj.amount * parseInt(loot_amount.replace(/,/, ''));
+                loot_obj.amount = loot_obj.amount * parseInt(loot_amount.replace(/,/g, ''), 10);
                 loot_obj.name = 'Gold';
             }
             // let render_item = render_array.filter(render => render.includes(loot_item[1]))[0];
