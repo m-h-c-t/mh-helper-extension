@@ -452,13 +452,13 @@
             message.attracted = 1;
             message.mouse = outcome.replace(/^(.*?)\">/, '');
             message.mouse = message.mouse.replace(/\<\/a\>.*/i, '');
-            message.mouse = message.mouse.replace(/(\ mouse)?/i, '');
+            message.mouse = message.mouse.replace(/(\ mouse$)+/i, '');
         } else if (journal.render_data.css_class.indexOf('catchfailure') !== -1) {
             message.caught = 0;
             message.attracted = 1;
             message.mouse = outcome.replace(/^(.*?)\">/, '');
             message.mouse = message.mouse.replace(/\<\/a\>.*/i, '');
-            message.mouse = message.mouse.replace(/(\ mouse)?/i, '');
+            message.mouse = message.mouse.replace(/(\ mouse$)+/i, '');
         } else if (journal.render_data.css_class.indexOf('attractionfailure') !== -1) {
             message.caught = 0;
             message.attracted = 0;
