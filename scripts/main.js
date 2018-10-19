@@ -204,14 +204,15 @@
             return;
         }
 
-        let payload = {};
-        payload.user = url_params[1];
-        payload.timestamp = Math.round(Date.now() / 1000);
-        payload.mice = [];
+        let payload = {
+            user: url_params[1],
+            timestamp: Math.round(Date.now() / 1000),
+            mice: [],
 
-        payload.bronze = 0;
-        payload.silver = 0;
-        payload.gold = 0;
+            bronze: 0,
+            silver: 0,
+            gold: 0
+        };
 
         $.each(xhr.responseJSON.badges, (key, value) => payload[value.type] = value.mice.length);
 
@@ -223,18 +224,20 @@
 
     // Record map mice
     function recordMap(xhr) {
-        if (!xhr.responseJSON.treasure_map || !xhr.responseJSON.treasure_map.board_id || !xhr.responseJSON.treasure_map.name) {
+        let resp = xhr.responseJSON;
+        if (!resp.treasure_map || !resp.treasure_map.board_id || !resp.treasure_map.name) {
             return;
         }
-        let map = {};
-        map.mice = getMapMice(xhr.responseJSON);
-        map.id = xhr.responseJSON.treasure_map.board_id;
-        map.name = xhr.responseJSON.treasure_map.name.replace(/\ treasure/i, '');
-        map.name = map.name.replace(/rare\ /i, '');
-        map.name = map.name.replace(/common\ /i, '');
-        map.name = map.name.replace(/Ardouous/i, 'Arduous');
-        map.user_id = xhr.responseJSON.user.user_id;
-        map.entry_timestamp = Math.round(Date.now()/1000);
+        let map = {
+            mice: getMapMice(resp),
+            id: resp.treasure_map.board_id,
+            name: resp.treasure_map.name.replace(/\ treasure/i, '')
+                .replace(/rare\ /i, '')
+                .replace(/common\ /i, '')
+                .replace(/Ardouous/i, 'Arduous'),
+            user_id: resp.user.user_id,
+            entry_timestamp: Math.round(Date.now() / 1000)
+        };
 
         map.extension_version = formatVersion(mhhh_version);
 
@@ -339,7 +342,7 @@
             return;
         }
 
-        let message = xhr.responseJSON.messageData.message_model.messages[0];
+        let message = response.messageData.message_model.messages[0];
         if (!message.isNew || !message.messageData || !message.messageData.items || message.messageData.items.length === 0) {
             return;
         }
@@ -511,10 +514,10 @@
                 if (message.mouse === "Absolute Acolyte" && message.caught === 1) {
                     message.stage = "Acolyte";
                     if (message.hunt_details) {
-                        message.hunt_details.has_hourglass = true
-                        message.hunt_details.chamber_status = 'closed'
-                        message.hunt_details.obelisk_charged = true
-                        message.hunt_details.acolyte_sand_drained = true
+                        message.hunt_details.has_hourglass = true;
+                        message.hunt_details.chamber_status = 'closed';
+                        message.hunt_details.obelisk_charged = true;
+                        message.hunt_details.acolyte_sand_drained = true;
                     }
                 }
                 break;
@@ -663,8 +666,8 @@
         // Check by Mouse
         // when M400 is caught, the cheese is disarmed, but it's only attracted to Fusion Fondue
         if (message.caught && message.mouse === 'M400') {
-            message.cheese.name = 'Fusion Fondue'
-            message.cheese.id = 1386
+            message.cheese.name = 'Fusion Fondue';
+            message.cheese.id = 1386;
         }
 
         return message;
@@ -757,7 +760,7 @@
     }
 
     function getMousoleumStage(message, response, journal) {
-        var quest = response.user.quests.QuestMousoleum;
+        let quest = response.user.quests.QuestMousoleum;
         if (quest.has_wall) {
             message.stage = "Has Wall";
         } else {
@@ -821,17 +824,20 @@
     }
 
     function getMoussuPicchuStage(message, response, journal) {
-        message.stage = {};
-        message.stage.rain = 'Rain ' + response.user.quests.QuestMoussuPicchu.elements.rain.level;
-        message.stage.wind = 'Wind ' + response.user.quests.QuestMoussuPicchu.elements.wind.level;
+        let elements = response.user.quests.QuestMoussuPicchu.elements;
+        message.stage = {
+            rain: 'Rain ' + elements.rain.level,
+            wind: 'Wind ' + elements.wind.level
+        };
 
         return message;
     }
 
     function getWhiskerWoodsRiftStage(message, response, journal) {
-        let clearing = response.user.quests.QuestRiftWhiskerWoods.zones.clearing.level;
-        let tree = response.user.quests.QuestRiftWhiskerWoods.zones.tree.level;
-        let lagoon = response.user.quests.QuestRiftWhiskerWoods.zones.lagoon.level;
+        let zones = response.user.quests.QuestRiftWhiskerWoods.zones;
+        let clearing = zones.clearing.level;
+        let tree = zones.tree.level;
+        let lagoon = zones.lagoon.level;
 
         message.stage = {};
         if (0 <= clearing && clearing <= 24) {
@@ -875,18 +881,19 @@
     }
 
     function getFieryWarpathStage(message, response, journal) {
-        if (response.user.viewing_atts.desert_warpath.wave === 'portal') {
+        let wave = response.user.viewing_atts.desert_warpath.wave;
+        if (wave === 'portal') {
             message.stage = 'Portal';
         } else {
-            message.stage = "Wave " + response.user.viewing_atts.desert_warpath.wave;
+            message.stage = "Wave " + wave;
         }
 
         return message;
     }
 
     function getBalacksCoveStage(message, response, journal) {
-        if (response.user.viewing_atts.tide) {
-            let tide = response.user.viewing_atts.tide;
+        let tide = response.user.viewing_atts.tide;
+        if (tide) {
             message.stage = tide.substr(0, 1).toUpperCase() + tide.substr(1);
             if (message.stage === "Med") {
                 message.stage = "Medium";
@@ -915,8 +922,8 @@
     }
 
     function getLivingGardenStage(message, response, journal) {
-        if (response.user.quests.QuestLivingGarden.minigame.bucket_state) {
-            let bucket = response.user.quests.QuestLivingGarden.minigame.bucket_state;
+        let bucket = response.user.quests.QuestLivingGarden.minigame.bucket_state;
+        if (bucket) {
             if (bucket === "filling") {
                 message.stage = "Not Pouring";
             } else {
@@ -954,12 +961,13 @@
     }
 
     function getIcebergStage(message, response, journal) {
-        if (!response.user.quests.QuestIceberg.current_phase) {
+        let phase = response.user.quests.QuestIceberg.current_phase;
+        if (!phase) {
             return "";
         }
 
-        // switch on current depth after checking what phase has for generals
-        switch (response.user.quests.QuestIceberg.current_phase) {
+        // Switch on current depth after checking what phase has for generals
+        switch (phase) {
             case "Treacherous Tunnels":
                 message.stage = "0-300ft";
                 break;
@@ -1020,7 +1028,8 @@
     }
 
     function getZokorStage(message, response, journal) {
-        if (!response.user.quests.QuestAncientCity.district_name) {
+        let zokor_district = response.user.quests.QuestAncientCity.district_name;
+        if (!zokor_district) {
             return message;
         }
 
@@ -1040,8 +1049,6 @@
             "Manaforge":  "Tech 80+",
             "Sanctum":    "Fealty 80+"
         };
-
-        let zokor_district = response.user.quests.QuestAncientCity.district_name;
 
         $.each(zokor_stages, (key, value) => {
             let search_string = new RegExp(key, "i");
@@ -1261,14 +1268,16 @@
     }
 
     function getBristleWoodsRiftHuntDetails(message, response, journal) {
-        message.hunt_details = {}
-        let quest = response.user.quests.QuestRiftBristleWoods
+        let quest = response.user.quests.QuestRiftBristleWoods;
+        message.hunt_details = {
+            has_hourglass: quest.items.rift_hourglass_stat_item.quantity >= 1,
+            chamber_status: quest.chamber_status
+        };
         for (let key in quest.status_effects) {
-            if (!quest.status_effects.hasOwnProperty(key)) continue
-            message.hunt_details['effect_' + key] = quest.status_effects[key] === 'active'
+            if (!quest.status_effects.hasOwnProperty(key)) continue;
+            message.hunt_details['effect_' + key] = quest.status_effects[key] === 'active';
         }
-        message.hunt_details.has_hourglass = quest.items.rift_hourglass_stat_item.quantity >= 1;
-        message.hunt_details.chamber_status = quest.chamber_status;
+
         if (quest.chamber_name === 'Acolyte') {
             message.hunt_details.obelisk_charged = quest.obelisk_percent === 100;
             message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0;
@@ -1278,10 +1287,11 @@
     }
 
     function getMysteriousAnomalyHuntDetails(message, response, journal) {
-        message.hunt_details = {};
         let quest = response.user.quests.QuestBirthday2018;
-        message.hunt_details.boss_status = quest.boss_status;
-        message.hunt_details.furthest_year = quest.furthest_year;
+        message.hunt_details = {
+            boss_status: quest.boss_status,
+            furthest_year: quest.furthest_year
+        };
 
         return message;
     }
