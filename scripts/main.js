@@ -225,12 +225,12 @@
     // Record map mice
     function recordMap(xhr) {
         let resp = xhr.responseJSON;
-        if (!resp.treasure_map || !resp.treasure_map.board_id || !resp.treasure_map.name) {
+        if (!resp.treasure_map || !resp.treasure_map.map_id || !resp.treasure_map.name) {
             return;
         }
         let map = {
             mice: getMapMice(resp),
-            id: resp.treasure_map.board_id,
+            id: resp.treasure_map.map_id,
             name: resp.treasure_map.name.replace(/\ treasure/i, '')
                 .replace(/rare\ /i, '')
                 .replace(/common\ /i, '')
