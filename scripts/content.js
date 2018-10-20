@@ -23,7 +23,7 @@ document.body.appendChild(mhhh_flash_message_div);
 // Inject main script
 var s = document.createElement('script');
 s.src = chrome.extension.getURL('scripts/main.js');
-s.onload = function() {
+s.onload = function () {
     this.remove();
 };
 (document.head || document.documentElement).appendChild(s);
@@ -32,7 +32,7 @@ s.onload = function() {
 chrome.storage.sync.get({
     tsitu_loader_on: false,
     tsitu_loader_offset: 80
-}, function (items) {
+}, items => {
     if (items.tsitu_loader_on) {
         // There must be a better way of doing this
         window.postMessage({
@@ -44,15 +44,15 @@ chrome.storage.sync.get({
 });
 
 // Handles messages from popup
-chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if ([
         "userhistory",
         "mhmh",
         "ryonn",
         "horn",
         "tsitu_loader"
-    ].indexOf(request.jacks_link) !== -1) {
-        var file_link = '';
+    ].includes(request.jacks_link)) {
+        let file_link = '';
         if (request.jacks_link == "tsitu_loader") {
             file_link = chrome.extension.getURL('third_party/tsitus/bookmarkletloader');
         }
@@ -62,7 +62,7 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
         if (window.getComputedStyle(document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0]).display === 'block') {
             sendResponse("King's Reward");
         } else {
-            var hunt_timer = document.getElementById('huntTimer');
+            let hunt_timer = document.getElementById('huntTimer');
             if (hunt_timer != null) { // Must have this check for Firefox
                 sendResponse(hunt_timer.textContent);
             }
@@ -73,10 +73,11 @@ chrome.runtime.onMessage.addListener( function(request, sender, sendResponse) {
 });
 
 window.addEventListener("message",
-    function(event) {
+    event => {
         if (event.data.jacks_settings_request !== 1) {
             return;
         }
+        // Can we use `mhhhOptions` from options.js here (or that save / restore function)?
         chrome.storage.sync.get({
             success_messages: true, // defaults
             error_messages: true, // defaults
@@ -87,15 +88,8 @@ window.addEventListener("message",
             horn_alert: false, // defaults
             horn_webalert: false, // defaults
             track_crowns: true // defaults
-        }, function (items) {
-            event.source.postMessage(
-                {
-                    jacks_settings_response: 1,
-                    settings: items
-                },
-                event.origin);
-        });
-
+        },
+        items => event.source.postMessage({ jacks_settings_response: 1, settings: items }, event.origin));
     },
     false
 );
