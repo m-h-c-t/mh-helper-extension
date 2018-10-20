@@ -102,7 +102,7 @@
                         alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
                         return;
                     }
-                    if (data.treasure_map.map_class != 'treasure') {
+                    if (!('treasure', 'event').includes(data.treasure_map.map_class)) {
                         new_window.close();
                         alert('This seems to be a new kind of map and not yet supported.');
                         return;
