@@ -411,7 +411,7 @@
             { prop: 'weapon', message_field: 'trap', required: true, replacer: /\ trap/i },
             { prop: 'base', message_field: 'base', required: true, replacer: /\ base/i },
             { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm/i },
-            { prop: 'bait', message_field: 'cheese', required: false, replacer: /\ cheese/i }
+            { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese/i }
         ];
         // Some components are required.
         let missing = components.filter(component => component.required === true && !user_resp.hasOwnProperty(component.prop + '_name'));
@@ -423,6 +423,7 @@
         components.forEach(component => {
             let prop_name = component.prop + '_name';
             let prop_id = component.prop + '_item_id';
+            if (!user_resp[prop_name]) return;
             message[component.message_field] = {
                 id: user_resp[prop_id],
                 name: user_resp[prop_name].replace(component.replacer, '')
