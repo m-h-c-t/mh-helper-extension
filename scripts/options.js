@@ -25,6 +25,12 @@ function save_options() {
         document.getElementById('save_status').style.visibility = "visible";
         setTimeout(() => document.getElementById('save_status').style.visibility = "hidden", 2000);
     });
+
+    // Reload MH pages to take effect now
+    chrome.tabs.query(
+        {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
+        tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
+    );
 }
 
 // Restores select box and checkbox state using the preferences
