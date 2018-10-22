@@ -69,6 +69,7 @@
 
     function openBookmarklet(url) {
         let xhr = new XMLHttpRequest();
+        xhr.overrideMimeType("application/javascript");
         xhr.open("GET", url, true);
         xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
