@@ -93,7 +93,6 @@
             return;
         }
 
-        let new_window = window.open('');
         let payload = {
             map_id: user.quests.QuestRelicHunter.default_map_id,
             action: "map_info",
@@ -104,16 +103,15 @@
             .done(data => {
                 if (data) {
                     if (!data.treasure_map || data.treasure_map.view_state === "noMap") {
-                        new_window.close();
                         alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
                         return;
                     }
-                    if (!('treasure', 'event').includes(data.treasure_map.map_class)) {
-                        new_window.close();
+                    if (!['treasure', 'event'].includes(data.treasure_map.map_class)) {
                         alert('This seems to be a new kind of map and not yet supported.');
                         return;
                     }
                     let mice = getMapMice(data, true);
+                    let new_window = window.open('');
                     new_window.location = encodeURI(url + mice.join(glue));
                 }
             });
@@ -1350,8 +1348,7 @@
                 loot_obj.amount = loot_obj.amount * parseInt(loot_amount.replace(/,/g, ''), 10);
                 loot_obj.name = 'Gold';
             }
-            // let render_item = render_array.filter(render => render.includes(loot_item[1]))[0];
-            // loot_obj.lucky = render_item && render_item.includes('class="lucky"');
+
             loot_obj.lucky = item_text.includes('class="lucky"');
 
             return loot_obj;
