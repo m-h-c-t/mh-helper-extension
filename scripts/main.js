@@ -19,7 +19,7 @@
         if (ev.data.jacks_message === null) {
             return;
         }
-        if (typeof user.user_id === 'undefined') {
+        if (typeof user.user_id === 'undefined' && ev.data.indexOf('plugin_ready') > -1) {
             alert('Please make sure you are logged in into MH.');
             return;
         }
