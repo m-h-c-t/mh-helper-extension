@@ -1,3 +1,7 @@
+(function () {
+if (document.body == null) {
+    return;
+}
 // Pass version # from manifest to injected script
 var extension_version = document.createElement("input");
 extension_version.setAttribute("id", "mhhh_version");
@@ -67,7 +71,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (hunt_timer != null) { // Must have this check for Firefox
                 sendResponse(hunt_timer.textContent);
             } else {
-                sendResponse("King's Reward");
+                sendResponse("Logged out");
             }
         }
     } else if (request.jacks_link === "show_horn_alert") {
@@ -96,3 +100,5 @@ window.addEventListener("message",
     },
     false
 );
+
+}());

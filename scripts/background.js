@@ -91,7 +91,7 @@ function icon_timer_updateBadge(tab_id, settings) {
                 chrome.tabs.sendMessage(tab_id, {jacks_link: "show_horn_alert"});
             }
             notification_done = true;
-        } else if (response === "King's Reward") {
+        } else if (["King's Reward", "Logged out"].includes(response)) {
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#F00'});
                 chrome.browserAction.setBadgeText({text: 'RRRRRRR'});
