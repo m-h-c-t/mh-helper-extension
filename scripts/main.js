@@ -797,21 +797,17 @@
     }
 
     function getFestiveCometStage(message, response, journal) {
-        let quest = response.user.quests.QuestWinterHunt2017;
+        let quest = response.user.quests.QuestWinterHunt2018;
         if (!quest) {
             return message;
         }
 
         if (quest.comet.at_boss === true) {
-            message.stage = "Core";
-            return message;
-        }
-
-        message.stage = quest.comet.phase_name;
-        for (let key in quest.comet.phases) {
-            if (quest.comet.phases[key].status === "active") {
-                message.stage += ' (' + key.replace(/phase_/, '') + ')';
-                break;
+            message.stage = "Boss";
+        } else {
+            message.stage = quest.decorations.current_decoration;
+            if (message.stage == "none") {
+                message.stage = "No Decor";
             }
         }
 
