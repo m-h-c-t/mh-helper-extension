@@ -59,7 +59,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Forwards messages from popup to main script
         window.postMessage({ "jacks_message": request.jacks_link, "file_link": file_link }, "*");
     } else if (request.jacks_link === "huntTimer") {
-        if (window.getComputedStyle(document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0]).display === 'block') {
+        if (document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0] != null &&
+            window.getComputedStyle(document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0]).display === 'block') {
             sendResponse("King's Reward");
         } else {
             let hunt_timer = document.getElementById('huntTimer');
