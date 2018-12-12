@@ -16,9 +16,10 @@
 
     // Listening for calls
     window.addEventListener('message', ev => {
-        if (ev.data.jacks_message === null) {
+        if (ev.data.jacks_message == null) {
             return;
         }
+
         if (typeof user.user_id === 'undefined') {
             alert('Please make sure you are logged in into MH.');
             return;

@@ -66,6 +66,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             let hunt_timer = document.getElementById('huntTimer');
             if (hunt_timer != null) { // Must have this check for Firefox
                 sendResponse(hunt_timer.textContent);
+            } else {
+                sendResponse("King's Reward");
             }
         }
     } else if (request.jacks_link === "show_horn_alert") {
