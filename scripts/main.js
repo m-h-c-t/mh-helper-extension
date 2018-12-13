@@ -531,8 +531,8 @@
                 }
                 break;
             case "Festive Comet":
-                if (message.mouse === "Naughty Nougat") {
-                    message.stage = "Core";
+                if (message.mouse === "Iceberg Sculptor") {
+                    message.stage = "Boss";
                 }
                 break;
             case "Fiery Warpath":
@@ -809,9 +809,18 @@
             message.stage = quest.decorations.current_decoration;
             if (message.stage == "none") {
                 message.stage = "No Decor";
+            } else {
+                message.stage = message.stage.replace(/_festive_decoration_stat_item/i, '');
+                message.stage = message.stage.replace(/_/i, ' ');
+
+                // Capitalize every word in the stage
+                message.stage = message.stage.split(" ");
+                for (let i = 0, x = message.stage.length; i < x; i++) {
+                    message.stage[i] = message.stage[i][0].toUpperCase() + message.stage[i].substr(1);
+                }
+                message.stage = message.stage.join(" ");
             }
         }
-
         return message;
     }
 
