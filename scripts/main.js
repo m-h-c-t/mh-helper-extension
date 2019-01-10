@@ -274,7 +274,7 @@
                 continue;
             }
 
-            if (journal_render_data.css_class.search(/(catchfailure|catchsuccess|attractionfailure)/) !== -1 &&
+            if (journal_render_data.css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1 &&
                 journal_render_data.css_class.includes('active')) {
                 journal = response.journal_markup[i];
                 continue;
@@ -1335,6 +1335,7 @@
                     loot_obj.name = 'Ancient Hourglass';
                     break;
                 case 'Shards of Glass':
+                case 'Shards of Glas':
                     loot_obj.name = 'Shard of Glass';
                     break;
                 case 'Bolts of Cloth':
@@ -1344,7 +1345,11 @@
                 case "Hot Spice Leaves":
                 case "Medium Spice Leaves":
                 case "Mild Spice Leaves":
-                    loot_obj.name = loot_obj.name.replace(' Leaves', ' Leaf');
+                case "Flamin' Spice Leave":
+                case "Hot Spice Leave":
+                case "Medium Spice Leave":
+                case "Mild Spice Leave":
+                    loot_obj.name = loot_obj.name.replace(/ Leaves?/, ' Leaf');
                     break;
             }
 
