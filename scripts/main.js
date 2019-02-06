@@ -245,15 +245,36 @@
        sendMessageToServer(map_intake_url, map);
     }
 
-    // Record successful hunt
+    /**
+     * Record a successful hunt.
+     * @param {XMLHttpRequest} xhr
+     */
     function recordHunt(xhr) {
+        /** @typedef {Object} JournalEntry
+         * @property {Object} publish_data
+         * @property {Object} wall_actions
+         * @property {Object} render_data
+         * @property {string} render_data.css_class The CSS classes associated with this journal entry
+         * @property {string} render_data.entry_date A time string (e.g. "10:44 am")
+         * @property {number} render_data.entry_id An integer associated with this journal entry
+         * @property {number} render_data.entry_timestamp Seconds since UTC epoch
+         * @property {string} render_data.environment Where the journal entry was logged as occurring, e.g. "Queso River"
+         * @property {string} render_data.text The journal entry text, which may contain HTML.
+         * @property {string} render_data.mouse_type The HG mouse identifier, if a mouse was encountered, or the boolean `false`
+         * @property {Object} render_data.social_link_data
+         */
+        /** @type {{active_turn: boolean, success: number, inventory: Object <string, {}>, user: MouseHunter, journal_markup: JournalEntry[]}} */
         let response = JSON.parse(xhr.responseText);
         let journal = {};
 
         for (let i = 0; i < response.journal_markup.length; i++) {
             let journal_render_data = response.journal_markup[i].render_data;
-            if (journal_render_data.css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
-                let rh_message = { // to not set rh flag on regular hunt payload
+            let css = journal_render_data.css_class;
+
+            // Check for bonus journals, like Relic Hunter or prize mice.
+            if (['relicHunter_catch', 'relicHunter_failure'].some(type => css.includes(type))) {
+                // Construct own message, to avoid modifying the chosen active hunt.
+                let rh_message = {
                     extension_version: formatVersion(mhhh_version),
                     user_id: response.user.user_id,
                     rh_environment: journal_render_data.environment,
@@ -266,16 +287,20 @@
                 continue;
             }
 
+            // If we've already found the associated active hunt, do not choose another.
+            // (Continue checking for additional bonus journals though.)
             if (Object.keys(journal).length !== 0) {
                 continue;
             }
 
-            if (journal_render_data.css_class.search(/linked|passive|misc/) !== -1) {
+            // Only record player-initiated hunts.
+            if (['linked', 'passive', 'misc'].some(huntType => css.includes(huntType))) {
                 continue;
             }
 
-            if (journal_render_data.css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1 &&
-                journal_render_data.css_class.includes('active')) {
+            // Active journal entries must be catch- or attraction-related.
+            if (css.includes('active') && ['catchfailure', 'catchsuccess', 'stuck_snowball_catch', 'attractionfailure'
+                    ].some(huntType => css.includes(huntType))) {
                 journal = response.journal_markup[i];
                 continue;
             }
