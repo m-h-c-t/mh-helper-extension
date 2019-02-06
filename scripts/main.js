@@ -131,10 +131,21 @@
         return mice;
     }
 
+    /**
+     * Wrapper for flash message pop-up, when settings need to be acquired.
+     * @param {"error"|"warning"|"success"} type The type of message being displayed, which controls the color and duration.
+     * @param {string} message The message content to display.
+     */
     function showFlashMessage(type, message) {
         getSettings(settings => displayFlashMessage(settings, type, message));
     }
 
+    /**
+     * Display the given message in an appropriately colored pop-up flash message.
+     * @param {Object <string, any>} settings The user's extension settings
+     * @param {"error"|"warning"|"success"} type The type of message being displayed, which controls the color and duration.
+     * @param {string} message The message content to display.
+     */
     function displayFlashMessage(settings, type, message) {
         if ((type === 'success' && !settings.success_messages)
             || (type !== 'success' && !settings.error_messages)) {
@@ -194,7 +205,13 @@
         window.postMessage({jacks_settings_request: 1}, "*");
     }
 
-    // Record Crowns
+    /**
+     * Record Crowns. The xhr response data also includes a `mouseData` hash keyed by each mouse's
+     * HG identifier and with the associated relevant value properties of `name` and `num_catches`
+     * @param {Object <string, any>} settings The user's extension settings.
+     * @param {jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
+     * @param {string} url The URL that invoked the function call.
+     */
     function recordCrowns(settings, xhr, url) {
         if (!settings.track_crowns) {
             return;
@@ -207,19 +224,28 @@
         let payload = {
             user: url_params[1],
             timestamp: Math.round(Date.now() / 1000),
-            mice: [],
 
             bronze: 0,
             silver: 0,
             gold: 0
         };
 
-        $.each(xhr.responseJSON.badges, (key, value) => payload[value.type] = value.mice.length);
+        /** Rather than compute counts ourselves, use the `badge` display data.
+         * badges: [
+         *     {
+         *         badge: (500 | 100    | 10),
+         *         type: (gold | silver | bronze),
+         *         mice: string[]
+         *     },
+         *     ...
+         * ]
+         */
+        $.each(xhr.responseJSON.badges, (index, obj) => payload[obj.type] = obj.mice.length);
 
         $.post('https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
                 {'main': JSON.stringify(payload)})
-            .done(() => showFlashMessage("success", "Thank you for submitting crowns!"))
-            .fail(() => showFlashMessage("error", "There was a problem submitting crowns."));
+            .done(() => displayFlashMessage(settings, "success", "Thank you for submitting crowns!"))
+            .fail(() => displayFlashMessage(settings, "error", "There was a problem submitting crowns."));
     }
 
     // Record map mice
@@ -241,7 +267,7 @@
 
         map.extension_version = formatVersion(mhhh_version);
 
-        // Send to database
+       // Send to database
        sendMessageToServer(map_intake_url, map);
     }
 
