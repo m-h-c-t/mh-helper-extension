@@ -157,7 +157,7 @@
         }
 
         mhhh_flash_message_div.fadeIn(() => {
-            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500);
+            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500 + 1000 * (type !== "success"));
         });
     }
 
@@ -217,9 +217,9 @@
         $.each(xhr.responseJSON.badges, (key, value) => payload[value.type] = value.mice.length);
 
         $.post('https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
-            {'main': JSON.stringify(payload)});
-
-        showFlashMessage("success", "Thank you for submitting crowns!");
+                {'main': JSON.stringify(payload)})
+            .done(() => showFlashMessage("success", "Thank you for submitting crowns!"))
+            .fail(() => showFlashMessage("error", "There was a problem submitting crowns."));
     }
 
     // Record map mice
