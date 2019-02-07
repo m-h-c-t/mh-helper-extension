@@ -1275,14 +1275,38 @@
                 break;
         }
 
-        // Include any bonus luck from an active lantern in the hunt details. (Doubled/tripled loot is added
-        // via a bonus journal entry, thus we do not need to inspect quest.lantern_status for double or triple.)
+        // Set a value for LNY bonus luck, if it can be determined.
         let quest = response.user.quests.QuestLunarNewYear2019;
-        if (quest && quest.is_lantern_active) {
-            // Avoid overwriting any existing details.
-            if (!message.hunt_details)
+        if (quest) {
+            // Avoid overwriting any existing hunt details.
+            if (!message.hunt_details) {
                 message.hunt_details = {};
-            message.hunt_details.lny_luck = parseInt(quest.luck, 10);
+            }
+            message.hunt_details.is_lny_hunt = true;
+
+            let lny_luck = null;
+            if (quest.lantern_status.includes("noLantern")) {
+                // The user has no pig lantern yet, so they cannot have bonus LNY luck.
+                lny_luck = 0;
+            } else if (quest.is_lantern_active) {
+                // Each hunt with the active lantern increases the height by 1, and thus possibly the luck.
+                lny_luck = getLNYLuck(quest);
+            } else {
+                // The lantern is inactive. This may be an explicit choice, or because the user ran out of equipped candles.
+                let yellow = quest.items.lny_unlit_lantern_stat_item;
+                let red = quest.items.lny_unlit_lantern_2018_stat_item;
+                // If the user has both candles, we know the lantern state was an explicit
+                // choice. (Candles given via height rewards must be explicitly claimed.)
+                if (parseInt(yellow.quantity, 10) > 0 && parseInt(red.quantity, 10) > 0) {
+                    lny_luck = 0;
+                } else if (yellow.status === "active" || red.status === "active") {
+                    lny_luck = getLNYLuck(quest);
+                }
+            }
+
+            if (lny_luck !== null) {
+                message.hunt_details.lny_luck = lny_luck;
+            }
         }
 
         return message;
@@ -1410,6 +1434,30 @@
         version = Number(version);
         return version;
     }
+
+    /**
+     * Compute the bonus luck applied to a hunt based on the given post-hunt lantern height.
+     * @param {Object <string, any>} lnyQuest A LNY quest object with the property `lantern_height`
+     * @returns {number} The amount of luck associated with the given lantern height, or `null` if uncertain.
+     */
+    function getLNYLuck(lnyQuest) {
+        let postHuntHeight = parseInt(lnyQuest.lantern_height, 10);
+        let luck = 0;
+        if (postHuntHeight === 500) {
+            if (quest.rows.row_49 === "claimed") {
+                luck = 50;
+            } else {
+                // We cannot be sure if this was the hunt from 499 -> 500, or a hunt
+                // at ht = 500 where the final reward just hasn't been claimed.
+                luck = null;
+            }
+        } else if (postHuntHeight > 0) {
+            let preHuntHeight = postHuntHeight - 1;
+            luck = Math.min(50, Math.floor(preHuntHeight / 10));
+        }
+        return luck;
+    }
+
 
     window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
 }());
