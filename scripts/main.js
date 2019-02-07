@@ -1441,10 +1441,12 @@
      * @returns {number} The amount of luck associated with the given lantern height, or `null` if uncertain.
      */
     function getLNYLuck(lnyQuest) {
+        // TODO: does `lit_lantern` or `lantern_height` keep increasing? Or are they capped at 500?
+        // If one is uncapped, this function can become much simpler.
         let postHuntHeight = parseInt(lnyQuest.lantern_height, 10);
         let luck = 0;
         if (postHuntHeight === 500) {
-            if (quest.rows.row_49 === "claimed") {
+            if (lnyQuest.rows.row_49 === "claimed" || parseInt(lnyQuest.lit_lantern, 10) > 500) {
                 luck = 50;
             } else {
                 // We cannot be sure if this was the hunt from 499 -> 500, or a hunt
