@@ -668,8 +668,12 @@
 
         // 2019 LNY costumed mice check
         let quest = response.user.quests.QuestLunarNewYear2019;
-        if (quest != null && quest.has_stockpile == "found" && !quest.mice.costumed_pig.includes("caught")) {
-            return "";
+        if (quest && quest.has_stockpile == "found" && !quest.mice.costumed_pig.includes("caught")) {
+            // Ignore event cheese hunts as the player is attracting the Costumed mice in a specific order.
+            let dumpling = quest.items.lunar_new_year_2017_cheese;
+            let nian = quest.items.lunar_new_year_2018_cheese;
+            if (dumpling.status === "active" || nian.status === "active")
+                return "";
         }
 
         return message;
@@ -1269,6 +1273,16 @@
             case "Mysterious Anomaly":
                 message = getMysteriousAnomalyHuntDetails(message, response, journal);
                 break;
+        }
+
+        // Include any bonus luck from an active lantern in the hunt details. (Doubled/tripled loot is added
+        // via a bonus journal entry, thus we do not need to inspect quest.lantern_status for double or triple.)
+        let quest = response.user.quests.QuestLunarNewYear2019;
+        if (quest && quest.is_lantern_active) {
+            // Avoid overwriting any existing details.
+            if (!message.hunt_details)
+                message.hunt_details = {};
+            message.hunt_details.lny_luck = parseInt(quest.luck, 10);
         }
 
         return message;
