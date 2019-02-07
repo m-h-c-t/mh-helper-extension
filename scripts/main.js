@@ -666,6 +666,12 @@
             message.cheese.id = 1386;
         }
 
+        // 2019 LNY costumed mice check
+        let quest = response.user.quests.QuestLunarNewYear2019;
+        if (quest != null && quest.has_stockpile == "found" && !quest.mice.costumed_pig.includes("caught")) {
+            return "";
+        }
+
         return message;
     }
 
