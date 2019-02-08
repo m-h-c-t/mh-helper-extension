@@ -1292,15 +1292,15 @@
                 // Each hunt with the active lantern increases the height by 1, and thus possibly the luck.
                 lny_luck = getLNYLuck(quest);
             } else {
-                // The lantern is inactive. This may be an explicit choice, or because the user ran out of equipped candles.
                 let yellow = quest.items.lny_unlit_lantern_stat_item;
                 let red = quest.items.lny_unlit_lantern_2018_stat_item;
-                // If the user has both candles, we know the lantern state was an explicit
-                // choice. (Candles given via height rewards must be explicitly claimed.)
+                // If the user has both candles, we know the lantern state was an explicit choice.
+                // (Candles given via height rewards must be explicitly claimed.)
                 if (parseInt(yellow.quantity, 10) > 0 && parseInt(red.quantity, 10) > 0) {
                     lny_luck = 0;
-                } else if (yellow.status === "active" || red.status === "active") {
-                    lny_luck = getLNYLuck(quest);
+                } else {
+                    // Without knowledge of the pre-hunt state, we cannot determine if this hunt
+                    // consumed the final candle of a either type, and *that* is why the lantern is disabled.
                 }
             }
 
