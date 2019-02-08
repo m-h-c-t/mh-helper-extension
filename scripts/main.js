@@ -674,7 +674,7 @@
 
         // 2019 LNY costumed mice check
         let quest = response.user.quests.QuestLunarNewYear2019;
-        if (quest && quest.has_stockpile == "found" && !quest.mice.costumed_pig.includes("caught")) {
+        if (quest && quest.has_stockpile === "found" && !quest.mice.costumed_pig.includes("caught")) {
             // Ignore event cheese hunts as the player is attracting the Costumed mice in a specific order.
             let dumpling = quest.items.lunar_new_year_2017_cheese;
             let nian = quest.items.lunar_new_year_2018_cheese;
@@ -823,7 +823,7 @@
             message.stage = "Boss";
         } else {
             message.stage = quest.decorations.current_decoration;
-            if (message.stage == "none") {
+            if (message.stage === "none") {
                 message.stage = "No Decor";
             } else {
                 message.stage = message.stage.replace(/_festive_decoration_stat_item/i, '');
