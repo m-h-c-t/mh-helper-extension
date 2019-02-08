@@ -270,7 +270,13 @@
                 continue;
             }
 
+            // Skip non-hunt entries like bonus loot from items, Enerchi/Unstable charms, Wild Tonic, etc.
             if (journal_render_data.css_class.search(/linked|passive|misc/) !== -1) {
+                // Any notification about the LNY lantern becoming disabled due to running out of candles
+                // precedes the entry for the active hunt. It is not necessarily the first (i===0) entry.
+                if (journal_render_data.text.includes("I will no longer benefit from the magic of the Pig Lunar Lantern!")) {
+                    response.lanternBecameDisabled = true;
+                }
                 continue;
             }
 
@@ -1288,7 +1294,7 @@
             if (quest.lantern_status.includes("noLantern")) {
                 // The user has no pig lantern yet, so they cannot have bonus LNY luck.
                 lny_luck = 0;
-            } else if (quest.is_lantern_active) {
+            } else if (quest.is_lantern_active || response.lanternBecameDisabled) {
                 // Each hunt with the active lantern increases the height by 1, and thus possibly the luck.
                 lny_luck = getLNYLuck(quest);
             } else {
@@ -1299,8 +1305,11 @@
                 if (parseInt(yellow.quantity, 10) > 0 && parseInt(red.quantity, 10) > 0) {
                     lny_luck = 0;
                 } else {
-                    // Without knowledge of the pre-hunt state, we cannot determine if this hunt
-                    // consumed the final candle of a either type, and *that* is why the lantern is disabled.
+                    // Without explicit knowledge of the pre-hunt state, we cannot determine if
+                    // this hunt consumed the final equipped candle of either type. If that had
+                    // indeed occurred, and the "lantern disabled" journal entry was not detected
+                    // properly, assigning `lny_luck = 0` would be an error here. Since there is
+                    // some possible doubt re: the state of lny_luck, leave it unset.
                 }
             }
 
