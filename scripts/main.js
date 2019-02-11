@@ -1464,7 +1464,19 @@
                 luck = null;
             }
         } else if (postHuntHeight > 0) {
-            let preHuntHeight = postHuntHeight - 1;
+            let yellow = lnyQuest.items.lny_unlit_lantern_stat_item;
+            let red = lnyQuest.items.lny_unlit_lantern_2018_stat_item;
+            // Default to an underestimate of the pre-hunt height.
+            let increase = 2;
+            if (yellow.status === "active") {
+                increase = 1;
+            } else if (red.status === "active") {
+                increase = 2;
+            } else if (parseInt(red.quantity, 10) > 0) {
+                // Neither is active, but we still have red candles --> ran out of yellows.
+                increase = 1;
+            }
+            let preHuntHeight = Math.max(0, postHuntHeight - increase);
             luck = Math.min(50, Math.floor(preHuntHeight / 10));
         }
         return luck;
