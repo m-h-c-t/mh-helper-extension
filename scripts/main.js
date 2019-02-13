@@ -1289,6 +1289,7 @@
                 message.hunt_details = {};
             }
             message.hunt_details.is_lny_hunt = true;
+            message.hunt_details.is_valentines_hunt = quest.event_status === "valentines";
 
             let lny_luck = null;
             if (quest.lantern_status.includes("noLantern")) {
