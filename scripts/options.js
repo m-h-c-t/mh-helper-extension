@@ -44,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.sync.get(defaultOptions, items => {
         mhhhOptions.forEach(prop => document.getElementById(prop.name)[prop.p] = items[prop.name]);
         // Display the numeric values of the range-input sliders.
-        document.getElementById('horn_volume_output')['value'] = items['horn_volume'];
-        document.getElementById('tsitu_loader_offset_output')['value'] = items['tsitu_loader_offset'];
+        document.getElementById('horn_volume_output').value = items.horn_volume;
+        document.getElementById('tsitu_loader_offset_output').value = items.tsitu_loader_offset;
     });
 });
 
