@@ -58,9 +58,11 @@ function check_settings(callback) {
 function icon_timer_find_open_mh_tab(settings) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
     found_tabs => {
-        if (found_tabs.length > 0) {
-            icon_timer_updateBadge(found_tabs[0].id, settings);
+        let mhTab = found_tabs[0];
+        if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
+            icon_timer_updateBadge(mhTab.id, settings);
         } else {
+            // The tab was either not found, or is still loading.
             icon_timer_updateBadge(false, settings);
         }
     });
