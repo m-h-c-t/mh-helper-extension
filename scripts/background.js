@@ -138,12 +138,16 @@ function icon_timer_updateBadge(tab_id, settings) {
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#222'});
                 response = response.replace(':', '');
-                let response_int = parseInt(response);
+                let response_int = parseInt(response, 10);
                 if (response.includes('min')) {
                     response = response_int + 'm';
                 } else {
                     if (response_int > 59) {
-                        response = Math.floor(response_int / 100) + 'm';
+                        let minutes = Math.floor(response_int / 100);
+                        let seconds = response_int % 100;
+                        if (seconds > 30)
+                            ++minutes;
+                        response = minutes + 'm';
                     } else {
                         response = response_int + 's';
                     }
