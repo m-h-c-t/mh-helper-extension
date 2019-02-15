@@ -54,14 +54,14 @@ document.addEventListener('DOMContentLoaded', restore_options);
 // Click "Save" -> store the extension's settings in chrome.storage.
 document.getElementById('save').addEventListener('click', save_options);
 
-// Display the slider value in it's <output> div
-function update_range_output() {
-    document.querySelector("output[for=" + this.id).value = this.value;
-}
-
 // Echo the value of range controls to an output div.
 document.querySelectorAll('.input_range').forEach(
-    item => item.addEventListener('input', update_range_output)
+    item => item.addEventListener('input', () => {
+        let output = document.querySelector("output[for=" + item.id);
+        if (output) {
+            output.value = item.value;
+        }
+    })
 );
 
 // Play desired audio for the horn sound alert button.
