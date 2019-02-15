@@ -54,6 +54,14 @@
             return;
         }
 
+        if (ev.data.jacks_message === 'crownSubmissionStatus') {
+            if (ev.data.submitted) {
+                displayFlashMessage(ev.data.settings, "success", "Thank you for submitting crowns!");
+            } else {
+                displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend");
+            }
+        }
+
     }, false);
 
     function sound_horn() {
@@ -242,10 +250,13 @@
          */
         $.each(xhr.responseJSON.badges, (index, obj) => payload[obj.type] = obj.mice.length);
 
-        $.post('https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
-                {'main': JSON.stringify(payload)})
-            .done(() => displayFlashMessage(settings, "success", "Thank you for submitting crowns!"))
-            .fail(() => displayFlashMessage(settings, "error", "There was a problem submitting crowns."));
+        // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
+        // submission by submitting from the content script.
+        window.postMessage({
+            "jacks_crown_update": 1,
+            "crowns": payload,
+            "settings": settings
+        }, window.origin);
     }
 
     // Record map mice
@@ -332,7 +343,8 @@
         message = getHuntDetails(message, response, journal);
         message = fixTransitionMice(message, response, journal); // Must be after get stage and get details to fix bad stages
 
-        if (!message || !message.location || !message.location.name || !message.cheese.name) {
+        if (!message || !message.location || !message.location.name
+                || !message.cheese || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(2)");
             return;
         }
