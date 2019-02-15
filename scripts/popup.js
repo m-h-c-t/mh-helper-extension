@@ -24,12 +24,13 @@ function findOpenMHTab(button_pressed, callback, silent) {
  */
 function sendMessageToScript(tab_id, button_pressed) {
     // Switch to MH tab if needed.
-    if (button_pressed === "horn") {
+    let needsMHPageActive = ['horn', 'tsitu_loader', 'mhmh', 'ryonn'];
+    if (needsMHPageActive.includes(button_pressed)) {
         chrome.tabs.update(tab_id, {'active': true});
     }
 
     // Send message to content script
-    chrome.tabs.sendMessage(tab_id, {jacks_link: button_pressed}, response => {});
+    chrome.tabs.sendMessage(tab_id, {jacks_link: button_pressed});
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -42,10 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Send specific clicks to the content script for handling and/or additional forwarding.
     ['mhmh', 'userhistory', 'ryonn', 'horn', 'tsitu_loader'].forEach(id => {
         let button_element = document.getElementById(id);
-        if (!button_element) {
-            return;
+        if (button_element) {
+            button_element.addEventListener('click', () => findOpenMHTab(id, sendMessageToScript));
         }
-        button_element.addEventListener('click', () => findOpenMHTab(id, sendMessageToScript));
     });
 });
 
