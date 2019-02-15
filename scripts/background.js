@@ -82,8 +82,16 @@ function icon_timer_updateBadge(tab_id, settings) {
     }
 
     // Query the MH page and update the badge based on the response.
-    chrome.tabs.sendMessage(tab_id, {jacks_link: "huntTimer"}, response => {
-        if (typeof response === 'undefined') {
+    let request = {jacks_link: "huntTimer"};
+    chrome.tabs.sendMessage(tab_id, request, response => {
+        if (chrome.runtime.lastError || !response) {
+            let logInfo = {tab_id, request, response, time: new Date(),
+                message: "Error occurred while updating badge icon timer."
+            };
+            if (chrome.runtime.lastError) {
+                logInfo.message += "\n" + chrome.runtime.lastError.message;
+            }
+            console.log(logInfo);
             chrome.browserAction.setBadgeText({text: ''});
             notification_done = true;
         } else if (response === "Ready!") {
