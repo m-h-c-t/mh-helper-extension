@@ -35,8 +35,8 @@ document.getElementById('save').addEventListener('click', () => {
     );
 });
 
-// Retrieve the last-saved settings (or defaults if unset).
-function restore_options() {
+// After loading the options page, display the last-saved settings (or defaults if unset).
+document.addEventListener('DOMContentLoaded', () => {
     // Use default values where available.
     let defaultOptions = mhhhOptions
       .filter(prop => prop.default !== undefined)
@@ -47,9 +47,7 @@ function restore_options() {
         document.getElementById('horn_volume_output')['value'] = items['horn_volume'];
         document.getElementById('tsitu_loader_offset_output')['value'] = items['tsitu_loader_offset'];
     });
-}
-// After loading the options page, display stored values.
-document.addEventListener('DOMContentLoaded', restore_options);
+});
 
 // Echo the value of range controls to an output div.
 document.querySelectorAll('.input_range').forEach(
