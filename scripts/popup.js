@@ -1,3 +1,10 @@
+// JS script available only within the pop-up html pages (popup.html & popup2.html)
+/**
+ * Query the open tabs and locate the MH tabs. Passes the first result to the callback, along with the invoking button.
+ * @param {string} button_pressed the HTML id of the pressed button, to be forwarded to callback
+ * @param {Function} callback A function that expects the MH page's tab ID and possibly the button that invoked the call
+ * @param {boolean} [silent] if true, errors will not be displayed to the user.
+ */
 function findOpenMHTab(button_pressed, callback, silent) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, tabs => {
         if (tabs.length > 0) {
@@ -9,8 +16,14 @@ function findOpenMHTab(button_pressed, callback, silent) {
     });
 }
 
+/**
+ * Forward the pressed button to the content script on the identified tab.
+ * (Horn button clicks also activate the MH page.)
+ * @param {number} tab_id The tab ID of the MH page
+ * @param {string} button_pressed The HTML element ID of the button that was clicked
+ */
 function sendMessageToScript(tab_id, button_pressed) {
-    // Switch to mh tab
+    // Switch to MH tab if needed.
     if (button_pressed === "horn") {
         chrome.tabs.update(tab_id, {'active': true});
     }
@@ -26,14 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     findOpenMHTab("huntTimer", updateHuntTimer, true);
 
-    let buttons = [
-        'mhmh',
-        'userhistory',
-        'ryonn',
-        'horn',
-        'tsitu_loader'
-    ];
-    buttons.forEach(id => {
+    // Send specific clicks to the content script for handling and/or additional forwarding.
+    ['mhmh', 'userhistory', 'ryonn', 'horn', 'tsitu_loader'].forEach(id => {
         let button_element = document.getElementById(id);
         if (!button_element) {
             return;
@@ -42,6 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+/**
+ * Query the MH page and display the time remaining until the next horn.
+ * @param {number} tab The tab id of the MH page
+ * @param {HTMLElement} [huntTimerField] The div element corresponding to the horn countdown timer.
+ */
 function updateHuntTimerField(tab, huntTimerField) {
     chrome.tabs.sendMessage(tab, {jacks_link: "huntTimer"}, response => {
         if (huntTimerField === null) {
@@ -55,12 +67,21 @@ function updateHuntTimerField(tab, huntTimerField) {
     });
 }
 
+/**
+ * Schedule updates of the hunt timer field every second
+ * @param {number} tab The tab id of the MH page
+ * @param {string} button_pressed The element ID of the associated button that invoked this call
+ */
 function updateHuntTimer(tab, button_pressed) {
     let huntTimerField = document.getElementById("huntTimer");
     updateHuntTimerField(tab, huntTimerField); // Fire now
     setInterval(updateHuntTimerField, 1000, tab, huntTimerField); // Continue firing each second
 }
 
+/**
+ * Display the associated message
+ * @param {string} message The message to display
+ */
 function displayErrorPopup(message) {
     let error_popup = document.getElementById('error_popup');
     error_popup.innerText = message;
