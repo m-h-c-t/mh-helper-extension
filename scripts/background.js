@@ -1,10 +1,16 @@
+/** Persistent background script.
+ * MAYBE: Migrate to non-persistent, event-based background script.
+ * info: https://developer.chrome.com/extensions/background_migration
+ */
+
 // Update check
 chrome.runtime.onUpdateAvailable.addListener(details => {
     console.log("MHHH: updating to version " + details.version);
     chrome.runtime.reload();
 });
 
-var time_interval = 7200 * 1000; // seconds * 1000
+// TODO: Do we need to request the update at all? Chrome auto-checks automatically.
+const time_interval = 7200 * 1000; // seconds * 1000
 window.setInterval(() => chrome.runtime.requestUpdateCheck(status => {
         if (status == "update_available") {
             console.log("MHHH: update pending...");
@@ -16,18 +22,20 @@ window.setInterval(() => chrome.runtime.requestUpdateCheck(status => {
     }),
 time_interval);
 
-// Refreshes mh pages when new version is installed
+// Refreshes MH pages when new version is installed, to inject the latest extension code.
 chrome.runtime.onInstalled.addListener(details => chrome.tabs.query(
     {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
 
-// icon_timer, horn_sound and horn_alert
-var sound_file = chrome.extension.getURL('sounds/bell.mp3');
-var notification_done = false;
+// Schedule an update of the badge text every second, using the latest settings.
 setInterval(() => check_settings(icon_timer_find_open_mh_tab), 1000);
 
 
+/**
+ *
+ * @param {Function} callback Some callable that needs the current extension settings
+ */
 function check_settings(callback) {
     chrome.storage.sync.get({
         success_messages: true, // defaults
@@ -43,6 +51,10 @@ function check_settings(callback) {
     settings => callback(settings));
 }
 
+/**
+ * Update the badge text icon timer with info from the latest settings and current MH page.
+ * @param {Object <string, any>} settings Extension settings
+ */
 function icon_timer_find_open_mh_tab(settings) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
     found_tabs => {
@@ -55,12 +67,21 @@ function icon_timer_find_open_mh_tab(settings) {
 }
 
 // Notifications
+const default_sound = chrome.extension.getURL('sounds/bell.mp3');
+let notification_done = false;
+/**
+ * Scheduled function that sets the badge color & text based on current settings.
+ * Modifies the global `notification_done` as appropriate.
+ * @param {number|boolean} tab_id The MH tab's ID, or `false` if no MH page is open & loaded.
+ * @param {Object <string, any>} settings Extension settings
+ */
 function icon_timer_updateBadge(tab_id, settings) {
     if (tab_id === false) {
         chrome.browserAction.setBadgeText({text: ''});
         return;
     }
 
+    // Query the MH page and update the badge based on the response.
     chrome.tabs.sendMessage(tab_id, {jacks_link: "huntTimer"}, response => {
         if (typeof response === 'undefined') {
             chrome.browserAction.setBadgeText({text: ''});
@@ -70,11 +91,13 @@ function icon_timer_updateBadge(tab_id, settings) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#9b7617'});
                 chrome.browserAction.setBadgeText({text: '🎺'});
             }
+            // Play horn sound notification.
             if (settings.horn_sound && !notification_done) {
-                let myAudio = new Audio(settings.custom_sound || sound_file);
+                let myAudio = new Audio(settings.custom_sound || default_sound);
                 myAudio.volume = (settings.horn_volume / 100).toFixed(2);
                 myAudio.play();
             }
+            // Send chrome notification.
             if (settings.horn_alert && !notification_done) {
                 chrome.notifications.create(
                     "Jacks MH Horn",
@@ -86,6 +109,7 @@ function icon_timer_updateBadge(tab_id, settings) {
                     }
                 );
             }
+            // Send web alert notification.
             if (settings.horn_webalert && !notification_done) {
                 chrome.tabs.update(tab_id, {'active': true});
                 chrome.tabs.sendMessage(tab_id, {jacks_link: "show_horn_alert"});
@@ -98,6 +122,9 @@ function icon_timer_updateBadge(tab_id, settings) {
             }
             notification_done = true;
         } else {
+            // The user is logged in, has no KR, and the horn isn't ready yet. Set
+            // the badge text to the remaining time before the next horn.
+            notification_done = false;
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#222'});
                 response = response.replace(':', '');
@@ -111,12 +138,10 @@ function icon_timer_updateBadge(tab_id, settings) {
                         response = response_int + 's';
                     }
                 }
-
-                chrome.browserAction.setBadgeText({text: response});
             } else { // reset in case user turns icon_timer off
-                chrome.browserAction.setBadgeText({text: ''});
+                response = "";
             }
-            notification_done = false;
+            chrome.browserAction.setBadgeText({text: response});
         }
     });
 }
