@@ -15,8 +15,8 @@ let mhhhOptions = [
     {name: 'tsitu_loader_offset_output', p: 'value'}
 ];
 
-// Store the extension's settings in chrome.storage.
-function save_options() {
+// Click "Save" -> store the extension's settings in chrome.storage.
+document.getElementById('save').addEventListener('click', () => {
     let currentOptions = mhhhOptions
         .map(opt => ({name: opt.name, val: document.getElementById(opt.name)[opt.p]}))
         .reduce((acc, obj) => (acc[obj.name] = obj.val, acc), {});
@@ -33,7 +33,7 @@ function save_options() {
         {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
         tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
     );
-}
+});
 
 // Retrieve the last-saved settings (or defaults if unset).
 function restore_options() {
@@ -48,11 +48,8 @@ function restore_options() {
         document.getElementById('tsitu_loader_offset_output')['value'] = items['tsitu_loader_offset'];
     });
 }
-
 // After loading the options page, display stored values.
 document.addEventListener('DOMContentLoaded', restore_options);
-// Click "Save" -> store the extension's settings in chrome.storage.
-document.getElementById('save').addEventListener('click', save_options);
 
 // Echo the value of range controls to an output div.
 document.querySelectorAll('.input_range').forEach(
