@@ -59,9 +59,9 @@ document.querySelectorAll('.input_range').forEach(
     })
 );
 
-// Play desired audio for the horn sound alert button.
+// Attach audio handler for the horn sound alert button.
 // TODO: Update settings page to allow selecting a local file, rather than only choosing a remote URL.
-function play_my_sound() {
+document.querySelector("#play_sound").addEventListener('click', () => {
     let file_path = document.querySelector("#custom_sound").value.trim();
     if (!file_path) {
         file_path = chrome.extension.getURL('sounds/bell.mp3');
@@ -69,5 +69,4 @@ function play_my_sound() {
     let mySound = new Audio(file_path);
     mySound.volume = document.getElementById('horn_volume').value / 100;
     mySound.play();
-}
-document.querySelector("#play_sound").addEventListener('click', play_my_sound);
+});
