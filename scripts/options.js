@@ -1,5 +1,5 @@
-// Saves options to chrome.storage
-let mhhhOptions = [ // `let` scope to avoid adding to window while still being global.
+// JS script available only within the embedded options.html page
+let mhhhOptions = [
     {name: 'success_messages', p: 'checked', default: true},
     {name: 'error_messages', p: 'checked', default: true},
     {name: 'icon_timer', p: 'checked', default: true},
@@ -14,6 +14,8 @@ let mhhhOptions = [ // `let` scope to avoid adding to window while still being g
     {name: 'tsitu_loader_offset', p: 'value', default: 80},
     {name: 'tsitu_loader_offset_output', p: 'value'}
 ];
+
+// Store the extension's settings in chrome.storage.
 function save_options() {
     let currentOptions = mhhhOptions
         .map(opt => ({name: opt.name, val: document.getElementById(opt.name)[opt.p]}))
@@ -26,15 +28,14 @@ function save_options() {
         setTimeout(() => document.getElementById('save_status').style.visibility = "hidden", 2000);
     });
 
-    // Reload MH pages to take effect now
+    // Reload all open MH pages to apply these settings.
     chrome.tabs.query(
         {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
         tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
     );
 }
 
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
+// Retrieve the last-saved settings (or defaults if unset).
 function restore_options() {
     // Use default values where available.
     let defaultOptions = mhhhOptions
@@ -42,23 +43,29 @@ function restore_options() {
       .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
     chrome.storage.sync.get(defaultOptions, items => {
         mhhhOptions.forEach(prop => document.getElementById(prop.name)[prop.p] = items[prop.name]);
+        // Display the numeric values of the range-input sliders.
         document.getElementById('horn_volume_output')['value'] = items['horn_volume'];
         document.getElementById('tsitu_loader_offset_output')['value'] = items['tsitu_loader_offset'];
     });
 }
+
+// After loading the options page, display stored values.
 document.addEventListener('DOMContentLoaded', restore_options);
+// Click "Save" -> store the extension's settings in chrome.storage.
 document.getElementById('save').addEventListener('click', save_options);
 
-// Volume
+// Display the slider value in it's <output> div
 function update_range_output() {
     document.querySelector("output[for=" + this.id).value = this.value;
 }
 
+// Echo the value of range controls to an output div.
 document.querySelectorAll('.input_range').forEach(
     item => item.addEventListener('input', update_range_output)
 );
 
-// Play sound -- TODO: find a way to play files locally
+// Play desired audio for the horn sound alert button.
+// TODO: Update settings page to allow selecting a local file, rather than only choosing a remote URL.
 function play_my_sound() {
     let file_path = document.querySelector("#custom_sound").value.trim();
     if (!file_path) {
