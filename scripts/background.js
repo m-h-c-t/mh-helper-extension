@@ -23,7 +23,7 @@ window.setInterval(() => chrome.runtime.requestUpdateCheck(status => {
 time_interval);
 
 // Refreshes MH pages when new version is installed, to inject the latest extension code.
-chrome.runtime.onInstalled.addListener(details => chrome.tabs.query(
+chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
@@ -91,28 +91,28 @@ function icon_timer_updateBadge(tab_id, settings) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#9b7617'});
                 chrome.browserAction.setBadgeText({text: '🎺'});
             }
-            // Play horn sound notification.
-            if (settings.horn_sound && !notification_done) {
-                let myAudio = new Audio(settings.custom_sound || default_sound);
-                myAudio.volume = (settings.horn_volume / 100).toFixed(2);
-                myAudio.play();
-            }
-            // Send chrome notification.
-            if (settings.horn_alert && !notification_done) {
-                chrome.notifications.create(
-                    "Jacks MH Horn",
-                    {
-                        type: "basic",
-                        iconUrl: "images/icon128.png",
-                        title: "Jack's MH Tools",
-                        message: "MouseHunt Horn is ready!!! Good luck!"
-                    }
-                );
-            }
-            // Send web alert notification.
-            if (settings.horn_webalert && !notification_done) {
-                chrome.tabs.update(tab_id, {'active': true});
-                chrome.tabs.sendMessage(tab_id, {jacks_link: "show_horn_alert"});
+            // If we haven't yet sent a notification about the horn, do so if warranted.
+            if (!notification_done) {
+                if (settings.horn_sound && settings.horn_volume > 0) {
+                    let myAudio = new Audio(settings.custom_sound || default_sound);
+                    myAudio.volume = (settings.horn_volume / 100).toFixed(2);
+                    myAudio.play();
+                }
+                if (settings.horn_alert) {
+                    chrome.notifications.create(
+                        "Jacks MH Horn",
+                        {
+                            type: "basic",
+                            iconUrl: "images/icon128.png",
+                            title: "Jack's MH Tools",
+                            message: "MouseHunt Horn is ready!!! Good luck!",
+                        }
+                    );
+                }
+                if (settings.horn_webalert) {
+                    chrome.tabs.update(tab_id, {'active': true});
+                    chrome.tabs.sendMessage(tab_id, {jacks_link: "show_horn_alert"});
+                }
             }
             notification_done = true;
         } else if (["King's Reward", "Logged out"].includes(response)) {
