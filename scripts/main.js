@@ -60,6 +60,7 @@
             } else {
                 displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend");
             }
+            return;
         }
 
     }, false);
@@ -224,7 +225,9 @@
         if (!settings.track_crowns) {
             return;
         }
-        let url_params = url.match(/snuid=([0-9]+)/);
+        // Traditional snuids are digit-only, but new snuids are `hg_` plus a hash, e.g.
+        //    hg_0ffb7add4e6e14d8e1147cb3f12fe84d
+        let url_params = url.match(/snuid=(\w+)/);
         if (!url_params || !Object.keys(xhr.responseJSON.mouse_data).length) {
             return;
         }
@@ -1429,5 +1432,26 @@
         return version;
     }
 
+    // If this page is a profile page, query the crown counts (if the user tracks crowns).
+    const profile_RE = /profile.php\?snuid=(\w+)/g;
+    const matches = document.URL.match(profile_RE);
+    if (matches !== null && matches.length) {
+        getSettings(settings => {
+            if (settings.track_crowns) {
+                let profile_snuid = matches[0].replace("profile.php?snuid=", "");
+                const xhr = new XMLHttpRequest();
+                const crownUrl = "https://www.mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges&snuid=" + profile_snuid;
+                xhr.open("POST", crownUrl, true);
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState == 4) {
+                        xhr.responseJSON = JSON.parse(xhr.responseText);
+                        recordCrowns(settings, xhr, crownUrl);
+                    }
+                };
+                xhr.send("sn=Hitgrab&hg_is_ajax=1");
+            }
+        });
+    }
     window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
 }());
