@@ -1434,24 +1434,17 @@
 
     // If this page is a profile page, query the crown counts (if the user tracks crowns).
     const profile_RE = /profile.php\?snuid=(\w+)/g;
-    const matches = document.URL.match(profile_RE);
-    if (matches !== null && matches.length) {
+    const profile_RE_matches = document.URL.match(profile_RE);
+    if (profile_RE_matches !== null && profile_RE_matches.length) {
         getSettings(settings => {
             if (settings.track_crowns) {
-                let profile_snuid = matches[0].replace("profile.php?snuid=", "");
-                const xhr = new XMLHttpRequest();
+                const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
                 const crownUrl = "https://www.mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges&snuid=" + profile_snuid;
-                xhr.open("POST", crownUrl, true);
-                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                xhr.onreadystatechange = () => {
-                    if (xhr.readyState == 4) {
-                        xhr.responseJSON = JSON.parse(xhr.responseText);
-                        recordCrowns(settings, xhr, crownUrl);
-                    }
-                };
-                xhr.send("sn=Hitgrab&hg_is_ajax=1");
+                $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", () => window.console.log("Queried crowns for snuid=" + profile_snuid), "json")
+                    .fail(err => window.console.log({message: "Crown query failed for snuid=" + profile_snuid, err}));
             }
         });
     }
+
     window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
 }());

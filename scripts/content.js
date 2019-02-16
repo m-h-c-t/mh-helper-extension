@@ -142,6 +142,7 @@ function submitCrowns(crowns) {
             {
                 mode: 'cors',
                 method: 'POST',
+                credentials: "omit",
                 body: payload
             }
         );
