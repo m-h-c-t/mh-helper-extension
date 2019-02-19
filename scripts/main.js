@@ -1177,23 +1177,27 @@
     function getTrainStage(message, response, journal) {
         let quest = response.user.quests.QuestTrainStation;
         if (quest.on_train) {
-            switch (quest.phase_name) {
-                case "Supply Depot":
-                    message.stage = "1. Supply Depot";
+            switch (quest.current_phase) {
+                case "supplies":
+                    let stage = "1. Supply Depot";
+                    // If we just caught a Supply Hoarder, or have some hoarder turns remaining,
+                    // then a 'Supply Rush' must have been active for this hunt.
+                    if (message.mouse === "Supply Hoarder" ||
+                            quest.minigame && quest.minigame.supply_hoarder_turns > 0) {
+                        stage += " - Rush";
+                    } else {
+                        // It's possible the rush ended on this hunt. Need pre-hunt info, or journal
+                        // entry inspection to increase certainty.
+                        stage += " - No Rush";
+                    }
+                    message.stage = stage;
                     break;
-                case "Raider River":
+                case "boarding":
                     message.stage = "2. Raider River";
                     break;
-                case "Daredevil Canyon":
+                case "bridge_jump":
                     message.stage = "3. Daredevil Canyon";
                     break;
-            }
-
-            if (quest.minigame && quest.minigame.supply_hoarder_turns > 0) {
-                // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
-                message.stage += " - Rush";
-            } else {
-                message.stage += " - No Rush";
             }
         } else {
             message.stage = "Station";
