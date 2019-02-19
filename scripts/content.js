@@ -127,7 +127,7 @@ function getSettings() {
 /**
  * Promise to submit the given crowns for external storage (e.g. for MHCC or others)
  * @param {Object <string, any>} crowns Crown counts for the given user
- * @returns {Promise <boolean>} A promise that resolves with the crown record's submission status
+ * @returns {Promise <number>|Promise <boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
  */
 function submitCrowns(crowns) {
     if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold) === 0) {
@@ -136,20 +136,25 @@ function submitCrowns(crowns) {
 
     return new Promise((resolve, reject) => {
         const payload = new FormData();
-        payload.set('main', JSON.stringify(crowns));
+        payload.set("main", JSON.stringify(crowns));
         const request = new Request(
             'https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
             {
-                mode: 'cors',
-                method: 'POST',
+                mode: "cors",
+                method: "POST",
                 credentials: "omit",
                 body: payload
             }
         );
         fetch(request)
-            .then(response => resolve(response.ok))
+            .then(response => resolve(response.ok
+                ? crowns.bronze + crowns.silver + crowns.gold
+                : false))
             .catch(error => {
-                chrome.runtime.sendMessage({message: "Error submitting user crowns", error, crowns});
+                chrome.runtime.sendMessage({"message": "Error submitting user crowns", "error": error, crowns});
+                resolve(false);
+            }).catch(err => {
+                window.console.log({"message": "Fatal error while submitting crowns", "error": err})
                 resolve(false);
             });
     });

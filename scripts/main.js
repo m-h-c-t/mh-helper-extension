@@ -54,11 +54,15 @@
             return;
         }
 
+        // Crown submission results in either the boolean `false`, or the total submitted crowns.
         if (ev.data.jacks_message === 'crownSubmissionStatus') {
-            if (ev.data.submitted) {
-                displayFlashMessage(ev.data.settings, "success", "Thank you for submitting crowns!");
+            const counts = ev.data.submitted;
+            if (counts) {
+                displayFlashMessage(ev.data.settings, "success",
+                    `Submitted ${counts} crowns for `
+                    +  $('span.hunterInfoView-userName').text() + ".");
             } else {
-                displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend");
+                displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
             }
             return;
         }
@@ -1440,7 +1444,7 @@
             if (settings.track_crowns) {
                 const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
                 const crownUrl = "https://www.mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges&snuid=" + profile_snuid;
-                $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", () => window.console.log("Queried crowns for snuid=" + profile_snuid), "json")
+                $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
                     .fail(err => window.console.log({message: "Crown query failed for snuid=" + profile_snuid, err}));
             }
         });
