@@ -411,22 +411,24 @@
             { prop: 'weapon', message_field: 'trap', required: true, replacer: /\ trap/i },
             { prop: 'base', message_field: 'base', required: true, replacer: /\ base/i },
             { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm/i },
-            { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese/i }
+            { prop: 'bait', message_field: 'cheese', required: false, replacer: /\ cheese/i }
         ];
-        // Some components are required.
-        let missing = components.filter(component => component.required === true && !user_resp.hasOwnProperty(component.prop + '_name'));
+        // Some components are required (charm & cheese may have been auto-disarmed).
+        const missing = components.filter(component => component.required === true && !user_resp.hasOwnProperty(component.prop + '_name'));
         if (missing.length) {
             console.log('MH Helper: Missing required setup component:' + missing.map(c => c.message_field).join(', '));
             return "";
         }
         // Assign component values to the message.
         components.forEach(component => {
-            let prop_name = component.prop + '_name';
-            let prop_id = component.prop + '_item_id';
-            if (!user_resp[prop_name]) return;
-            message[component.message_field] = {
+            const prop_name = `${component.prop}_name`;
+            const prop_id = `${component.prop}_item_id`;
+            const item_name = user_resp[prop_name];
+            // If the item doesn't exist, default-construct an empty object. For
+            // special cases (e.g. auto-disarmed) we might still accurately set it.
+            message[component.message_field] = (!item_name) ? {} : {
                 id: user_resp[prop_id],
-                name: user_resp[prop_name].replace(component.replacer, '')
+                name: item_name.replace(component.replacer, '')
             };
         });
 
