@@ -1175,7 +1175,7 @@
     }
 
     function getTrainStage(message, response, journal) {
-        let quest = response.user.quests.QuestTrainStation;
+        const quest = response.user.quests.QuestTrainStation;
         if (quest.on_train) {
             switch (quest.current_phase) {
                 case "supplies":
@@ -1193,18 +1193,33 @@
                     message.stage = stage;
                     break;
                 case "boarding":
-                    message.stage = "2. Raider River";
+                    let stage = "2. Raider River";
+                    if (quest.minigame && quest.minigame.trouble_area) {
+                        const charm_id = message.charm.id;
+                        const troubleArea = {
+                            "door": 1210,
+                            "rails": 1211,
+                            "roof": 1212
+                        };
+                        if (troubleArea[quest.minigame.trouble_area] === charm_id) {
+                            stage += " - Defending Target";
+                        } else if ([1210, 1211, 1212].includes(charm_id)) {
+                            stage += " - Defending Other";
+                        } else {
+                            stage += " - Not Defending";
+                        }
+                    }
+                    message.stage = stage;
                     break;
                 case "bridge_jump":
                     let stage = "3. Daredevil Canyon";
-                    if (message.charm) {
-                        if (message.charm.id === 1208) {
-                            stage += " - Dusty Coal";
-                        } else if (message.charm.id === 1207) {
-                            stage += " - Black Powder";
-                        } else if (message.charm.id === 1209) {
-                            stage += " - Magmatic Crystal";
-                        }
+                    const charm_id = message.charm.id;
+                    if (charm_id === 1208) {
+                        stage += " - Dusty Coal";
+                    } else if (charm_id === 1207) {
+                        stage += " - Black Powder";
+                    } else if (charm_id === 1209) {
+                        stage += " - Magmatic Crystal";
                     }
                     message.stage = stage;
                     break;
