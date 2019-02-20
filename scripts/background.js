@@ -58,7 +58,7 @@ function check_settings(callback) {
 function icon_timer_find_open_mh_tab(settings) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
     found_tabs => {
-        let mhTab = found_tabs[0];
+        const mhTab = found_tabs[0];
         if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
             icon_timer_updateBadge(mhTab.id, settings);
         } else {
@@ -84,10 +84,10 @@ function icon_timer_updateBadge(tab_id, settings) {
     }
 
     // Query the MH page and update the badge based on the response.
-    let request = {jacks_link: "huntTimer"};
+    const request = {jacks_link: "huntTimer"};
     chrome.tabs.sendMessage(tab_id, request, response => {
         if (chrome.runtime.lastError || !response) {
-            let logInfo = {tab_id, request, response, time: new Date(),
+            const logInfo = {tab_id, request, response, time: new Date(),
                 message: "Error occurred while updating badge icon timer."
             };
             if (chrome.runtime.lastError) {
@@ -104,7 +104,7 @@ function icon_timer_updateBadge(tab_id, settings) {
             // If we haven't yet sent a notification about the horn, do so if warranted.
             if (!notification_done) {
                 if (settings.horn_sound && settings.horn_volume > 0) {
-                    let myAudio = new Audio(settings.custom_sound || default_sound);
+                    const myAudio = new Audio(settings.custom_sound || default_sound);
                     myAudio.volume = (settings.horn_volume / 100).toFixed(2);
                     myAudio.play();
                 }
@@ -138,13 +138,13 @@ function icon_timer_updateBadge(tab_id, settings) {
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#222'});
                 response = response.replace(':', '');
-                let response_int = parseInt(response, 10);
+                const response_int = parseInt(response, 10);
                 if (response.includes('min')) {
                     response = response_int + 'm';
                 } else {
                     if (response_int > 59) {
                         let minutes = Math.floor(response_int / 100);
-                        let seconds = response_int % 100;
+                        const seconds = response_int % 100;
                         if (seconds > 30)
                             ++minutes;
                         response = minutes + 'm';
