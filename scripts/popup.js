@@ -36,7 +36,7 @@ function sendMessageToScript(tab_id, button_id) {
 document.addEventListener('DOMContentLoaded', () => {
     const version_element = document.getElementById("version");
     if (version_element) {
-        version_element.innerText = ' v' + chrome.runtime.getManifest().version;
+        version_element.innerText = ` v${chrome.runtime.getManifest().version}`;
     }
     // Schedule updates of the horn timer countdown.
     findOpenMHTab(tab => {
