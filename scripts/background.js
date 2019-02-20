@@ -5,7 +5,7 @@
 
 // Update check
 chrome.runtime.onUpdateAvailable.addListener(details => {
-    console.log("MHHH: updating to version " + details.version);
+    console.log(`MHHH: updating to version ${details.version}`);
     chrome.runtime.reload();
 });
 
@@ -91,7 +91,7 @@ function icon_timer_updateBadge(tab_id, settings) {
                 message: "Error occurred while updating badge icon timer."
             };
             if (chrome.runtime.lastError) {
-                logInfo.message += "\n" + chrome.runtime.lastError.message;
+                logInfo.message += `\n${chrome.runtime.lastError.message}`;
             }
             console.log(logInfo);
             chrome.browserAction.setBadgeText({text: ''});
