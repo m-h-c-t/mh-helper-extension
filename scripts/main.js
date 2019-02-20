@@ -1196,7 +1196,17 @@
                     message.stage = "2. Raider River";
                     break;
                 case "bridge_jump":
-                    message.stage = "3. Daredevil Canyon";
+                    let stage = "3. Daredevil Canyon";
+                    if (message.charm) {
+                        if (message.charm.id === 1208) {
+                            stage += " - Dusty Coal";
+                        } else if (message.charm.id === 1207) {
+                            stage += " - Black Powder";
+                        } else if (message.charm.id === 1209) {
+                            stage += " - Magmatic Crystal";
+                        }
+                    }
+                    message.stage = stage;
                     break;
             }
         } else {
