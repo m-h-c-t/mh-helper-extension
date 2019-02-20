@@ -578,6 +578,13 @@
                 }
                 if (message.mouse === "Heart of the Meteor") {
                     message.stage = "Heart of the Meteor";
+                    // Catches will auto-disarm the cheese, and only Sunrise works.
+                    if (!message.cheese || !message.cheese.name) {
+                        message.cheese = {
+                            id: 2290,
+                            name: "Sunrise"
+                        };
+                    }
                 }
                 break;
             case "Iceberg":
