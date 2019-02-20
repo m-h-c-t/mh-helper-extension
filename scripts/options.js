@@ -17,7 +17,7 @@ let mhhhOptions = [
 
 // Click "Save" -> store the extension's settings in chrome.storage.
 document.getElementById('save').addEventListener('click', () => {
-    let currentOptions = mhhhOptions
+    const currentOptions = mhhhOptions
         .map(opt => ({name: opt.name, val: document.getElementById(opt.name)[opt.p]}))
         .reduce((acc, obj) => (acc[obj.name] = obj.val, acc), {});
     // Trim the custom sound (can this instead be done when defocusing after user data entry?)
@@ -38,7 +38,7 @@ document.getElementById('save').addEventListener('click', () => {
 // After loading the options page, display the last-saved settings (or defaults if unset).
 document.addEventListener('DOMContentLoaded', () => {
     // Use default values where available.
-    let defaultOptions = mhhhOptions
+    const defaultOptions = mhhhOptions
       .filter(prop => prop.default !== undefined)
       .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
     chrome.storage.sync.get(defaultOptions, items => {
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Echo the value of range controls to an output div.
 document.querySelectorAll('.input_range').forEach(
     item => item.addEventListener('input', () => {
-        let output = document.querySelector("output[for=" + item.id);
+        const output = document.querySelector("output[for=" + item.id);
         if (output) {
             output.value = item.value;
         }
@@ -66,7 +66,7 @@ document.querySelector("#play_sound").addEventListener('click', () => {
     if (!file_path) {
         file_path = chrome.extension.getURL('sounds/bell.mp3');
     }
-    let mySound = new Audio(file_path);
+    const mySound = new Audio(file_path);
     mySound.volume = document.getElementById('horn_volume').value / 100;
     mySound.play();
 });
