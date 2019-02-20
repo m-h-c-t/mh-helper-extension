@@ -24,7 +24,7 @@ function findOpenMHTab(callback, button_id, silent) {
  */
 function sendMessageToScript(tab_id, button_id) {
     // Switch to MH tab if needed.
-    let needsMHPageActive = ['horn', 'tsitu_loader', 'mhmh', 'ryonn'];
+    const needsMHPageActive = ['horn', 'tsitu_loader', 'mhmh', 'ryonn'];
     if (needsMHPageActive.includes(button_id)) {
         chrome.tabs.update(tab_id, {'active': true});
     }
@@ -34,27 +34,27 @@ function sendMessageToScript(tab_id, button_id) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    let version_element = document.getElementById("version");
+    const version_element = document.getElementById("version");
     if (version_element) {
         version_element.innerText = ' v' + chrome.runtime.getManifest().version;
     }
     // Schedule updates of the horn timer countdown.
     findOpenMHTab(tab => {
-        let huntTimerField = document.getElementById("huntTimer");
+        const huntTimerField = document.getElementById("huntTimer");
         updateHuntTimerField(tab, huntTimerField); // Fire now
         setInterval(updateHuntTimerField, 1000, tab, huntTimerField); // Continue firing each second
     }, null, true);
 
     // Send specific clicks to the content script for handling and/or additional forwarding.
     ['mhmh', 'userhistory', 'ryonn', 'horn', 'tsitu_loader'].forEach(id => {
-        let button_element = document.getElementById(id);
+        const button_element = document.getElementById(id);
         if (button_element) {
             button_element.addEventListener('click', () => findOpenMHTab(sendMessageToScript, id));
         }
     });
 
     // Set up the options page listener.
-    let options_button = document.getElementById('options_button');
+    const options_button = document.getElementById('options_button');
     if (options_button) {
         options_button.addEventListener('click', () => {
             if (chrome.runtime.openOptionsPage) {
@@ -93,7 +93,7 @@ function updateHuntTimerField(tab, huntTimerField) {
  * @param {string} message The message to display
  */
 function displayErrorPopup(message) {
-    let error_popup = document.getElementById('error_popup');
+    const error_popup = document.getElementById('error_popup');
     error_popup.innerText = message;
     error_popup.style.display = 'block';
     setTimeout(() => error_popup.style.display = 'none', 2000);
