@@ -672,14 +672,16 @@
             message.cheese.id = 1386;
         }
 
-        // 2019 LNY costumed mice check
-        let quest = response.user.quests.QuestLunarNewYear2019;
+        const quest = getActiveLNYQuest(response.user.quests);
+        // TODO: check if the last costumed mouse is caught, not the specific one.
         if (quest && quest.has_stockpile === "found" && !quest.mice.costumed_pig.includes("caught")) {
             // Ignore event cheese hunts as the player is attracting the Costumed mice in a specific order.
-            let dumpling = quest.items.lunar_new_year_2017_cheese;
-            let nian = quest.items.lunar_new_year_2018_cheese;
-            if (dumpling.status === "active" || nian.status === "active")
+            const event_cheese = Object.keys(quest.items)
+                .filter(itemName => itemName.search(/lunar_new_year\w+cheese/) >= 0)
+                .map(cheeseName => quest.items[cheeseName]);
+            if (event_cheese.some(cheese => cheese.status === "active")) {
                 return "";
+            }
         }
 
         return message;
@@ -1281,8 +1283,8 @@
                 break;
         }
 
-        // Set a value for LNY bonus luck, if it can be determined.
-        let quest = response.user.quests.QuestLunarNewYear2019;
+        // Set a value for LNY bonus luck, if it can be determined. Otherwise flag LNY hunts.
+        const quest = getActiveLNYQuest(response.user.quests);
         if (quest) {
             // Avoid overwriting any existing hunt details.
             if (!message.hunt_details) {
@@ -1298,8 +1300,8 @@
                 // Each hunt with the active lantern increases the height by 1, and thus possibly the luck.
                 lny_luck = getLNYLuck(quest);
             } else {
-                let yellow = quest.items.lny_unlit_lantern_stat_item;
-                let red = quest.items.lny_unlit_lantern_2018_stat_item;
+                const yellow = quest.items.lny_unlit_lantern_stat_item;
+                const red = quest.items.lny_unlit_lantern_2018_stat_item;
                 // If the user has both candles, we know the lantern state was an explicit choice.
                 // (Candles given via height rewards must be explicitly claimed.)
                 if (parseInt(yellow.quantity, 10) > 0 && parseInt(red.quantity, 10) > 0) {
@@ -1482,6 +1484,17 @@
         return luck;
     }
 
+    /**
+     * @param {Object <string, Object <string, any>>} allQuests the `user.quests` object containing all of the user's quests
+     * @returns {Object <string, any> | null} The quest if it exists, else `null`
+     */
+    function getActiveLNYQuest(allQuests) {
+        const questNames = Object.keys(allQuests)
+            .filter(questName => questName.includes("QuestLunarNewYear"));
+        return (questNames.length
+            ? allQuests[questNames[0]]
+            : null);
+    }
 
     window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
 }());
