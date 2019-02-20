@@ -3,16 +3,16 @@
 (function () {
     'use strict';
 
-    var base_domain_url = "https://mhhunthelper.agiletravels.com";
-    var db_url = base_domain_url + "/intake.php";
-    var map_intake_url = base_domain_url + "/map_intake.php";
-    var convertible_intake_url = base_domain_url + "/convertible_intake.php";
+    const base_domain_url = "https://mhhunthelper.agiletravels.com";
+    const db_url = base_domain_url + "/intake.php";
+    const map_intake_url = base_domain_url + "/map_intake.php";
+    const convertible_intake_url = base_domain_url + "/convertible_intake.php";
 
     if (!window.jQuery) {
         console.log("MHHH: Can't find jQuery, exiting.");
         return;
     }
-    var mhhh_version = $("#mhhh_version").val();
+    const mhhh_version = $("#mhhh_version").val();
 
     // Listening for calls
     window.addEventListener('message', ev => {
@@ -25,7 +25,7 @@
             return;
         }
         if (ev.data.jacks_message === 'userhistory') {
-            window.open(base_domain_url + '/searchByUser.php?user=' + user.user_id);
+            window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}`);
             return;
         }
 
@@ -47,7 +47,7 @@
         }
 
         if (ev.data.jacks_message === 'show_horn_alert') {
-            let sound_the_horn = confirm("Horn is Ready! Sound it?");
+            const sound_the_horn = confirm("Horn is Ready! Sound it?");
             if (sound_the_horn) {
                 sound_horn();
             }
@@ -59,8 +59,7 @@
             const counts = ev.data.submitted;
             if (counts) {
                 displayFlashMessage(ev.data.settings, "success",
-                    `Submitted ${counts} crowns for `
-                    +  $('span.hunterInfoView-userName').text() + ".");
+                    `Submitted ${counts} crowns for ${$('span.hunterInfoView-userName').text()}.`);
             } else {
                 displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
             }
@@ -82,7 +81,7 @@
     }
 
     function openBookmarklet(url) {
-        let xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
         xhr.overrideMimeType("application/javascript");
         xhr.open("GET", url, true);
         xhr.onreadystatechange = () => {
@@ -107,7 +106,7 @@
             return;
         }
 
-        let payload = {
+        const payload = {
             map_id: user.quests.QuestRelicHunter.default_map_id,
             action: "map_info",
             uh: user.unique_hash,
@@ -124,8 +123,8 @@
                         alert('This seems to be a new kind of map and not yet supported.');
                         return;
                     }
-                    let mice = getMapMice(data, true);
-                    let new_window = window.open('');
+                    const mice = getMapMice(data, true);
+                    const new_window = window.open('');
                     new_window.location = encodeURI(url + mice.join(glue));
                 }
             });
@@ -133,7 +132,7 @@
 
     // Extract map mice from a map
     function getMapMice(data, uncaught_only) {
-        let mice = [];
+        const mice = [];
         $.each(data.treasure_map.groups, (key, group) => {
             if (uncaught_only && !group.name.includes('Uncaught mice ')) {
                 return;
@@ -164,7 +163,7 @@
             || (type !== 'success' && !settings.error_messages)) {
             return;
         }
-        let mhhh_flash_message_div = $('#mhhh_flash_message_div');
+        const mhhh_flash_message_div = $('#mhhh_flash_message_div');
         mhhh_flash_message_div.text("Jack's MH Helper: " + message);
 
         mhhh_flash_message_div.css('left', 'calc(50% - ' + (mhhh_flash_message_div.width() / 2) + 'px)');
@@ -222,7 +221,7 @@
      * Record Crowns. The xhr response data also includes a `mouseData` hash keyed by each mouse's
      * HG identifier and with the associated relevant value properties of `name` and `num_catches`
      * @param {Object <string, any>} settings The user's extension settings.
-     * @param {jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
+     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      * @param {string} url The URL that invoked the function call.
      */
     function recordCrowns(settings, xhr, url) {
@@ -231,12 +230,12 @@
         }
         // Traditional snuids are digit-only, but new snuids are `hg_` plus a hash, e.g.
         //    hg_0ffb7add4e6e14d8e1147cb3f12fe84d
-        let url_params = url.match(/snuid=(\w+)/);
+        const url_params = url.match(/snuid=(\w+)/);
         if (!url_params || !Object.keys(xhr.responseJSON.mouse_data).length) {
             return;
         }
 
-        let payload = {
+        const payload = {
             user: url_params[1],
             timestamp: Math.round(Date.now() / 1000),
 
@@ -268,11 +267,11 @@
 
     // Record map mice
     function recordMap(xhr) {
-        let resp = xhr.responseJSON;
+        const resp = xhr.responseJSON;
         if (!resp.treasure_map || !resp.treasure_map.map_id || !resp.treasure_map.name) {
             return;
         }
-        let map = {
+        const map = {
             mice: getMapMice(resp),
             id: resp.treasure_map.map_id,
             name: resp.treasure_map.name.replace(/\ treasure/i, '')
@@ -291,13 +290,13 @@
 
     // Record successful hunt
     function recordHunt(xhr) {
-        let response = JSON.parse(xhr.responseText);
+        const response = JSON.parse(xhr.responseText);
         let journal = {};
 
         for (let i = 0; i < response.journal_markup.length; i++) {
-            let journal_render_data = response.journal_markup[i].render_data;
+            const journal_render_data = response.journal_markup[i].render_data;
             if (journal_render_data.css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
-                let rh_message = { // to not set rh flag on regular hunt payload
+                const rh_message = { // to not set rh flag on regular hunt payload
                     extension_version: formatVersion(mhhh_version),
                     user_id: response.user.user_id,
                     rh_environment: journal_render_data.environment,
@@ -370,7 +369,7 @@
             return;
         }
 
-        let response = xhr.responseJSON;
+        const response = xhr.responseJSON;
 
         let convertible;
         for (let key in response.items) {
@@ -387,13 +386,13 @@
             return;
         }
 
-        let message = response.messageData.message_model.messages[0];
+        const message = response.messageData.message_model.messages[0];
         if (!message.isNew || !message.messageData || !message.messageData.items || message.messageData.items.length === 0) {
             return;
         }
-        let items = message.messageData.items;
+        const items = message.messageData.items;
 
-        let record = {
+        const record = {
             convertible: getItem(convertible),
             items: items.map(getItem.bind(null)),
             extension_version: formatVersion(mhhh_version),
@@ -407,7 +406,7 @@
     }
 
     function sendMessageToServer(url, final_message) {
-        let basic_info = {
+        const basic_info = {
             user_id: final_message.user_id,
             entry_timestamp: final_message.entry_timestamp
         };
@@ -427,7 +426,7 @@
         $.post(url, fin_message)
             .done(data => {
                 if (data) {
-                    let response = JSON.parse(data);
+                    const response = JSON.parse(data);
                     showFlashMessage(response.status, response.message);
                 }
             });
@@ -441,7 +440,7 @@
         message.entry_timestamp = journal.render_data.entry_timestamp;
 
         // Location
-        let user_resp = response.user;
+        const user_resp = response.user;
         if (!user_resp.location) {
             console.log('MH Helper: Missing Location');
             return "";
@@ -459,15 +458,15 @@
             { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese/i }
         ];
         // Some components are required.
-        let missing = components.filter(component => component.required === true && !user_resp.hasOwnProperty(component.prop + '_name'));
+        let missing = components.filter(component => component.required === true && !user_resp.hasOwnProperty(`${component.prop}_name`));
         if (missing.length) {
-            console.log('MH Helper: Missing required setup component:' + missing.map(c => c.message_field).join(', '));
+            console.log(`MH Helper: Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
             return "";
         }
         // Assign component values to the message.
         components.forEach(component => {
-            let prop_name = component.prop + '_name';
-            let prop_id = component.prop + '_item_id';
+            const prop_name = component.prop + '_name';
+            const prop_id = component.prop + '_item_id';
             if (!user_resp[prop_name]) return;
             message[component.message_field] = {
                 id: user_resp[prop_id],
@@ -484,7 +483,7 @@
         message.attraction_bonus = Math.round(user_resp.trap_attraction_bonus * 100);
 
         // Caught / Attracted / FTA'd
-        let journal_css = journal.render_data.css_class;
+        const journal_css = journal.render_data.css_class;
         if (journal_css.includes('attractionfailure')) {
             message.caught = 0;
             message.attracted = 0;
@@ -495,7 +494,7 @@
             } else if (journal_css.includes('catchfailure')) {
                 message.caught = 0;
             } else {
-                console.log('MH Helper: Unknown "catch" journal css: ' + journal_css);
+                console.log(`MH Helper: Unknown "catch" journal css: ${journal_css}`);
                 return message;
             }
             // Remove HTML tags and other text around the mouse name.
@@ -801,7 +800,7 @@
     }
 
     function getMousoleumStage(message, response, journal) {
-        let quest = response.user.quests.QuestMousoleum;
+        const quest = response.user.quests.QuestMousoleum;
         if (quest.has_wall) {
             message.stage = "Has Wall";
         } else {
@@ -812,7 +811,7 @@
     }
 
     function getHarbourStage(message, response, journal) {
-        let quest = response.user.quests.QuestHarbour;
+        const quest = response.user.quests.QuestHarbour;
         // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
         if (quest.status === "searchStarted" && !quest.can_claim) {
             message.stage = "On Bounty";
@@ -824,7 +823,7 @@
     }
 
     function getClawShotCityStage(message, response, journal) {
-        let quest = response.user.quests.QuestClawShotCity;
+        const quest = response.user.quests.QuestClawShotCity;
         /**
          * !map_active && !has_wanted_poster => Bounty Hunter can be attracted
          * !map_active && has_wanted_poster => Bounty Hunter is not attracted
@@ -843,7 +842,7 @@
     }
 
     function getFestiveCometStage(message, response, journal) {
-        let quest = response.user.quests.QuestWinterHunt2018;
+        const quest = response.user.quests.QuestWinterHunt2018;
         if (!quest) {
             return message;
         }
@@ -870,7 +869,7 @@
     }
 
     function getMoussuPicchuStage(message, response, journal) {
-        let elements = response.user.quests.QuestMoussuPicchu.elements;
+        const elements = response.user.quests.QuestMoussuPicchu.elements;
         message.stage = {
             rain: 'Rain ' + elements.rain.level,
             wind: 'Wind ' + elements.wind.level
@@ -880,10 +879,10 @@
     }
 
     function getWhiskerWoodsRiftStage(message, response, journal) {
-        let zones = response.user.quests.QuestRiftWhiskerWoods.zones;
-        let clearing = zones.clearing.level;
-        let tree = zones.tree.level;
-        let lagoon = zones.lagoon.level;
+        const zones = response.user.quests.QuestRiftWhiskerWoods.zones;
+        const clearing = zones.clearing.level;
+        const tree = zones.tree.level;
+        const lagoon = zones.lagoon.level;
 
         message.stage = {};
         if (0 <= clearing && clearing <= 24) {
@@ -914,11 +913,12 @@
     }
 
     function getLabyrinthStage(message, response, journal) {
-        if (response.user.quests.QuestLabyrinth.status === "hallway") {
-            message.stage = response.user.quests.QuestLabyrinth.hallway_name;
-            // Remove first word (like Short)
-            message.stage = message.stage.substr(message.stage.indexOf(" ") + 1);
-            message.stage = message.stage.replace(/\ hallway/i, '');
+        const quest = response.user.quests.QuestLabyrinth;
+        if (quest.status === "hallway") {
+            let stage = quest.hallway_name
+            // Remove non-hallway-type words (e.g. Short, hallway)
+            stage = stage.substr(stage.indexOf(" ") + 1);
+            message.stage = stage.replace(/\ hallway/i, '');
         } else {
             // Not recording last hunt of a hallway and intersections at this time
             return;
@@ -927,7 +927,7 @@
     }
 
     function getFieryWarpathStage(message, response, journal) {
-        let wave = response.user.viewing_atts.desert_warpath.wave;
+        const wave = response.user.viewing_atts.desert_warpath.wave;
         if (wave === 'portal') {
             message.stage = 'Portal';
         } else {
@@ -938,7 +938,7 @@
     }
 
     function getBalacksCoveStage(message, response, journal) {
-        let tide = response.user.viewing_atts.tide;
+        const tide = response.user.viewing_atts.tide;
         if (tide) {
             message.stage = tide.substr(0, 1).toUpperCase() + tide.substr(1);
             if (message.stage === "Med") {
@@ -968,7 +968,7 @@
     }
 
     function getLivingGardenStage(message, response, journal) {
-        let bucket = response.user.quests.QuestLivingGarden.minigame.bucket_state;
+        const bucket = response.user.quests.QuestLivingGarden.minigame.bucket_state;
         if (bucket) {
             if (bucket === "filling") {
                 message.stage = "Not Pouring";
@@ -1007,7 +1007,7 @@
     }
 
     function getIcebergStage(message, response, journal) {
-        let phase = response.user.quests.QuestIceberg.current_phase;
+        const phase = response.user.quests.QuestIceberg.current_phase;
         if (!phase) {
             return "";
         }
@@ -1043,7 +1043,7 @@
     }
 
     function getSunkenCityStage(message, response, journal) {
-        let quest = response.user.quests.QuestSunkenCity;
+        const quest = response.user.quests.QuestSunkenCity;
         if (!quest.is_diving) {
             message.stage = "Docked";
             return message;
@@ -1056,7 +1056,7 @@
         }
 
         // "if else" faster than "switch" calculations
-        let depth = quest.distance;
+        const depth = quest.distance;
         message.stage = quest.zone_name;
         if (depth < 2000) {
             message.stage += " 0-2km";
@@ -1074,12 +1074,12 @@
     }
 
     function getZokorStage(message, response, journal) {
-        let zokor_district = response.user.quests.QuestAncientCity.district_name;
+        const zokor_district = response.user.quests.QuestAncientCity.district_name;
         if (!zokor_district) {
             return message;
         }
 
-        let zokor_stages = {
+        const zokor_stages = {
             "Garden":     "Farming 0+",
             "Study":      "Scholar 15+",
             "Shrine":     "Fealty 15+",
@@ -1097,7 +1097,7 @@
         };
 
         $.each(zokor_stages, (key, value) => {
-            let search_string = new RegExp(key, "i");
+            const search_string = new RegExp(key, "i");
             if (zokor_district.search(search_string) !== -1) {
                 message.stage = value;
                 return false;
@@ -1151,8 +1151,8 @@
     }
 
     function getToxicSpillStage(message, response, journal) {
-        let titles = response.user.quests.QuestPollutionOutbreak.titles;
-        let formatted_titles = {
+        const titles = response.user.quests.QuestPollutionOutbreak.titles;
+        const formatted_titles = {
             hero:                 'Hero',
             knight:               'Knight',
             lord_lady:            'Lord/Lady',
@@ -1173,7 +1173,7 @@
     }
 
     function getBurroughsRiftStage(message, response, journal) {
-        let quest = response.user.quests.QuestRiftBurroughs;
+        const quest = response.user.quests.QuestRiftBurroughs;
         switch (quest.mist_tier) {
             case "tier_0":
                 message.stage = "Mist 0";
@@ -1242,7 +1242,7 @@
     }
 
     function getFortRoxStage(message, response, journal) {
-        let quest = response.user.quests.QuestFortRox;
+        const quest = response.user.quests.QuestFortRox;
         if (quest.is_lair) {
             message.stage = "Heart of the Meteor";
         } else if (quest.is_dawn) {
@@ -1314,7 +1314,7 @@
     }
 
     function getBristleWoodsRiftHuntDetails(message, response, journal) {
-        let quest = response.user.quests.QuestRiftBristleWoods;
+        const quest = response.user.quests.QuestRiftBristleWoods;
         message.hunt_details = {
             has_hourglass: quest.items.rift_hourglass_stat_item.quantity >= 1,
             chamber_status: quest.chamber_status
@@ -1333,7 +1333,7 @@
     }
 
     function getMysteriousAnomalyHuntDetails(message, response, journal) {
-        let quest = response.user.quests.QuestBirthday2018;
+        const quest = response.user.quests.QuestBirthday2018;
         message.hunt_details = {
             boss_status: quest.boss_status,
             furthest_year: quest.furthest_year
@@ -1343,19 +1343,19 @@
     }
 
     function getLoot(message, response, journal) {
-        let desc = journal.render_data.text;
+        const desc = journal.render_data.text;
         if (!desc.includes("following loot:")) {
             return message;
         }
-        let loot_text = desc.substring(desc.indexOf("following loot:") + 15);
-        let loot_array = loot_text.split(/,\s|\sand\s/g);
+        const loot_text = desc.substring(desc.indexOf("following loot:") + 15);
+        const loot_array = loot_text.split(/,\s|\sand\s/g);
         // let render_array = desc.split(/<a\s/);
 
         message.loot = loot_array.map(item_text => {
-            let loot_obj = {
+            const loot_obj = {
                 amount: item_text.match(/(\d+,?)+/i)[0].replace(/,/g, '')
             };
-            let name = item_text.replace(/^(.*?);">/, '').replace(/<\/a>/, '');
+            const name = item_text.replace(/^(.*?);">/, '').replace(/<\/a>/, '');
             loot_obj.name = (loot_obj.amount > 1) ? name.replace(/s$/i, '') : name;
 
             // Exceptions
@@ -1399,8 +1399,8 @@
             }
 
             if (loot_obj.name.includes(' of Gold ')) {
-                let loot_name = loot_obj.name;
-                let loot_amount = loot_name.substring(loot_name.indexOf('(') + 1, loot_name.indexOf(')'));
+                const loot_name = loot_obj.name;
+                const loot_amount = loot_name.substring(loot_name.indexOf('(') + 1, loot_name.indexOf(')'));
                 loot_obj.amount = loot_obj.amount * parseInt(loot_amount.replace(/,/g, ''), 10);
                 loot_obj.name = 'Gold';
             }
@@ -1443,12 +1443,12 @@
         getSettings(settings => {
             if (settings.track_crowns) {
                 const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
-                const crownUrl = "https://www.mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges&snuid=" + profile_snuid;
+                const crownUrl = `https://www.mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges&snuid=${profile_snuid}`;
                 $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
-                    .fail(err => window.console.log({message: "Crown query failed for snuid=" + profile_snuid, err}));
+                    .fail(err => window.console.log({message: `Crown query failed for snuid=${profile_snuid}`, err}));
             }
         });
     }
 
-    window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
+    window.console.log(`MH Hunt Helper v${mhhh_version} loaded! Good luck!`);
 }());
