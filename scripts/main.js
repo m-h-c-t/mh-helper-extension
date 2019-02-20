@@ -1176,10 +1176,13 @@
 
     function getTrainStage(message, response, journal) {
         const quest = response.user.quests.QuestTrainStation;
-        if (quest.on_train) {
+        if (!quest.on_train || quest.on_train === "false") {
+            message.stage = "Station";
+        } else {
+            let stage = "";
             switch (quest.current_phase) {
                 case "supplies":
-                    let stage = "1. Supply Depot";
+                    stage = "1. Supply Depot";
                     // If we just caught a Supply Hoarder, or have some hoarder turns remaining,
                     // then a 'Supply Rush' must have been active for this hunt.
                     if (message.mouse === "Supply Hoarder" ||
@@ -1190,10 +1193,9 @@
                         // entry inspection to increase certainty.
                         stage += " - No Rush";
                     }
-                    message.stage = stage;
                     break;
                 case "boarding":
-                    let stage = "2. Raider River";
+                    stage = "2. Raider River";
                     if (quest.minigame && quest.minigame.trouble_area) {
                         const charm_id = message.charm.id;
                         const troubleArea = {
@@ -1209,10 +1211,9 @@
                             stage += " - Not Defending";
                         }
                     }
-                    message.stage = stage;
                     break;
                 case "bridge_jump":
-                    let stage = "3. Daredevil Canyon";
+                    stage = "3. Daredevil Canyon";
                     const charm_id = message.charm.id;
                     if (charm_id === 1208) {
                         stage += " - Dusty Coal";
@@ -1221,11 +1222,11 @@
                     } else if (charm_id === 1209) {
                         stage += " - Magmatic Crystal";
                     }
-                    message.stage = stage;
                     break;
             }
-        } else {
-            message.stage = "Station";
+            if (stage) {
+                message.stage = stage;
+            }
         }
 
         return message;
