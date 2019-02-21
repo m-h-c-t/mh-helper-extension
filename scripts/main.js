@@ -161,6 +161,81 @@
         });
     }
 
+    let needsPrehuntUser = true;
+    /**
+     * Before allowing a hunt submission, first request an updated user object from
+     * https://www.mousehuntgame.com/managers/ajax/users/data.php
+     * @param {JQuery.TriggeredEvent<Document, undefined, Document, Document>} event The ajax event that triggered this listener
+     * @param {JQuery.jqXHR<any>} xhr The XMLHttpRequest that was intercepted
+     * @param {JQuery.AjaxSettings<any>} ajaxOptions The ajax settings of the intercepted request.
+     */
+    function getUserBeforeHunting(event, xhr, ajaxOptions) {
+        if (event.type !== "ajaxSend" || !ajaxOptions.url.includes("ajax/turns/activeturn.php"))
+            return;
+        if (needsPrehuntUser) {
+            // Cancel this initial request, so we can read the pre-hunt user object.
+            // (Can we avoid this somehow? User never sees the horn animation, only the "There was an error")
+            xhr.abort();
+            $.post("https://www.mousehuntgame.com/managers/ajax/users/data.php",
+                ajaxOptions.data, response => sendHuntWithUser(response.user, ajaxOptions), "json");
+            window.console.log({message:"Aborted request, requesting user data instead", request: ajaxOptions});
+        } else {
+            needsPrehuntUser = true;
+            window.console.log({message: "Allowing request", xhr, request: ajaxOptions});
+        }
+    }
+
+    /**
+     *
+     * @param {Object <string, any>} userObject
+     * @param {JQuery.jqXHR} ajaxOptions
+     */
+    function sendHuntWithUser(userObject, ajaxOptions) {
+        needsPrehuntUser = false;
+        window.console.log({message: "Received user object response", response: userObject, ajaxOptions});
+        $.ajax(ajaxOptions)
+            .done(resp => {
+                window.console.log({message: "Ajax final response", response: resp});
+                // Require some difference between the initial and final (no difference => no hunt separating them)
+                const requiredDifferences = [
+                    "num_active_turns",
+                    "next_activeturn_seconds"
+                ];
+                // Trap checks may have occurred since the last hunt! A call to user/data.php does NOT compute them.
+                const possibledifferingProperties = [
+                    "bait_quantity",
+                    "gold",
+                    "points",
+                    "last_active",
+                    "last_activeturn_timestamp",
+                    "points",
+                    "shield_seconds",
+                    "trinket_quantity",
+                    "trap_aura_hash",
+                    "quests"
+                ];
+                const preHuntKeys = new Set();
+                const postHuntKeys = new Set(Object.keys(resp.user));
+                const diffKeys = {};
+                for (let [key, value] of Object.entries(userObject))
+                {
+                    preHuntKeys.add(key);
+                    if (!postHuntKeys.has(key))
+                        diffKeys[key] = {in: "pre", val: value};
+                    else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+                        if (value !== resp.user[key])
+                            diffKeys[key] = {pre: value, post: resp.user[key]};
+                    }
+                }
+                Object.keys(resp.user).filter(key => !preHuntKeys.has(key)).forEach(key => {
+                    diffKeys[key] = {in: "post", val: value};
+                });
+                window.console.log({diffKeys});
+            });
+    }
+
+    $(document).ajaxSend(getUserBeforeHunting);
+
     // Listening router
     $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
     // /* Method */ ajaxOptions.type
