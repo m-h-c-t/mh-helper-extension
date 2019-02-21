@@ -161,77 +161,90 @@
         });
     }
 
-    let needsPrehuntUser = true;
     /**
      * Before allowing a hunt submission, first request an updated user object from
      * https://www.mousehuntgame.com/managers/ajax/users/data.php
      * @param {JQuery.TriggeredEvent<Document, undefined, Document, Document>} event The ajax event that triggered this listener
-     * @param {JQuery.jqXHR<any>} xhr The XMLHttpRequest that was intercepted
+     * @param {JQuery.jqXHR<any>} jqx The jQuery-wrapped XMLHttpRequest that was intercepted
      * @param {JQuery.AjaxSettings<any>} ajaxOptions The ajax settings of the intercepted request.
      */
-    function getUserBeforeHunting(event, xhr, ajaxOptions) {
+    function getUserBeforeHunting(event, jqx, ajaxOptions) {
         if (event.type !== "ajaxSend" || !ajaxOptions.url.includes("ajax/turns/activeturn.php"))
             return;
-        if (needsPrehuntUser) {
-            // Cancel this initial request, so we can read the pre-hunt user object.
-            // (Can we avoid this somehow? User never sees the horn animation, only the "There was an error")
-            xhr.abort();
-            $.post("https://www.mousehuntgame.com/managers/ajax/users/data.php",
-                ajaxOptions.data, response => sendHuntWithUser(response.user, ajaxOptions), "json");
-            window.console.log({message:"Aborted request, requesting user data instead", request: ajaxOptions});
-        } else {
-            needsPrehuntUser = true;
-            window.console.log({message: "Allowing request", xhr, request: ajaxOptions});
-        }
+        const create_hunt_XHR = ajaxOptions.xhr;
+        // Override the XMLHttpRequest that will be used with our own.
+        ajaxOptions.xhr = function () {
+            // Create the original XMLHttpRequest, whose `send()` will sound the horn.
+            const hunt_xhr = create_hunt_XHR();
+            const huntSend = hunt_xhr.send;
+            // Override the original send to first query the user object.
+            hunt_xhr.send = (...huntArgs) => {
+                $.ajax({
+                    method: "post",
+                    url: "https://www.mousehuntgame.com/managers/ajax/users/data.php",
+                    data: "sn=Hitgrab&hg_is_ajax=1",
+                    dataType: "json"
+                }).done(userRqResponse => {
+                    window.console.log({message: "Got user object, invoking huntSend"});
+                    hunt_xhr.addEventListener("readystatechange", function passHuntWithUser() {
+                        window.console.log({message: "huntSend readystatechange callback", state: this.readyState});
+                        if (this.readyState == this.DONE) {
+                            // hunt_xhr.removeEventListener("readystatechange", passHuntWithUser); // perhaps not needed
+                            // Call record hunt with the pre-hunt user object.
+                            sendHuntWithUser(JSON.parse(this.responseText), userRqResponse.user);
+                        }
+                    }, false);
+                    huntSend.apply(hunt_xhr, huntArgs);
+                });
+                window.console.log({message: "POSTed for user object"});
+            };
+            window.console.log({message: "Defined the send method"});
+            return hunt_xhr;
+        };
+        window.console.log({message: "Defined the xhr constructor"});
     }
 
     /**
-     *
-     * @param {Object <string, any>} userObject
-     * @param {JQuery.jqXHR} ajaxOptions
+     * @param {Object <string, any>} response Parsed JSON representation of the response from calling activeturn.php
+     * @param {Object <string, any>} prehuntUser The pre-hunt user object.
      */
-    function sendHuntWithUser(userObject, ajaxOptions) {
-        needsPrehuntUser = false;
-        window.console.log({message: "Received user object response", response: userObject, ajaxOptions});
-        $.ajax(ajaxOptions)
-            .done(resp => {
-                window.console.log({message: "Ajax final response", response: resp});
-                // Require some difference between the initial and final (no difference => no hunt separating them)
-                const requiredDifferences = [
-                    "num_active_turns",
-                    "next_activeturn_seconds"
-                ];
-                // Trap checks may have occurred since the last hunt! A call to user/data.php does NOT compute them.
-                const possibledifferingProperties = [
-                    "bait_quantity",
-                    "gold",
-                    "points",
-                    "last_active",
-                    "last_activeturn_timestamp",
-                    "points",
-                    "shield_seconds",
-                    "trinket_quantity",
-                    "trap_aura_hash",
-                    "quests"
-                ];
-                const preHuntKeys = new Set();
-                const postHuntKeys = new Set(Object.keys(resp.user));
-                const diffKeys = {};
-                for (let [key, value] of Object.entries(userObject))
-                {
-                    preHuntKeys.add(key);
-                    if (!postHuntKeys.has(key))
-                        diffKeys[key] = {in: "pre", val: value};
-                    else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-                        if (value !== resp.user[key])
-                            diffKeys[key] = {pre: value, post: resp.user[key]};
-                    }
-                }
-                Object.keys(resp.user).filter(key => !preHuntKeys.has(key)).forEach(key => {
-                    diffKeys[key] = {in: "post", val: value};
-                });
-                window.console.log({diffKeys});
-            });
+    function sendHuntWithUser(response, prehuntUser) {
+        window.console.log({message: "In sendHuntWithUser", response, prehuntUser});
+        // Require some difference between the initial and final (no difference => no hunt separating them)
+        const requiredDifferences = [
+            "num_active_turns",
+            "next_activeturn_seconds"
+        ];
+        // Trap checks may have occurred since the last hunt! A call to user/data.php does NOT compute them.
+        const possibledifferingProperties = [
+            "bait_quantity",
+            "gold",
+            "points",
+            "last_active",
+            "last_activeturn_timestamp",
+            "points",
+            "shield_seconds",
+            "trinket_quantity",
+            "trap_aura_hash",
+            "quests"
+        ];
+        const preHuntKeys = new Set();
+        const postHuntKeys = new Set(Object.keys(response.user));
+        const diffKeys = {};
+        for (let [key, value] of Object.entries(prehuntUser))
+        {
+            preHuntKeys.add(key);
+            if (!postHuntKeys.has(key))
+                diffKeys[key] = {in: "pre", val: value};
+            else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+                if (value !== response.user[key])
+                    diffKeys[key] = {pre: value, post: response.user[key]};
+            }
+        }
+        Object.keys(response.user).filter(key => !preHuntKeys.has(key)).forEach(key => {
+            diffKeys[key] = {in: "post", val: response.user[key]};
+        });
+        window.console.log({diffKeys});
     }
 
     $(document).ajaxSend(getUserBeforeHunting);
@@ -324,7 +337,7 @@
     function recordHunt(xhr) {
         let response = JSON.parse(xhr.responseText);
         let journal = {};
-
+        window.console.log("In recordHunt");
         for (let i = 0; i < response.journal_markup.length; i++) {
             let journal_render_data = response.journal_markup[i].render_data;
             if (journal_render_data.css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
@@ -387,7 +400,7 @@
         }
 
         message = getLoot(message, response, journal);
-
+        window.console.log({message, userFromHunt: response.user});
         sendMessageToServer(db_url, message);
     }
 
