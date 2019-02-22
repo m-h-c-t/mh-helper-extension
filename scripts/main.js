@@ -248,7 +248,27 @@
                         result[key] = {"pre": value, "post": obj_post[key]};
                     }
                 } else if (Array.isArray(value)) {
-                    // TODO: compare arrays
+                    // Do not modify the element order by sorting.
+                    const other = obj_post[key];
+                    if (value.length > other.length) {
+                        result[key] = {type: "-", "pre": value, "post": other};
+                    } else if (value.length < other.length) {
+                        result[key] = {type: "+", "pre": value, "post": other};
+                    } else {
+                        // Same number of elements. Compare them under the assumption that the elements
+                        // have the same order.
+                        result[key] = {};
+                        value.forEach((val, i) => {
+                            result[key][i] = {};
+                            diffUserObjects(result[key][i], new Set(), new Set(Object.keys(other)), value, other);
+                            if (!Object.keys(result[key][i]).length) {
+                                delete result[key][i];
+                            }
+                        });
+                        if (!Object.keys(result[key]).length) {
+                            delete result[key];
+                        }
+                    }
                 } else if (typeof value === 'object' && value instanceof Object) {
                     // Object comparison requires recursion.
                     result[key] = {};
