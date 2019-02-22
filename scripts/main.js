@@ -178,11 +178,20 @@
             const hunt_xhr = create_hunt_XHR();
             const huntSend = hunt_xhr.send;
             // Override the original send to first query the user object.
+            // Require TC calculations by including the journal entry state and forcing non-memoized return.
             hunt_xhr.send = (...huntArgs) => {
                 $.ajax({
                     method: "post",
-                    url: "https://www.mousehuntgame.com/managers/ajax/users/data.php",
-                    data: "sn=Hitgrab&hg_is_ajax=1",
+                    // url: "/managers/ajax/users/data.php",
+                    url: "/managers/ajax/pages/page.php",
+                    data: {
+                        sn: "Hitgrab",
+                        hg_is_ajax: 1,
+                        page: "Title",
+                        page_arguments: [{force: true}],
+                        last_read_journal_entry_id: lastReadJournalEntryId,
+                        uh: user.unique_hash
+                    },
                     dataType: "json"
                 }).done(userRqResponse => {
                     window.console.log({message: "Got user object, invoking huntSend", userRqResponse});
@@ -225,12 +234,9 @@
             "trap_aura_hash",
             "quests"
         ];
-        const preHuntKeys = new Set();
-        const postHuntKeys = new Set(Object.keys(response.user));
         const diffKeys = {};
-        // Store the difference between generic primitives and certain objects in `result`
         /**
-         *
+         * Store the difference between generic primitives and certain objects in `result`
          * @param {Object <string, any>} result The object to write diffs into
          * @param {Set<string>} pre Keys associated with the current `obj_pre`
          * @param {Set<string>} post Keys associated with the current `obj_post`
@@ -244,7 +250,9 @@
                 if (!post.has(key)) {
                     result[key] = {in: "pre", val: value};
                 } else if (allowedSimpleDiff.has(typeof value)) {
-                    if (value !== obj_post[key]) {
+                    // Some HG endpoints do not cast numeric values to number due to numeric precision issues.
+                    // Thus, the type-converting inequality check is performed instead of strict inequality.
+                    if (value != obj_post[key]) {
                         result[key] = {"pre": value, "post": obj_post[key]};
                     }
                 } else if (Array.isArray(value)) {
@@ -258,13 +266,7 @@
                         // Same number of elements. Compare them under the assumption that the elements
                         // have the same order.
                         result[key] = {};
-                        value.forEach((val, i) => {
-                            result[key][i] = {};
-                            diffUserObjects(result[key][i], new Set(), new Set(Object.keys(other)), value, other);
-                            if (!Object.keys(result[key][i]).length) {
-                                delete result[key][i];
-                            }
-                        });
+                        diffUserObjects(result[key], new Set(), new Set(Object.keys(other)), value, other);
                         if (!Object.keys(result[key]).length) {
                             delete result[key];
                         }
@@ -284,7 +286,7 @@
                     result[key] = {in: "post", val: obj_post[key]};
                 });
         }
-        diffUserObjects(diffKeys, preHuntKeys, postHuntKeys, prehuntUser, response.user);
+        diffUserObjects(diffKeys, new Set(), new Set(Object.keys(response.user)), prehuntUser, response.user);
         window.console.log({diffKeys});
     }
 
