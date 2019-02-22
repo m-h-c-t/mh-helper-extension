@@ -185,14 +185,10 @@
                     data: "sn=Hitgrab&hg_is_ajax=1",
                     dataType: "json"
                 }).done(userRqResponse => {
-                    window.console.log({message: "Got user object, invoking huntSend"});
-                    hunt_xhr.addEventListener("readystatechange", function passHuntWithUser() {
-                        window.console.log({message: "huntSend readystatechange callback", state: this.readyState});
-                        if (this.readyState == this.DONE) {
-                            // hunt_xhr.removeEventListener("readystatechange", passHuntWithUser); // perhaps not needed
-                            // Call record hunt with the pre-hunt user object.
-                            sendHuntWithUser(JSON.parse(this.responseText), userRqResponse.user);
-                        }
+                    window.console.log({message: "Got user object, invoking huntSend", userRqResponse});
+                    hunt_xhr.addEventListener("loadend", () => {
+                        // Call record hunt with the pre-hunt user object.
+                        sendHuntWithUser(JSON.parse(hunt_xhr.responseText), userRqResponse.user);
                     }, false);
                     huntSend.apply(hunt_xhr, huntArgs);
                 });
@@ -206,7 +202,7 @@
 
     /**
      * @param {Object <string, any>} response Parsed JSON representation of the response from calling activeturn.php
-     * @param {Object <string, any>} prehuntUser The pre-hunt user object.
+     * @param {Object <string, any>} prehuntUser The user object obtained prior to invoking `activeturn.php`.
      */
     function sendHuntWithUser(response, prehuntUser) {
         window.console.log({message: "In sendHuntWithUser", response, prehuntUser});
@@ -215,7 +211,8 @@
             "num_active_turns",
             "next_activeturn_seconds"
         ];
-        // Trap checks may have occurred since the last hunt! A call to user/data.php does NOT compute them.
+        // Trap checks may have occurred since the last hunt! A call to `user/data.php` does NOT compute them.
+        // Friend hunts / external page loads / etc, however, will. (What's the smallest ajax call that will? journal?)
         const possibledifferingProperties = [
             "bait_quantity",
             "gold",
@@ -231,19 +228,39 @@
         const preHuntKeys = new Set();
         const postHuntKeys = new Set(Object.keys(response.user));
         const diffKeys = {};
-        for (let [key, value] of Object.entries(prehuntUser))
-        {
-            preHuntKeys.add(key);
-            if (!postHuntKeys.has(key))
-                diffKeys[key] = {in: "pre", val: value};
-            else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-                if (value !== response.user[key])
-                    diffKeys[key] = {pre: value, post: response.user[key]};
+        // Store the difference between generic primitives and certain objects in `result`
+        /**
+         *
+         * @param {Object <string, any>} result
+         * @param {Set<string>} pre
+         * @param {Set<string>} post
+         * @param {Object <string, any>} obj_pre
+         * @param {Object <string, any>} obj_post
+         */
+        function diffUserObjects(result, pre, post, obj_pre, obj_post) {
+            const allowedSimpleDiff = new Set(['string','number','boolean']);
+            for (let [key, value] of Object.entries(obj_pre)) {
+                pre.add(key);
+                if (!post.has(key)) {
+                    result[key] = {in: "pre", val: value};
+                } else if (allowedSimpleDiff.has(typeof value)) {
+                    if (value !== obj_post[key]) {
+                        result[key] = {"pre": value, "post": obj_post[key]};
+                    }
+                } else if (key === "viewing_atts" || key === "quests") {
+                    // Object comparison requires recursion.
+                    result[key] = {};
+                    diffUserObjects(result[key], new Set(), new Set(Object.keys(obj_post[key])), obj_pre[key], obj_post[key]);
+                    if (!Object.keys(result[key]).length) {
+                        delete result[key];
+                    }
+                }
             }
+            Object.keys(obj_post).filter(key => !pre.has(key)).forEach(key => {
+                result[key] = {in: "post", val: obj_post[key]};
+            });
         }
-        Object.keys(response.user).filter(key => !preHuntKeys.has(key)).forEach(key => {
-            diffKeys[key] = {in: "post", val: response.user[key]};
-        });
+        diffUserObjects(diffKeys, preHuntKeys, postHuntKeys, prehuntUser, response.user);
         window.console.log({diffKeys});
     }
 
