@@ -231,14 +231,14 @@
         // Store the difference between generic primitives and certain objects in `result`
         /**
          *
-         * @param {Object <string, any>} result
-         * @param {Set<string>} pre
-         * @param {Set<string>} post
-         * @param {Object <string, any>} obj_pre
-         * @param {Object <string, any>} obj_post
+         * @param {Object <string, any>} result The object to write diffs into
+         * @param {Set<string>} pre Keys associated with the current `obj_pre`
+         * @param {Set<string>} post Keys associated with the current `obj_post`
+         * @param {Object <string, any>} obj_pre The pre-hunt user object (or associated nested object)
+         * @param {Object <string, any>} obj_post The post-hunt user object (or associated nested object)
          */
         function diffUserObjects(result, pre, post, obj_pre, obj_post) {
-            const allowedSimpleDiff = new Set(['string','number','boolean']);
+            const allowedSimpleDiff = new Set(['string', 'number', 'boolean']);
             for (let [key, value] of Object.entries(obj_pre)) {
                 pre.add(key);
                 if (!post.has(key)) {
@@ -247,10 +247,13 @@
                     if (value !== obj_post[key]) {
                         result[key] = {"pre": value, "post": obj_post[key]};
                     }
-                } else if (key === "viewing_atts" || key === "quests") {
+                } else if (Array.isArray(value)) {
+                    // TODO: compare arrays
+                } else if (typeof value === 'object' && value instanceof Object) {
                     // Object comparison requires recursion.
                     result[key] = {};
-                    diffUserObjects(result[key], new Set(), new Set(Object.keys(obj_post[key])), obj_pre[key], obj_post[key]);
+                    diffUserObjects(result[key], new Set(), new Set(Object.keys(obj_post[key])), value, obj_post[key]);
+                    // Avoid reporting same-value objects
                     if (!Object.keys(result[key]).length) {
                         delete result[key];
                     }
