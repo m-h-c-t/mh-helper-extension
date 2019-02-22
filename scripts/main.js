@@ -239,7 +239,7 @@
          */
         function diffUserObjects(result, pre, post, obj_pre, obj_post) {
             const allowedSimpleDiff = new Set(['string', 'number', 'boolean']);
-            for (let [key, value] of Object.entries(obj_pre)) {
+            for (let [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith("hash"))) {
                 pre.add(key);
                 if (!post.has(key)) {
                     result[key] = {in: "pre", val: value};
@@ -279,17 +279,18 @@
                     }
                 }
             }
-            Object.keys(obj_post).filter(key => !pre.has(key)).forEach(key => {
-                result[key] = {in: "post", val: obj_post[key]};
-            });
+            Object.keys(obj_post).filter(key => !pre.has(key) && !key.endsWith("hash"))
+                .forEach(key => {
+                    result[key] = {in: "post", val: obj_post[key]};
+                });
         }
         diffUserObjects(diffKeys, preHuntKeys, postHuntKeys, prehuntUser, response.user);
         window.console.log({diffKeys});
     }
 
-    $(document).ajaxSend(getUserBeforeHunting);
 
-    // Listening router
+    // Listening routers
+    $(document).ajaxSend(getUserBeforeHunting);
     $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
     // /* Method */ ajaxOptions.type
     // /* URL */ ajaxOptions.url
