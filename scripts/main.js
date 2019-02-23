@@ -197,7 +197,7 @@
                     window.console.log({message: "Got user object, invoking huntSend", userRqResponse});
                     hunt_xhr.addEventListener("loadend", () => {
                         // Call record hunt with the pre-hunt user object.
-                        sendHuntWithUser(JSON.parse(hunt_xhr.responseText), userRqResponse.user);
+                        recordHuntWithPrehuntUser(JSON.parse(hunt_xhr.responseText), userRqResponse.user);
                     }, false);
                     huntSend.apply(hunt_xhr, huntArgs);
                 });
@@ -209,88 +209,6 @@
         window.console.log({message: "Defined the xhr constructor"});
     }
 
-    /**
-     * @param {Object <string, any>} response Parsed JSON representation of the response from calling activeturn.php
-     * @param {Object <string, any>} prehuntUser The user object obtained prior to invoking `activeturn.php`.
-     */
-    function sendHuntWithUser(response, prehuntUser) {
-        window.console.log({message: "In sendHuntWithUser", response, prehuntUser});
-        // Require some difference between the initial and final (no difference => no hunt separating them)
-        const requiredDifferences = [
-            "num_active_turns",
-            "next_activeturn_seconds"
-        ];
-        // Trap checks may have occurred since the last hunt! A call to `user/data.php` does NOT compute them.
-        // Friend hunts / external page loads / etc, however, will. (What's the smallest ajax call that will? journal?)
-        const possibledifferingProperties = [
-            "bait_quantity",
-            "gold",
-            "points",
-            "last_active",
-            "last_activeturn_timestamp",
-            "points",
-            "shield_seconds",
-            "trinket_quantity",
-            "trap_aura_hash",
-            "quests"
-        ];
-        const diffKeys = {};
-        /**
-         * Store the difference between generic primitives and certain objects in `result`
-         * @param {Object <string, any>} result The object to write diffs into
-         * @param {Set<string>} pre Keys associated with the current `obj_pre`
-         * @param {Set<string>} post Keys associated with the current `obj_post`
-         * @param {Object <string, any>} obj_pre The pre-hunt user object (or associated nested object)
-         * @param {Object <string, any>} obj_post The post-hunt user object (or associated nested object)
-         */
-        function diffUserObjects(result, pre, post, obj_pre, obj_post) {
-            const allowedSimpleDiff = new Set(['string', 'number', 'boolean']);
-            for (let [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith("hash"))) {
-                pre.add(key);
-                if (!post.has(key)) {
-                    result[key] = {in: "pre", val: value};
-                } else if (allowedSimpleDiff.has(typeof value)) {
-                    // Some HG endpoints do not cast numeric values to number due to numeric precision issues.
-                    // Thus, the type-converting inequality check is performed instead of strict inequality.
-                    if (value != obj_post[key]) {
-                        result[key] = {"pre": value, "post": obj_post[key]};
-                    }
-                } else if (Array.isArray(value)) {
-                    // Do not modify the element order by sorting.
-                    const other = obj_post[key];
-                    if (value.length > other.length) {
-                        result[key] = {type: "-", "pre": value, "post": other};
-                    } else if (value.length < other.length) {
-                        result[key] = {type: "+", "pre": value, "post": other};
-                    } else {
-                        // Same number of elements. Compare them under the assumption that the elements
-                        // have the same order.
-                        result[key] = {};
-                        diffUserObjects(result[key], new Set(), new Set(Object.keys(other)), value, other);
-                        if (!Object.keys(result[key]).length) {
-                            delete result[key];
-                        }
-                    }
-                } else if (typeof value === 'object' && value instanceof Object) {
-                    // Object comparison requires recursion.
-                    result[key] = {};
-                    diffUserObjects(result[key], new Set(), new Set(Object.keys(obj_post[key])), value, obj_post[key]);
-                    // Avoid reporting same-value objects
-                    if (!Object.keys(result[key]).length) {
-                        delete result[key];
-                    }
-                }
-            }
-            Object.keys(obj_post).filter(key => !pre.has(key) && !key.endsWith("hash"))
-                .forEach(key => {
-                    result[key] = {in: "post", val: obj_post[key]};
-                });
-        }
-        diffUserObjects(diffKeys, new Set(), new Set(Object.keys(response.user)), prehuntUser, response.user);
-        window.console.log({diffKeys});
-    }
-
-
     // Listening routers
     $(document).ajaxSend(getUserBeforeHunting);
     $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
@@ -299,9 +217,7 @@
     // /* Response body */ xhr.responseText
     // /* Request body */ ajaxOptions.data
 
-        if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/turns/activeturn.php")) {
-            recordHunt(xhr);
-        } else if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/relichunter.php")) {
+        if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/relichunter.php")) {
             recordMap(xhr);
         } else if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
             recordConvertible(xhr);
@@ -376,75 +292,127 @@
        sendMessageToServer(map_intake_url, map);
     }
 
-    // Record successful hunt
-    function recordHunt(xhr) {
-        let response = JSON.parse(xhr.responseText);
-        let journal = {};
-        window.console.log("In recordHunt");
-        for (let i = 0; i < response.journal_markup.length; i++) {
-            let journal_render_data = response.journal_markup[i].render_data;
-            if (journal_render_data.css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
-                let rh_message = { // to not set rh flag on regular hunt payload
-                    extension_version: formatVersion(mhhh_version),
-                    user_id: response.user.user_id,
-                    rh_environment: journal_render_data.environment,
-                    entry_timestamp: journal_render_data.entry_timestamp
-                };
-                // Check if rh was caught after reset
-                if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
-                    sendMessageToServer(db_url, rh_message);
+    /**
+     * @param {Object <string, any>} response Parsed JSON representation of the response from calling activeturn.php
+     * @param {Object <string, any>} prehuntUser The user object obtained prior to invoking `activeturn.php`.
+     */
+    function recordHuntWithPrehuntUser(response, prehuntUser) {
+        window.console.log({message: "In sendHuntWithUser", response, prehuntUser});
+        // Require some difference between the initial and final (no difference => no hunt separating them)
+        const requiredDifferences = [
+            "num_active_turns",
+            "next_activeturn_seconds"
+        ];
+        // Trap checks may have occurred since the last hunt! A call to `user/data.php` does NOT compute them.
+        // Friend hunts / external page loads / etc, however, will. (What's the smallest ajax call that will? journal?)
+        const possibledifferingProperties = [
+            "bait_quantity",
+            "gold",
+            "points",
+            "last_active",
+            "last_activeturn_timestamp",
+            "points",
+            "shield_seconds",
+            "trinket_quantity",
+            "trap_aura_hash",
+            "quests"
+        ];
+        const differences = {};
+        /**
+         * Store the difference between generic primitives and certain objects in `result`
+         * @param {Object <string, any>} result The object to write diffs into
+         * @param {Set<string>} pre Keys associated with the current `obj_pre`
+         * @param {Set<string>} post Keys associated with the current `obj_post`
+         * @param {Object <string, any>} obj_pre The pre-hunt user object (or associated nested object)
+         * @param {Object <string, any>} obj_post The post-hunt user object (or associated nested object)
+         */
+        function diffUserObjects(result, pre, post, obj_pre, obj_post) {
+            const allowedSimpleDiff = new Set(['string', 'number', 'boolean']);
+            for (let [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith("hash"))) {
+                pre.add(key);
+                if (!post.has(key)) {
+                    result[key] = {in: "pre", val: value};
+                } else if (allowedSimpleDiff.has(typeof value)) {
+                    // Some HG endpoints do not cast numeric values to number due to numeric precision issues.
+                    // Thus, the type-converting inequality check is performed instead of strict inequality.
+                    if (value != obj_post[key]) {
+                        result[key] = {"pre": value, "post": obj_post[key]};
+                    }
+                } else if (Array.isArray(value)) {
+                    // Do not modify the element order by sorting.
+                    const other = obj_post[key];
+                    if (value.length > other.length) {
+                        result[key] = {type: "-", "pre": value, "post": other};
+                    } else if (value.length < other.length) {
+                        result[key] = {type: "+", "pre": value, "post": other};
+                    } else {
+                        // Same number of elements. Compare them under the assumption that the elements
+                        // have the same order.
+                        result[key] = {};
+                        diffUserObjects(result[key], new Set(), new Set(Object.keys(other)), value, other);
+                        if (!Object.keys(result[key]).length) {
+                            delete result[key];
+                        }
+                    }
+                } else if (typeof value === 'object' && value instanceof Object) {
+                    // Object comparison requires recursion.
+                    result[key] = {};
+                    diffUserObjects(result[key], new Set(), new Set(Object.keys(obj_post[key])), value, obj_post[key]);
+                    // Avoid reporting same-value objects
+                    if (!Object.keys(result[key]).length) {
+                        delete result[key];
+                    }
                 }
-                continue;
             }
-
-            if (Object.keys(journal).length !== 0) {
-                continue;
-            }
-
-            if (journal_render_data.css_class.search(/linked|passive|misc/) !== -1) {
-                continue;
-            }
-
-            if (journal_render_data.css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1 &&
-                journal_render_data.css_class.includes('active')) {
-                journal = response.journal_markup[i];
-                continue;
-            }
+            Object.keys(obj_post).filter(key => !pre.has(key) && !key.endsWith("hash"))
+                .forEach(key => {
+                    result[key] = {in: "post", val: obj_post[key]};
+                });
         }
+        diffUserObjects(differences, new Set(), new Set(Object.keys(response.user)), prehuntUser, response.user);
+        window.console.log({differences});
 
-        if (!response.active_turn || !response.success || !response.journal_markup) {
+        const hunt = parseJournalEntries(response);
+        // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
+        if (!response.success || !response.active_turn) {
             window.console.log("MHHH: Missing Info (trap check or friend hunt)(1)");
             return;
-        }
-
-        if (Object.keys(journal).length === 0) {
+        } else if (!hunt || Object.keys(hunt).length === 0) {
             window.console.log("MHHH: Missing Info (trap check or friend hunt)(2)");
             return;
         }
 
-        let message = {
-            extension_version: formatVersion(mhhh_version),
-            user_id: response.user.user_id
-        };
-        message = getMainHuntInfo(message, response, journal);
+        const diffKeys = new Set(Object.keys(differences));
+        if (!requiredDifferences.every(key => diffKeys.has(key))
+                || response.user.num_active_turns - prehuntUser.num_active_turns !== 1) {
+            window.console.log("MHHH: Required pre/post hunt differences not observed.");
+            return;
+        }
+
+        // Obtain the main hunt information from the journal entry and user objects.
+        const message = createMessageFromHunt(hunt, prehuntUser, response.user);
         if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
             return;
         }
+        if (!message.cheese || !message.cheese.name) {
+            window.console.warn("Cheese missing from pre-hunt user");
+        }
 
-        message = fixLGLocations(message, response, journal);
-        message = getStage(message, response, journal);
-        message = getHuntDetails(message, response, journal);
-        message = fixTransitionMice(message, response, journal); // Must be after get stage and get details to fix bad stages
-
-        if (!message || !message.location || !message.location.name || !message.cheese.name) {
+        // Perform validations and stage corrections.
+        fixLGLocations(message, prehuntUser, response.user, hunt); // needed ?
+        addStage(message, prehuntUser, response.user, hunt);
+        addHuntDetails(message, prehuntUser, response.user, hunt);
+        //validateTransitionMice(message, prehuntUser, response, hunt); // needed ?
+        if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(2)");
             return;
         }
 
-        message = getLoot(message, response, journal);
-        window.console.log({message, userFromHunt: response.user});
-        sendMessageToServer(db_url, message);
+        addLoot(message, hunt);
+        window.console.log({message, prehuntUser, postHuntUser: response.user, hunt});
+        // Upload the hunt record.
+        // sendMessageToServer(db_url, message);
     }
 
     // Record convertible items
@@ -519,7 +487,59 @@
             });
     }
 
-    function getMainHuntInfo(message, response, journal) {
+    /**
+     * Find the active journal entry, and handle supported "bonus journals" such as the Relic Hunter attraction.
+     * @param {Object <string, any>} hunt_response The JSON response returned from a horn sound.
+     * @returns {Object <string, any>} The journal entry corresponding to the active hunt.
+     */
+    function parseJournalEntries(hunt_response) {
+        let journal = {};
+        if (!hunt_response.journal_markup) {
+            return null;
+        }
+        hunt_response.journal_markup.forEach(markup => {
+            const css_class = markup.render_data.css_class;
+            // Handle a Relic Hunter attraction.
+            if (css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
+                const rh_message = {
+                    extension_version: formatVersion(mhhh_version),
+                    user_id: hunt_response.user.user_id,
+                    rh_environment: markup.render_data.environment,
+                    entry_timestamp: markup.render_data.entry_timestamp
+                };
+                // If this occurred after the daily reset, submit it. (Trap checks & friend hunts
+                // may appear and have been back-calculated as occurring before reset).
+                if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
+                    sendMessageToServer(db_url, rh_message);
+                }
+            }
+            else if (Object.keys(journal).length !== 0) {
+                // Only the first regular mouse attraction journal entry can be the active one.
+            }
+            else if (css_class.search(/linked|passive|misc/) !== -1) {
+                // Ignore any friend hunts, trap checks, or custom loot journal entries.
+            }
+            else if (css_class.includes('active') && css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
+                journal = markup;
+            }
+        });
+        return journal;
+    }
+
+    /**
+     * Initialize the message with main hunt details.
+     * @param {Object <string, any>} journal The journal entry corresponding to the active hunt.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @returns {Object <string, any> | null} The message object, or `null` if an error occurred.
+     */
+    function createMessageFromHunt(journal, user, postHuntUser) {
+        const message = {
+            extension_version: formatVersion(mhhh_version)
+        };
+
+        message.user_id = user.user_id; // may need to be converted to number
+
         // Entry ID
         message.entry_id = journal.render_data.entry_id;
 
@@ -527,50 +547,65 @@
         message.entry_timestamp = journal.render_data.entry_timestamp;
 
         // Location
-        let user_resp = response.user;
-        if (!user_resp.location) {
-            console.log('MH Helper: Missing Location');
-            return "";
+        if (!user.location || !postHuntUser.location) {
+            window.console.error('MH Helper: Missing Location');
+            return null;
         }
         message.location = {
-            name: user_resp.location,
-            id: user_resp.environment_id
+            name: user.location,
+            id: user.environment_id
         };
+        if (postHuntUser.environment_id != user.environment_id) {
+            window.console.log(`User auto-traveled from ${user.location} to ${postHuntUser.location}.`);
+        }
+
+        // Shield (true / false)
+        message.shield = user.has_shield;
+
+        // Total Power, Luck, Attraction
+        message.total_power = user.trap_power;
+        if (postHuntUser.trap_power !== user.trap_power) {
+            window.console.log(`User setup power changed from ${user.trap_power} to ${postHuntUser.trap_power}`);
+        }
+        message.total_luck = user.trap_luck;
+        if (postHuntUser.trap_luck !== user.trap_luck) {
+            window.console.log(`User setup luck changed from ${user.trap_luck} to ${postHuntUser.trap_luck}`);
+        }
+        message.attraction_bonus = Math.round(user.trap_attraction_bonus * 100);
+        if (postHuntUser.trap_attraction_bonus !== user.trap_attraction_bonus) {
+            window.console.log(`User setup attraction bonus changed from ${user.trap_attraction_bonus} to ${postHuntUser.trap_attraction_bonus}`);
+        }
 
         // Setup components
-        let components = [
+        const components = [
             { prop: 'weapon', message_field: 'trap', required: true, replacer: /\ trap/i },
             { prop: 'base', message_field: 'base', required: true, replacer: /\ base/i },
             { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm/i },
             { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese/i }
         ];
-        // Some components are required.
-        let missing = components.filter(component => component.required === true && !user_resp.hasOwnProperty(component.prop + '_name'));
+        // All pre-hunt users must have a weapon, base, and cheese.
+        const missing = components.filter(component => component.required === true && !user.hasOwnProperty(`${component.prop}_name`));
         if (missing.length) {
-            console.log('MH Helper: Missing required setup component:' + missing.map(c => c.message_field).join(', '));
-            return "";
+            window.console.log(`MH Helper: Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
+            return null;
         }
         // Assign component values to the message.
         components.forEach(component => {
-            let prop_name = component.prop + '_name';
-            let prop_id = component.prop + '_item_id';
-            if (!user_resp[prop_name]) return;
-            message[component.message_field] = {
-                id: user_resp[prop_id],
-                name: user_resp[prop_name].replace(component.replacer, '')
+            const prop_name = `${component.prop}_name`;
+            const prop_id = `${component.prop}_item_id`;
+            const item_name = user[prop_name];
+            message[component.message_field] = (!item_name) ? {} : {
+                id: user[prop_id],
+                name: item_name.replace(component.replacer, '')
             };
+
+            if (item_name !== postHuntUser[prop_name]) {
+                window.console.log(`User ${component.message_field} changed: Was ${item_name} and is now ${postHuntUser[prop_name]}`);
+            }
         });
 
-        // Shield (true / false)
-        message.shield = user_resp.has_shield;
-
-        // Total Power, Luck, Attraction
-        message.total_power = user_resp.trap_power;
-        message.total_luck = user_resp.trap_luck;
-        message.attraction_bonus = Math.round(user_resp.trap_attraction_bonus * 100);
-
         // Caught / Attracted / FTA'd
-        let journal_css = journal.render_data.css_class;
+        const journal_css = journal.render_data.css_class;
         if (journal_css.includes('attractionfailure')) {
             message.caught = 0;
             message.attracted = 0;
@@ -581,8 +616,8 @@
             } else if (journal_css.includes('catchfailure')) {
                 message.caught = 0;
             } else {
-                console.log('MH Helper: Unknown "catch" journal css: ' + journal_css);
-                return message;
+                window.console.error(`MHHH: Unknown "catch" journal css: ${journal_css}`);
+                return null;
             }
             // Remove HTML tags and other text around the mouse name.
             message.mouse = journal.render_data.text
@@ -594,25 +629,71 @@
         return message;
     }
 
-    function fixLGLocations(message, response, journal) {
-        if (message.location.id === 35) {
-            if (response.user.quests.QuestLivingGarden.is_normal) {
+    /**
+     * HG journal data for the Living & Twisted Garden areas is sometimes incorrect. Use the quest data
+     * to properly assign the hunt location. Throws if unexpected results are observed.
+     * @param {Object <string, any>} message The message to be sent
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
+     */
+    function fixLGLocations(message, user, postHuntUser, hunt) {
+        if (message.location.id === 35 || message.location.id === 5002) {
+            const wasNormal = user.quests.QuestLivingGarden.is_normal;
+            const isNormal = postHuntUser.quests.QuestLivingGarden.is_normal;
+            if (wasNormal === true && isNormal === false) {
+                if (message.mouse.name !== "Carmine the Apothecary" || message.caught === 0) {
+                    window.console.log({record: message, preHunt: user.quests.QuestLivingGarden, postHunt: postHuntUser.quests.QuestLivingGarden, journal: hunt});
+                    throw new Error("Transitioned from normal to twisted, but didn't catch Carmine.");
+                }
+            } else if (wasNormal === false && isNormal === true) {
+                if (message.cheese.name === "Duskshade Camembert") {
+                    window.console.log({record: message, preHunt: user.quests.QuestLivingGarden, postHunt: postHuntUser.quests.QuestLivingGarden, journal: hunt});
+                    throw new Error("Transitioned from twisted to normal, but was using Duskshade cheese");
+                }
+            }
+
+            if (wasNormal) {
                 message.location.name = 'Living Garden';
                 message.location.id = 35;
             } else {
                 message.location.name = 'Twisted Garden';
                 message.location.id = 5002;
             }
-        } else if (message.location.id === 41) {
-            if (response.user.quests.QuestLostCity.is_normal) {
+        } else if (message.location.id === 41 || message.location.id === 5000) {
+            const wasNormal = user.quests.QuestLostCity.is_normal;
+            const isNormal = postHuntUser.quests.QuestLostCity.is_normal;
+            if (wasNormal === true && isNormal === false) {
+                window.console.log({record: message, preHunt: user.quests.QuestLostCity, postHunt: postHuntUser.quests.QuestLostCity, journal: hunt});
+                throw new Error("Transitioned from normal to twisted--somehow.");
+            } else if (wasNormal === false && isNormal === true) {
+                if (message.cheese.name === "Graveblossom Camembert") {
+                    window.console.log({record: message, preHunt: user.quests.QuestLostCity, postHunt: postHuntUser.quests.QuestLostCity, journal: hunt});
+                    throw new Error("Transitioned from twisted to normal, but was using Graveblossom cheese");
+                }
+            }
+
+            if (wasNormal) {
                 message.location.name = 'Lost City';
                 message.location.id = 5000;
             } else {
                 message.location.name = 'Cursed City';
                 message.location.id = 41;
             }
-        } else if (message.location.id === 42) {
-            if (response.user.quests.QuestSandDunes.is_normal) {
+        } else if (message.location.id === 42 || message.location.id === 5001) {
+            const wasNormal = user.quests.QuestSandDunes.is_normal;
+            const isNormal = postHuntUser.quests.QuestSandDunes.is_normal;
+            if (wasNormal === true && isNormal === false) {
+                window.console.log({record: message, preHunt: user.quests.QuestSandDunes, postHunt: postHuntUser.quests.QuestSandDunes, journal: hunt});
+                throw new Error("Transitioned from normal to twisted--somehow.");
+            } else if (wasNormal === false && isNormal === true) {
+                if (message.cheese.name === "Graveblossom Camembert") {
+                    window.console.log({record: message, preHunt: user.quests.QuestSandDunes, postHunt: postHuntUser.quests.QuestSandDunes, journal: hunt});
+                    throw new Error("Transitioned from twisted to normal, but was using Graveblossom cheese");
+                }
+            }
+
+            if (wasNormal) {
                 message.location.name = 'Sand Dunes';
                 message.location.id = 5001;
             } else {
@@ -620,7 +701,6 @@
                 message.location.id = 42;
             }
         }
-        return message;
     }
 
     function fixTransitionMice(message, response, journal) {
@@ -802,121 +882,98 @@
         if (quest != null && quest.has_stockpile == "found" && !quest.mice.costumed_pig.includes("caught")) {
             return "";
         }
-
-        return message;
     }
 
-    function getStage(message, response, journal) {
-        if (!message) {
-            return "";
-        }
-        switch (response.user.location) {
-            case "Balack's Cove":
-                message = getBalacksCoveStage(message, response, journal);
-                break;
-            case "Bristle Woods Rift":
-                message = getBristleWoodsRiftStage(message, response, journal);
-                break;
-            case "Burroughs Rift":
-                message = getBurroughsRiftStage(message, response, journal);
-                break;
-            case "Claw Shot City":
-                message = getClawShotCityStage(message, response, journal);
-                break;
-            case "Cursed City":
-            case "Lost City":
-                message = getLostCityStage(message, response, journal);
-                break;
-            case "Festive Comet":
-                message = getFestiveCometStage(message, response, journal);
-                break;
-            case "Fiery Warpath":
-                message = getFieryWarpathStage(message, response, journal);
-                break;
-            case "Forbidden Grove":
-                message = getForbiddenGroveStage(message, response, journal);
-                break;
-            case "Fort Rox":
-                message = getFortRoxStage(message, response, journal);
-                break;
-            case "Furoma Rift":
-                message = getFuromaRiftStage(message, response, journal);
-                break;
-            case "Gnawnian Express Station":
-                message = getTrainStage(message, response, journal);
-                break;
-            case "Harbour":
-                message = getHarbourStage(message, response, journal);
-                break;
-            case "Iceberg":
-                message = getIcebergStage(message, response, journal);
-                break;
-            case "Labyrinth":
-                message = getLabyrinthStage(message, response, journal);
-                break;
-            case "Living Garden":
-                message = getLivingGardenStage(message, response, journal);
-                break;
-            case "Mousoleum":
-                message = getMousoleumStage(message, response, journal);
-                break;
-            case "Moussu Picchu":
-                message = getMoussuPicchuStage(message, response, journal);
-                break;
-            case "Sand Dunes":
-                message = getSandDunesStage(message, response, journal);
-                break;
-            case "Seasonal Garden":
-                message = getSeasonalGardenStage(message, response, journal);
-                break;
-            case "Sunken City":
-                message = getSunkenCityStage(message, response, journal);
-                break;
-            case "Toxic Spill":
-                message = getToxicSpillStage(message, response, journal);
-                break;
-            case "Twisted Garden":
-                message = getTwistedGardenStage(message, response, journal);
-                break;
-            case "Whisker Woods Rift":
-                message = getWhiskerWoodsRiftStage(message, response, journal);
-                break;
-            case "Zokor":
-                message = getZokorStage(message, response, journal);
-                break;
-            case "Mysterious Anomaly":
-                message = getMysteriousAnomalyStage(message, response, journal);
-                break;
-        }
 
-        return message;
+    /** @type {Object <string, Function>} */
+    const locationStageLookup = {
+        "Balack's Cove": getBalacksCoveStage,
+        "Bristle Woods Rift": getBristleWoodsRiftStage,
+        "Burroughs Rift": getBurroughsRiftStage,
+        "Claw Shot City": getClawShotCityStage,
+        "Cursed City": getLostCityStage,
+        "Festive Comet": getFestiveCometStage,
+        "Fiery Warpath": getFieryWarpathStage,
+        "Forbidden Grove": getForbiddenGroveStage,
+        "Fort Rox": getFortRoxStage,
+        "Furoma Rift": getFuromaRiftStage,
+        "Gnawnian Express Station": getTrainStage,
+        "Harbour": getHarbourStage,
+        "Iceberg": getIcebergStage,
+        "Labyrinth": getLabyrinthStage,
+        "Living Garden": getLivingGardenStage,
+        "Lost City": getLostCityStage,
+        "Mousoleum": getMousoleumStage,
+        "Moussu Picchu": getMoussuPicchuStage,
+        "Mysterious Anomaly": getMysteriousAnomalyStage,
+        "Sand Dunes": getSandDunesStage,
+        "Seasonal Garden": getSeasonalGardenStage,
+        "Sunken City": getSunkenCityStage,
+        "Toxic Spill": getToxicSpillStage,
+        "Twisted Garden": getTwistedGardenStage,
+        "Whisker Woods Rift": getWhiskerWoodsRiftStage,
+        "Zokor": getZokorStage,
+    };
+
+    /**
+     * Use `quests` data to assign appropriate location stage information.
+     * @param {Object <string, any>} message The message to be sent
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
+     */
+    function addStage(message, user, postHuntUser, hunt) {
+        const stageFunc = locationStageLookup[user.location];
+        if (stageFunc) {
+            stageFunc(message, user, postHuntUser, hunt);
+        }
     }
 
-    function getMousoleumStage(message, response, journal) {
-        let quest = response.user.quests.QuestMousoleum;
+    /**
+     * Add the "wall state" for Mousoleum hunts.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getMousoleumStage(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestMousoleum;
         if (quest.has_wall) {
             message.stage = "Has Wall";
         } else {
             message.stage = "No Wall";
         }
-
-        return message;
+        if (quest.has_wall && !postHuntUser.quests.QuestMousoleum.has_wall) {
+            window.console.log({message: "Wall broke down on this active hunt.", pre: quest, post: postHuntUser.quests.QuestMousoleum});
+        }
     }
 
-    function getHarbourStage(message, response, journal) {
-        let quest = response.user.quests.QuestHarbour;
+    /**
+     * Separate hunts with crew available from those without. Each crew member can be caught only once per bounty.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getHarbourStage(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestHarbour;
         // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
         if (quest.status === "searchStarted" && !quest.can_claim) {
             message.stage = "On Bounty";
         } else {
             message.stage = "No Bounty";
         }
-
-        return message;
     }
 
-    function getClawShotCityStage(message, response, journal) {
-        let quest = response.user.quests.QuestClawShotCity;
+    /**
+     *
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getClawShotCityStage(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestClawShotCity;
         /**
          * !map_active && !has_wanted_poster => Bounty Hunter can be attracted
          * !map_active && has_wanted_poster => Bounty Hunter is not attracted
@@ -927,122 +984,166 @@
             message.stage = "No poster";
         } else if (!quest.map_active && quest.has_wanted_poster) {
             message.stage = "Has poster";
-        } else {
+        } else if (quest.map_active) {
             message.stage = "Using poster";
+        } else {
+            window.console.log({record: message, pre: quest, post: postHuntUser.quests.QuestClawShotCity});
+            throw new Error("MHHH: Unexpected Claw Shot City quest state");
         }
-
-        return message;
     }
 
-    function getFestiveCometStage(message, response, journal) {
-        let quest = response.user.quests.QuestWinterHunt2018;
+    /**
+     * Set the stage based on decoration and boss status.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getFestiveCometStage(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestWinterHunt2018;
         if (!quest) {
-            return message;
+            return;
         }
 
         if (quest.comet.at_boss === true) {
             message.stage = "Boss";
         } else {
-            message.stage = quest.decorations.current_decoration;
-            if (message.stage == "none") {
-                message.stage = "No Decor";
+            let theme = quest.decorations.current_decoration || "none";
+            if (theme == "none") {
+                theme = "No Decor";
             } else {
-                message.stage = message.stage.replace(/_festive_decoration_stat_item/i, '');
-                message.stage = message.stage.replace(/_/i, ' ');
-
-                // Capitalize every word in the stage
-                message.stage = message.stage.split(" ");
-                for (let i = 0, x = message.stage.length; i < x; i++) {
-                    message.stage[i] = message.stage[i][0].toUpperCase() + message.stage[i].substr(1);
-                }
-                message.stage = message.stage.join(" ");
+                // Capitalize every useful word in the decoration string.
+                theme = theme.replace(/_festive_decoration_stat_item/i, '')
+                    .replace(/_/i, ' ')
+                    .split(" ")
+                    .map(word => word[0].toUpperCase() + word.substr(1))
+                    .join(" ");
             }
+            message.stage = theme;
         }
-        return message;
     }
 
-    function getMoussuPicchuStage(message, response, journal) {
-        let elements = response.user.quests.QuestMoussuPicchu.elements;
+    /**
+     * MP stage reflects the weather categories
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getMoussuPicchuStage(message, user, postHuntUser, hunt) {
+        const elements = user.quests.QuestMoussuPicchu.elements;
         message.stage = {
-            rain: 'Rain ' + elements.rain.level,
-            wind: 'Wind ' + elements.wind.level
+            rain: `Rain ${elements.rain.level}`,
+            wind: `Wind ${elements.wind.level}`
         };
-
-        return message;
     }
 
-    function getWhiskerWoodsRiftStage(message, response, journal) {
-        let zones = response.user.quests.QuestRiftWhiskerWoods.zones;
-        let clearing = zones.clearing.level;
-        let tree = zones.tree.level;
-        let lagoon = zones.lagoon.level;
+    /**
+     * WWR stage reflects the zones' rage categories
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getWhiskerWoodsRiftStage(message, user, postHuntUser, hunt) {
+        const zones = user.quests.QuestRiftWhiskerWoods.zones;
+        const clearing = zones.clearing.level;
+        const tree = zones.tree.level;
+        const lagoon = zones.lagoon.level;
 
-        message.stage = {};
+        const rage = {};
         if (0 <= clearing && clearing <= 24) {
-            message.stage.clearing = 'CC 0-24';
-        } else if (25 <= clearing && clearing <= 49) {
-            message.stage.clearing = 'CC 25-49';
-        } else {
-            message.stage.clearing = 'CC 50';
+            rage.clearing = 'CC 0-24';
+        } else if (clearing <= 49) {
+            rage.clearing = 'CC 25-49';
+        } else if (clearing === 50) {
+            rage.clearing = 'CC 50';
         }
 
         if (0 <= tree && tree <= 24) {
-            message.stage.tree = 'GGT 0-24';
-        } else if (25 <= tree && tree <= 49) {
-            message.stage.tree = 'GGT 25-49';
-        } else {
-            message.stage.tree = 'GGT 50';
+            rage.tree = 'GGT 0-24';
+        } else if (tree <= 49) {
+            rage.tree = 'GGT 25-49';
+        } else if (tree === 50) {
+            rage.tree = 'GGT 50';
         }
 
         if (0 <= lagoon && lagoon <= 24) {
-            message.stage.lagoon = 'DL 0-24';
-        } else if (25 <= lagoon && lagoon <= 49) {
-            message.stage.lagoon = 'DL 25-49';
-        } else {
-            message.stage.lagoon = 'DL 50';
+            rage.lagoon = 'DL 0-24';
+        } else if (lagoon <= 49) {
+            rage.lagoon = 'DL 25-49';
+        } else if (lagoon === 50) {
+            rage.lagoon = 'DL 50';
+        }
+        if (!rage.clearing || !rage.tree || !rage.lagoon) {
+            window.console.log({record: message, pre: user.quests.QuestRiftWhiskerWoods, post: postHuntUser.quests.QuestRiftWhiskerWoods});
+            throw new Error("Unexpected WWR quest state");
         }
 
-        return message;
+        message.stage = rage;
     }
 
-    function getLabyrinthStage(message, response, journal) {
-        if (response.user.quests.QuestLabyrinth.status === "hallway") {
-            message.stage = response.user.quests.QuestLabyrinth.hallway_name;
+    /**
+     * Labyrinth stage reflects the type of hallway
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getLabyrinthStage(message, user, postHuntUser, hunt) {
+        if (user.quests.QuestLabyrinth.status === "hallway") {
+            const hallway = user.quests.QuestLabyrinth.hallway_name;
             // Remove first word (like Short)
-            message.stage = message.stage.substr(message.stage.indexOf(" ") + 1);
-            message.stage = message.stage.replace(/\ hallway/i, '');
+            message.stage = hallway.substr(hallway.indexOf(" ") + 1).replace(/\ hallway/i, '');
         } else {
+            window.console.log({message: "Non-hallway Labyrinth hunts are boring", pre: user.quests.QuestLabyrinth, post: postHuntUser.quests.QuestLabyrinth});
             // Not recording last hunt of a hallway and intersections at this time
-            return;
+            message.location = null;
         }
-        return message;
     }
 
-    function getFieryWarpathStage(message, response, journal) {
-        let wave = response.user.viewing_atts.desert_warpath.wave;
-        if (wave === 'portal') {
-            message.stage = 'Portal';
-        } else {
-            message.stage = "Wave " + wave;
-        }
-
-        return message;
+    /**
+     * Stage in the FW reflects the current wave only.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getFieryWarpathStage(message, user, postHuntUser, hunt) {
+        const wave = user.viewing_atts.desert_warpath.wave;
+        message.stage = (wave === "portal") ? "Portal" : `Wave ${wave}`;
     }
 
-    function getBalacksCoveStage(message, response, journal) {
-        let tide = response.user.viewing_atts.tide;
+    /**
+     * Set the stage based on the tide
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getBalacksCoveStage(message, user, postHuntUser, hunt) {
+        const tide = user.viewing_atts.tide;
         if (tide) {
-            message.stage = tide.substr(0, 1).toUpperCase() + tide.substr(1);
+            message.stage = tide.charAt(0).toUpperCase() + tide.substr(1);
             if (message.stage === "Med") {
                 message.stage = "Medium";
             }
             message.stage += " Tide";
+        } else {
+            window.console.log({record: message, pre: user, post: postHuntUser});
+            throw new Error("No tide found for Balack's Cove");
         }
-        return message;
     }
 
-    function getSeasonalGardenStage(message, response, journal) {
-        switch (response.user.viewing_atts.season) {
+    /**
+     * Read the viewing attributes to determine the season.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getSeasonalGardenStage(message, user, postHuntUser, hunt) {
+        switch (user.viewing_atts.season) {
             case "sr":
                 message.stage = "Summer";
                 break;
@@ -1053,57 +1154,83 @@
                 message.stage = "Winter";
                 break;
             default:
+                window.console.log({message: "Assumed spring", season: user.viewing_atts.season, pre: user, post: postHuntUser});
                 message.stage = "Spring";
                 break;
         }
-        return message;
     }
 
-    function getLivingGardenStage(message, response, journal) {
-        let bucket = response.user.quests.QuestLivingGarden.minigame.bucket_state;
+    /**
+     * Read the bucket state to determine the stage
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getLivingGardenStage(message, user, postHuntUser, hunt) {
+        const bucket = user.quests.QuestLivingGarden.minigame.bucket_state;
         if (bucket) {
             if (bucket === "filling") {
                 message.stage = "Not Pouring";
             } else {
+                window.console.log({message: "Assumed poured state", bucket, pre: user.quests.QuestLivingGarden, post: postHuntUser.quests.QuestLivingGarden});
                 message.stage = "Pouring";
             }
-        }
-        return message;
-    }
-
-    function getSandDunesStage(message, response, journal) {
-        if (response.user.quests.QuestSandDunes.minigame.has_stampede) {
-            message.stage = "Stampede";
         } else {
-            message.stage = "No Stampede";
+            window.console.log({record: message, pre: user, post: postHuntUser});
+            throw new Error("No bucket found for Living Garden");
         }
-        return message;
     }
 
-    function getLostCityStage(message, response, journal) {
-        if (response.user.quests.QuestLostCity.minigame.is_cursed) {
-            message.stage = "Cursed";
-        } else {
-            message.stage = "Not Cursed";
-        }
-        return message;
+    /**
+     * Determine if there is a stampede active
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getSandDunesStage(message, user, postHuntUser, hunt) {
+        message.stage = (user.quests.QuestSandDunes.minigame.has_stampede) ? "Stampede" : "No Stampede";
     }
 
-    function getTwistedGardenStage(message, response, journal) {
-        if (response.user.quests.QuestLivingGarden.minigame.vials_state === "dumped") {
-            message.stage = "Pouring";
-        } else {
-            message.stage = "Not Pouring";
-        }
-        return message;
+    /**
+     * Indicate whether or not the Cursed / Corrupt mouse is present
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getLostCityStage(message, user, postHuntUser, hunt) {
+        // TODO: Partially cursed, for Cursed City?
+        message.stage = (user.quests.QuestLostCity.minigame.is_cursed) ? "Cursed" : "Not Cursed";
     }
 
-    function getIcebergStage(message, response, journal) {
-        let phase = response.user.quests.QuestIceberg.current_phase;
+    /**
+     * Read the state of both buckets. TODO: refactor to `getGardenStage` for both LG/TG.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getTwistedGardenStage(message, user, postHuntUser, hunt) {
+        message.stage = (user.quests.QuestLivingGarden.minigame.vials_state === "dumped")
+            ? "Pouring" : "Not Pouring";
+    }
+
+    /**
+     * Report the distance or obstacle
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getIcebergStage(message, user, postHuntUser, hunt) {
+        const phase = user.quests.QuestIceberg.current_phase;
         if (!phase) {
-            return "";
+            window.console.log({message: "No Iceberg quest data", pre: user.quests.QuestIceberg, post: postHuntUser.quests.QuestIceberg});
+            throw new Error("Unable to set Iceberg phase");
         }
-
+        // TODO: Special stage for first & second icewing hunting?
         // Switch on current depth after checking what phase has for generals
         switch (phase) {
             case "Treacherous Tunnels":
@@ -1130,25 +1257,27 @@
             case "General":
                 message.stage = "Generals";
                 break;
+            default:
+                window.console.log({record: message, pre: user.quests.QuestIceberg, post: postHuntUser.quests.QuestIceberg});
+                throw new Error(`Unexpected Iceberg phase ${phase}`);
         }
-        return message;
     }
 
-    function getSunkenCityStage(message, response, journal) {
-        let quest = response.user.quests.QuestSunkenCity;
+    /**
+     * Report the zone and depth, if any
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getSunkenCityStage(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestSunkenCity;
         if (!quest.is_diving) {
             message.stage = "Docked";
-            return message;
+            return;
         }
 
-        // If the hunter exited a zone, it gets complicated to determine what was the previous zone,
-        // so just skip recording any zone
-        if (response.journal_markup.some(markup => markup.render_data.text.includes("I finished exploring"))) {
-            return "";
-        }
-
-        // "if else" faster than "switch" calculations
-        let depth = quest.distance;
+        const depth = quest.distance;
         message.stage = quest.zone_name;
         if (depth < 2000) {
             message.stage += " 0-2km";
@@ -1161,17 +1290,23 @@
         } else if (depth >= 25000) {
             message.stage += " 25km+";
         }
-
-        return message;
     }
 
-    function getZokorStage(message, response, journal) {
-        let zokor_district = response.user.quests.QuestAncientCity.district_name;
+    /**
+     * Report the stage as the type and quantity of clues required.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getZokorStage(message, user, postHuntUser, hunt) {
+        const zokor_district = user.quests.QuestAncientCity.district_name;
         if (!zokor_district) {
-            return message;
+            window.console.log({message: "No Zokor district information", pre: user, post: postHuntUser});
+            return;
         }
 
-        let zokor_stages = {
+        const zokor_stages = {
             "Garden":     "Farming 0+",
             "Study":      "Scholar 15+",
             "Shrine":     "Fealty 15+",
@@ -1188,23 +1323,29 @@
             "Sanctum":    "Fealty 80+"
         };
 
-        $.each(zokor_stages, (key, value) => {
-            let search_string = new RegExp(key, "i");
-            if (zokor_district.search(search_string) !== -1) {
+        for (const [key, value] of Object.entries(zokor_stages)) {
+            const pattern = new RegExp(key, "i");
+            if (zokor_district.search(pattern) !== -1) {
                 message.stage = value;
-                return false;
+                break;
             }
-        });
-
-        if (!message.stage) {
-            message.stage = zokor_district;
         }
 
-        return message;
+        if (!message.stage) {
+            window.console.log({message: "Did not match known Zokor stages to current district", zokor_district, pre: user, post: postHuntUser});
+            message.stage = zokor_district;
+        }
     }
 
-    function getFuromaRiftStage(message, response, journal) {
-        switch (response.user.quests.QuestRiftFuroma.droid.charge_level) {
+    /**
+     * Report the pagoda & battery charge information.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getFuromaRiftStage(message, user, postHuntUser, hunt) {
+        switch (user.quests.QuestRiftFuroma.droid.charge_level) {
             case "":
                 message.stage = "Outside";
                 break;
@@ -1238,13 +1379,22 @@
             case "charge_level_ten":
                 message.stage = "Battery 10";
                 break;
+            default:
+                window.console.log({message: "Unknown battery state", pre: user.quests.QuestRiftFuroma, post: postHuntUser.quests.QuestRiftFuroma});
+                throw new Error("Could not determine Furoma Rift battery state");
         }
-        return message;
     }
 
-    function getToxicSpillStage(message, response, journal) {
-        let titles = response.user.quests.QuestPollutionOutbreak.titles;
-        let formatted_titles = {
+    /**
+     *
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getToxicSpillStage(message, user, postHuntUser, hunt) {
+        const titles = user.quests.QuestPollutionOutbreak.titles;
+        const formatted_titles = {
             hero:                 'Hero',
             knight:               'Knight',
             lord_lady:            'Lord/Lady',
@@ -1254,18 +1404,27 @@
             grand_duke:           'Grand Duke/Duchess',
             archduke_archduchess: 'Archduke/Archduchess'
         };
-        $.each(titles, (title, level) => {
-            if (!level.active) {
-                return true; // Continue
+        for (const [title, level] of Object.entries(titles)) {
+            if (level.active) {
+                message.stage = formatted_titles[title];
+                break;
             }
-            message.stage = formatted_titles[title];
-            return false; // Break
-        });
-        return message;
+        }
+        if (!message.stage) {
+            window.console.log({record: message, pre: user.quests.QuestPollutionOutbreak, post: postHuntUser.quests.QuestPollutionOutbreak});
+            throw new Error("Unable to determine active outbreak")
+        }
     }
 
-    function getBurroughsRiftStage(message, response, journal) {
-        let quest = response.user.quests.QuestRiftBurroughs;
+    /**
+     * Report the misting state
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getBurroughsRiftStage(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestRiftBurroughs;
         switch (quest.mist_tier) {
             case "tier_0":
                 message.stage = "Mist 0";
@@ -1281,60 +1440,93 @@
                 break;
         }
 
-        if (!quest.can_mist) {
-            return message;
-        }
-
-        // Correcting edge cases, still doesn't cover mist level 1->0
-        if (quest.is_misting) {
-            if (quest.mist_released === 1) {
-                message.stage = "Mist 0";
-            } else if (quest.mist_released === 6) {
-                message.stage = "Mist 1-5";
-            } else if (quest.mist_released === 19) {
-                message.stage = "Mist 6-18";
+        // Validate misting & edge behaviors.
+        const mist_pre = quest.mist_released;
+        const mist_post = postHuntUser.quests.QuestRiftBurroughs.mist_released;
+        if (quest.is_misting && quest.can_mist) {
+            if (mist_post < 20 && mist_post - mist_pre !== 1) {
+                throw new Error("Bad mist transition");
             }
         } else {
-            if (quest.mist_released === 18) {
-                message.stage = "Mist 19-20";
-            } else if (quest.mist_released === 5) {
-                message.stage = "Mist 6-18";
+            if (mist_pre > 0 && mist_pre - mist_post !== 1) {
+                throw new Error("Bad mist transition");
             }
         }
-
-        return message;
+        if (mist_pre === 0 && quest.mist_tier === "tier_0") {
+            // OK
+        } else if (mist_pre > 0 && mist_pre <= 5 && quest.mist_tier === "tier_1") {
+            // OK
+        } else if (mist_pre > 5 && mist_pre <= 18 && quest.mist_tier === "tier_2") {
+            // OK
+        } else if (mist_pre > 18 && quest.mist_tier === "tier_3") {
+            // OK
+        } else {
+            window.console.log({record: message, pre: quest, post: postHuntUser.quests.QuestRiftBurroughs});
+            throw new Error("Bad mist validation")
+        }
     }
 
-    function getTrainStage(message, response, journal) {
-        let quest = response.user.quests.QuestTrainStation;
-        if (quest.on_train) {
-            switch (quest.phase_name) {
-                case "Supply Depot":
-                    message.stage = "1. Supply Depot";
-                    break;
-                case "Raider River":
-                    message.stage = "2. Raider River";
-                    break;
-                case "Daredevil Canyon":
-                    message.stage = "3. Daredevil Canyon";
-                    break;
-            }
-
+    /**
+     * Report on the unique minigames in each sub-location
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getTrainStage(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestTrainStation;
+        if (!quest.on_train || quest.on_train === "false") {
+            message.stage = "Station";
+        } else if (quest.current_phase === "supplies") {
+            let stage = "1. Supply Depot";
             if (quest.minigame && quest.minigame.supply_hoarder_turns > 0) {
                 // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
-                message.stage += " - Rush";
+                stage += " - Rush";
             } else {
-                message.stage += " - No Rush";
+                stage += " - No Rush";
             }
-        } else {
-            message.stage = "Station";
+            message.stage = stage;
+        } else if (quest.current_phase === "boarding") {
+            let stage = "2. Raider River";
+            if (quest.minigame && quest.minigame.trouble_area) {
+                const charm_id = message.charm.id;
+                const charmFor = {
+                    "door": 1210,
+                    "rails": 1211,
+                    "roof": 1212
+                };
+                if (charmFor[quest.minigame.trouble_area] === charm_id) {
+                    stage += " - Defending Target";
+                } else if ([1210, 1211, 1212].includes(charm_id)) {
+                    stage += " - Defending Other";
+                } else {
+                    stage += " - Not Defending";
+                }
+            }
+            message.stage = stage;
+        } else if (quest.current_phase === "bridge_jump") {
+            let stage = "3. Daredevil Canyon";
+            const charm_id = message.charm.id;
+            if (charm_id === 1208) {
+                stage += " - Dusty Coal";
+            } else if (charm_id === 1207) {
+                stage += " - Black Powder";
+            } else if (charm_id === 1209) {
+                stage += " - Magmatic Crystal";
+            }
+            message.stage = stage;
         }
-
-        return message;
     }
 
-    function getFortRoxStage(message, response, journal) {
-        let quest = response.user.quests.QuestFortRox;
+    /**
+     * Report the progress through the night
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getFortRoxStage(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestFortRox;
         if (quest.is_lair) {
             message.stage = "Heart of the Meteor";
         } else if (quest.is_dawn) {
@@ -1360,94 +1552,146 @@
                     break;
             }
         }
-
-        return message;
-    }
-
-    function getForbiddenGroveStage(message, response, journal) {
-        if (message.mouse === "Realm Ripper") {
-            message.stage = "Closed";
-        } else {
-            message.stage = "Open";
+        if (!message.stage) {
+            window.console.log({record: message, pre: quest, post: postHuntUser.quests.QuestFortRox});
+            throw new Error("Unable to determine Fort Rox stage");
         }
-
-        return message;
     }
 
-    function getBristleWoodsRiftStage(message, response, journal) {
-        message.stage = response.user.quests.QuestRiftBristleWoods.chamber_name;
+    /**
+     * Report the state of the door to the Realm
+     * TODO: Realm Ripper charm? ID = 2345, name = "chamber_cleaver_trinket"
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getForbiddenGroveStage(message, user, postHuntUser, hunt) {
+        const state = user.viewing_atts/*path*/;
+        message.stage = (state) ? "Open" : "Closed";
+    }
+
+    /**
+     * Report the current chamber name.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getBristleWoodsRiftStage(message, user, postHuntUser, hunt) {
+        message.stage = user.quests.QuestRiftBristleWoods.chamber_name;
         if (message.stage === "Rift Acolyte Tower") {
             message.stage = "Entrance";
         }
-
-        return message;
     }
 
-    function getMysteriousAnomalyStage(message, response, journal) {
-        message.stage = response.user.quests.QuestBirthday2018.current_year;
-
-        return message;
+    /**
+     * Report the current year.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getMysteriousAnomalyStage(message, user, postHuntUser, hunt) {
+        message.stage = user.quests.QuestBirthday2018.current_year;
     }
 
-    function getHuntDetails(message, response, journal) {
-        if (!message) {
-            return "";
-        }
-        switch (response.user.location) {
+    /**
+     * Determine additional detailed parameters that are otherwise only visible to db exports and custom views.
+     * These details may eventually be migrated to help inform location stages.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addHuntDetails(message, user, postHuntUser, hunt) {
+        switch (user.location) {
             case "Bristle Woods Rift":
-                message = getBristleWoodsRiftHuntDetails(message, response, journal);
+                getBristleWoodsRiftHuntDetails(message, user, postHuntUser, hunt);
                 break;
             case "Mysterious Anomaly":
-                message = getMysteriousAnomalyHuntDetails(message, response, journal);
+                getMysteriousAnomalyHuntDetails(message, user, postHuntUser, hunt);
+                break;
+            case "Sand Crypts":
+                getSandCryptsHuntDetails(message, user, postHuntUser, hunt);
                 break;
         }
-
-        return message;
     }
 
-    function getBristleWoodsRiftHuntDetails(message, response, journal) {
-        let quest = response.user.quests.QuestRiftBristleWoods;
-        message.hunt_details = {
+    /**
+     * Track additional state for the Bristle Woods Rift
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getBristleWoodsRiftHuntDetails(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestRiftBristleWoods;
+        const details = {
             has_hourglass: quest.items.rift_hourglass_stat_item.quantity >= 1,
-            chamber_status: quest.chamber_status
+            chamber_status: quest.chamber_status,
+            cleaver_status: quest.cleaver_status
         };
-        for (let key in quest.status_effects) {
-            if (!quest.status_effects.hasOwnProperty(key)) continue;
-            message.hunt_details['effect_' + key] = quest.status_effects[key] === 'active';
+        // Buffs & debuffs are 'active', 'removed', or ""
+        for (const [key, value] of Object.entries(quest.status_effects)) {
+            details[`effect_${key}`] = value === 'active';
         }
 
         if (quest.chamber_name === 'Acolyte') {
-            message.hunt_details.obelisk_charged = quest.obelisk_percent === 100;
-            message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0;
+            details.obelisk_charged = quest.obelisk_percent === 100;
+            details.acolyte_sand_drained = details.obelisk_charged && quest.acolyte_sand === 0;
         }
-
-        return message;
+        message.hunt_details = details;
     }
 
-    function getMysteriousAnomalyHuntDetails(message, response, journal) {
-        let quest = response.user.quests.QuestBirthday2018;
+    /**
+     * Additional state for the 2018 Birthday
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getMysteriousAnomalyHuntDetails(message, user, postHuntUser, hunt) {
+        const quest = user.quests.QuestBirthday2018;
         message.hunt_details = {
             boss_status: quest.boss_status,
             furthest_year: quest.furthest_year
         };
-
-        return message;
     }
 
-    function getLoot(message, response, journal) {
-        let desc = journal.render_data.text;
+    /**
+     * Track the grub salt level
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function getSandCryptsHuntDetails(message, user, postHuntUser, hunt) {
+        const quest = user.quests//.QuestSandDunes;
+        const details = {};
+        message.hunt_details = details;
+    }
+
+    /**
+     * Extract loot information from the hunt's journal entry.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addLoot(message, hunt) {
+        const desc = hunt.render_data.text;
         if (!desc.includes("following loot:")) {
-            return message;
+            return;
         }
-        let loot_text = desc.substring(desc.indexOf("following loot:") + 15);
-        let loot_array = loot_text.split(/,\s|\sand\s/g);
+        const loot_text = desc.substring(desc.indexOf("following loot:") + 15);
+        const loot_array = loot_text.split(/,\s|\sand\s/g);
         // let render_array = desc.split(/<a\s/);
 
         message.loot = loot_array.map(item_text => {
-            let loot_obj = {
-                amount: item_text.match(/(\d+,?)+/i)[0].replace(/,/g, '')
+            const loot_obj = {
+                amount: item_text.match(/(\d+,?)+/i)[0].replace(/,/g, ''),
+                lucky: item_text.includes('class="lucky"')
             };
-            let name = item_text.replace(/^(.*?);">/, '').replace(/<\/a>/, '');
+            const name = item_text.replace(/^(.*?);">/, '').replace(/<\/a>/, '');
             loot_obj.name = (loot_obj.amount > 1) ? name.replace(/s$/i, '') : name;
 
             // Exceptions
@@ -1491,18 +1735,14 @@
             }
 
             if (loot_obj.name.includes(' of Gold ')) {
-                let loot_name = loot_obj.name;
-                let loot_amount = loot_name.substring(loot_name.indexOf('(') + 1, loot_name.indexOf(')'));
+                const loot_name = loot_obj.name;
+                const loot_amount = loot_name.substring(loot_name.indexOf('(') + 1, loot_name.indexOf(')'));
                 loot_obj.amount = loot_obj.amount * parseInt(loot_amount.replace(/,/g, ''), 10);
                 loot_obj.name = 'Gold';
             }
 
-            loot_obj.lucky = item_text.includes('class="lucky"');
-
             return loot_obj;
         });
-
-        return message;
     }
 
     function getItem(item) {
