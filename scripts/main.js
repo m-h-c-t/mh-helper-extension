@@ -162,8 +162,8 @@
     }
 
     /**
-     * Before allowing a hunt submission, first request an updated user object from
-     * https://www.mousehuntgame.com/managers/ajax/users/data.php
+     * Before allowing a hunt submission, first request an updated user object that reflects the effect
+     * of any outside actions, such as setup changes from the mobile app, a different tab, or trap checks.
      * @param {JQuery.TriggeredEvent<Document, undefined, Document, Document>} event The ajax event that triggered this listener
      * @param {JQuery.jqXHR<any>} jqx The jQuery-wrapped XMLHttpRequest that was intercepted
      * @param {JQuery.AjaxSettings<any>} ajaxOptions The ajax settings of the intercepted request.
@@ -178,11 +178,10 @@
             const hunt_xhr = create_hunt_XHR();
             const huntSend = hunt_xhr.send;
             // Override the original send to first query the user object.
-            // Require TC calculations by including the journal entry state and forcing non-memoized return.
+            // Trigger trap check calculations by forcing non-memoized return.
             hunt_xhr.send = (...huntArgs) => {
                 $.ajax({
                     method: "post",
-                    // url: "/managers/ajax/users/data.php",
                     url: "/managers/ajax/pages/page.php",
                     data: {
                         sn: "Hitgrab",
@@ -201,28 +200,21 @@
                     }, false);
                     huntSend.apply(hunt_xhr, huntArgs);
                 });
-                window.console.log({message: "POSTed for user object"});
             };
-            window.console.log({message: "Defined the send method"});
             return hunt_xhr;
         };
-        window.console.log({message: "Defined the xhr constructor"});
     }
 
     // Listening routers
     $(document).ajaxSend(getUserBeforeHunting);
     $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
-    // /* Method */ ajaxOptions.type
-    // /* URL */ ajaxOptions.url
-    // /* Response body */ xhr.responseText
-    // /* Request body */ ajaxOptions.data
-
-        if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/relichunter.php")) {
+        const url = ajaxOptions.url;
+        if (url.includes("mousehuntgame.com/managers/ajax/users/relichunter.php")) {
             recordMap(xhr);
-        } else if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
+        } else if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
             recordConvertible(xhr);
-        } else if (ajaxOptions.url.includes("mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges")) {
-            getSettings(settings => recordCrowns(settings, xhr, ajaxOptions.url));
+        } else if (url.includes("mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges")) {
+            getSettings(settings => recordCrowns(settings, xhr, url));
         }
     });
 
@@ -298,24 +290,11 @@
      */
     function recordHuntWithPrehuntUser(response, prehuntUser) {
         window.console.log({message: "In sendHuntWithUser", response, prehuntUser});
-        // Require some difference between the initial and final (no difference => no hunt separating them)
+        // Require some difference between the user and response.user objects. If there is
+        // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const requiredDifferences = [
             "num_active_turns",
             "next_activeturn_seconds"
-        ];
-        // Trap checks may have occurred since the last hunt! A call to `user/data.php` does NOT compute them.
-        // Friend hunts / external page loads / etc, however, will. (What's the smallest ajax call that will? journal?)
-        const possibledifferingProperties = [
-            "bait_quantity",
-            "gold",
-            "points",
-            "last_active",
-            "last_activeturn_timestamp",
-            "points",
-            "shield_seconds",
-            "trinket_quantity",
-            "trap_aura_hash",
-            "quests"
         ];
         const differences = {};
         /**
@@ -391,16 +370,13 @@
 
         // Obtain the main hunt information from the journal entry and user objects.
         const message = createMessageFromHunt(hunt, prehuntUser, response.user);
-        if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name) {
+        if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
             return;
         }
-        if (!message.cheese || !message.cheese.name) {
-            window.console.warn("Cheese missing from pre-hunt user");
-        }
 
         // Perform validations and stage corrections.
-        fixLGLocations(message, prehuntUser, response.user, hunt); // needed ?
+        fixLGLocations(message, prehuntUser, response.user, hunt);
         addStage(message, prehuntUser, response.user, hunt);
         addHuntDetails(message, prehuntUser, response.user, hunt);
         //validateTransitionMice(message, prehuntUser, response, hunt); // needed ?
@@ -511,6 +487,7 @@
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
                     sendMessageToServer(db_url, rh_message);
+                    window.console.log(`MHHH: Found the Relic Hunter in ${rh_message.rh_environment}`);
                 }
             }
             else if (Object.keys(journal).length !== 0) {
@@ -538,7 +515,11 @@
             extension_version: formatVersion(mhhh_version)
         };
 
-        message.user_id = user.user_id; // may need to be converted to number
+        // Hunter ID.
+        message.user_id = parseInt(user.user_id, 10);
+        if (isNaN(message.user_id)) {
+            throw new Error(`MHHH: Unexpected user id value ${user.user_id}`);
+        }
 
         // Entry ID
         message.entry_id = journal.render_data.entry_id;
@@ -556,7 +537,7 @@
             id: user.environment_id
         };
         if (postHuntUser.environment_id != user.environment_id) {
-            window.console.log(`User auto-traveled from ${user.location} to ${postHuntUser.location}.`);
+            window.console.log(`User auto-traveled from ${user.location} to ${postHuntUser.location}`);
         }
 
         // Shield (true / false)
@@ -580,13 +561,13 @@
         const components = [
             { prop: 'weapon', message_field: 'trap', required: true, replacer: /\ trap/i },
             { prop: 'base', message_field: 'base', required: true, replacer: /\ base/i },
-            { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm/i },
-            { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese/i }
+            { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese/i },
+            { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm/i }
         ];
         // All pre-hunt users must have a weapon, base, and cheese.
         const missing = components.filter(component => component.required === true && !user.hasOwnProperty(`${component.prop}_name`));
         if (missing.length) {
-            window.console.log(`MH Helper: Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
+            window.console.error(`MH Helper: Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
             return null;
         }
         // Assign component values to the message.
@@ -600,7 +581,7 @@
             };
 
             if (item_name !== postHuntUser[prop_name]) {
-                window.console.log(`User ${component.message_field} changed: Was ${item_name} and is now ${postHuntUser[prop_name]}`);
+                window.console.log(`User ${component.message_field} changed: Was '${item_name}' and is now '${postHuntUser[prop_name] || "None"}'`);
             }
         });
 
@@ -630,8 +611,8 @@
     }
 
     /**
-     * HG journal data for the Living & Twisted Garden areas is sometimes incorrect. Use the quest data
-     * to properly assign the hunt location. Throws if unexpected results are observed.
+     * Living & Twisted Garden areas share the same HG environment ID, so use the quest data
+     * to assign the appropriate ID for our database.
      * @param {Object <string, any>} message The message to be sent
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
@@ -883,7 +864,6 @@
             return "";
         }
     }
-
 
     /** @type {Object <string, Function>} */
     const locationStageLookup = {
@@ -1667,9 +1647,14 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function getSandCryptsHuntDetails(message, user, postHuntUser, hunt) {
-        const quest = user.quests//.QuestSandDunes;
-        const details = {};
-        message.hunt_details = details;
+        const quest = user.quests.QuestSandDunes;
+        if (quest && !quest.is_normal && quest.minigame && quest.minigame.type === 'grubling') {
+            if (["King Grub", "King Scarab"].includes(message.mouse)) {
+                message.hunt_details = {
+                    salt: quest.minigame.salt_charms_used
+                };
+            }
+        }
     }
 
     /**
