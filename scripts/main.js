@@ -640,32 +640,32 @@
 
     /** @type {Object <string, Function>} */
     const locationStageLookup = {
-        "Balack's Cove": getBalacksCoveStage,
-        "Bristle Woods Rift": getBristleWoodsRiftStage,
-        "Burroughs Rift": getBurroughsRiftStage,
-        "Claw Shot City": getClawShotCityStage,
-        "Cursed City": getLostCityStage,
-        "Festive Comet": getFestiveCometStage,
-        "Fiery Warpath": getFieryWarpathStage,
-        "Forbidden Grove": getForbiddenGroveStage,
-        "Fort Rox": getFortRoxStage,
-        "Furoma Rift": getFuromaRiftStage,
-        "Gnawnian Express Station": getTrainStage,
-        "Harbour": getHarbourStage,
-        "Iceberg": getIcebergStage,
-        "Labyrinth": getLabyrinthStage,
-        "Living Garden": getLivingGardenStage,
-        "Lost City": getLostCityStage,
-        "Mousoleum": getMousoleumStage,
-        "Moussu Picchu": getMoussuPicchuStage,
-        "Mysterious Anomaly": getMysteriousAnomalyStage,
-        "Sand Dunes": getSandDunesStage,
-        "Seasonal Garden": getSeasonalGardenStage,
-        "Sunken City": getSunkenCityStage,
-        "Toxic Spill": getToxicSpillStage,
-        "Twisted Garden": getTwistedGardenStage,
-        "Whisker Woods Rift": getWhiskerWoodsRiftStage,
-        "Zokor": getZokorStage,
+        "Balack's Cove": addBalacksCoveStage,
+        "Bristle Woods Rift": addBristleWoodsRiftStage,
+        "Burroughs Rift": addBurroughsRiftStage,
+        "Claw Shot City": addClawShotCityStage,
+        "Cursed City": addLostCityStage,
+        "Festive Comet": addFestiveCometStage,
+        "Fiery Warpath": addFieryWarpathStage,
+        "Forbidden Grove": addForbiddenGroveStage,
+        "Fort Rox": addFortRoxStage,
+        "Furoma Rift": addFuromaRiftStage,
+        "Gnawnian Express Station": addTrainStage,
+        "Harbour": addHarbourStage,
+        "Iceberg": addIcebergStage,
+        "Labyrinth": addLabyrinthStage,
+        "Living Garden": addLivingGardenStage,
+        "Lost City": addLostCityStage,
+        "Mousoleum": addMousoleumStage,
+        "Moussu Picchu": addMoussuPicchuStage,
+        "Mysterious Anomaly": addMysteriousAnomalyStage,
+        "Sand Dunes": addSandDunesStage,
+        "Seasonal Garden": addSeasonalGardenStage,
+        "Sunken City": addSunkenCityStage,
+        "Toxic Spill": addToxicSpillStage,
+        "Twisted Garden": addTwistedGardenStage,
+        "Whisker Woods Rift": addWhiskerWoodsRiftStage,
+        "Zokor": addZokorStage,
     };
 
     /**
@@ -689,7 +689,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getMousoleumStage(message, user, postHuntUser, hunt) {
+    function addMousoleumStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestMousoleum;
         if (quest.has_wall) {
             message.stage = "Has Wall";
@@ -708,7 +708,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getHarbourStage(message, user, postHuntUser, hunt) {
+    function addHarbourStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestHarbour;
         // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
         if (quest.status === "searchStarted" && !quest.can_claim) {
@@ -725,7 +725,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getClawShotCityStage(message, user, postHuntUser, hunt) {
+    function addClawShotCityStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestClawShotCity;
         /**
          * !map_active && !has_wanted_poster => Bounty Hunter can be attracted
@@ -752,7 +752,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getFestiveCometStage(message, user, postHuntUser, hunt) {
+    function addFestiveCometStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestWinterHunt2018;
         if (!quest) {
             return;
@@ -783,7 +783,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getMoussuPicchuStage(message, user, postHuntUser, hunt) {
+    function addMoussuPicchuStage(message, user, postHuntUser, hunt) {
         const elements = user.quests.QuestMoussuPicchu.elements;
         message.stage = {
             rain: `Rain ${elements.rain.level}`,
@@ -798,7 +798,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getWhiskerWoodsRiftStage(message, user, postHuntUser, hunt) {
+    function addWhiskerWoodsRiftStage(message, user, postHuntUser, hunt) {
         const zones = user.quests.QuestRiftWhiskerWoods.zones;
         const clearing = zones.clearing.level;
         const tree = zones.tree.level;
@@ -843,7 +843,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getLabyrinthStage(message, user, postHuntUser, hunt) {
+    function addLabyrinthStage(message, user, postHuntUser, hunt) {
         if (user.quests.QuestLabyrinth.status === "hallway") {
             const hallway = user.quests.QuestLabyrinth.hallway_name;
             // Remove first word (like Short)
@@ -862,7 +862,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getFieryWarpathStage(message, user, postHuntUser, hunt) {
+    function addFieryWarpathStage(message, user, postHuntUser, hunt) {
         const wave = user.viewing_atts.desert_warpath.wave;
         message.stage = (wave === "portal") ? "Portal" : `Wave ${wave}`;
     }
@@ -874,7 +874,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getBalacksCoveStage(message, user, postHuntUser, hunt) {
+    function addBalacksCoveStage(message, user, postHuntUser, hunt) {
         const tide = user.viewing_atts.tide;
         if (tide) {
             message.stage = tide.charAt(0).toUpperCase() + tide.substr(1);
@@ -895,7 +895,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getSeasonalGardenStage(message, user, postHuntUser, hunt) {
+    function addSeasonalGardenStage(message, user, postHuntUser, hunt) {
         switch (user.viewing_atts.season) {
             case "sr":
                 message.stage = "Summer";
@@ -920,7 +920,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getLivingGardenStage(message, user, postHuntUser, hunt) {
+    function addLivingGardenStage(message, user, postHuntUser, hunt) {
         const bucket = user.quests.QuestLivingGarden.minigame.bucket_state;
         if (bucket) {
             if (bucket === "filling") {
@@ -942,7 +942,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getSandDunesStage(message, user, postHuntUser, hunt) {
+    function addSandDunesStage(message, user, postHuntUser, hunt) {
         message.stage = (user.quests.QuestSandDunes.minigame.has_stampede) ? "Stampede" : "No Stampede";
     }
 
@@ -953,19 +953,19 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getLostCityStage(message, user, postHuntUser, hunt) {
+    function addLostCityStage(message, user, postHuntUser, hunt) {
         // TODO: Partially cursed, for Cursed City?
         message.stage = (user.quests.QuestLostCity.minigame.is_cursed) ? "Cursed" : "Not Cursed";
     }
 
     /**
-     * Read the state of both buckets. TODO: refactor to `getGardenStage` for both LG/TG.
+     * Read the state of both buckets. TODO: refactor to `addGardenStage` for both LG/TG.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getTwistedGardenStage(message, user, postHuntUser, hunt) {
+    function addTwistedGardenStage(message, user, postHuntUser, hunt) {
         message.stage = (user.quests.QuestLivingGarden.minigame.vials_state === "dumped")
             ? "Pouring" : "Not Pouring";
     }
@@ -977,7 +977,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getIcebergStage(message, user, postHuntUser, hunt) {
+    function addIcebergStage(message, user, postHuntUser, hunt) {
         const phase = user.quests.QuestIceberg.current_phase;
         if (!phase) {
             window.console.log({message: "No Iceberg quest data", pre: user.quests.QuestIceberg, post: postHuntUser.quests.QuestIceberg});
@@ -1023,7 +1023,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getSunkenCityStage(message, user, postHuntUser, hunt) {
+    function addSunkenCityStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestSunkenCity;
         if (!quest.is_diving) {
             message.stage = "Docked";
@@ -1052,7 +1052,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getZokorStage(message, user, postHuntUser, hunt) {
+    function addZokorStage(message, user, postHuntUser, hunt) {
         const zokor_district = user.quests.QuestAncientCity.district_name;
         if (!zokor_district) {
             window.console.log({message: "No Zokor district information", pre: user, post: postHuntUser});
@@ -1097,7 +1097,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getFuromaRiftStage(message, user, postHuntUser, hunt) {
+    function addFuromaRiftStage(message, user, postHuntUser, hunt) {
         switch (user.quests.QuestRiftFuroma.droid.charge_level) {
             case "":
                 message.stage = "Outside";
@@ -1145,7 +1145,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getToxicSpillStage(message, user, postHuntUser, hunt) {
+    function addToxicSpillStage(message, user, postHuntUser, hunt) {
         const titles = user.quests.QuestPollutionOutbreak.titles;
         const formatted_titles = {
             hero:                 'Hero',
@@ -1176,7 +1176,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getBurroughsRiftStage(message, user, postHuntUser, hunt) {
+    function addBurroughsRiftStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestRiftBurroughs;
         switch (quest.mist_tier) {
             case "tier_0":
@@ -1226,7 +1226,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getTrainStage(message, user, postHuntUser, hunt) {
+    function addTrainStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestTrainStation;
         if (!quest.on_train || quest.on_train === "false") {
             message.stage = "Station";
@@ -1278,7 +1278,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getFortRoxStage(message, user, postHuntUser, hunt) {
+    function addFortRoxStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestFortRox;
         if (quest.is_lair) {
             message.stage = "Heart of the Meteor";
@@ -1319,7 +1319,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getForbiddenGroveStage(message, user, postHuntUser, hunt) {
+    function addForbiddenGroveStage(message, user, postHuntUser, hunt) {
         const state = user.viewing_atts/*path*/;
         message.stage = (state) ? "Open" : "Closed";
     }
@@ -1331,7 +1331,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getBristleWoodsRiftStage(message, user, postHuntUser, hunt) {
+    function addBristleWoodsRiftStage(message, user, postHuntUser, hunt) {
         message.stage = user.quests.QuestRiftBristleWoods.chamber_name;
         if (message.stage === "Rift Acolyte Tower") {
             message.stage = "Entrance";
@@ -1345,7 +1345,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getMysteriousAnomalyStage(message, user, postHuntUser, hunt) {
+    function addMysteriousAnomalyStage(message, user, postHuntUser, hunt) {
         message.stage = user.quests.QuestBirthday2018.current_year;
     }
 
@@ -1360,13 +1360,13 @@
     function addHuntDetails(message, user, postHuntUser, hunt) {
         switch (user.location) {
             case "Bristle Woods Rift":
-                getBristleWoodsRiftHuntDetails(message, user, postHuntUser, hunt);
+                addBristleWoodsRiftHuntDetails(message, user, postHuntUser, hunt);
                 break;
             case "Mysterious Anomaly":
-                getMysteriousAnomalyHuntDetails(message, user, postHuntUser, hunt);
+                addMysteriousAnomalyHuntDetails(message, user, postHuntUser, hunt);
                 break;
             case "Sand Crypts":
-                getSandCryptsHuntDetails(message, user, postHuntUser, hunt);
+                addSandCryptsHuntDetails(message, user, postHuntUser, hunt);
                 break;
         }
     }
@@ -1378,7 +1378,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getBristleWoodsRiftHuntDetails(message, user, postHuntUser, hunt) {
+    function addBristleWoodsRiftHuntDetails(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestRiftBristleWoods;
         const details = {
             has_hourglass: quest.items.rift_hourglass_stat_item.quantity >= 1,
@@ -1404,7 +1404,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getMysteriousAnomalyHuntDetails(message, user, postHuntUser, hunt) {
+    function addMysteriousAnomalyHuntDetails(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestBirthday2018;
         message.hunt_details = {
             boss_status: quest.boss_status,
@@ -1419,7 +1419,7 @@
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function getSandCryptsHuntDetails(message, user, postHuntUser, hunt) {
+    function addSandCryptsHuntDetails(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestSandDunes;
         if (quest && !quest.is_normal && quest.minigame && quest.minigame.type === 'grubling') {
             if (["King Grub", "King Scarab"].includes(message.mouse)) {
