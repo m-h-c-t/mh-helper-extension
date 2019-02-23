@@ -387,7 +387,7 @@
         addLoot(message, hunt);
         window.console.log({message, prehuntUser, postHuntUser: response.user, hunt});
         // Upload the hunt record.
-        // sendMessageToServer(db_url, message);
+        sendMessageToServer(db_url, message);
     }
 
     // Record convertible items
