@@ -619,69 +619,24 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
      */
     function fixLGLocations(message, user, postHuntUser, hunt) {
-        if (message.location.id === 35 || message.location.id === 5002) {
-            const wasNormal = user.quests.QuestLivingGarden.is_normal;
-            const isNormal = postHuntUser.quests.QuestLivingGarden.is_normal;
-            if (wasNormal === true && isNormal === false) {
-                if (message.mouse.name !== "Carmine the Apothecary" || message.caught === 0) {
-                    window.console.log({record: message, preHunt: user.quests.QuestLivingGarden, postHunt: postHuntUser.quests.QuestLivingGarden, journal: hunt});
-                    throw new Error("Transitioned from normal to twisted, but didn't catch Carmine.");
-                }
-            } else if (wasNormal === false && isNormal === true) {
-                if (message.cheese.name === "Duskshade Camembert") {
-                    window.console.log({record: message, preHunt: user.quests.QuestLivingGarden, postHunt: postHuntUser.quests.QuestLivingGarden, journal: hunt});
-                    throw new Error("Transitioned from twisted to normal, but was using Duskshade cheese");
-                }
-            }
-
-            if (wasNormal) {
-                message.location.name = 'Living Garden';
-                message.location.id = 35;
-            } else {
-                message.location.name = 'Twisted Garden';
-                message.location.id = 5002;
-            }
-        } else if (message.location.id === 41 || message.location.id === 5000) {
-            const wasNormal = user.quests.QuestLostCity.is_normal;
-            const isNormal = postHuntUser.quests.QuestLostCity.is_normal;
-            if (wasNormal === true && isNormal === false) {
-                window.console.log({record: message, preHunt: user.quests.QuestLostCity, postHunt: postHuntUser.quests.QuestLostCity, journal: hunt});
-                throw new Error("Transitioned from normal to twisted--somehow.");
-            } else if (wasNormal === false && isNormal === true) {
-                if (message.cheese.name === "Graveblossom Camembert") {
-                    window.console.log({record: message, preHunt: user.quests.QuestLostCity, postHunt: postHuntUser.quests.QuestLostCity, journal: hunt});
-                    throw new Error("Transitioned from twisted to normal, but was using Graveblossom cheese");
-                }
-            }
-
-            if (wasNormal) {
-                message.location.name = 'Lost City';
-                message.location.id = 5000;
-            } else {
-                message.location.name = 'Cursed City';
-                message.location.id = 41;
-            }
-        } else if (message.location.id === 42 || message.location.id === 5001) {
-            const wasNormal = user.quests.QuestSandDunes.is_normal;
-            const isNormal = postHuntUser.quests.QuestSandDunes.is_normal;
-            if (wasNormal === true && isNormal === false) {
-                window.console.log({record: message, preHunt: user.quests.QuestSandDunes, postHunt: postHuntUser.quests.QuestSandDunes, journal: hunt});
-                throw new Error("Transitioned from normal to twisted--somehow.");
-            } else if (wasNormal === false && isNormal === true) {
-                if (message.cheese.name === "Graveblossom Camembert") {
-                    window.console.log({record: message, preHunt: user.quests.QuestSandDunes, postHunt: postHuntUser.quests.QuestSandDunes, journal: hunt});
-                    throw new Error("Transitioned from twisted to normal, but was using Graveblossom cheese");
-                }
-            }
-
-            if (wasNormal) {
-                message.location.name = 'Sand Dunes';
-                message.location.id = 5001;
-            } else {
-                message.location.name = 'Sand Crypts';
-                message.location.id = 42;
-            }
+        const env_to_location = {
+            35: {"quest": "QuestLivingGarden",
+                "true": {id: 35, name: "Living Garden"},
+                "false": {id: 5002, name: "Twisted Garden"}},
+            41: {"quest": "QuestLostCity",
+                "true": {id: 5000, name: "Lost City"},
+                "false": {id: 41, name: "Cursed City"}},
+            42: {"quest": "QuestSandDunes",
+                "true": {id: 5001, name: "Sand Dunes"},
+                "false": {id: 42, name: "Sand Crypts"}}
         }
+        const env = env_to_location[message.location.id];
+        if (!env) {
+            window.console.warn({record: message, pre: user, post: postHuntUser, hunt});
+            throw new Error(`MHHH: Unexpected location id ${message.location.id} for LG-area location`);
+        }
+        const is_normal = user.quests[env.quest].is_normal.toString();
+        Object.assign(message.location, env[is_normal]);
     }
 
     function fixTransitionMice(message, response, journal) {
