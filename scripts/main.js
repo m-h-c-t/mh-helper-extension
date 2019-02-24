@@ -376,9 +376,7 @@
         }
 
         // Perform validations and stage corrections.
-        if (message.location.id === 35 || message.location.id === 41 || message.location.id === 42) {
-            fixLGLocations(message, prehuntUser, response.user, hunt);
-        }
+        fixLGLocations(message, prehuntUser, response.user, hunt);
         addStage(message, prehuntUser, response.user, hunt);
         addHuntDetails(message, prehuntUser, response.user, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
@@ -632,12 +630,15 @@
                 "false": {id: 42, name: "Sand Crypts"}}
         }
         const env = env_to_location[message.location.id];
-        if (!env) {
+        if (env) {
+            const is_normal = user.quests[env.quest].is_normal.toString();
+            Object.assign(message.location, env[is_normal]);
+        } else if (["Living Garden", "Twisted Garden",
+                "Lost City", "Cursed City",
+                "Sand Dunes", "Sand Crypts"].includes(message.location.name)) {
             window.console.warn({record: message, pre: user, post: postHuntUser, hunt});
             throw new Error(`MHHH: Unexpected location id ${message.location.id} for LG-area location`);
         }
-        const is_normal = user.quests[env.quest].is_normal.toString();
-        Object.assign(message.location, env[is_normal]);
     }
 
     /** @type {Object <string, Function>} */
