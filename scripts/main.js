@@ -376,7 +376,9 @@
         }
 
         // Perform validations and stage corrections.
-        fixLGLocations(message, prehuntUser, response.user, hunt);
+        if (message.location.id === 35 || message.location.id === 41 || message.location.id === 42) {
+            fixLGLocations(message, prehuntUser, response.user, hunt);
+        }
         addStage(message, prehuntUser, response.user, hunt);
         addHuntDetails(message, prehuntUser, response.user, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
