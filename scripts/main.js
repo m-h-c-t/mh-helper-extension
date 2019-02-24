@@ -672,7 +672,7 @@
     };
 
     /**
-     * Use `quests` data to assign appropriate location stage information.
+     * Use `quests` or `viewing_atts` data to assign appropriate location-specific stage information.
      * @param {Object <string, any>} message The message to be sent
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
@@ -1352,29 +1352,31 @@
         message.stage = user.quests.QuestBirthday2018.current_year;
     }
 
+
+    /** @type {Object <string, Function>} */
+    const locationHuntDetailsLookup = {
+        "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
+        "Mysterious Anomaly": addMysteriousAnomalyHuntDetails,
+        "Sand Crypts": addSandCryptsHuntDetails,
+        "Zugzwang's Tower": addZugzwangsTowerHuntDetails
+    };
+
     /**
      * Determine additional detailed parameters that are otherwise only visible to db exports and custom views.
-     * These details may eventually be migrated to help inform location stages.
+     * These details may eventually be migrated to help inform location-specific stages.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addHuntDetails(message, user, postHuntUser, hunt) {
-        switch (user.location) {
-            case "Bristle Woods Rift":
-                addBristleWoodsRiftHuntDetails(message, user, postHuntUser, hunt);
-                break;
-            case "Mysterious Anomaly":
-                addMysteriousAnomalyHuntDetails(message, user, postHuntUser, hunt);
-                break;
-            case "Sand Crypts":
-                addSandCryptsHuntDetails(message, user, postHuntUser, hunt);
-                break;
-            case "Zugzwang's Tower":
-                addZugzwangsTowerHuntDetails(message, user, postHuntUser, hunt);
-                break;
+        // First add any location-specific details:
+        const detailsFunc = locationHuntDetailsLookup[user.location];
+        if (detailsFunc) {
+            detailsFunc(message, user, postHuntUser, hunt);
         }
+
+        // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
     }
 
     /**
