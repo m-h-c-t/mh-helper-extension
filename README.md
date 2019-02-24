@@ -15,3 +15,16 @@ This tool uses some of the [Tsitu's scripts](https://github.com/tsitu/MH-Tools/)
 <img src="https://user-images.githubusercontent.com/8228441/46922950-0a6e1800-cfce-11e8-9981-1ad2eb80db9f.PNG" width="49%">
 <img src="https://user-images.githubusercontent.com/8228441/46922951-0b06ae80-cfce-11e8-8b0f-7a41f69b734b.PNG" width="49%">
 </kbd>
+
+## Developers section
+
+You can load this addon as temporary modify it, reload it and test it. Please change the version number if you do that, to avoid getting banned. The files included in the extension are:
+ - css/
+ - images/
+ - scripts/
+ - sounds/
+ - third_party/
+ - manifest.json
+ - options.html
+ - popup.html
+ - popup2.html
