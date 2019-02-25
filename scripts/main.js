@@ -607,6 +607,18 @@
                 .replace(/\ mouse$/i, '');   // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
 
+        const quest = getActiveLNYQuest(user.quests);
+        // TODO: check if the last costumed mouse is caught, not the specific one.
+        if (quest && quest.has_stockpile === "found" && !quest.mice.costumed_pig.includes("caught")) {
+            // Ignore event cheese hunts as the player is attracting the Costumed mice in a specific order.
+            const event_cheese = Object.keys(quest.items)
+                .filter(itemName => itemName.search(/lunar_new_year\w+cheese/) >= 0)
+                .map(cheeseName => quest.items[cheeseName]);
+            if (event_cheese.some(cheese => cheese.status === "active")) {
+                return null;
+            }
+        }
+
         return message;
     }
 
@@ -1372,6 +1384,24 @@
         }
 
         // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
+        addLNYHuntDetails(message, user, postHuntUser, hunt);
+    }
+
+    function addLNYHuntDetails(message, user, postHuntUser, hunt) {
+        // Set a value for LNY bonus luck, if it can be determined. Otherwise flag LNY hunts.
+        const quest = getActiveLNYQuest(user.quests);
+        if (quest) {
+            // Avoid overwriting any existing hunt details.
+            if (!message.hunt_details) {
+                message.hunt_details = {};
+            }
+            Object.assign(message.hunt_details, {
+                is_lny_hunt: true,
+                lny_luck: (quest.lantern_status.includes("noLantern") || !quest.is_lantern_active)
+                    ? 0
+                    : Math.min(50, Math.floor(parseInt(quest.lantern_height, 10) / 10))
+            });
+        }
     }
 
     /**
@@ -1546,6 +1576,18 @@
         version = version[0] + pad(version[1], 2) + pad(version[2], 2);
         version = Number(version);
         return version;
+    }
+
+    /**
+     * @param {Object <string, Object <string, any>>} allQuests the `user.quests` object containing all of the user's quests
+     * @returns {Object <string, any> | null} The quest if it exists, else `null`
+     */
+    function getActiveLNYQuest(allQuests) {
+        const questNames = Object.keys(allQuests)
+            .filter(questName => questName.includes("QuestLunarNewYear"));
+        return (questNames.length
+            ? allQuests[questNames[0]]
+            : null);
     }
 
     window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
