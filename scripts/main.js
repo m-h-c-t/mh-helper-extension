@@ -694,19 +694,11 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addMousoleumStage(message, user, postHuntUser, hunt) {
-        const quest = user.quests.QuestMousoleum;
-        if (quest.has_wall) {
-            message.stage = "Has Wall";
-        } else {
-            message.stage = "No Wall";
-        }
-        if (quest.has_wall && !postHuntUser.quests.QuestMousoleum.has_wall) {
-            window.console.log({message: "Wall broke down on this active hunt.", pre: quest, post: postHuntUser.quests.QuestMousoleum});
-        }
+        message.stage = (user.quests.QuestMousoleum.has_wall) ? "Has Wall" : "No Wall";
     }
 
     /**
-     * Separate hunts with crew available from those without. Each crew member can be caught only once per bounty.
+     * Separate hunts with crew available from those without.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
@@ -1324,8 +1316,10 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addForbiddenGroveStage(message, user, postHuntUser, hunt) {
-        const state = user.viewing_atts/*path*/;
-        message.stage = (state) ? "Open" : "Closed";
+        message.stage = (user.viewing_atts.grove_open) ? "Open" : "Closed";
+        if (message.charm.id === 2345) {
+            message.stage += " - Ripper Charm";
+        }
     }
 
     /**
