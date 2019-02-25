@@ -286,16 +286,17 @@
 
     /**
      * @param {Object <string, any>} response Parsed JSON representation of the response from calling activeturn.php
-     * @param {Object <string, any>} prehuntUser The user object obtained prior to invoking `activeturn.php`.
+     * @param {Object <string, any>} preHuntUser The user object obtained prior to invoking `activeturn.php`.
      */
-    function recordHuntWithPrehuntUser(response, prehuntUser) {
-        window.console.log({message: "In sendHuntWithUser", response, prehuntUser});
+    function recordHuntWithPrehuntUser(response, preHuntUser) {
+        window.console.log({message: "In sendHuntWithUser", response, preHuntUser});
         // Require some difference between the user and response.user objects. If there is
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const requiredDifferences = [
             "num_active_turns",
             "next_activeturn_seconds"
         ];
+        const postHuntUser = response.user;
         const differences = {};
         /**
          * Store the difference between generic primitives and certain objects in `result`
@@ -348,7 +349,7 @@
                     result[key] = {in: "post", val: obj_post[key]};
                 });
         }
-        diffUserObjects(differences, new Set(), new Set(Object.keys(response.user)), prehuntUser, response.user);
+        diffUserObjects(differences, new Set(), new Set(Object.keys(postHuntUser)), preHuntUser, postHuntUser);
         window.console.log({differences});
 
         const hunt = parseJournalEntries(response);
@@ -363,29 +364,29 @@
 
         const diffKeys = new Set(Object.keys(differences));
         if (!requiredDifferences.every(key => diffKeys.has(key))
-                || response.user.num_active_turns - prehuntUser.num_active_turns !== 1) {
+                || postHuntUser.num_active_turns - preHuntUser.num_active_turns !== 1) {
             window.console.log("MHHH: Required pre/post hunt differences not observed.");
             return;
         }
 
         // Obtain the main hunt information from the journal entry and user objects.
-        const message = createMessageFromHunt(hunt, prehuntUser, response.user);
+        const message = createMessageFromHunt(hunt, preHuntUser, postHuntUser);
         if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
             return;
         }
 
         // Perform validations and stage corrections.
-        fixLGLocations(message, prehuntUser, response.user, hunt);
-        addStage(message, prehuntUser, response.user, hunt);
-        addHuntDetails(message, prehuntUser, response.user, hunt);
+        fixLGLocations(message, preHuntUser, postHuntUser, hunt);
+        addStage(message, preHuntUser, postHuntUser, hunt);
+        addHuntDetails(message, preHuntUser, postHuntUser, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(2)");
             return;
         }
 
         addLoot(message, hunt);
-        window.console.log({message, prehuntUser, postHuntUser: response.user, hunt});
+        window.console.log({message, preHuntUser, postHuntUser, hunt});
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
     }
