@@ -604,9 +604,9 @@
             }
             // Remove HTML tags and other text around the mouse name.
             message.mouse = journal.render_data.text
-                .replace(/^.*?\">/, '')      // Remove text through the first closing angle bracket >.
-                .replace(/\<\/a\>.*/i, '')   // Remove text after the first <a href>'s closing tag </a>
-                .replace(/\ mouse$/i, '');   // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
+                .replace(/^.*?;\">/, '')    // Remove all text through the first sequence of `;">`
+                .replace(/<\/a>.*/i, '')    // Remove text after the first <a href>'s closing tag </a>
+                .replace(/\ mouse$/i, '');  // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
 
         const quest = getActiveLNYQuest(user.quests);
@@ -887,7 +887,7 @@
     function addBalacksCoveStage(message, user, user_post, hunt) {
         const tide = user.viewing_atts.tide;
         const direction = user.viewing_atts.tide_direction;
-        const imminent_state_change = (user.viewing_atts.cycle_progress === 100
+        const imminent_state_change = (user.viewing_atts.cycle_progress >= 99
                 // Certain transitions do not change the tide intensity, and are OK to track.
                 && !(tide === "low" && direction === "in")
                 && !(tide === "high" && direction === "out"));
@@ -1343,8 +1343,8 @@
      */
     function addForbiddenGroveStage(message, user, user_post, hunt) {
         const was_open = user.viewing_atts.grove_open;
-        // 1.5% time => 14.4 minutes for door open and state_progress rounds to 100 (3.6 minutes for closed).
-        const imminent_state_change = (user.viewing_atts.state_progress === 100); // TODO: verify rounding behavior
+        // 1% time => 9.6 minutes for door open and state_progress rounds to 100 (2.4 minutes for closed).
+        const imminent_state_change = (user.viewing_atts.state_progress >= 99);
         if (imminent_state_change) {
             window.console.log({message: "Skipping hunt during server-side door change", user, user_post, hunt});
             message.location = null;
@@ -1403,7 +1403,10 @@
         }
 
         // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
-        addLNYHuntDetails(message, user, user_post, hunt);
+        [
+            addLNYHuntDetails,
+            addLuckyCatchHuntDetails
+        ].forEach(details_func => details_func(message, user, user_post, hunt));
     }
 
     /**
@@ -1416,15 +1419,26 @@
     function addLNYHuntDetails(message, user, user_post, hunt) {
         const quest = getActiveLNYQuest(user.quests);
         if (quest) {
-            // Avoid overwriting any existing hunt details.
-            if (!message.hunt_details) {
-                message.hunt_details = {};
-            }
-            Object.assign(message.hunt_details, {
+            message.hunt_details = Object.assign(message.hunt_details || {}, {
                 is_lny_hunt: true,
                 lny_luck: (quest.lantern_status.includes("noLantern") || !quest.is_lantern_active)
                     ? 0
                     : Math.min(50, Math.floor(parseInt(quest.lantern_height, 10) / 10))
+            });
+        }
+    }
+
+    /**
+     * Track whether a catch was designated "lucky" or not.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addLuckyCatchHuntDetails(message, user, user_post, hunt) {
+        if (message.caught) {
+            message.hunt_details = Object.assign(message.hunt_details || {}, {
+                is_lucky_catch: hunt.render_data.css_class.includes("luckycatchsuccess")
             });
         }
     }
