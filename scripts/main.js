@@ -172,6 +172,7 @@
         if (event.type !== "ajaxSend" || !ajaxOptions.url.includes("ajax/turns/activeturn.php"))
             return;
         const create_hunt_XHR = ajaxOptions.xhr;
+        window.console.time("Overall 'Hunt Requested' Timing");
         // Override the XMLHttpRequest that will be used with our own.
         ajaxOptions.xhr = function () {
             // Create the original XMLHttpRequest, whose `send()` will sound the horn.
@@ -195,6 +196,7 @@
                 }).done(userRqResponse => {
                     window.console.log({message: "Got user object, invoking huntSend", userRqResponse});
                     hunt_xhr.addEventListener("loadend", () => {
+                        window.console.timeEnd("Overall 'Hunt Requested' Timing");
                         // Call record hunt with the pre-hunt user object.
                         recordHuntWithPrehuntUser(JSON.parse(hunt_xhr.responseText), userRqResponse.user);
                     }, false);
