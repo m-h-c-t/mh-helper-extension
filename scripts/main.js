@@ -176,7 +176,7 @@
         ajaxOptions.xhr = function () {
             // Create the original XMLHttpRequest, whose `send()` will sound the horn.
             const hunt_xhr = create_hunt_XHR();
-            const huntSend = hunt_xhr.send;
+            const hunt_send = hunt_xhr.send;
             // Override the original send to first query the user object.
             // Trigger trap check calculations by forcing non-memoized return.
             hunt_xhr.send = (...huntArgs) => {
@@ -198,7 +198,7 @@
                         // Call record hunt with the pre-hunt user object.
                         recordHuntWithPrehuntUser(JSON.parse(hunt_xhr.responseText), userRqResponse.user);
                     }, false);
-                    huntSend.apply(hunt_xhr, huntArgs);
+                    hunt_send.apply(hunt_xhr, huntArgs);
                 });
             };
             return hunt_xhr;
@@ -286,17 +286,17 @@
 
     /**
      * @param {Object <string, any>} response Parsed JSON representation of the response from calling activeturn.php
-     * @param {Object <string, any>} preHuntUser The user object obtained prior to invoking `activeturn.php`.
+     * @param {Object <string, any>} user_pre The user object obtained prior to invoking `activeturn.php`.
      */
-    function recordHuntWithPrehuntUser(response, preHuntUser) {
-        window.console.log({message: "In recordHuntWithPrehuntUser", response, preHuntUser});
+    function recordHuntWithPrehuntUser(response, user_pre) {
+        window.console.log({message: "In recordHuntWithPrehuntUser", response, user_pre});
         // Require some difference between the user and response.user objects. If there is
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
-        const requiredDifferences = [
+        const required_differences = [
             "num_active_turns",
             "next_activeturn_seconds"
         ];
-        const postHuntUser = response.user;
+        const user_post = response.user;
         const differences = {};
         /**
          * Store the difference between generic primitives and certain objects in `result`
@@ -307,12 +307,12 @@
          * @param {Object <string, any>} obj_post The post-hunt user object (or associated nested object)
          */
         function diffUserObjects(result, pre, post, obj_pre, obj_post) {
-            const allowedSimpleDiff = new Set(['string', 'number', 'boolean']);
+            const simple_diffs = new Set(['string', 'number', 'boolean']);
             for (let [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith("hash"))) {
                 pre.add(key);
                 if (!post.has(key)) {
                     result[key] = {in: "pre", val: value};
-                } else if (allowedSimpleDiff.has(typeof value)) {
+                } else if (simple_diffs.has(typeof value)) {
                     // Some HG endpoints do not cast numeric values to number due to numeric precision issues.
                     // Thus, the type-converting inequality check is performed instead of strict inequality.
                     if (value != obj_post[key]) {
@@ -349,7 +349,7 @@
                     result[key] = {in: "post", val: obj_post[key]};
                 });
         }
-        diffUserObjects(differences, new Set(), new Set(Object.keys(postHuntUser)), preHuntUser, postHuntUser);
+        diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
         window.console.log({differences});
 
         const hunt = parseJournalEntries(response);
@@ -362,31 +362,31 @@
             return;
         }
 
-        const diffKeys = new Set(Object.keys(differences));
-        if (!requiredDifferences.every(key => diffKeys.has(key))
-                || postHuntUser.num_active_turns - preHuntUser.num_active_turns !== 1) {
+        const diff_keys = new Set(Object.keys(differences));
+        if (!required_differences.every(key => diff_keys.has(key))
+                || user_post.num_active_turns - user_pre.num_active_turns !== 1) {
             window.console.log("MHHH: Required pre/post hunt differences not observed.");
             return;
         }
 
         // Obtain the main hunt information from the journal entry and user objects.
-        const message = createMessageFromHunt(hunt, preHuntUser, postHuntUser);
+        const message = createMessageFromHunt(hunt, user_pre, user_post);
         if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
             return;
         }
 
         // Perform validations and stage corrections.
-        fixLGLocations(message, preHuntUser, postHuntUser, hunt);
-        addStage(message, preHuntUser, postHuntUser, hunt);
-        addHuntDetails(message, preHuntUser, postHuntUser, hunt);
+        fixLGLocations(message, user_pre, user_post, hunt);
+        addStage(message, user_pre, user_post, hunt);
+        addHuntDetails(message, user_pre, user_post, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(2)");
             return;
         }
 
         addLoot(message, hunt);
-        window.console.log({message, preHuntUser, postHuntUser, hunt});
+        window.console.log({message, user_pre, user_post, hunt});
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
     }
@@ -507,10 +507,10 @@
      * Initialize the message with main hunt details.
      * @param {Object <string, any>} journal The journal entry corresponding to the active hunt.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @returns {Object <string, any> | null} The message object, or `null` if an error occurred.
      */
-    function createMessageFromHunt(journal, user, postHuntUser) {
+    function createMessageFromHunt(journal, user, user_post) {
         const message = {
             extension_version: formatVersion(mhhh_version)
         };
@@ -528,7 +528,7 @@
         message.entry_timestamp = journal.render_data.entry_timestamp;
 
         // Location
-        if (!user.location || !postHuntUser.location) {
+        if (!user.location || !user_post.location) {
             window.console.error('MH Helper: Missing Location');
             return null;
         }
@@ -536,8 +536,8 @@
             name: user.location,
             id: user.environment_id
         };
-        if (postHuntUser.environment_id != user.environment_id) {
-            window.console.log(`User auto-traveled from ${user.location} to ${postHuntUser.location}`);
+        if (user_post.environment_id != user.environment_id) {
+            window.console.log(`User auto-traveled from ${user.location} to ${user_post.location}`);
         }
 
         // Shield (true / false)
@@ -545,16 +545,16 @@
 
         // Total Power, Luck, Attraction
         message.total_power = user.trap_power;
-        if (postHuntUser.trap_power !== user.trap_power) {
-            window.console.log(`User setup power changed from ${user.trap_power} to ${postHuntUser.trap_power}`);
+        if (user_post.trap_power !== user.trap_power) {
+            window.console.log(`User setup power changed from ${user.trap_power} to ${user_post.trap_power}`);
         }
         message.total_luck = user.trap_luck;
-        if (postHuntUser.trap_luck !== user.trap_luck) {
-            window.console.log(`User setup luck changed from ${user.trap_luck} to ${postHuntUser.trap_luck}`);
+        if (user_post.trap_luck !== user.trap_luck) {
+            window.console.log(`User setup luck changed from ${user.trap_luck} to ${user_post.trap_luck}`);
         }
         message.attraction_bonus = Math.round(user.trap_attraction_bonus * 100);
-        if (postHuntUser.trap_attraction_bonus !== user.trap_attraction_bonus) {
-            window.console.log(`User setup attraction bonus changed from ${user.trap_attraction_bonus} to ${postHuntUser.trap_attraction_bonus}`);
+        if (user_post.trap_attraction_bonus !== user.trap_attraction_bonus) {
+            window.console.log(`User setup attraction bonus changed from ${user.trap_attraction_bonus} to ${user_post.trap_attraction_bonus}`);
         }
 
         // Setup components
@@ -580,8 +580,8 @@
                 name: item_name.replace(component.replacer, '')
             };
 
-            if (item_name !== postHuntUser[prop_name]) {
-                window.console.log(`User ${component.message_field} changed: Was '${item_name}' and is now '${postHuntUser[prop_name] || "None"}'`);
+            if (item_name !== user_post[prop_name]) {
+                window.console.log(`User ${component.message_field} changed: Was '${item_name}' and is now '${user_post[prop_name] || "None"}'`);
             }
         });
 
@@ -627,10 +627,10 @@
      * to assign the appropriate ID for our database.
      * @param {Object <string, any>} message The message to be sent
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
      */
-    function fixLGLocations(message, user, postHuntUser, hunt) {
+    function fixLGLocations(message, user, user_post, hunt) {
         const env_to_location = {
             35: {"quest": "QuestLivingGarden",
                 "true": {id: 35, name: "Living Garden"},
@@ -649,13 +649,13 @@
         } else if (["Living Garden", "Twisted Garden",
                 "Lost City", "Cursed City",
                 "Sand Dunes", "Sand Crypts"].includes(message.location.name)) {
-            window.console.warn({record: message, pre: user, post: postHuntUser, hunt});
+            window.console.warn({record: message, user, user_post, hunt});
             throw new Error(`MHHH: Unexpected location id ${message.location.id} for LG-area location`);
         }
     }
 
     /** @type {Object <string, Function>} */
-    const locationStageLookup = {
+    const location_stage_lookup = {
         "Balack's Cove": addBalacksCoveStage,
         "Bristle Woods Rift": addBristleWoodsRiftStage,
         "Burroughs Rift": addBurroughsRiftStage,
@@ -688,13 +688,13 @@
      * Use `quests` or `viewing_atts` data to assign appropriate location-specific stage information.
      * @param {Object <string, any>} message The message to be sent
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
      */
-    function addStage(message, user, postHuntUser, hunt) {
-        const stageFunc = locationStageLookup[user.location];
-        if (stageFunc) {
-            stageFunc(message, user, postHuntUser, hunt);
+    function addStage(message, user, user_post, hunt) {
+        const stage_func = location_stage_lookup[user.location];
+        if (stage_func) {
+            stage_func(message, user, user_post, hunt);
         }
     }
 
@@ -702,21 +702,21 @@
      * Add the "wall state" for Mousoleum hunts.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addMousoleumStage(message, user, postHuntUser, hunt) {
+    function addMousoleumStage(message, user, user_post, hunt) {
         message.stage = (user.quests.QuestMousoleum.has_wall) ? "Has Wall" : "No Wall";
     }
 
     /**
-     * Separate hunts with crew available from those without.
+     * Separate hunts with certain mice available from those without.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addHarbourStage(message, user, postHuntUser, hunt) {
+    function addHarbourStage(message, user, user_post, hunt) {
         const quest = user.quests.QuestHarbour;
         // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
         if (quest.status === "searchStarted" && !quest.can_claim) {
@@ -727,13 +727,13 @@
     }
 
     /**
-     *
+     * Separate hunts with certain mice available from those without.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addClawShotCityStage(message, user, postHuntUser, hunt) {
+    function addClawShotCityStage(message, user, user_post, hunt) {
         const quest = user.quests.QuestClawShotCity;
         /**
          * !map_active && !has_wanted_poster => Bounty Hunter can be attracted
@@ -748,7 +748,7 @@
         } else if (quest.map_active) {
             message.stage = "Using poster";
         } else {
-            window.console.log({record: message, pre: quest, post: postHuntUser.quests.QuestClawShotCity});
+            window.console.log({record: message, pre: quest, post: user_post.quests.QuestClawShotCity});
             throw new Error("MHHH: Unexpected Claw Shot City quest state");
         }
     }
@@ -757,10 +757,10 @@
      * Set the stage based on decoration and boss status.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addFestiveCometStage(message, user, postHuntUser, hunt) {
+    function addFestiveCometStage(message, user, user_post, hunt) {
         const quest = user.quests.QuestWinterHunt2018;
         if (!quest) {
             return;
@@ -788,10 +788,10 @@
      * MP stage reflects the weather categories
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addMoussuPicchuStage(message, user, postHuntUser, hunt) {
+    function addMoussuPicchuStage(message, user, user_post, hunt) {
         const elements = user.quests.QuestMoussuPicchu.elements;
         message.stage = {
             rain: `Rain ${elements.rain.level}`,
@@ -803,10 +803,10 @@
      * WWR stage reflects the zones' rage categories
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addWhiskerWoodsRiftStage(message, user, postHuntUser, hunt) {
+    function addWhiskerWoodsRiftStage(message, user, user_post, hunt) {
         const zones = user.quests.QuestRiftWhiskerWoods.zones;
         const clearing = zones.clearing.level;
         const tree = zones.tree.level;
@@ -837,7 +837,7 @@
             rage.lagoon = 'DL 50';
         }
         if (!rage.clearing || !rage.tree || !rage.lagoon) {
-            window.console.log({record: message, pre: user.quests.QuestRiftWhiskerWoods, post: postHuntUser.quests.QuestRiftWhiskerWoods});
+            window.console.log({record: message, pre: user.quests.QuestRiftWhiskerWoods, post: user_post.quests.QuestRiftWhiskerWoods});
             throw new Error("Unexpected WWR quest state");
         }
 
@@ -848,16 +848,16 @@
      * Labyrinth stage reflects the type of hallway
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addLabyrinthStage(message, user, postHuntUser, hunt) {
+    function addLabyrinthStage(message, user, user_post, hunt) {
         if (user.quests.QuestLabyrinth.status === "hallway") {
             const hallway = user.quests.QuestLabyrinth.hallway_name;
             // Remove first word (like Short)
             message.stage = hallway.substr(hallway.indexOf(" ") + 1).replace(/\ hallway/i, '');
         } else {
-            window.console.log({message: "Non-hallway Labyrinth hunts are boring", pre: user.quests.QuestLabyrinth, post: postHuntUser.quests.QuestLabyrinth});
+            window.console.log({message: "Non-hallway Labyrinth hunts are boring", pre: user.quests.QuestLabyrinth, post: user_post.quests.QuestLabyrinth});
             // Not recording last hunt of a hallway and intersections at this time
             message.location = null;
         }
@@ -867,10 +867,10 @@
      * Stage in the FW reflects the current wave only.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addFieryWarpathStage(message, user, postHuntUser, hunt) {
+    function addFieryWarpathStage(message, user, user_post, hunt) {
         const wave = user.viewing_atts.desert_warpath.wave;
         message.stage = (wave === "portal") ? "Portal" : `Wave ${wave}`;
     }
@@ -879,18 +879,18 @@
      * Set the stage based on the tide. Reject hunts near tide intensity changes.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addBalacksCoveStage(message, user, postHuntUser, hunt) {
+    function addBalacksCoveStage(message, user, user_post, hunt) {
         const tide = user.viewing_atts.tide;
         const direction = user.viewing_atts.tide_direction;
         const imminent_state_change = (user.viewing_atts.cycle_progress === 100
-            // Certain transitions do not change the tide intensity, and are OK to track.
-            && !(tide === "low" && direction === "in")
-            && !(tide === "high" && direction === "out"));
+                // Certain transitions do not change the tide intensity, and are OK to track.
+                && !(tide === "low" && direction === "in")
+                && !(tide === "high" && direction === "out"));
         if (imminent_state_change) {
-            window.console.log({message: "Skipping hunt during server-side tide change", pre: user, post: postHuntUser, hunt});
+            window.console.log({message: "Skipping hunt during server-side tide change", user, user_post, hunt});
             message.location = null;
         } else if (tide) {
             message.stage = tide.charAt(0).toUpperCase() + tide.substr(1);
@@ -899,7 +899,7 @@
             }
             message.stage += " Tide";
         } else {
-            window.console.log({record: message, pre: user, post: postHuntUser, hunt});
+            window.console.log({record: message, user, user_post, hunt});
             throw new Error("No tide found for Balack's Cove");
         }
     }
@@ -908,12 +908,12 @@
      * Read the viewing attributes to determine the season. Reject hunts where the season changed.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addSeasonalGardenStage(message, user, postHuntUser, hunt) {
+    function addSeasonalGardenStage(message, user, user_post, hunt) {
         const season = user.viewing_atts.season;
-        const final_season = postHuntUser.viewing_atts.season;
+        const final_season = user_post.viewing_atts.season;
         if (season && final_season && season === final_season) {
             switch (season) {
                 case "sr":
@@ -926,12 +926,12 @@
                     message.stage = "Winter";
                     break;
                 default:
-                    window.console.log({message: "Assumed spring", season, pre: user, post: postHuntUser});
+                    window.console.log({message: "Assumed spring", season, user, user_post});
                     message.stage = "Spring";
                     break;
             }
         } else {
-            window.console.log({message: "Skipping hunt during server-side season change", pre: user, post: postHuntUser, hunt});
+            window.console.log({message: "Skipping hunt during server-side season change", user, user_post, hunt});
             message.location = null;
         }
     }
@@ -940,20 +940,20 @@
      * Read the bucket state to determine the stage
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addLivingGardenStage(message, user, postHuntUser, hunt) {
+    function addLivingGardenStage(message, user, user_post, hunt) {
         const bucket = user.quests.QuestLivingGarden.minigame.bucket_state;
         if (bucket) {
             if (bucket === "filling") {
                 message.stage = "Not Pouring";
             } else {
-                window.console.log({message: "Assumed poured state", bucket, pre: user.quests.QuestLivingGarden, post: postHuntUser.quests.QuestLivingGarden});
+                window.console.log({message: "Assumed poured state", bucket, pre: user.quests.QuestLivingGarden, post: user_post.quests.QuestLivingGarden});
                 message.stage = "Pouring";
             }
         } else {
-            window.console.log({record: message, pre: user, post: postHuntUser});
+            window.console.log({record: message, user, user_post});
             throw new Error("No bucket found for Living Garden");
         }
     }
@@ -962,10 +962,10 @@
      * Determine if there is a stampede active
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addSandDunesStage(message, user, postHuntUser, hunt) {
+    function addSandDunesStage(message, user, user_post, hunt) {
         message.stage = (user.quests.QuestSandDunes.minigame.has_stampede) ? "Stampede" : "No Stampede";
     }
 
@@ -973,10 +973,10 @@
      * Indicate whether or not the Cursed / Corrupt mouse is present
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addLostCityStage(message, user, postHuntUser, hunt) {
+    function addLostCityStage(message, user, user_post, hunt) {
         // TODO: Partially cursed, for Cursed City?
         message.stage = (user.quests.QuestLostCity.minigame.is_cursed) ? "Cursed" : "Not Cursed";
     }
@@ -985,10 +985,10 @@
      * Read the state of both buckets. TODO: refactor to `addGardenStage` for both LG/TG.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addTwistedGardenStage(message, user, postHuntUser, hunt) {
+    function addTwistedGardenStage(message, user, user_post, hunt) {
         message.stage = (user.quests.QuestLivingGarden.minigame.vials_state === "dumped")
             ? "Pouring" : "Not Pouring";
     }
@@ -997,13 +997,13 @@
      * Report the distance or obstacle
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addIcebergStage(message, user, postHuntUser, hunt) {
+    function addIcebergStage(message, user, user_post, hunt) {
         const phase = user.quests.QuestIceberg.current_phase;
         if (!phase) {
-            window.console.log({message: "No Iceberg quest data", pre: user.quests.QuestIceberg, post: postHuntUser.quests.QuestIceberg});
+            window.console.log({message: "No Iceberg quest data", pre: user.quests.QuestIceberg, post: user_post.quests.QuestIceberg});
             throw new Error("Unable to set Iceberg phase");
         }
         // TODO: Special stage for first & second icewing hunting?
@@ -1034,7 +1034,7 @@
                 message.stage = "Generals";
                 break;
             default:
-                window.console.log({record: message, pre: user.quests.QuestIceberg, post: postHuntUser.quests.QuestIceberg});
+                window.console.log({record: message, pre: user.quests.QuestIceberg, post: user_post.quests.QuestIceberg});
                 throw new Error(`Unexpected Iceberg phase ${phase}`);
         }
     }
@@ -1043,10 +1043,10 @@
      * Report the zone and depth, if any
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addSunkenCityStage(message, user, postHuntUser, hunt) {
+    function addSunkenCityStage(message, user, user_post, hunt) {
         const quest = user.quests.QuestSunkenCity;
         if (!quest.is_diving) {
             message.stage = "Docked";
@@ -1072,13 +1072,13 @@
      * Report the stage as the type and quantity of clues required.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addZokorStage(message, user, postHuntUser, hunt) {
+    function addZokorStage(message, user, user_post, hunt) {
         const zokor_district = user.quests.QuestAncientCity.district_name;
         if (!zokor_district) {
-            window.console.log({message: "No Zokor district information", pre: user, post: postHuntUser});
+            window.console.log({message: "No Zokor district information", user, user_post});
             return;
         }
 
@@ -1108,7 +1108,7 @@
         }
 
         if (!message.stage) {
-            window.console.log({message: "Did not match known Zokor stages to current district", zokor_district, pre: user, post: postHuntUser});
+            window.console.log({message: "Did not match known Zokor stages to current district", zokor_district, user, user_post});
             message.stage = zokor_district;
         }
     }
@@ -1117,10 +1117,10 @@
      * Report the pagoda & battery charge information.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addFuromaRiftStage(message, user, postHuntUser, hunt) {
+    function addFuromaRiftStage(message, user, user_post, hunt) {
         switch (user.quests.QuestRiftFuroma.droid.charge_level) {
             case "":
                 message.stage = "Outside";
@@ -1156,7 +1156,7 @@
                 message.stage = "Battery 10";
                 break;
             default:
-                window.console.log({message: "Unknown battery state", pre: user.quests.QuestRiftFuroma, post: postHuntUser.quests.QuestRiftFuroma});
+                window.console.log({message: "Unknown battery state", pre: user.quests.QuestRiftFuroma, post: user_post.quests.QuestRiftFuroma});
                 throw new Error("Could not determine Furoma Rift battery state");
         }
     }
@@ -1165,12 +1165,12 @@
      *
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addToxicSpillStage(message, user, postHuntUser, hunt) {
+    function addToxicSpillStage(message, user, user_post, hunt) {
         const titles = user.quests.QuestPollutionOutbreak.titles;
-        const final_titles = postHuntUser.quests.QuestPollutionOutbreak.titles;
+        const final_titles = user_post.quests.QuestPollutionOutbreak.titles;
         const formatted_titles = {
             hero:                 'Hero',
             knight:               'Knight',
@@ -1186,13 +1186,13 @@
                 message.stage = formatted_titles[title];
                 break;
             } else if (level.active) {
-                window.console.log({message: "Skipping hunt during server-side pollution change", pre: user, post: postHuntUser, hunt});
+                window.console.log({message: "Skipping hunt during server-side pollution change", user, user_post, hunt});
                 message.location = null;
                 break;
             }
         }
         if (!message.stage && message.location) {
-            window.console.log({record: message, pre: user.quests.QuestPollutionOutbreak, post: postHuntUser.quests.QuestPollutionOutbreak});
+            window.console.log({record: message, pre: user.quests.QuestPollutionOutbreak, post: user_post.quests.QuestPollutionOutbreak});
             throw new Error("Unable to determine active outbreak")
         }
     }
@@ -1201,10 +1201,10 @@
      * Report the misting state
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addBurroughsRiftStage(message, user, postHuntUser, hunt) {
+    function addBurroughsRiftStage(message, user, user_post, hunt) {
         const quest = user.quests.QuestRiftBurroughs;
         switch (quest.mist_tier) {
             case "tier_0":
@@ -1223,7 +1223,7 @@
 
         // Validate misting & edge behaviors.
         const mist_pre = quest.mist_released;
-        const mist_post = postHuntUser.quests.QuestRiftBurroughs.mist_released;
+        const mist_post = user_post.quests.QuestRiftBurroughs.mist_released;
         if (quest.is_misting && quest.can_mist) {
             if (mist_post < 20 && mist_post - mist_pre !== 1) {
                 throw new Error("Bad mist transition");
@@ -1242,7 +1242,7 @@
         } else if (mist_pre > 18 && quest.mist_tier === "tier_3") {
             // OK
         } else {
-            window.console.log({record: message, pre: quest, post: postHuntUser.quests.QuestRiftBurroughs});
+            window.console.log({record: message, pre: quest, post: user_post.quests.QuestRiftBurroughs});
             throw new Error("Bad mist validation")
         }
     }
@@ -1252,17 +1252,17 @@
      * moved / updated / departed, as the hunt stage is ambiguous.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addTrainStage(message, user, postHuntUser, hunt) {
+    function addTrainStage(message, user, user_post, hunt) {
         const quest = user.quests.QuestTrainStation;
-        const final_quest = postHuntUser.quests.QuestTrainStation;
+        const final_quest = user_post.quests.QuestTrainStation;
         // First check that the user is still in the same stage.
         const changed_state = (quest.on_train !== final_quest.on_train
                 || quest.current_phase !== final_quest.current_phase);
         if (changed_state) {
-            window.console.log({message: "Skipping hunt during server-side train stage change", pre: user, post: postHuntUser, hunt});
+            window.console.log({message: "Skipping hunt during server-side train stage change", user, user_post, hunt});
             message.location = null;
         } else {
             // Pre- & post-hunt user object agree on train & phase statuses.
@@ -1284,7 +1284,7 @@
                     const area = quest.minigame.trouble_area;
                     const final_area = final_quest.minigame.trouble_area;
                     if (area !== final_area) {
-                        window.console.log({message: "Skipping hunt during server-side trouble area change", pre: user, post: postHuntUser, hunt});
+                        window.console.log({message: "Skipping hunt during server-side trouble area change", user, user_post, hunt});
                         message.location = null;
                     } else {
                         const charm_id = message.charm.id;
@@ -1313,10 +1313,10 @@
      * Report the progress through the night
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addFortRoxStage(message, user, postHuntUser, hunt) {
+    function addFortRoxStage(message, user, user_post, hunt) {
         const quest = user.quests.QuestFortRox;
         if (quest.is_lair) {
             message.stage = "Heart of the Meteor";
@@ -1344,7 +1344,7 @@
             }
         }
         if (!message.stage) {
-            window.console.log({record: message, pre: quest, post: postHuntUser.quests.QuestFortRox});
+            window.console.log({record: message, pre: quest, post: user_post.quests.QuestFortRox});
             throw new Error("Unable to determine Fort Rox stage");
         }
     }
@@ -1357,15 +1357,15 @@
      * MAYBE: Realm Ripper charm? ID = 2345, name = "chamber_cleaver_trinket"
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addForbiddenGroveStage(message, user, postHuntUser, hunt) {
+    function addForbiddenGroveStage(message, user, user_post, hunt) {
         const was_open = user.viewing_atts.grove_open;
         // 1.5% time => 14.4 minutes for door open and state_progress rounds to 100 (3.6 minutes for closed).
         const imminent_state_change = (user.viewing_atts.state_progress === 100); // TODO: verify rounding behavior
         if (imminent_state_change) {
-            window.console.log({message: "Skipping hunt during server-side door change", pre: user, post: postHuntUser, hunt});
+            window.console.log({message: "Skipping hunt during server-side door change", user, user_post, hunt});
             message.location = null;
         } else {
             message.stage = (was_open) ? "Open" : "Closed";
@@ -1376,10 +1376,10 @@
      * Report the current chamber name.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addBristleWoodsRiftStage(message, user, postHuntUser, hunt) {
+    function addBristleWoodsRiftStage(message, user, user_post, hunt) {
         message.stage = user.quests.QuestRiftBristleWoods.chamber_name;
         if (message.stage === "Rift Acolyte Tower") {
             message.stage = "Entrance";
@@ -1390,16 +1390,16 @@
      * Report the current year.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addMysteriousAnomalyStage(message, user, postHuntUser, hunt) {
+    function addMysteriousAnomalyStage(message, user, user_post, hunt) {
         message.stage = user.quests.QuestBirthday2018.current_year;
     }
 
 
     /** @type {Object <string, Function>} */
-    const locationHuntDetailsLookup = {
+    const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
         "Mysterious Anomaly": addMysteriousAnomalyHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
@@ -1411,28 +1411,28 @@
      * These details may eventually be migrated to help inform location-specific stages.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addHuntDetails(message, user, postHuntUser, hunt) {
+    function addHuntDetails(message, user, user_post, hunt) {
         // First add any location-specific details:
-        const detailsFunc = locationHuntDetailsLookup[user.location];
-        if (detailsFunc) {
-            detailsFunc(message, user, postHuntUser, hunt);
+        const details_func = location_huntdetails_lookup[user.location];
+        if (details_func) {
+            details_func(message, user, user_post, hunt);
         }
 
         // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
-        addLNYHuntDetails(message, user, postHuntUser, hunt);
+        addLNYHuntDetails(message, user, user_post, hunt);
     }
 
     /**
      * Set a value for LNY bonus luck, if it can be determined. Otherwise flag LNY hunts.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addLNYHuntDetails(message, user, postHuntUser, hunt) {
+    function addLNYHuntDetails(message, user, user_post, hunt) {
         const quest = getActiveLNYQuest(user.quests);
         if (quest) {
             // Avoid overwriting any existing hunt details.
@@ -1452,10 +1452,10 @@
      * Track additional state for the Bristle Woods Rift
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addBristleWoodsRiftHuntDetails(message, user, postHuntUser, hunt) {
+    function addBristleWoodsRiftHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestRiftBristleWoods;
         const details = {
             has_hourglass: quest.items.rift_hourglass_stat_item.quantity >= 1,
@@ -1478,10 +1478,10 @@
      * Additional state for the 2018 Birthday
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addMysteriousAnomalyHuntDetails(message, user, postHuntUser, hunt) {
+    function addMysteriousAnomalyHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestBirthday2018;
         message.hunt_details = {
             boss_status: quest.boss_status,
@@ -1493,10 +1493,10 @@
      * Track the grub salt level
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addSandCryptsHuntDetails(message, user, postHuntUser, hunt) {
+    function addSandCryptsHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestSandDunes;
         if (quest && !quest.is_normal && quest.minigame && quest.minigame.type === 'grubling') {
             if (["King Grub", "King Scarab"].includes(message.mouse)) {
@@ -1512,10 +1512,10 @@
      * side, where 0-7 -> only Pawns, 8/9 -> Pawns + Knights, and 16 = means King caught (only Pawns + Rooks available)
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addZugzwangsTowerHuntDetails(message, user, postHuntUser, hunt) {
+    function addZugzwangsTowerHuntDetails(message, user, user_post, hunt) {
         const attrs = user.viewing_atts;
         const zt = {
             amplifier: parseInt(attrs.zzt_amplifier, 10),
@@ -1627,10 +1627,10 @@
      * @returns {Object <string, any> | null} The quest if it exists, else `null`
      */
     function getActiveLNYQuest(allQuests) {
-        const questNames = Object.keys(allQuests)
-            .filter(questName => questName.includes("QuestLunarNewYear"));
-        return (questNames.length
-            ? allQuests[questNames[0]]
+        const quest_names = Object.keys(allQuests)
+            .filter(name => name.includes("QuestLunarNewYear"));
+        return (quest_names.length
+            ? allQuests[quest_names[0]]
             : null);
     }
 
