@@ -289,7 +289,7 @@
      * @param {Object <string, any>} preHuntUser The user object obtained prior to invoking `activeturn.php`.
      */
     function recordHuntWithPrehuntUser(response, preHuntUser) {
-        window.console.log({message: "In sendHuntWithUser", response, preHuntUser});
+        window.console.log({message: "In recordHuntWithPrehuntUser", response, preHuntUser});
         // Require some difference between the user and response.user objects. If there is
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const requiredDifferences = [
@@ -876,7 +876,7 @@
     }
 
     /**
-     * Set the stage based on the tide
+     * Set the stage based on the tide. Reject hunts near tide intensity changes.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
@@ -884,40 +884,55 @@
      */
     function addBalacksCoveStage(message, user, postHuntUser, hunt) {
         const tide = user.viewing_atts.tide;
-        if (tide) {
+        const direction = user.viewing_atts.tide_direction;
+        const imminent_state_change = (user.viewing_atts.cycle_progress === 100
+            // Certain transitions do not change the tide intensity, and are OK to track.
+            && !(tide === "low" && direction === "in")
+            && !(tide === "high" && direction === "out"));
+        if (imminent_state_change) {
+            window.console.log({message: "Skipping hunt during server-side tide change", pre: user, post: postHuntUser, hunt});
+            message.location = null;
+        } else if (tide) {
             message.stage = tide.charAt(0).toUpperCase() + tide.substr(1);
             if (message.stage === "Med") {
                 message.stage = "Medium";
             }
             message.stage += " Tide";
         } else {
-            window.console.log({record: message, pre: user, post: postHuntUser});
+            window.console.log({record: message, pre: user, post: postHuntUser, hunt});
             throw new Error("No tide found for Balack's Cove");
         }
     }
 
     /**
-     * Read the viewing attributes to determine the season.
+     * Read the viewing attributes to determine the season. Reject hunts where the season changed.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addSeasonalGardenStage(message, user, postHuntUser, hunt) {
-        switch (user.viewing_atts.season) {
-            case "sr":
-                message.stage = "Summer";
-                break;
-            case "fl":
-                message.stage = "Fall";
-                break;
-            case "wr":
-                message.stage = "Winter";
-                break;
-            default:
-                window.console.log({message: "Assumed spring", season: user.viewing_atts.season, pre: user, post: postHuntUser});
-                message.stage = "Spring";
-                break;
+        const season = user.viewing_atts.season;
+        const final_season = postHuntUser.viewing_atts.season;
+        if (season && final_season && season === final_season) {
+            switch (season) {
+                case "sr":
+                    message.stage = "Summer";
+                    break;
+                case "fl":
+                    message.stage = "Fall";
+                    break;
+                case "wr":
+                    message.stage = "Winter";
+                    break;
+                default:
+                    window.console.log({message: "Assumed spring", season, pre: user, post: postHuntUser});
+                    message.stage = "Spring";
+                    break;
+            }
+        } else {
+            window.console.log({message: "Skipping hunt during server-side season change", pre: user, post: postHuntUser, hunt});
+            message.location = null;
         }
     }
 
@@ -1155,6 +1170,7 @@
      */
     function addToxicSpillStage(message, user, postHuntUser, hunt) {
         const titles = user.quests.QuestPollutionOutbreak.titles;
+        const final_titles = postHuntUser.quests.QuestPollutionOutbreak.titles;
         const formatted_titles = {
             hero:                 'Hero',
             knight:               'Knight',
@@ -1166,12 +1182,16 @@
             archduke_archduchess: 'Archduke/Archduchess'
         };
         for (const [title, level] of Object.entries(titles)) {
-            if (level.active) {
+            if (level.active && final_titles[title].active === level.active) {
                 message.stage = formatted_titles[title];
+                break;
+            } else if (level.active) {
+                window.console.log({message: "Skipping hunt during server-side pollution change", pre: user, post: postHuntUser, hunt});
+                message.location = null;
                 break;
             }
         }
-        if (!message.stage) {
+        if (!message.stage && message.location) {
             window.console.log({record: message, pre: user.quests.QuestPollutionOutbreak, post: postHuntUser.quests.QuestPollutionOutbreak});
             throw new Error("Unable to determine active outbreak")
         }
@@ -1228,7 +1248,8 @@
     }
 
     /**
-     * Report on the unique minigames in each sub-location
+     * Report on the unique minigames in each sub-location. Reject hunts for which the train
+     * moved / updated / departed, as the hunt stage is ambiguous.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
@@ -1236,46 +1257,55 @@
      */
     function addTrainStage(message, user, postHuntUser, hunt) {
         const quest = user.quests.QuestTrainStation;
-        if (!quest.on_train || quest.on_train === "false") {
-            message.stage = "Station";
-        } else if (quest.current_phase === "supplies") {
-            let stage = "1. Supply Depot";
-            if (quest.minigame && quest.minigame.supply_hoarder_turns > 0) {
-                // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
-                stage += " - Rush";
-            } else {
-                stage += " - No Rush";
-            }
-            message.stage = stage;
-        } else if (quest.current_phase === "boarding") {
-            let stage = "2. Raider River";
-            if (quest.minigame && quest.minigame.trouble_area) {
-                const charm_id = message.charm.id;
-                const charmFor = {
-                    "door": 1210,
-                    "rails": 1211,
-                    "roof": 1212
-                };
-                if (charmFor[quest.minigame.trouble_area] === charm_id) {
-                    stage += " - Defending Target";
-                } else if ([1210, 1211, 1212].includes(charm_id)) {
-                    stage += " - Defending Other";
+        const final_quest = postHuntUser.quests.QuestTrainStation;
+        // First check that the user is still in the same stage.
+        const changed_state = (quest.on_train !== final_quest.on_train
+                || quest.current_phase !== final_quest.current_phase);
+        if (changed_state) {
+            window.console.log({message: "Skipping hunt during server-side train stage change", pre: user, post: postHuntUser, hunt});
+            message.location = null;
+        } else {
+            // Pre- & post-hunt user object agree on train & phase statuses.
+            if (!quest.on_train || quest.on_train === "false") {
+                message.stage = "Station";
+            } else if (quest.current_phase === "supplies") {
+                let stage = "1. Supply Depot";
+                if (quest.minigame && quest.minigame.supply_hoarder_turns > 0) {
+                    // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
+                    stage += " - Rush";
                 } else {
-                    stage += " - Not Defending";
+                    stage += " - No Rush";
                 }
+                message.stage = stage;
+            } else if (quest.current_phase === "boarding") {
+                let stage = "2. Raider River";
+                if (quest.minigame && quest.minigame.trouble_area) {
+                    // Raider River has an additional server-side state change.
+                    const area = quest.minigame.trouble_area;
+                    const final_area = final_quest.minigame.trouble_area;
+                    if (area !== final_area) {
+                        window.console.log({message: "Skipping hunt during server-side trouble area change", pre: user, post: postHuntUser, hunt});
+                        message.location = null;
+                    } else {
+                        const charm_id = message.charm.id;
+                        const has_correct_charm = (({
+                            "door": 1210,
+                            "rails": 1211,
+                            "roof": 1212
+                        })[area] === charm_id);
+                        if (has_correct_charm) {
+                            stage += " - Defending Target";
+                        } else if ([1210, 1211, 1212].includes(charm_id)) {
+                            stage += " - Defending Other";
+                        } else {
+                            stage += " - Not Defending";
+                        }
+                    }
+                }
+                message.stage = stage;
+            } else if (quest.current_phase === "bridge_jump") {
+                message.stage = "3. Daredevil Canyon";
             }
-            message.stage = stage;
-        } else if (quest.current_phase === "bridge_jump") {
-            let stage = "3. Daredevil Canyon";
-            const charm_id = message.charm.id;
-            if (charm_id === 1208) {
-                stage += " - Dusty Coal";
-            } else if (charm_id === 1207) {
-                stage += " - Black Powder";
-            } else if (charm_id === 1209) {
-                stage += " - Magmatic Crystal";
-            }
-            message.stage = stage;
         }
     }
 
@@ -1320,17 +1350,25 @@
     }
 
     /**
-     * Report the state of the door to the Realm
-     * TODO: Realm Ripper charm? ID = 2345, name = "chamber_cleaver_trinket"
+     * Report the state of the door to the Realm. The user may be auto-traveled by this hunt, either
+     * due to the use of a Ripper charm while the door is open, or because the door is closed at the time
+     * of the hunt itself. If the door closes between the time HG computes the prehunt user object and when
+     * HG receives the hunt request, we should reject logging the hunt.
+     * MAYBE: Realm Ripper charm? ID = 2345, name = "chamber_cleaver_trinket"
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addForbiddenGroveStage(message, user, postHuntUser, hunt) {
-        message.stage = (user.viewing_atts.grove_open) ? "Open" : "Closed";
-        if (message.charm.id === 2345) {
-            message.stage += " - Ripper Charm";
+        const was_open = user.viewing_atts.grove_open;
+        // 1.5% time => 14.4 minutes for door open and state_progress rounds to 100 (3.6 minutes for closed).
+        const imminent_state_change = (user.viewing_atts.state_progress === 100); // TODO: verify rounding behavior
+        if (imminent_state_change) {
+            window.console.log({message: "Skipping hunt during server-side door change", pre: user, post: postHuntUser, hunt});
+            message.location = null;
+        } else {
+            message.stage = (was_open) ? "Open" : "Closed";
         }
     }
 
@@ -1387,8 +1425,14 @@
         addLNYHuntDetails(message, user, postHuntUser, hunt);
     }
 
+    /**
+     * Set a value for LNY bonus luck, if it can be determined. Otherwise flag LNY hunts.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} postHuntUser The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
     function addLNYHuntDetails(message, user, postHuntUser, hunt) {
-        // Set a value for LNY bonus luck, if it can be determined. Otherwise flag LNY hunts.
         const quest = getActiveLNYQuest(user.quests);
         if (quest) {
             // Avoid overwriting any existing hunt details.
