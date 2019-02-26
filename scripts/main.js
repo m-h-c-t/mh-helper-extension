@@ -670,7 +670,7 @@
         "Harbour": addHarbourStage,
         "Iceberg": addIcebergStage,
         "Labyrinth": addLabyrinthStage,
-        "Living Garden": addLivingGardenStage,
+        "Living Garden": addGardenStage,
         "Lost City": addLostCityStage,
         "Mousoleum": addMousoleumStage,
         "Moussu Picchu": addMoussuPicchuStage,
@@ -679,7 +679,7 @@
         "Seasonal Garden": addSeasonalGardenStage,
         "Sunken City": addSunkenCityStage,
         "Toxic Spill": addToxicSpillStage,
-        "Twisted Garden": addTwistedGardenStage,
+        "Twisted Garden": addGardenStage,
         "Whisker Woods Rift": addWhiskerWoodsRiftStage,
         "Zokor": addZokorStage,
     };
@@ -937,25 +937,16 @@
     }
 
     /**
-     * Read the bucket state to determine the stage
+     * Read the bucket / vial state to determine the stage for Living & Twisted garden.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addLivingGardenStage(message, user, user_post, hunt) {
-        const bucket = user.quests.QuestLivingGarden.minigame.bucket_state;
-        if (bucket) {
-            if (bucket === "filling") {
-                message.stage = "Not Pouring";
-            } else {
-                window.console.log({message: "Assumed poured state", bucket, pre: user.quests.QuestLivingGarden, post: user_post.quests.QuestLivingGarden});
-                message.stage = "Pouring";
-            }
-        } else {
-            window.console.log({record: message, user, user_post});
-            throw new Error("No bucket found for Living Garden");
-        }
+    function addGardenStage(message, user, user_post, hunt) {
+        const quest = user.quests.QuestLivingGarden;
+        const container_status = (quest.is_normal) ? quest.minigame.bucket_state : quest.minigame.vials_state;
+        message.stage = (container_status === "dumped") ? "Pouring" : "Not Pouring";
     }
 
     /**
@@ -979,18 +970,6 @@
     function addLostCityStage(message, user, user_post, hunt) {
         // TODO: Partially cursed, for Cursed City?
         message.stage = (user.quests.QuestLostCity.minigame.is_cursed) ? "Cursed" : "Not Cursed";
-    }
-
-    /**
-     * Read the state of both buckets. TODO: refactor to `addGardenStage` for both LG/TG.
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     */
-    function addTwistedGardenStage(message, user, user_post, hunt) {
-        message.stage = (user.quests.QuestLivingGarden.minigame.vials_state === "dumped")
-            ? "Pouring" : "Not Pouring";
     }
 
     /**
