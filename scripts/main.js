@@ -839,11 +839,11 @@
             rage.lagoon = 'DL 50';
         }
         if (!rage.clearing || !rage.tree || !rage.lagoon) {
-            window.console.log({record: message, pre: user.quests.QuestRiftWhiskerWoods, post: user_post.quests.QuestRiftWhiskerWoods});
-            throw new Error("Unexpected WWR quest state");
+            window.console.log({message: "Skipping unexpected WWR quest state", user, user_post, hunt});
+            message.location = null;
+        } else {
+            message.stage = rage;
         }
-
-        message.stage = rage;
     }
 
     /**
@@ -859,7 +859,6 @@
             // Remove first word (like Short)
             message.stage = hallway.substr(hallway.indexOf(" ") + 1).replace(/\ hallway/i, '');
         } else {
-            window.console.log({message: "Non-hallway Labyrinth hunts are boring", pre: user.quests.QuestLabyrinth, post: user_post.quests.QuestLabyrinth});
             // Not recording last hunt of a hallway and intersections at this time
             message.location = null;
         }
@@ -891,18 +890,15 @@
                 // Certain transitions do not change the tide intensity, and are OK to track.
                 && !(tide === "low" && direction === "in")
                 && !(tide === "high" && direction === "out"));
-        if (imminent_state_change) {
-            window.console.log({message: "Skipping hunt during server-side tide change", user, user_post, hunt});
-            message.location = null;
-        } else if (tide) {
+        if (!imminent_state_change && tide) {
             message.stage = tide.charAt(0).toUpperCase() + tide.substr(1);
             if (message.stage === "Med") {
                 message.stage = "Medium";
             }
             message.stage += " Tide";
         } else {
-            window.console.log({record: message, user, user_post, hunt});
-            throw new Error("No tide found for Balack's Cove");
+            window.console.log({message: "Skipping hunt during server-side tide change", user, user_post, hunt});
+            message.location = null;
         }
     }
 
@@ -975,48 +971,29 @@
     }
 
     /**
-     * Report the distance or obstacle
+     * Report the current distance / obstacle.
+     * TODO: Stage / hunt details for first & second icewing hunting?
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addIcebergStage(message, user, user_post, hunt) {
-        const phase = user.quests.QuestIceberg.current_phase;
-        if (!phase) {
-            window.console.log({message: "No Iceberg quest data", pre: user.quests.QuestIceberg, post: user_post.quests.QuestIceberg});
-            throw new Error("Unable to set Iceberg phase");
-        }
-        // TODO: Special stage for first & second icewing hunting?
-        // Switch on current depth after checking what phase has for generals
-        switch (phase) {
-            case "Treacherous Tunnels":
-                message.stage = "0-300ft";
-                break;
-            case "Brutal Bulwark":
-                message.stage = "301-600ft";
-                break;
-            case "Bombing Run":
-                message.stage = "601-1600ft";
-                break;
-            case "The Mad Depths":
-                message.stage = "1601-1800ft";
-                break;
-            case "Icewing's Lair":
-                message.stage = "1800ft";
-                break;
-            case "Hidden Depths":
-                message.stage = "1801-2000ft";
-                break;
-            case "The Deep Lair":
-                message.stage = "2000ft";
-                break;
-            case "General":
-                message.stage = "Generals";
-                break;
-            default:
-                window.console.log({record: message, pre: user.quests.QuestIceberg, post: user_post.quests.QuestIceberg});
-                throw new Error(`Unexpected Iceberg phase ${phase}`);
+        const quest = user.quests.QuestIceberg;
+        message.stage = (({
+            "Treacherous Tunnels": "0-300ft",
+            "Brutal Bulwark":    "301-600ft",
+            "Bombing Run":      "601-1600ft",
+            "The Mad Depths":  "1601-1800ft",
+            "Icewing's Lair":       "1800ft",
+            "Hidden Depths":   "1801-2000ft",
+            "The Deep Lair":        "2000ft",
+            "General":            "Generals"
+        })[quest.current_phase]);
+
+        if (!message.stage) {
+            window.console.log({message: "Skipping unknown Iceberg stage", pre: quest, post: user_post.quests.QuestIceberg, hunt});
+            message.location = null;
         }
     }
 
@@ -1058,87 +1035,67 @@
      */
     function addZokorStage(message, user, user_post, hunt) {
         const zokor_district = user.quests.QuestAncientCity.district_name;
-        if (!zokor_district) {
-            window.console.log({message: "No Zokor district information", user, user_post});
-            return;
-        }
-
-        const zokor_stages = {
-            "Garden":     "Farming 0+",
-            "Study":      "Scholar 15+",
-            "Shrine":     "Fealty 15+",
-            "Outskirts":  "Tech 15+",
-            "Room":       "Treasure 15+",
-            "Minotaur":   "Lair - Each 30+",
-            "Temple":     "Fealty 50+",
-            "Auditorium": "Scholar 50+",
-            "Farmhouse":  "Farming 50+",
-            "Center":     "Tech 50+",
-            "Vault":      "Treasure 50+",
-            "Library":    "Scholar 80+",
-            "Manaforge":  "Tech 80+",
-            "Sanctum":    "Fealty 80+"
-        };
-
-        for (const [key, value] of Object.entries(zokor_stages)) {
-            const pattern = new RegExp(key, "i");
-            if (zokor_district.search(pattern) !== -1) {
-                message.stage = value;
-                break;
+        if (zokor_district) {
+            const zokor_stages = {
+                "Garden":     "Farming 0+",
+                "Study":      "Scholar 15+",
+                "Shrine":     "Fealty 15+",
+                "Outskirts":  "Tech 15+",
+                "Room":       "Treasure 15+",
+                "Minotaur":   "Lair - Each 30+",
+                "Temple":     "Fealty 50+",
+                "Auditorium": "Scholar 50+",
+                "Farmhouse":  "Farming 50+",
+                "Center":     "Tech 50+",
+                "Vault":      "Treasure 50+",
+                "Library":    "Scholar 80+",
+                "Manaforge":  "Tech 80+",
+                "Sanctum":    "Fealty 80+"
+            };
+            for (const [key, value] of Object.entries(zokor_stages)) {
+                const pattern = new RegExp(key, "i");
+                if (zokor_district.search(pattern) !== -1) {
+                    message.stage = value;
+                    break;
+                }
             }
         }
 
         if (!message.stage) {
-            window.console.log({message: "Did not match known Zokor stages to current district", zokor_district, user, user_post});
-            message.stage = zokor_district;
+            window.console.log({message: "Skipping unknown Zokor district", user, user_post, hunt});
+            message.location = null;
         }
     }
 
     /**
-     * Report the pagoda & battery charge information.
+     * Report the pagoda / battery charge information.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addFuromaRiftStage(message, user, user_post, hunt) {
-        switch (user.quests.QuestRiftFuroma.droid.charge_level) {
-            case "":
-                message.stage = "Outside";
-                break;
-            case "charge_level_one":
-                message.stage = "Battery 1";
-                break;
-            case "charge_level_two":
-                message.stage = "Battery 2";
-                break;
-            case "charge_level_three":
-                message.stage = "Battery 3";
-                break;
-            case "charge_level_four":
-                message.stage = "Battery 4";
-                break;
-            case "charge_level_five":
-                message.stage = "Battery 5";
-                break;
-            case "charge_level_six":
-                message.stage = "Battery 6";
-                break;
-            case "charge_level_seven":
-                message.stage = "Battery 7";
-                break;
-            case "charge_level_eight":
-                message.stage = "Battery 8";
-                break;
-            case "charge_level_nine":
-                message.stage = "Battery 9";
-                break;
-            case "charge_level_ten":
-                message.stage = "Battery 10";
-                break;
-            default:
-                window.console.log({message: "Unknown battery state", pre: user.quests.QuestRiftFuroma, post: user_post.quests.QuestRiftFuroma});
-                throw new Error("Could not determine Furoma Rift battery state");
+        const quest = user.quests.QuestRiftFuroma;
+        if (quest.view_state.includes("trainingGrounds")) {
+            message.stage = "Outside";
+        } else if (quest.view_state.includes("pagoda")) {
+            message.stage = (({
+                "charge_level_one":   "Battery 1",
+                "charge_level_two":   "Battery 2",
+                "charge_level_three": "Battery 3",
+                "charge_level_four":  "Battery 4",
+                "charge_level_five":  "Battery 5",
+                "charge_level_six":   "Battery 6",
+                "charge_level_seven": "Battery 7",
+                "charge_level_eight": "Battery 8",
+                "charge_level_nine":  "Battery 9",
+                "charge_level_ten":   "Battery 10"
+            })[quest.droid.charge_level]);
+        }
+
+        if (!message.stage) {
+            window.console.log({message: "Skipping unknown Furoma Rift droid state", user, user_post, hunt});
+            message.location = null;
         }
     }
 
@@ -1163,18 +1120,16 @@
             archduke_archduchess: 'Archduke/Archduchess'
         };
         for (const [title, level] of Object.entries(titles)) {
-            if (level.active && final_titles[title].active === level.active) {
-                message.stage = formatted_titles[title];
-                break;
-            } else if (level.active) {
-                window.console.log({message: "Skipping hunt during server-side pollution change", user, user_post, hunt});
-                message.location = null;
+            if (level.active) {
+                if (final_titles[title].active === level.active) {
+                    message.stage = formatted_titles[title];
+                }
                 break;
             }
         }
-        if (!message.stage && message.location) {
-            window.console.log({record: message, pre: user.quests.QuestPollutionOutbreak, post: user_post.quests.QuestPollutionOutbreak});
-            throw new Error("Unable to determine active outbreak")
+        if (!message.stage) {
+            window.console.log({message: "Skipping hunt during server-side pollution change", user, user_post, hunt});
+            message.location = null;
         }
     }
 
@@ -1187,44 +1142,15 @@
      */
     function addBurroughsRiftStage(message, user, user_post, hunt) {
         const quest = user.quests.QuestRiftBurroughs;
-        switch (quest.mist_tier) {
-            case "tier_0":
-                message.stage = "Mist 0";
-                break;
-            case "tier_1":
-                message.stage = "Mist 1-5";
-                break;
-            case "tier_2":
-                message.stage = "Mist 6-18";
-                break;
-            case "tier_3":
-                message.stage = "Mist 19-20";
-                break;
-        }
-
-        // Validate misting & edge behaviors.
-        const mist_pre = quest.mist_released;
-        const mist_post = user_post.quests.QuestRiftBurroughs.mist_released;
-        if (quest.is_misting && quest.can_mist) {
-            if (mist_post < 20 && mist_post - mist_pre !== 1) {
-                throw new Error("Bad mist transition");
-            }
-        } else {
-            if (mist_pre > 0 && mist_pre - mist_post !== 1) {
-                throw new Error("Bad mist transition");
-            }
-        }
-        if (mist_pre === 0 && quest.mist_tier === "tier_0") {
-            // OK
-        } else if (mist_pre > 0 && mist_pre <= 5 && quest.mist_tier === "tier_1") {
-            // OK
-        } else if (mist_pre > 5 && mist_pre <= 18 && quest.mist_tier === "tier_2") {
-            // OK
-        } else if (mist_pre > 18 && quest.mist_tier === "tier_3") {
-            // OK
-        } else {
-            window.console.log({record: message, pre: quest, post: user_post.quests.QuestRiftBurroughs});
-            throw new Error("Bad mist validation")
+        message.stage = (({
+            "tier_0": "Mist 0",
+            "tier_1": "Mist 1-5",
+            "tier_2": "Mist 6-18",
+            "tier_3": "Mist 19-20"
+        })[quest.mist_tier]);
+        if (!message.stage) {
+            window.console.log({message: "Skipping unknown Burroughs Rift mist state", user, user_post, hunt});
+            message.location = null;
         }
     }
 
@@ -1306,27 +1232,18 @@
         } else if (quest.is_day) {
             message.stage = "Day";
         } else if (quest.is_night) {
-            switch (quest.current_stage) {
-                case "stage_one":
-                    message.stage = "Twilight";
-                    break;
-                case "stage_two":
-                    message.stage = "Midnight";
-                    break;
-                case "stage_three":
-                    message.stage = "Pitch";
-                    break;
-                case "stage_four":
-                    message.stage = "Utter Darkness";
-                    break;
-                case "stage_five":
-                    message.stage = "First Light";
-                    break;
-            }
+            message.stage = (({
+                "stage_one":   "Twilight",
+                "stage_two":   "Midnight",
+                "stage_three": "Pitch",
+                "stage_four":  "Utter Darkness",
+                "stage_five":  "First Light"
+            })[quest.current_stage]);
         }
+
         if (!message.stage) {
-            window.console.log({record: message, pre: quest, post: user_post.quests.QuestFortRox});
-            throw new Error("Unable to determine Fort Rox stage");
+            window.console.log({message: "Skipping unknown Fort Rox stage", pre: quest, post: user_post.quests.QuestFortRox});
+            message.location = null;
         }
     }
 
