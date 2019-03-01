@@ -304,7 +304,7 @@
             "next_activeturn_seconds"
         ];
         const user_post = response.user;
-        const differences = {};
+
         /**
          * Store the difference between generic primitives and certain objects in `result`
          * @param {Object <string, any>} result The object to write diffs into
@@ -356,8 +356,11 @@
                     result[key] = {in: "post", val: obj_post[key]};
                 });
         }
-        diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
-        if (debug_logging) {window.console.log({differences});}
+        if (debug_logging) {
+            const differences = {};
+            diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
+            window.console.log({differences});
+        }
 
         const hunt = parseJournalEntries(response);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
@@ -369,8 +372,7 @@
             return;
         }
 
-        const diff_keys = new Set(Object.keys(differences));
-        if (!required_differences.every(key => diff_keys.has(key))
+        if (!required_differences.every(key => user_pre[key] != user_post[key])
                 || user_post.num_active_turns - user_pre.num_active_turns !== 1) {
             window.console.log("MHHH: Required pre/post hunt differences not observed.");
             return;
