@@ -39,8 +39,8 @@ document.getElementById('save').addEventListener('click', () => {
 document.addEventListener('DOMContentLoaded', () => {
     // Use default values where available.
     const defaultOptions = mhhhOptions
-      .filter(prop => prop.default !== undefined)
-      .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
+        .filter(prop => prop.default !== undefined)
+        .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
     chrome.storage.sync.get(defaultOptions, items => {
         mhhhOptions.forEach(prop => document.getElementById(prop.name)[prop.p] = items[prop.name]);
         // Display the numeric values of the range-input sliders.
