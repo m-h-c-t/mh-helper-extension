@@ -88,6 +88,7 @@ window.addEventListener("message",
         chrome.storage.sync.get({
             success_messages: true, // defaults
             error_messages: true, // defaults
+            debug_logging: false, // defaults
             icon_timer: true, // defaults
             horn_sound: false, // defaults
             custom_sound: '', // defaults

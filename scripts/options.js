@@ -2,6 +2,7 @@
 let mhhhOptions = [ // `let` scope to avoid adding to window while still being global.
     {name: 'success_messages', p: 'checked', default: true},
     {name: 'error_messages', p: 'checked', default: true},
+    {name: 'debug_logging', p: 'checked', default: false},
     {name: 'icon_timer', p: 'checked', default: true},
     {name: 'horn_sound', p: 'checked', default: false},
     {name: 'custom_sound', p: 'value', default: ''},

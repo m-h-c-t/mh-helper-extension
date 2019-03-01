@@ -14,6 +14,8 @@
     }
     var mhhh_version = $("#mhhh_version").val();
 
+    var debug_logging = false;
+
     // Listening for calls
     window.addEventListener('message', ev => {
         if (ev.data.jacks_message == null) {
@@ -172,7 +174,7 @@
         if (event.type !== "ajaxSend" || !ajaxOptions.url.includes("ajax/turns/activeturn.php"))
             return;
         const create_hunt_XHR = ajaxOptions.xhr;
-        window.console.time("Overall 'Hunt Requested' Timing");
+        if (debug_logging) {window.console.time("Overall 'Hunt Requested' Timing");}
         // Override the XMLHttpRequest that will be used with our own.
         ajaxOptions.xhr = function () {
             // Create the original XMLHttpRequest, whose `send()` will sound the horn.
@@ -194,9 +196,9 @@
                     },
                     dataType: "json"
                 }).done(userRqResponse => {
-                    window.console.log({message: "Got user object, invoking huntSend", userRqResponse});
+                    if (debug_logging) {window.console.log({message: "Got user object, invoking huntSend", userRqResponse});}
                     hunt_xhr.addEventListener("loadend", () => {
-                        window.console.timeEnd("Overall 'Hunt Requested' Timing");
+                        if (debug_logging) {window.console.timeEnd("Overall 'Hunt Requested' Timing");}
                         // Call record hunt with the pre-hunt user object.
                         recordHuntWithPrehuntUser(JSON.parse(hunt_xhr.responseText), userRqResponse.user);
                     }, false);
@@ -226,6 +228,9 @@
             if (event.data.jacks_settings_response !== 1) {
                 return;
             }
+
+            // Locally cache the logging setting.
+            debug_logging = !!event.data.settings.debug_logging;
 
             if (callback && typeof(callback) === "function") {
                 window.removeEventListener("message", listenSettings);
@@ -291,7 +296,7 @@
      * @param {Object <string, any>} user_pre The user object obtained prior to invoking `activeturn.php`.
      */
     function recordHuntWithPrehuntUser(response, user_pre) {
-        window.console.log({message: "In recordHuntWithPrehuntUser", response, user_pre});
+        if (debug_logging) {window.console.log({message: "In recordHuntWithPrehuntUser", response, user_pre});}
         // Require some difference between the user and response.user objects. If there is
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const required_differences = [
@@ -352,7 +357,7 @@
                 });
         }
         diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
-        window.console.log({differences});
+        if (debug_logging) {window.console.log({differences});}
 
         const hunt = parseJournalEntries(response);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
@@ -388,7 +393,7 @@
         }
 
         addLoot(message, hunt);
-        window.console.log({message, user_pre, user_post, hunt});
+        if (debug_logging) {window.console.log({message, user_pre, user_post, hunt});}
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
     }
@@ -489,7 +494,7 @@
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
                     sendMessageToServer(db_url, rh_message);
-                    window.console.log(`MHHH: Found the Relic Hunter in ${rh_message.rh_environment}`);
+                    if (debug_logging) {window.console.log(`MHHH: Found the Relic Hunter in ${rh_message.rh_environment}`);}
                 }
             }
             else if (Object.keys(journal).length !== 0) {
@@ -516,6 +521,7 @@
         const message = {
             extension_version: formatVersion(mhhh_version)
         };
+        const debug_logs = [];
 
         // Hunter ID.
         message.user_id = parseInt(user.user_id, 10);
@@ -539,7 +545,7 @@
             id: user.environment_id
         };
         if (user_post.environment_id != user.environment_id) {
-            window.console.log(`User auto-traveled from ${user.location} to ${user_post.location}`);
+            debug_logs.push(`User auto-traveled from ${user.location} to ${user_post.location}`);
         }
 
         // Shield (true / false)
@@ -548,15 +554,17 @@
         // Total Power, Luck, Attraction
         message.total_power = user.trap_power;
         if (user_post.trap_power !== user.trap_power) {
-            window.console.log(`User setup power changed from ${user.trap_power} to ${user_post.trap_power}`);
+            debug_logs.push(`User setup power changed from ${user.trap_power} to ${user_post.trap_power}`);
         }
+
         message.total_luck = user.trap_luck;
         if (user_post.trap_luck !== user.trap_luck) {
-            window.console.log(`User setup luck changed from ${user.trap_luck} to ${user_post.trap_luck}`);
+            debug_logs.push(`User setup luck changed from ${user.trap_luck} to ${user_post.trap_luck}`);
         }
+
         message.attraction_bonus = Math.round(user.trap_attraction_bonus * 100);
         if (user_post.trap_attraction_bonus !== user.trap_attraction_bonus) {
-            window.console.log(`User setup attraction bonus changed from ${user.trap_attraction_bonus} to ${user_post.trap_attraction_bonus}`);
+            debug_logs.push(`User setup attraction bonus changed from ${user.trap_attraction_bonus} to ${user_post.trap_attraction_bonus}`);
         }
 
         // Setup components
@@ -583,7 +591,7 @@
             };
 
             if (item_name !== user_post[prop_name]) {
-                window.console.log(`User ${component.message_field} changed: Was '${item_name}' and is now '${user_post[prop_name] || "None"}'`);
+                debug_logs.push(`User ${component.message_field} changed: Was '${item_name}' and is now '${user_post[prop_name] || "None"}'`);
             }
         });
 
@@ -620,6 +628,9 @@
                 return null;
             }
         }
+        if (debug_logging) {
+            debug_logs.forEach(m => window.console.log(m));
+        }
 
         return message;
     }
@@ -643,7 +654,7 @@
             42: {"quest": "QuestSandDunes",
                 "true": {id: 5001, name: "Sand Dunes"},
                 "false": {id: 42, name: "Sand Crypts"}}
-        }
+        };
         const env = env_to_location[message.location.id];
         if (env) {
             const is_normal = user.quests[env.quest].is_normal.toString();
@@ -651,7 +662,7 @@
         } else if (["Living Garden", "Twisted Garden",
                 "Lost City", "Cursed City",
                 "Sand Dunes", "Sand Crypts"].includes(message.location.name)) {
-            window.console.warn({record: message, user, user_post, hunt});
+            if (debug_logging) {window.console.warn({record: message, user, user_post, hunt});}
             throw new Error(`MHHH: Unexpected location id ${message.location.id} for LG-area location`);
         }
     }
@@ -750,7 +761,7 @@
         } else if (quest.map_active) {
             message.stage = "Using poster";
         } else {
-            window.console.log({record: message, pre: quest, post: user_post.quests.QuestClawShotCity});
+            if (debug_logging) {window.console.warn({record: message, pre: quest, post: user_post.quests.QuestClawShotCity});}
             throw new Error("MHHH: Unexpected Claw Shot City quest state");
         }
     }
@@ -839,7 +850,7 @@
             rage.lagoon = 'DL 50';
         }
         if (!rage.clearing || !rage.tree || !rage.lagoon) {
-            window.console.log({message: "Skipping unexpected WWR quest state", user, user_post, hunt});
+            if (debug_logging) {window.console.warn({message: "Skipping unexpected WWR quest state", user, user_post, hunt});}
             message.location = null;
         } else {
             message.stage = rage;
@@ -897,7 +908,7 @@
             }
             message.stage += " Tide";
         } else {
-            window.console.log({message: "Skipping hunt during server-side tide change", user, user_post, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side tide change", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -924,12 +935,12 @@
                     message.stage = "Winter";
                     break;
                 default:
-                    window.console.log({message: "Assumed spring", season, user, user_post});
+                    if (debug_logging) {window.console.log({message: "Assumed spring", season, user, user_post});}
                     message.stage = "Spring";
                     break;
             }
         } else {
-            window.console.log({message: "Skipping hunt during server-side season change", user, user_post, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side season change", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -992,7 +1003,7 @@
         })[quest.current_phase]);
 
         if (!message.stage) {
-            window.console.log({message: "Skipping unknown Iceberg stage", pre: quest, post: user_post.quests.QuestIceberg, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping unknown Iceberg stage", pre: quest, post: user_post.quests.QuestIceberg, hunt});}
             message.location = null;
         }
     }
@@ -1062,7 +1073,7 @@
         }
 
         if (!message.stage) {
-            window.console.log({message: "Skipping unknown Zokor district", user, user_post, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping unknown Zokor district", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1094,7 +1105,7 @@
         }
 
         if (!message.stage) {
-            window.console.log({message: "Skipping unknown Furoma Rift droid state", user, user_post, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping unknown Furoma Rift droid state", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1128,7 +1139,7 @@
             }
         }
         if (!message.stage) {
-            window.console.log({message: "Skipping hunt during server-side pollution change", user, user_post, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side pollution change", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1149,7 +1160,7 @@
             "tier_3": "Mist 19-20"
         })[quest.mist_tier]);
         if (!message.stage) {
-            window.console.log({message: "Skipping unknown Burroughs Rift mist state", user, user_post, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping unknown Burroughs Rift mist state", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1169,7 +1180,7 @@
         const changed_state = (quest.on_train !== final_quest.on_train
                 || quest.current_phase !== final_quest.current_phase);
         if (changed_state) {
-            window.console.log({message: "Skipping hunt during server-side train stage change", user, user_post, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side train stage change", user, user_post, hunt});}
             message.location = null;
         } else {
             // Pre- & post-hunt user object agree on train & phase statuses.
@@ -1191,7 +1202,7 @@
                     const area = quest.minigame.trouble_area;
                     const final_area = final_quest.minigame.trouble_area;
                     if (area !== final_area) {
-                        window.console.log({message: "Skipping hunt during server-side trouble area change", user, user_post, hunt});
+                        if (debug_logging) {window.console.log({message: "Skipping hunt during server-side trouble area change", user, user_post, hunt});}
                         message.location = null;
                     } else {
                         const charm_id = message.charm.id;
@@ -1242,7 +1253,7 @@
         }
 
         if (!message.stage) {
-            window.console.log({message: "Skipping unknown Fort Rox stage", pre: quest, post: user_post.quests.QuestFortRox});
+            if (debug_logging) {window.console.log({message: "Skipping unknown Fort Rox stage", pre: quest, post: user_post.quests.QuestFortRox});}
             message.location = null;
         }
     }
@@ -1263,7 +1274,7 @@
         // 1% time => 9.6 minutes for door open and state_progress rounds to 100 (2.4 minutes for closed).
         const imminent_state_change = (user.viewing_atts.state_progress >= 99);
         if (imminent_state_change) {
-            window.console.log({message: "Skipping hunt during server-side door change", user, user_post, hunt});
+            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side door change", user, user_post, hunt});}
             message.location = null;
         } else {
             message.stage = (was_open) ? "Open" : "Closed";
@@ -1546,5 +1557,10 @@
             : null);
     }
 
-    window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
+    getSettings(settings => {
+        if (settings.debug_logging) {
+            window.console.log({message: "Initialized with settings", settings});
+        }
+        window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
+    });
 }());
