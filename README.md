@@ -1,15 +1,15 @@
 # MouseHunt-Helper-Extension
 
-This is the a Browser Extension (Chrome/FF/Opera). It helps collect hunt info for popular game called MouseHunt. The collected info (like trap, cheese, charm, base, mouse, location) will be used in the future. The goal is to create a crowd sourced data for a catch rate and attraction rate calculator website. Which in turn help people with the game.
+This is a browser extension for Chrome, Firefox, and Opera. It helps collect hunt info for the popular HitGrab game, MouseHunt. The collected info (like trap, cheese, charm, base, mouse, location) is used to create a crowd-sourced dataset for catch rate and attraction rate calculators, which in turn help people decide how they wish to play the game.
 
  - Collects info like hunts (catches, misses, traps, bases, cheese, etc), crowns, convertibles (chests, curds, etc), maps and more.
  - Only submits game information and related ids, mice, cheese, etc. (no player names, or anything like that)
  - Does not collect info on friend horns or trap checks.
  - Only reads and collects data, does not change anything in the game.
 
-Special thanks to all who helped. Few honorable mentions: tehhowch, Aardwolf, Tsitu's tools team, Loaf, Groupsky, Nick (HornTracker), and many others who helped with advice, ideas, and otherwise. Also thanks to contributors and discord mods.
+Special thanks to all who helped. Few honorable mentions: tehhowch, Aardwolf, Tsitu's tools team, Loaf, Groupsky, Nick (HornTracker), and many others who helped with advice, ideas, and otherwise. Also thanks to contributors and Discord mods.
 
-This tool uses some of the [Tsitu's scripts](https://github.com/tsitu/MH-Tools/) to autopopulate their site from extension.
+This tool uses some of [Tsitu's scripts](https://github.com/tsitu/MH-Tools/) to autopopulate that site from the extension.
 
 <kbd align="center">
 <img src="https://user-images.githubusercontent.com/8228441/46922950-0a6e1800-cfce-11e8-9981-1ad2eb80db9f.PNG" width="49%">
