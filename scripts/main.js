@@ -1256,12 +1256,12 @@
         const quest = response.user.quests.QuestBirthday2019;
         if (message.mouse === "Vincent, The Magnificent" || quest.factory_atts.boss_warning) {
             message.stage = "Boss";
-        } else {
+        } else if (quest.items.coggy_colby_cheese.status === "active") {
             message.stage = (({
-                "pumping_room":           "Pump",
-                "mixing_room":            "Mixing",
-                "break_room":             "Break",
-                "quality_assurance_room": "QA"
+                "pumping_room":           "Pump Room",
+                "mixing_room":            "Mixing Room",
+                "break_room":             "Break Room",
+                "quality_assurance_room": "QA Room"
             })[quest.factory_atts.current_room]);
             if (!message.stage) {
                 return "";
