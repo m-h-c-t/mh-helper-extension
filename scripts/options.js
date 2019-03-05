@@ -1,5 +1,5 @@
-// Saves options to chrome.storage
-let mhhhOptions = [ // `let` scope to avoid adding to window while still being global.
+// JS script available only within the embedded options.html page
+let mhhhOptions = [
     {name: 'success_messages', p: 'checked', default: true},
     {name: 'error_messages', p: 'checked', default: true},
     {name: 'icon_timer', p: 'checked', default: true},
@@ -14,8 +14,10 @@ let mhhhOptions = [ // `let` scope to avoid adding to window while still being g
     {name: 'tsitu_loader_offset', p: 'value', default: 80},
     {name: 'tsitu_loader_offset_output', p: 'value'}
 ];
-function save_options() {
-    let currentOptions = mhhhOptions
+
+// Click "Save" -> store the extension's settings in chrome.storage.
+document.getElementById('save').addEventListener('click', () => {
+    const currentOptions = mhhhOptions
         .map(opt => ({name: opt.name, val: document.getElementById(opt.name)[opt.p]}))
         .reduce((acc, obj) => (acc[obj.name] = obj.val, acc), {});
     // Trim the custom sound (can this instead be done when defocusing after user data entry?)
@@ -26,46 +28,45 @@ function save_options() {
         setTimeout(() => document.getElementById('save_status').style.visibility = "hidden", 2000);
     });
 
-    // Reload MH pages to take effect now
+    // Reload all open MH pages to apply these settings.
     chrome.tabs.query(
         {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
         tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
     );
-}
+});
 
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
-function restore_options() {
+// After loading the options page, display the last-saved settings (or defaults if unset).
+document.addEventListener('DOMContentLoaded', () => {
     // Use default values where available.
-    let defaultOptions = mhhhOptions
-      .filter(prop => prop.default !== undefined)
-      .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
+    const defaultOptions = mhhhOptions
+        .filter(prop => prop.default !== undefined)
+        .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
     chrome.storage.sync.get(defaultOptions, items => {
         mhhhOptions.forEach(prop => document.getElementById(prop.name)[prop.p] = items[prop.name]);
-        document.getElementById('horn_volume_output')['value'] = items['horn_volume'];
-        document.getElementById('tsitu_loader_offset_output')['value'] = items['tsitu_loader_offset'];
+        // Display the numeric values of the range-input sliders.
+        document.getElementById('horn_volume_output').value = items.horn_volume;
+        document.getElementById('tsitu_loader_offset_output').value = items.tsitu_loader_offset;
     });
-}
-document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click', save_options);
+});
 
-// Volume
-function update_range_output() {
-    document.querySelector("output[for=" + this.id).value = this.value;
-}
-
+// Echo the value of range controls to an output div.
 document.querySelectorAll('.input_range').forEach(
-    item => item.addEventListener('input', update_range_output)
+    item => item.addEventListener('input', () => {
+        const output = document.querySelector("output[for=" + item.id);
+        if (output) {
+            output.value = item.value;
+        }
+    })
 );
 
-// Play sound -- TODO: find a way to play files locally
-function play_my_sound() {
+// Attach audio handler for the horn sound alert button.
+// TODO: Update settings page to allow selecting a local file, rather than only choosing a remote URL.
+document.querySelector("#play_sound").addEventListener('click', () => {
     let file_path = document.querySelector("#custom_sound").value.trim();
     if (!file_path) {
         file_path = chrome.extension.getURL('sounds/bell.mp3');
     }
-    let mySound = new Audio(file_path);
+    const mySound = new Audio(file_path);
     mySound.volume = document.getElementById('horn_volume').value / 100;
     mySound.play();
-}
-document.querySelector("#play_sound").addEventListener('click', play_my_sound);
+});
