@@ -455,9 +455,9 @@
             }
             // Remove HTML tags and other text around the mouse name.
             message.mouse = journal.render_data.text
-                .replace(/^.*?\">/, '')      // Remove text through the first closing angle bracket >.
-                .replace(/\<\/a\>.*/i, '')   // Remove text after the first <a href>'s closing tag </a>
-                .replace(/\ mouse$/i, '');   // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
+                .replace(/^.*?;\">/, '')    // Remove all text through the first sequence of `;">`
+                .replace(/<\/a>.*/i, '')    // Remove text after the first <a href>'s closing tag </a>
+                .replace(/\ mouse$/i, '');  // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
 
         return message;
@@ -1269,6 +1269,12 @@
             case "Mysterious Anomaly":
                 message = getMysteriousAnomalyHuntDetails(message, response, journal);
                 break;
+        }
+
+        if (message.caught) {
+            message.hunt_details = Object.assign(message.hunt_details || {}, {
+                is_lucky_catch: journal.render_data.css_class.includes("luckycatchsuccess")
+            });
         }
 
         return message;
