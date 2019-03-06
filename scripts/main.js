@@ -1611,7 +1611,7 @@
             const profile_RE_matches = document.URL.match(profile_RE);
             if (profile_RE_matches !== null && profile_RE_matches.length) {
                 const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
-                const crownUrl = `/managers/ajax/users/profiletabs.php?action=badges&snuid=${profile_snuid}`;
+                const crownUrl = `https://www.mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges&snuid=${profile_snuid}`;
                 $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
                     .fail(err => {
                         if (settings.debug_logging) {
