@@ -3,16 +3,16 @@
 (function () {
     'use strict';
 
-    var base_domain_url = "https://mhhunthelper.agiletravels.com";
-    var db_url = base_domain_url + "/intake.php";
-    var map_intake_url = base_domain_url + "/map_intake.php";
-    var convertible_intake_url = base_domain_url + "/convertible_intake.php";
+    const base_domain_url = "https://mhhunthelper.agiletravels.com";
+    const db_url = base_domain_url + "/intake.php";
+    const map_intake_url = base_domain_url + "/map_intake.php";
+    const convertible_intake_url = base_domain_url + "/convertible_intake.php";
 
     if (!window.jQuery) {
         console.log("MHHH: Can't find jQuery, exiting.");
         return;
     }
-    var mhhh_version = $("#mhhh_version").val();
+    const mhhh_version = $("#mhhh_version").val();
 
     var debug_logging = false;
 
@@ -27,7 +27,7 @@
             return;
         }
         if (ev.data.jacks_message === 'userhistory') {
-            window.open(base_domain_url + '/searchByUser.php?user=' + user.user_id);
+            window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}`);
             return;
         }
 
@@ -49,9 +49,21 @@
         }
 
         if (ev.data.jacks_message === 'show_horn_alert') {
-            let sound_the_horn = confirm("Horn is Ready! Sound it?");
+            const sound_the_horn = confirm("Horn is Ready! Sound it?");
             if (sound_the_horn) {
                 sound_horn();
+            }
+            return;
+        }
+
+        // Crown submission results in either the boolean `false`, or the total submitted crowns.
+        if (ev.data.jacks_message === 'crownSubmissionStatus') {
+            const counts = ev.data.submitted;
+            if (counts) {
+                displayFlashMessage(ev.data.settings, "success",
+                    `Submitted ${counts} crowns for ${$('span.hunterInfoView-userName').text()}.`);
+            } else {
+                displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
             }
             return;
         }
@@ -71,7 +83,7 @@
     }
 
     function openBookmarklet(url) {
-        let xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
         xhr.overrideMimeType("application/javascript");
         xhr.open("GET", url, true);
         xhr.onreadystatechange = () => {
@@ -96,7 +108,7 @@
             return;
         }
 
-        let payload = {
+        const payload = {
             map_id: user.quests.QuestRelicHunter.default_map_id,
             action: "map_info",
             uh: user.unique_hash,
@@ -113,8 +125,8 @@
                         alert('This seems to be a new kind of map and not yet supported.');
                         return;
                     }
-                    let mice = getMapMice(data, true);
-                    let new_window = window.open('');
+                    const mice = getMapMice(data, true);
+                    const new_window = window.open('');
                     new_window.location = encodeURI(url + mice.join(glue));
                 }
             });
@@ -122,7 +134,7 @@
 
     // Extract map mice from a map
     function getMapMice(data, uncaught_only) {
-        let mice = [];
+        const mice = [];
         $.each(data.treasure_map.groups, (key, group) => {
             if (uncaught_only && !group.name.includes('Uncaught mice ')) {
                 return;
@@ -133,16 +145,27 @@
         return mice;
     }
 
+    /**
+     * Wrapper for flash message pop-up, when settings need to be acquired.
+     * @param {"error"|"warning"|"success"} type The type of message being displayed, which controls the color and duration.
+     * @param {string} message The message content to display.
+     */
     function showFlashMessage(type, message) {
         getSettings(settings => displayFlashMessage(settings, type, message));
     }
 
+    /**
+     * Display the given message in an appropriately colored pop-up flash message.
+     * @param {Object <string, any>} settings The user's extension settings
+     * @param {"error"|"warning"|"success"} type The type of message being displayed, which controls the color and duration.
+     * @param {string} message The message content to display.
+     */
     function displayFlashMessage(settings, type, message) {
         if ((type === 'success' && !settings.success_messages)
             || (type !== 'success' && !settings.error_messages)) {
             return;
         }
-        let mhhh_flash_message_div = $('#mhhh_flash_message_div');
+        const mhhh_flash_message_div = $('#mhhh_flash_message_div');
         mhhh_flash_message_div.text("Jack's MH Helper: " + message);
 
         mhhh_flash_message_div.css('left', 'calc(50% - ' + (mhhh_flash_message_div.width() / 2) + 'px)');
@@ -159,7 +182,7 @@
         }
 
         mhhh_flash_message_div.fadeIn(() => {
-            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500);
+            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500 + 1000 * (type !== "success"));
         });
     }
 
@@ -240,41 +263,61 @@
         window.postMessage({jacks_settings_request: 1}, "*");
     }
 
-    // Record Crowns
+    /**
+     * Record Crowns. The xhr response data also includes a `mouseData` hash keyed by each mouse's
+     * HG identifier and with the associated relevant value properties of `name` and `num_catches`
+     * @param {Object <string, any>} settings The user's extension settings.
+     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
+     * @param {string} url The URL that invoked the function call.
+     */
     function recordCrowns(settings, xhr, url) {
         if (!settings.track_crowns) {
             return;
         }
-        let url_params = url.match(/snuid=([0-9]+)/);
+        // Traditional snuids are digit-only, but new snuids are `hg_` plus a hash, e.g.
+        //    hg_0ffb7add4e6e14d8e1147cb3f12fe84d
+        const url_params = url.match(/snuid=(\w+)/);
         if (!url_params || !Object.keys(xhr.responseJSON.mouse_data).length) {
             return;
         }
 
-        let payload = {
+        const payload = {
             user: url_params[1],
             timestamp: Math.round(Date.now() / 1000),
-            mice: [],
 
             bronze: 0,
             silver: 0,
             gold: 0
         };
 
-        $.each(xhr.responseJSON.badges, (key, value) => payload[value.type] = value.mice.length);
+        /** Rather than compute counts ourselves, use the `badge` display data.
+         * badges: [
+         *     {
+         *         badge: (500 | 100    | 10),
+         *         type: (gold | silver | bronze),
+         *         mice: string[]
+         *     },
+         *     ...
+         * ]
+         */
+        $.each(xhr.responseJSON.badges, (index, obj) => payload[obj.type] = obj.mice.length);
 
-        $.post('https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
-            {'main': JSON.stringify(payload)});
-
-        showFlashMessage("success", "Thank you for submitting crowns!");
+        // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
+        // submission by submitting from the content script.
+        window.postMessage({
+            "jacks_crown_update": 1,
+            "crowns": payload,
+            "settings": settings
+        }, window.origin);
     }
 
     // Record map mice
     function recordMap(xhr) {
-        let resp = xhr.responseJSON;
+        const resp = xhr.responseJSON;
         if (!resp.treasure_map || !resp.treasure_map.map_id || !resp.treasure_map.name) {
             return;
         }
-        let map = {
+        const map = {
             mice: getMapMice(resp),
             id: resp.treasure_map.map_id,
             name: resp.treasure_map.name.replace(/\ treasure/i, '')
@@ -287,7 +330,7 @@
 
         map.extension_version = formatVersion(mhhh_version);
 
-        // Send to database
+       // Send to database
        sendMessageToServer(map_intake_url, map);
     }
 
@@ -315,7 +358,7 @@
          */
         function diffUserObjects(result, pre, post, obj_pre, obj_post) {
             const simple_diffs = new Set(['string', 'number', 'boolean']);
-            for (let [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith("hash"))) {
+            for (const [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith("hash"))) {
                 pre.add(key);
                 if (!post.has(key)) {
                     result[key] = {in: "pre", val: value};
@@ -409,10 +452,10 @@
             return;
         }
 
-        let response = xhr.responseJSON;
+        const response = xhr.responseJSON;
 
         let convertible;
-        for (let key in response.items) {
+        for (const key in response.items) {
             if (!response.items.hasOwnProperty(key)) continue;
             if (convertible) {
                 window.console.log("MHHH: Multiple items are not supported (yet)");
@@ -426,13 +469,13 @@
             return;
         }
 
-        let message = response.messageData.message_model.messages[0];
+        const message = response.messageData.message_model.messages[0];
         if (!message.isNew || !message.messageData || !message.messageData.items || message.messageData.items.length === 0) {
             return;
         }
-        let items = message.messageData.items;
+        const items = message.messageData.items;
 
-        let record = {
+        const record = {
             convertible: getItem(convertible),
             items: items.map(getItem.bind(null)),
             extension_version: formatVersion(mhhh_version),
@@ -446,7 +489,7 @@
     }
 
     function sendMessageToServer(url, final_message) {
-        let basic_info = {
+        const basic_info = {
             user_id: final_message.user_id,
             entry_timestamp: final_message.entry_timestamp
         };
@@ -466,7 +509,7 @@
         $.post(url, fin_message)
             .done(data => {
                 if (data) {
-                    let response = JSON.parse(data);
+                    const response = JSON.parse(data);
                     showFlashMessage(response.status, response.message);
                 }
             });
@@ -689,7 +732,7 @@
         "Lost City": addLostCityStage,
         "Mousoleum": addMousoleumStage,
         "Moussu Picchu": addMoussuPicchuStage,
-        "Mysterious Anomaly": addMysteriousAnomalyStage,
+        "SUPER|brie+ Factory": addSBFactoryStage,
         "Sand Dunes": addSandDunesStage,
         "Seasonal Garden": addSeasonalGardenStage,
         "Sunken City": addSunkenCityStage,
@@ -860,7 +903,7 @@
     }
 
     /**
-     * Labyrinth stage reflects the type of hallway
+     * Labyrinth stage reflects the type of hallway.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
@@ -872,7 +915,7 @@
             // Remove first word (like Short)
             message.stage = hallway.substr(hallway.indexOf(" ") + 1).replace(/\ hallway/i, '');
         } else {
-            // Not recording last hunt of a hallway and intersections at this time
+            // Not recording intersections at this time.
             message.location = null;
         }
     }
@@ -1011,7 +1054,7 @@
     }
 
     /**
-     * Report the zone and depth, if any
+     * Report the zone and depth, if any.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
@@ -1298,21 +1341,32 @@
     }
 
     /**
-     * Report the current year.
+     * Separate boss-stage hunts from other hunts in rooms.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addMysteriousAnomalyStage(message, user, user_post, hunt) {
-        message.stage = user.quests.QuestBirthday2018.current_year;
+    function addSBFactoryStage(message, user, user_post, hunt) {
+        const factory = user.quests.QuestBirthday2019.factory_atts;
+        if (message.mouse === "Vincent, The Magnificent" || factory.boss_warning) {
+            message.stage = "Boss";
+        } else {
+            message.stage = (({
+                "pumping_room":           "Pump Room",
+                "mixing_room":            "Mixing Room",
+                "break_room":             "Break Room",
+                "quality_assurance_room": "QA Room"
+            })[factory.current_room]);
+            if (!message.stage) {
+                message.stage = "No Room";
+            }
+        }
     }
-
 
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
-        "Mysterious Anomaly": addMysteriousAnomalyHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
         "Zugzwang's Tower": addZugzwangsTowerHuntDetails
     };
@@ -1397,21 +1451,6 @@
             details.acolyte_sand_drained = details.obelisk_charged && quest.acolyte_sand === 0;
         }
         message.hunt_details = details;
-    }
-
-    /**
-     * Additional state for the 2018 Birthday
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     */
-    function addMysteriousAnomalyHuntDetails(message, user, user_post, hunt) {
-        const quest = user.quests.QuestBirthday2018;
-        message.hunt_details = {
-            boss_status: quest.boss_status,
-            furthest_year: quest.furthest_year
-        };
     }
 
     /**
@@ -1548,6 +1587,7 @@
     }
 
     /**
+     * Return the active LNY quest object, if possible.
      * @param {Object <string, Object <string, any>>} allQuests the `user.quests` object containing all of the user's quests
      * @returns {Object <string, any> | null} The quest if it exists, else `null`
      */
@@ -1559,10 +1599,28 @@
             : null);
     }
 
+    // Finish configuring the extension behavior.
     getSettings(settings => {
         if (settings.debug_logging) {
             window.console.log({message: "Initialized with settings", settings});
         }
+
+        // If this page is a profile page, query the crown counts (if the user tracks crowns).
+        if (settings.track_crowns) {
+            const profile_RE = /profile.php\?snuid=(\w+)/g;
+            const profile_RE_matches = document.URL.match(profile_RE);
+            if (profile_RE_matches !== null && profile_RE_matches.length) {
+                const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
+                const crownUrl = `/managers/ajax/users/profiletabs.php?action=badges&snuid=${profile_snuid}`;
+                $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
+                    .fail(err => {
+                        if (settings.debug_logging) {
+                            window.console.log({message: `Crown query failed for snuid=${profile_snuid}`, err});
+                        }
+                    });
+            }
+        }
+
         window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
     });
 }());
