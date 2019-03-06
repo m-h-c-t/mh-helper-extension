@@ -797,8 +797,8 @@
             case "Zokor":
                 message = getZokorStage(message, response, journal);
                 break;
-            case "Mysterious Anomaly":
-                message = getMysteriousAnomalyStage(message, response, journal);
+            case "SUPER|brie+ Factory":
+                message = getSBFactoryStage(message, response, journal);
                 break;
         }
 
@@ -921,7 +921,7 @@
     function getLabyrinthStage(message, response, journal) {
         const quest = response.user.quests.QuestLabyrinth;
         if (quest.status === "hallway") {
-            let stage = quest.hallway_name
+            let stage = quest.hallway_name;
             // Remove non-hallway-type words (e.g. Short, hallway)
             stage = stage.substr(stage.indexOf(" ") + 1);
             message.stage = stage.replace(/\ hallway/i, '');
@@ -1297,8 +1297,21 @@
         return message;
     }
 
-    function getMysteriousAnomalyStage(message, response, journal) {
-        message.stage = response.user.quests.QuestBirthday2018.current_year;
+    function getSBFactoryStage(message, response, journal) {
+        const quest = response.user.quests.QuestBirthday2019;
+        if (message.mouse === "Vincent, The Magnificent" || quest.factory_atts.boss_warning) {
+            message.stage = "Boss";
+        } else if (quest.items.coggy_colby_cheese.status === "active") {
+            message.stage = (({
+                "pumping_room":           "Pump Room",
+                "mixing_room":            "Mixing Room",
+                "break_room":             "Break Room",
+                "quality_assurance_room": "QA Room"
+            })[quest.factory_atts.current_room]);
+            if (!message.stage) {
+                return "";
+            }
+        }
 
         return message;
     }
@@ -1310,9 +1323,6 @@
         switch (response.user.location) {
             case "Bristle Woods Rift":
                 message = getBristleWoodsRiftHuntDetails(message, response, journal);
-                break;
-            case "Mysterious Anomaly":
-                message = getMysteriousAnomalyHuntDetails(message, response, journal);
                 break;
         }
 
@@ -1340,16 +1350,6 @@
             message.hunt_details.obelisk_charged = quest.obelisk_percent === 100;
             message.hunt_details.acolyte_sand_drained = message.hunt_details.obelisk_charged && quest.acolyte_sand === 0;
         }
-
-        return message;
-    }
-
-    function getMysteriousAnomalyHuntDetails(message, response, journal) {
-        const quest = response.user.quests.QuestBirthday2018;
-        message.hunt_details = {
-            boss_status: quest.boss_status,
-            furthest_year: quest.furthest_year
-        };
 
         return message;
     }
