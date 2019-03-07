@@ -145,8 +145,9 @@ function icon_timer_updateBadge(tab_id, settings) {
                     if (response_int > 59) {
                         let minutes = Math.floor(response_int / 100);
                         const seconds = response_int % 100;
-                        if (seconds > 30)
+                        if (seconds > 30) {
                             ++minutes;
+                        }
                         response = minutes + 'm';
                     } else {
                         response = response_int + 's';
@@ -159,3 +160,18 @@ function icon_timer_updateBadge(tab_id, settings) {
         }
     });
 }
+
+// Handle messages sent by the extension to the runtime.
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    // Check the message for something to log in the background's console.
+    if (msg.log) {
+        let fn = console.log;
+        if (msg.is_error) {
+            fn = console.error;
+        } else if (msg.is_warning) {
+            fn = console.warn;
+        }
+        fn({message: msg.log, sender});
+    }
+    // TODO: Handle other aspects of the extension message.
+});

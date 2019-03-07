@@ -117,8 +117,9 @@ function getSettings() {
             track_crowns: true // defaults
         },
         items => {
-            if (chrome.runtime.lastError)
+            if (chrome.runtime.lastError) {
                 window.console.error(chrome.runtime.lastError.message);
+            }
             resolve(items || {});
         });
     });
@@ -138,23 +139,31 @@ function submitCrowns(crowns) {
         const payload = new FormData();
         payload.set("main", JSON.stringify(crowns));
         const request = new Request(
-            'https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec',
+            "https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec",
             {
-                mode: "cors",
+                mode: "no-cors", // Otherwise Firefox blocks with NetworkError
                 method: "POST",
                 credentials: "omit",
                 body: payload
             }
         );
         fetch(request)
-            .then(response => resolve(response.ok
-                ? crowns.bronze + crowns.silver + crowns.gold
-                : false))
+            .then(response => {
+                // Opaque response -> cannot determine anything about it, including if the request was even made.
+                resolve(crowns.bronze + crowns.silver + crowns.gold);
+            })
             .catch(error => {
-                chrome.runtime.sendMessage({"message": "Error submitting user crowns", "error": error, crowns});
+                chrome.runtime.sendMessage({
+                    "is_error": true,
+                    "log": {
+                        "message": "Error submitting user crowns",
+                        "error": error,
+                        "crowns": crowns
+                    }
+                });
                 resolve(false);
             }).catch(err => {
-                window.console.log({"message": "Fatal error while submitting crowns", "error": err})
+                window.console.log({"message": "Fatal error while submitting crowns", "error": err});
                 resolve(false);
             });
     });
