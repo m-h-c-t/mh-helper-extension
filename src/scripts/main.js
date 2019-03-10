@@ -1368,6 +1368,7 @@
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
+        "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
         "Zugzwang's Tower": addZugzwangsTowerHuntDetails
     };
 
@@ -1468,6 +1469,28 @@
                     salt: quest.minigame.salt_charms_used
                 };
             }
+        }
+    }
+
+    /**
+     * For MBW attractions, record the rage state of each zone.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt) {
+        if (message.cheese.id === 1646) {
+            const zones = user.quests.QuestRiftWhiskerWoods.zones;
+            const rage = {
+                clearing: parseInt(zones.clearing.level, 10),
+                tree: parseInt(zones.tree.level, 10),
+                lagoon: parseInt(zones.lagoon.level, 10)
+            };
+            message.hunt_details = Object.assign(rage, {
+                total_rage: rage.clearing + rage.tree + rage.lagoon,
+                can_attract_mbw: (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24)
+            });
         }
     }
 
