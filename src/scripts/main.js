@@ -1367,6 +1367,7 @@
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
+        "Claw Shot City": addClawShotCityHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
         "Zugzwang's Tower": addZugzwangsTowerHuntDetails
     };
@@ -1451,6 +1452,24 @@
             details.acolyte_sand_drained = details.obelisk_charged && quest.acolyte_sand === 0;
         }
         message.hunt_details = details;
+    }
+
+    /**
+     * Track the poster type. Specific available mice require information from `relichunter.php`.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addClawShotCityHuntDetails(message, user, user_post, hunt) {
+        const map = user.quests.QuestRelicHunter.maps.filter(m => m.name.endsWith("Wanted Poster"))[0];
+        if (map && !map.is_complete) {
+            // TODO: Check if CSC quest data @ 1 mouse remaining has additional info.
+            message.hunt_details = {
+                poster_type: map.name.replace(/Wanted Poster/i, "").trim(),
+                at_boss: (map.remaining === 1)
+            };
+        }
     }
 
     /**
