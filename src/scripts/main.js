@@ -1368,6 +1368,7 @@
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
+        "Zokor": addZokorHuntDetails,
         "Zugzwang's Tower": addZugzwangsTowerHuntDetails
     };
 
@@ -1469,6 +1470,24 @@
                 };
             }
         }
+    }
+
+    /**
+     * For the level-3 districts, report whether the boss was defeated or not.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addZokorHuntDetails(message, user, user_post, hunt) {
+        const quest = user.quests.QuestAncientCity;
+        if (quest.district_tier === 3 && quest.clue_type) {
+            // TODO: Verify that Mino Lair does not enter this branch
+            message.hunt_details = {
+                boss_defeated: (quest.boss === "defeated"),
+            };
+        }
+        // TODO: Minotaur rage state
     }
 
     /**
