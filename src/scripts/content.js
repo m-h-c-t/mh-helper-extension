@@ -95,6 +95,8 @@ window.addEventListener("message",
                     "submitted": wasSubmitted,
                     "settings": data.settings
                 }, event.origin));
+        } else if (data.jacks_log_request === 1) {
+            chrome.runtime.sendMessage({ "log": data });
         }
     },
     false
