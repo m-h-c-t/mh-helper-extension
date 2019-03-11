@@ -22,7 +22,7 @@
     ],
 
     "content_scripts": [{
-        "all_frames" : false,
+        "all_frames" : true,
         "matches": ["*://www.mousehuntgame.com/*"],
         "js": ["scripts/content.js"]
     }],
