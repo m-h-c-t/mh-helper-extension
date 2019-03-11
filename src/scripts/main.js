@@ -1473,7 +1473,7 @@
     }
 
     /**
-     * For MBW attractions, record the rage state of each zone.
+     * For Lactrodectus hunts, if MBW can be attracted (and is not guaranteed), record the rage state.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
@@ -1487,10 +1487,12 @@
                 tree: parseInt(zones.tree.level, 10),
                 lagoon: parseInt(zones.lagoon.level, 10)
             };
-            message.hunt_details = Object.assign(rage, {
-                total_rage: rage.clearing + rage.tree + rage.lagoon,
-                can_attract_mbw: (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24)
-            });
+            const total_rage = rage.clearing + rage.tree + rage.lagoon;
+            if (total_rage < 150 && total_rage >= 75) {
+                if (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24) {
+                    message.hunt_details = Object.assign(rage, {total_rage});
+                }
+            }
         }
     }
 
