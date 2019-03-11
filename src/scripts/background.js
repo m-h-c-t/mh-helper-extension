@@ -172,6 +172,45 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             fn = console.warn;
         }
         fn({message: msg.log, sender});
+    } else if (msg.settings && msg.settings.debug_logging) {
+        console.log({msg, msg_sender: sender});
     }
-    // TODO: Handle other aspects of the extension message.
+
+    if (msg.jacks_crown_update === 1) {
+        submitCrowns(msg.crowns).then(sendResponse);
+        // Keep the response port open since we're responding asynchronously.
+        return true;
+    }
+    // TODO: Handle other extension messages.
 });
+
+/**
+ * Promise to submit the given crowns for external storage (e.g. for MHCC or others)
+ * @param {Object <string, any>} crowns Crown counts for the given user
+ * @returns {Promise <number>|Promise <boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
+ */
+function submitCrowns(crowns) {
+    if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold) === 0) {
+        return Promise.resolve(false);
+    }
+
+    return new Promise(resolve => {
+        const payload = new FormData();
+        payload.set("main", JSON.stringify(crowns));
+        fetch("https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec", {
+            mode: "cors",
+            method: "POST",
+            credentials: "omit",
+            body: payload
+        }).then(response => resolve(!response.ok ? false :
+                crowns.bronze + crowns.silver + crowns.gold)
+        ).catch(error => {
+            window.console.error({
+                "message": "Error submitting user crowns",
+                "error": error,
+                "crowns": crowns
+            });
+            resolve(false);
+        });
+    });
+}
