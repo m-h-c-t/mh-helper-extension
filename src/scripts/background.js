@@ -9,19 +9,6 @@ chrome.runtime.onUpdateAvailable.addListener(details => {
     chrome.runtime.reload();
 });
 
-// TODO: Do we need to request the update at all? Chrome auto-checks automatically.
-const time_interval = 7200 * 1000; // seconds * 1000
-window.setInterval(() => chrome.runtime.requestUpdateCheck(status => {
-        if (status == "update_available") {
-            console.log("MHHH: update pending...");
-        } else if (status == "no_update") {
-            console.log("MHHH: no update found");
-        } else if (status == "throttled") {
-            console.log("MHHH: Oops, update check failed.");
-        }
-    }),
-time_interval);
-
 // Refreshes MH pages when new version is installed, to inject the latest extension code.
 chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
