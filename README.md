@@ -1,8 +1,8 @@
 # MouseHunt Helper Extension
 
-<a href="https://chrome.google.com/webstore/detail/mh-hunt-helper/ghfmjkamilolkalibpmokjigalmncfek" target="_blank" style="display:inline-block;text-decoration:none;color:#333;"><img src="https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png"></a>
-<a href="https://addons.mozilla.org/en-US/firefox/addon/jacks-mousehunt-helper" target="_blank" style="display:inline-block;text-decoration:none;color:#333;"><img src="https://addons.cdn.mozilla.net/static/img/addons-buttons/AMO-button_1.png"></a>
-<a href="https://addons.opera.com/en/extensions/details/jacks-mousehunt-helper" target="_blank" style="display:inline-block;text-decoration:none;color:#333;width:206px"><img src="https://dev.opera.com/extensions/branding-guidelines/addons_206x58_en@2x.png"></a>
+<a href="https://chrome.google.com/webstore/detail/mh-hunt-helper/ghfmjkamilolkalibpmokjigalmncfek" target="_blank"><img src="https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png"></a>
+<a href="https://addons.mozilla.org/en-US/firefox/addon/jacks-mousehunt-helper" target="_blank"><img src="https://addons.cdn.mozilla.net/static/img/addons-buttons/AMO-button_1.png"></a>
+<a href="https://addons.opera.com/en/extensions/details/jacks-mousehunt-helper" target="_blank"><img src="https://dev.opera.com/extensions/branding-guidelines/addons_206x58_en@2x.png" style="width:206px"></a>
 
 ### Introduction
 This browser extension collects hunt info for [MouseHunt](https://www.mousehuntgame.com), a popular browser game developed by HitGrab. The collected information is used to create a crowdsourced dataset that can be used to gain insight about various game mechanics and interactions. It also serves as the backbone of tools such as catch rate estimators, map solvers, and convertible trackers, enabling players to get more out of their MH experience.
