@@ -5,7 +5,7 @@
 <a href="https://addons.opera.com/en/extensions/details/jacks-mousehunt-helper" target="_blank"><img src="https://dev.opera.com/extensions/branding-guidelines/addons_206x58_en@2x.png" width="206"></a>
 
 ### Introduction
-This browser extension collects hunt info for [MouseHunt](https://www.mousehuntgame.com), a popular browser game developed by HitGrab. The collected information is used to create a crowdsourced dataset that can be used to gain insight about various game mechanics and interactions. It also serves as the backbone of tools such as catch rate estimators, map solvers, and convertible trackers, enabling players to get more out of their MH experience.
+This browser extension collects hunt info for [MouseHunt](https://www.mousehuntgame.com), a popular browser game from [HitGrab Inc.](http://www.hitgrab.com/) Collected data is inserted into a crowdsourced database that can be queried to gain insight about various game mechanics and interactions. This database provides the statistics for tools such as catch rate estimators, map solvers, convertible trackers, and more.
 
 ### Features
  - Collects data from hunts (e.g. trap setup, mouse, location), maps, crowns, and convertibles (e.g. treasure chests)
@@ -26,4 +26,4 @@ Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devja
 </kbd>
 
 ### Credits
-Special thanks to all who have contributed with advice, bug reports, or code. A few honorable mentions: tehhowch, Aardwolf, tsitu, Loaf, Groupsky, Nick (HornTracker), and the Discord server mods!
+Special thanks to all who have contributed with advice, bug reports, and/or code! A few honorable mentions: tehhowch, AardWolf, tsitu, Loaf, groupsky, Nick (HornTracker), and the Discord server mods.
