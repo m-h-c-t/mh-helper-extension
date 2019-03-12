@@ -1474,6 +1474,7 @@
 
     /**
      * For the level-3 districts, report whether the boss was defeated or not.
+     * For the Minotaur lair, report the categorical label, number of catches, and meter width.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
@@ -1481,13 +1482,17 @@
      */
     function addZokorHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestAncientCity;
-        if (quest.district_tier === 3 && quest.clue_type) {
-            // TODO: Verify that Mino Lair does not enter this branch
+        if (quest.boss.includes("hiddenDistrict")) {
+            message.hunt_details = {
+                minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
+                lair_catches: -(quest.countdown - 20),
+                minotaur_meter: parseFloat(quest.width)
+            };
+        } else if (quest.district_tier === 3) {
             message.hunt_details = {
                 boss_defeated: (quest.boss === "defeated"),
             };
         }
-        // TODO: Minotaur rage state
     }
 
     /**
