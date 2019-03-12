@@ -1,21 +1,29 @@
-# MouseHunt-Helper-Extension
+# MouseHunt Helper Extension
 
-This is a browser extension for Chrome, Firefox, and Opera. It helps collect hunt info for the popular HitGrab game, MouseHunt. The collected info (like trap, cheese, charm, base, mouse, location) is used to create a crowd-sourced dataset for catch rate and attraction rate calculators, which in turn help people decide how they wish to play the game.
+<a href="https://chrome.google.com/webstore/detail/mh-hunt-helper/ghfmjkamilolkalibpmokjigalmncfek" target="_blank" style="display:inline-block;text-decoration:none;color:#333;"><img src="https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png"></a>
+<a href="https://addons.mozilla.org/en-US/firefox/addon/jacks-mousehunt-helper" target="_blank" style="display:inline-block;text-decoration:none;color:#333;"><img src="https://addons.cdn.mozilla.net/static/img/addons-buttons/AMO-button_1.png"></a>
+<a href="https://addons.opera.com/en/extensions/details/jacks-mousehunt-helper" target="_blank" style="display:inline-block;text-decoration:none;color:#333;width:206px"><img src="https://dev.opera.com/extensions/branding-guidelines/addons_206x58_en@2x.png"></a>
 
- - Collects info like hunts (catches, misses, traps, bases, cheese, etc), crowns, convertibles (chests, curds, etc), maps and more.
- - Only submits game information and related ids, mice, cheese, etc. (no player names, or anything like that)
- - Does not collect info on friend horns or trap checks.
- - Only reads and collects game data; does not change anything in the game.
+### Introduction
+This browser extension collects hunt info for [MouseHunt](https://www.mousehuntgame.com), a popular browser game developed by HitGrab. The collected information is used to create a crowdsourced dataset that can be used to gain insight about various game mechanics and interactions. It also serves as the backbone of tools such as catch rate estimators, map solvers, and convertible trackers, enabling players to get more out of their MH experience.
 
-Special thanks to all who helped. Few honorable mentions: tehhowch, Aardwolf, Tsitu's tools team, Loaf, Groupsky, Nick (HornTracker), and many others who helped with advice, ideas, and otherwise. Also thanks to contributors and Discord mods.
+### Features
+ - Collects data from hunts (e.g. trap setup, mouse, location), maps, crowns, and convertibles (e.g. treasure chests)
+ - Only collects hunt data from **active** hunts and not passive friend hunts or trap checks
+ - Only collects game-related data (no names or personal information)
+ - Does not change anything in-game to provide an unfair advantage
+ - Comes bundled with tsitu's [Auto-Loader](https://github.com/tsitu/MH-Tools/blob/master/src/bookmarklet/bookmarkletloader.js) bookmarklet
 
-This tool uses some of [Tsitu's scripts](https://github.com/tsitu/MH-Tools/) to autopopulate that site from the extension.
+### Developers
+All necessary files to run this extension are included in the `src/` folder. After making changes, you may load it into your browser as a temporary add-on for testing & debugging purposes. However, please change the version number in `src/manifest.json` to avoid getting banned.
 
+Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devjacksmith/mh_backups/).
+
+### Screenshots
 <kbd align="center">
 <img src="https://user-images.githubusercontent.com/8228441/46922950-0a6e1800-cfce-11e8-9981-1ad2eb80db9f.PNG" width="49%">
 <img src="https://user-images.githubusercontent.com/8228441/46922951-0b06ae80-cfce-11e8-8b0f-7a41f69b734b.PNG" width="49%">
 </kbd>
 
-## Developers section
-
-You can load this addon as temporary, modify it, reload it, and test it. Please change the version number if you do that, to avoid getting banned. The files included in the packed extension are those within the `src/` directory.
+### Credits
+Special thanks to all who have contributed with advice, bug reports, or code. A few honorable mentions: tehhowch, Aardwolf, tsitu, Loaf, Groupsky, Nick (HornTracker), and the Discord server mods!
