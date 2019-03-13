@@ -509,7 +509,7 @@
         $.post(url, fin_message)
             .done(data => {
                 if (data) {
-                    const response = JSON.parse(data);
+                    const response = data;
                     showFlashMessage(response.status, response.message);
                 }
             });
