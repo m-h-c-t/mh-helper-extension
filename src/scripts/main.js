@@ -1368,7 +1368,10 @@
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
         "Harbour": addHarbourHuntDetails,
+        "Fort Rox": addFortRoxHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
+        "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
+        "Zokor": addZokorHuntDetails,
         "Zugzwang's Tower": addZugzwangsTowerHuntDetails
     };
 
@@ -1461,6 +1464,7 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
+
     function addHarbourHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestHarbour;
         const details = {
@@ -1469,6 +1473,37 @@
         quest.crew.forEach(mouse => {
             details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
         });
+        message.hunt_details = details;
+    }
+
+    /**
+     * Categorize the available buffs that may be applied on the hunt, such as an active Tower's
+     * auto-catch chance, or the innate ability to weaken all Weremice.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addFortRoxHuntDetails(message, user, user_post, hunt) {
+        const quest = user.quests.QuestFortRox;
+        const ballista_level = parseInt(quest.fort.b.level, 10);
+        const cannon_level = parseInt(quest.fort.c.level, 10);
+        const details = {};
+        if (quest.is_night) {
+            Object.assign(details, {
+                weakened_weremice:      (ballista_level >= 1),
+                can_autocatch_weremice: (ballista_level >= 2),
+                autocatch_nightmancer:  (ballista_level >= 3),
+
+                weakened_critters:      (cannon_level >= 1),
+                can_autocatch_critters: (cannon_level >= 2),
+                autocatch_nightfire:    (cannon_level >= 3),
+            });
+        }
+        // The mage tower's auto-catch can be applied during Day and Dawn phases, too.
+        const tower_state = quest.tower_status.includes("inactive") ? 0
+                : parseInt(quest.fort.t.level, 10);
+        details.can_autocatch_any = (tower_state >= 2);
 
         message.hunt_details = details;
     }
@@ -1488,6 +1523,53 @@
                     salt: quest.minigame.salt_charms_used
                 };
             }
+        }
+    }
+
+    /**
+     * For Lactrodectus hunts, if MBW can be attracted (and is not guaranteed), record the rage state.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt) {
+        if (message.cheese.id === 1646) {
+            const zones = user.quests.QuestRiftWhiskerWoods.zones;
+            const rage = {
+                clearing: parseInt(zones.clearing.level, 10),
+                tree: parseInt(zones.tree.level, 10),
+                lagoon: parseInt(zones.lagoon.level, 10)
+            };
+            const total_rage = rage.clearing + rage.tree + rage.lagoon;
+            if (total_rage < 150 && total_rage >= 75) {
+                if (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24) {
+                    message.hunt_details = Object.assign(rage, {total_rage});
+                }
+            }
+        }
+    }
+  
+    /**
+     * For the level-3 districts, report whether the boss was defeated or not.
+     * For the Minotaur lair, report the categorical label, number of catches, and meter width.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addZokorHuntDetails(message, user, user_post, hunt) {
+        const quest = user.quests.QuestAncientCity;
+        if (quest.boss.includes("hiddenDistrict")) {
+            message.hunt_details = {
+                minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
+                lair_catches: -(quest.countdown - 20),
+                minotaur_meter: parseFloat(quest.width)
+            };
+        } else if (quest.district_tier === 3) {
+            message.hunt_details = {
+                boss_defeated: (quest.boss === "defeated"),
+            };
         }
     }
 
