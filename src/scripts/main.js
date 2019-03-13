@@ -1367,6 +1367,7 @@
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
+        "Harbour": addHarbourHuntDetails,
         "Fort Rox": addFortRoxHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
         "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
@@ -1453,6 +1454,25 @@
             details.obelisk_charged = quest.obelisk_percent === 100;
             details.acolyte_sand_drained = details.obelisk_charged && quest.acolyte_sand === 0;
         }
+        message.hunt_details = details;
+    }
+
+    /**
+     * Report whether certain mice were attractable on the hunt.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+
+    function addHarbourHuntDetails(message, user, user_post, hunt) {
+        const quest = user.quests.QuestHarbour;
+        const details = {
+            on_bounty: (quest.status === "searchStarted"),
+        };
+        quest.crew.forEach(mouse => {
+            details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
+        });
         message.hunt_details = details;
     }
 
