@@ -44,9 +44,9 @@ s.onload = () => {
         }
     });
     s.remove();
-}
+};
 
-// Handles messages from popup
+// Handles messages from popup or background.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if ([
         "userhistory",
@@ -89,12 +89,12 @@ window.addEventListener("message",
                     "settings": settings
                 }, event.origin));
         } else if (data.jacks_crown_update === 1) {
-            submitCrowns(data.crowns)
-                .then(wasSubmitted => event.source.postMessage({
-                    "jacks_message": "crownSubmissionStatus",
-                    "submitted": wasSubmitted,
-                    "settings": data.settings
-                }, event.origin));
+            data.origin = event.origin;
+            chrome.runtime.sendMessage(data, wasSubmitted => event.source.postMessage({
+                "jacks_message": "crownSubmissionStatus",
+                "submitted": wasSubmitted,
+                "settings": data.settings
+            }, event.origin));
         } else if (data.jacks_log_request === 1) {
             chrome.runtime.sendMessage({ "log": data });
         }
@@ -126,50 +126,6 @@ function getSettings() {
             }
             resolve(items || {});
         });
-    });
-}
-
-/**
- * Promise to submit the given crowns for external storage (e.g. for MHCC or others)
- * @param {Object <string, any>} crowns Crown counts for the given user
- * @returns {Promise <number>|Promise <boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
- */
-function submitCrowns(crowns) {
-    if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold) === 0) {
-        return Promise.resolve(false);
-    }
-
-    return new Promise((resolve, reject) => {
-        const payload = new FormData();
-        payload.set("main", JSON.stringify(crowns));
-        const request = new Request(
-            "https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec",
-            {
-                mode: "no-cors", // Otherwise Firefox blocks with NetworkError
-                method: "POST",
-                credentials: "omit",
-                body: payload
-            }
-        );
-        fetch(request)
-            .then(response => {
-                // Opaque response -> cannot determine anything about it, including if the request was even made.
-                resolve(crowns.bronze + crowns.silver + crowns.gold);
-            })
-            .catch(error => {
-                chrome.runtime.sendMessage({
-                    "is_error": true,
-                    "log": {
-                        "message": "Error submitting user crowns",
-                        "error": error,
-                        "crowns": crowns
-                    }
-                });
-                resolve(false);
-            }).catch(err => {
-                window.console.log({"message": "Fatal error while submitting crowns", "error": err});
-                resolve(false);
-            });
     });
 }
 
