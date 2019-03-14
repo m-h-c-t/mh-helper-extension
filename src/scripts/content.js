@@ -44,7 +44,7 @@ s.onload = () => {
         }
     });
     s.remove();
-}
+};
 
 // Handles messages from popup or background.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -95,6 +95,8 @@ window.addEventListener("message",
                 "submitted": wasSubmitted,
                 "settings": data.settings
             }, event.origin));
+        } else if (data.jacks_log_request === 1) {
+            chrome.runtime.sendMessage({ "log": data });
         }
     },
     false

@@ -542,6 +542,16 @@
                     if (debug_logging) {window.console.log(`MHHH: Found the Relic Hunter in ${rh_message.rh_environment}`);}
                 }
             }
+            else if (css_class.search(/prizemouse/) !== -1) {
+                // Handle a prize mouse attraction.
+                if (debug_logging) {
+                    window.postMessage({
+                        "jacks_log_request": 1,
+                        "prize mouse journal": markup
+                    }, window.origin);
+                }
+                // TODO: Implement data submission
+            }
             else if (Object.keys(journal).length !== 0) {
                 // Only the first regular mouse attraction journal entry can be the active one.
             }
