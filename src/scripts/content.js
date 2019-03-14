@@ -39,7 +39,7 @@ s.onload = () => {
             window.postMessage({
                 "jacks_message": 'tsitu_loader',
                 "tsitu_loader_offset": items.tsitu_loader_offset,
-                "file_link": chrome.runtime.getURL('third_party/tsitus/bookmarkletloader')
+                "file_link": chrome.runtime.getURL('third_party/tsitu_auto_loader')
             }, "*");
         }
     });
@@ -57,7 +57,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     ].includes(request.jacks_link)) {
         let file_link = '';
         if (request.jacks_link == "tsitu_loader") {
-            file_link = chrome.extension.getURL('third_party/tsitus/bookmarkletloader');
+            file_link = chrome.extension.getURL('third_party/tsitu_auto_loader');
         }
         // Forwards messages from popup to main script
         window.postMessage({ "jacks_message": request.jacks_link, "file_link": file_link }, "*");
