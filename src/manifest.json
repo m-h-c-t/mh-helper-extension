@@ -3,7 +3,7 @@
     "author": "Jack Smith",
     "name": "Jack's MouseHunt Helper",
     "description": "This extension provides useful links and tracks MouseHunt horn calls for tools like rate calculators.",
-    "version": "19.3.9",
+    "version": "19.3.15",
     "icons": {
         "16": "images/icon16.png",
         "48": "images/icon48.png",
@@ -40,5 +40,10 @@
     "options_ui": {
         "page": "options.html",
         "chrome_style": true
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "devjacksmith@gmail.com"
+        }
     }
 }
