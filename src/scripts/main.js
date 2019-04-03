@@ -1532,7 +1532,7 @@
         const attrs = user.viewing_atts.desert_warpath;
         const fw = {};
         if ([1, 2, 3].includes(parseInt(attrs.wave, 10))) {
-            const asType = name => name.replace(/desert|_weak|_epic|_strong/g, "");
+            const asType = name => name.replace(/desert_|_weak|_epic|_strong/g, "");
 
             if (attrs.streak_quantity > 0) {
                 fw.streak = {
