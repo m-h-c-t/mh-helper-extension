@@ -1378,8 +1378,8 @@
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
         "Claw Shot City": addClawShotCityHuntDetails,
-        "Harbour": addHarbourHuntDetails,
         "Fort Rox": addFortRoxHuntDetails,
+        "Harbour": addHarbourHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
         "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
         "Zokor": addZokorHuntDetails,
@@ -1486,24 +1486,6 @@
     }
 
     /**
-     * Report whether certain mice were attractable on the hunt.
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     */
-    function addHarbourHuntDetails(message, user, user_post, hunt) {
-        const quest = user.quests.QuestHarbour;
-        const details = {
-            on_bounty: (quest.status === "searchStarted"),
-        };
-        quest.crew.forEach(mouse => {
-            details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
-        });
-        message.hunt_details = details;
-    }
-
-    /**
      * Categorize the available buffs that may be applied on the hunt, such as an active Tower's
      * auto-catch chance, or the innate ability to weaken all Weremice.
      * @param {Object <string, any>} message The message to be sent.
@@ -1532,6 +1514,24 @@
                 : parseInt(quest.fort.t.level, 10);
         details.can_autocatch_any = (tower_state >= 2);
 
+        message.hunt_details = details;
+    }
+
+    /**
+     * Report whether certain mice were attractable on the hunt.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addHarbourHuntDetails(message, user, user_post, hunt) {
+        const quest = user.quests.QuestHarbour;
+        const details = {
+            on_bounty: (quest.status === "searchStarted"),
+        };
+        quest.crew.forEach(mouse => {
+            details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
+        });
         message.hunt_details = details;
     }
 
