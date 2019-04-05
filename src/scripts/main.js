@@ -1377,8 +1377,9 @@
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
-        "Harbour": addHarbourHuntDetails,
+        "Claw Shot City": addClawShotCityHuntDetails,
         "Fort Rox": addFortRoxHuntDetails,
+        "Harbour": addHarbourHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
         "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
         "Zokor": addZokorHuntDetails,
@@ -1468,22 +1469,20 @@
     }
 
     /**
-     * Report whether certain mice were attractable on the hunt.
+     * Track the poster type. Specific available mice require information from `relichunter.php`.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-
-    function addHarbourHuntDetails(message, user, user_post, hunt) {
-        const quest = user.quests.QuestHarbour;
-        const details = {
-            on_bounty: (quest.status === "searchStarted"),
-        };
-        quest.crew.forEach(mouse => {
-            details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
-        });
-        message.hunt_details = details;
+    function addClawShotCityHuntDetails(message, user, user_post, hunt) {
+        const map = user.quests.QuestRelicHunter.maps.filter(m => m.name.endsWith("Wanted Poster"))[0];
+        if (map && !map.is_complete) {
+            message.hunt_details = {
+                poster_type: map.name.replace(/Wanted Poster/i, "").trim(),
+                at_boss: (map.remaining === 1)
+            };
+        }
     }
 
     /**
@@ -1515,6 +1514,24 @@
                 : parseInt(quest.fort.t.level, 10);
         details.can_autocatch_any = (tower_state >= 2);
 
+        message.hunt_details = details;
+    }
+
+    /**
+     * Report whether certain mice were attractable on the hunt.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addHarbourHuntDetails(message, user, user_post, hunt) {
+        const quest = user.quests.QuestHarbour;
+        const details = {
+            on_bounty: (quest.status === "searchStarted"),
+        };
+        quest.crew.forEach(mouse => {
+            details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
+        });
         message.hunt_details = details;
     }
 
@@ -1559,7 +1576,7 @@
             }
         }
     }
-  
+
     /**
      * For the level-3 districts, report whether the boss was defeated or not.
      * For the Minotaur lair, report the categorical label, number of catches, and meter width.
