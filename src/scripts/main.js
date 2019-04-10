@@ -1403,9 +1403,32 @@
 
         // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
         [
+            addEggHuntDetails,
             addLNYHuntDetails,
             addLuckyCatchHuntDetails
         ].forEach(details_func => details_func(message, user, user_post, hunt));
+    }
+
+    /**
+     * Record the Eggscavator Charge level, both before and after the hunt.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addEggHuntDetails(message, user, user_post, hunt) {
+        const quest = getActiveSEHQuest(user.quests);
+        if (quest) {
+            const post_quest = getActiveSEHQuest(user_post.quests);
+            message.hunt_details = Object.assign(message.hunt_details || {}, {
+                is_egg_hunt: true,
+                egg_charge_pre: quest.charge_quantity,
+                double_eggs: (quest.charge_doubler === "active"),
+            });
+            if (post_quest) {
+                message.hunt_details.egg_charge_post = post_quest.charge_quantity;
+            }
+        }
     }
 
     /**
@@ -1723,6 +1746,19 @@
     function getActiveLNYQuest(allQuests) {
         const quest_names = Object.keys(allQuests)
             .filter(name => name.includes("QuestLunarNewYear"));
+        return (quest_names.length
+            ? allQuests[quest_names[0]]
+            : null);
+    }
+
+    /**
+     * Return the active Spring Egg Hunt quest, if possible.
+     * @param {Object <string, Object <string, any>>} allQuests the `user.quests` object containing all of the user's quests
+     * @returns {Object <string, any> | null} The quest if it exists, else `null`
+     */
+    function getActiveSEHQuest(allQuests) {
+        const quest_names = Object.keys(allQuests)
+            .filter(name => name.includes("QuestSpringHunt"));
         return (quest_names.length
             ? allQuests[quest_names[0]]
             : null);
