@@ -219,7 +219,17 @@
                     },
                     dataType: "json"
                 }).done(userRqResponse => {
-                    if (debug_logging) {window.console.log({message: "Got user object, invoking huntSend", userRqResponse});}
+                    // The user may have received a King's Reward.
+                    if (userRqResponse.success !== 1 || userRqResponse.puzzle === true) {
+                        // Avoid sending an additional request (which will also fail).
+                        if (debug_logging) {
+                            window.console.log("Unable to sound the horn, perhaps there is a King's Reward?");
+                        }
+                        jqx.abort(); // Needed? Or can we just `return` and have the UI update with the KR message?
+                        return;
+                    } else if (debug_logging) {
+                        window.console.log({message: "Got user object, invoking huntSend", userRqResponse});
+                    }
                     hunt_xhr.addEventListener("loadend", () => {
                         if (debug_logging) {window.console.timeEnd("Overall 'Hunt Requested' Timing");}
                         // Call record hunt with the pre-hunt user object.
