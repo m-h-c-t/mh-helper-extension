@@ -742,6 +742,7 @@
         "Lost City": addLostCityStage,
         "Mousoleum": addMousoleumStage,
         "Moussu Picchu": addMoussuPicchuStage,
+        "Queso Geyser": addQuesoGeyserStage,
         "SUPER|brie+ Factory": addSBFactoryStage,
         "Sand Dunes": addSandDunesStage,
         "Seasonal Garden": addSeasonalGardenStage,
@@ -1371,6 +1372,25 @@
             if (!message.stage) {
                 message.stage = "No Room";
             }
+        }
+    }
+
+    /**
+     * Report the state of corks and eruptions
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addQuesoGeyserStage(message, user, user_post, hunt) {
+        const state = user.quests.QuestQuesoGeyser.state;
+        if (state === "collecting") {
+            message.stage = "Cork";
+        } else if (state === "corked") {
+            message.stage = "Pressure";
+        } else if (state === "eruption") {
+            // Tiny/Small/Medium/Large/Epic Eruption
+            message.stage = user.quests.QuestQuesoGeyser.state_name;
         }
     }
 
