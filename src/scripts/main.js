@@ -1438,16 +1438,14 @@
      */
     function addEggHuntDetails(message, user, user_post, hunt) {
         const quest = getActiveSEHQuest(user.quests);
-        if (quest) {
+        const post_quest = getActiveSEHQuest(user_post.quests);
+        if (quest && post_quest) {
             message.hunt_details = Object.assign(message.hunt_details || {}, {
                 is_egg_hunt: true,
                 egg_charge_pre: parseInt(quest.charge_quantity, 10),
+                egg_charge_post: parseInt(post_quest.charge_quantity, 10),
                 can_double_eggs: (quest.charge_doubler === "active"),
             });
-            const post_quest = getActiveSEHQuest(user_post.quests);
-            if (post_quest) {
-                message.hunt_details.egg_charge_post = parseInt(post_quest.charge_quantity, 10);
-            }
         }
     }
 
