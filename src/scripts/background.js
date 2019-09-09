@@ -177,7 +177,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
  * @returns {Promise <number>|Promise <boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
  */
 function submitCrowns(crowns) {
-    if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold) === 0) {
+    if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond) === 0) {
         return Promise.resolve(false);
     }
 
@@ -190,7 +190,7 @@ function submitCrowns(crowns) {
             credentials: "omit",
             body: payload
         }).then(response => resolve(!response.ok ? false :
-                crowns.bronze + crowns.silver + crowns.gold)
+                crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond)
         ).catch(error => {
             window.console.error({
                 "message": "Error submitting user crowns",
