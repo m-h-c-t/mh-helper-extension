@@ -287,14 +287,16 @@
 
             bronze: 0,
             silver: 0,
-            gold: 0
+            gold: 0,
+            platinum: 0,
+            diamond: 0
         };
 
         /** Rather than compute counts ourselves, use the `badge` display data.
          * badges: [
          *     {
-         *         badge: (500 | 100    | 10),
-         *         type: (gold | silver | bronze),
+         *         badge: (2500   | 1000     | 500  | 100    | 10),
+         *         type: (diamond | platinum | gold | silver | bronze),
          *         mice: string[]
          *     },
          *     ...
