@@ -61,7 +61,7 @@
             const counts = ev.data.submitted;
             if (counts) {
                 displayFlashMessage(ev.data.settings, "success",
-                    `Submitted ${counts} crowns for ${$('span.hunterInfoView-userName').text()}.`);
+                    `Submitted ${counts} crowns for ${$('span[class*="-name"][title]').text()}.`);
             } else {
                 displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
             }
