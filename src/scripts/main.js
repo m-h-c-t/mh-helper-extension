@@ -1525,12 +1525,10 @@
             const asType = name => name.replace(/desert_|_weak|_epic|_strong/g, "");
 
             if (attrs.streak_quantity > 0) {
-                fw.streak = {
-                    count: parseInt(attrs.streak_quantity, 10),
-                    type: asType(attrs.streak_type),
-                };
-                fw.streak.increased_on_hunt = (message.caught === 1 &&
-                    fw.streak.type === asType(user_post.viewing_atts.desert_warpath.streak_type));
+                fw.streak_count = parseInt(attrs.streak_quantity, 10),
+                fw.streak_type = asType(attrs.streak_type),
+                fw.streak_increased_on_hunt = (message.caught === 1 &&
+                    fw.streak_type === asType(user_post.viewing_atts.desert_warpath.streak_type));
             }
 
             // Track the mice remaining in the wave, per type and in total.
