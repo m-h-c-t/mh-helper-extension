@@ -751,6 +751,7 @@
         "Sunken City": addSunkenCityStage,
         "Toxic Spill": addToxicSpillStage,
         "Twisted Garden": addGardenStage,
+        "Valour Rift": addValourRiftStage,
         "Whisker Woods Rift": addWhiskerWoodsRiftStage,
         "Zokor": addZokorStage,
     };
@@ -1396,6 +1397,30 @@
         }
     }
 
+    /**
+     * Report the tower floor and prestige
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addValourRiftStage(message, user, user_post, hunt) {
+        const attrs = user.environment_atts;
+        switch (attrs.state) {
+            case 'tower':
+                if (attrs.active_augmentations.tu) {
+                    // Umbra Floor #
+                    message.stage = "Umbra Floor " + attrs.floor;
+                } else {
+                    // Floor #
+                    message.stage = "Floor " + attrs.floor;
+                }
+                break;
+            default:
+                message.stage = "Outside";
+        }
+    }
+    
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
@@ -1404,6 +1429,7 @@
         "Fort Rox": addFortRoxHuntDetails,
         "Harbour": addHarbourHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
+        "Valour Rift": addValourRiftHuntDetails,
         "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
         "Zokor": addZokorHuntDetails,
         "Zugzwang's Tower": addZugzwangsTowerHuntDetails
@@ -1734,6 +1760,36 @@
         };
         zt.cm_available = (zt.technic === 16 || zt.mystic === 16) && message.cheese.id === 371;
         message.hunt_details = zt;
+    }
+    
+    /**
+     * Report the active buffs and floor details
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addValourRiftStage(message, user, user_post, hunt) {
+        const attrs = user.environment_atts;
+        message.hunt_details = {
+            // Elexir Rain
+            er: attrs.active_augmentations.er,
+            // Sigil Hunter
+            sh: attrs.active_augmentations.hr,
+            // Secret Research
+            sr: attrs.active_augmentations.sr,
+            // Super Siphon
+            ss: attrs.active_augmentations.ss,
+            // String Stepping
+            st: attrs.active_augmentations.sste,
+            // Ultimate Umbra
+            uu: attrs.active_augmentations.tu,
+            // Prestige is incremented after each eclipse in the current run. Starts at 1
+            prestige: attrs.prestige,
+            // Floor type is 1-8, or 7. 
+            // TODO: check eclipse state
+            floor_type: attrs.floor_type,
+        };
     }
 
     /**
