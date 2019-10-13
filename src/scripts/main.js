@@ -1398,7 +1398,7 @@
     }
 
     /**
-     * Report the tower floor and prestige
+     * Report the tower stage - outside, tower floor, umbra run
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
@@ -1416,8 +1416,13 @@
                     message.stage = "Floor " + attrs.floor;
                 }
                 break;
-            default:
+            case 'farming':
                 message.stage = "Outside";
+                break;
+            default:
+                if (debug_logging) {window.console.log({message: "Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts});}
+                message.location = null;
+                break;
         }
     }
     
@@ -1769,26 +1774,28 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addValourRiftStage(message, user, user_post, hunt) {
+    function addValourRiftHuntDetails(message, user, user_post, hunt) {
         const attrs = user.environment_atts;
         message.hunt_details = {
             // Elexir Rain
-            er: attrs.active_augmentations.er,
+            elexir_rain: attrs.active_augmentations.er,
             // Sigil Hunter
-            sh: attrs.active_augmentations.hr,
+            sigil_hunter: attrs.active_augmentations.hr,
             // Secret Research
-            sr: attrs.active_augmentations.sr,
+            secret_research: attrs.active_augmentations.sr,
             // Super Siphon
-            ss: attrs.active_augmentations.ss,
+            super_siphon: attrs.active_augmentations.ss,
             // String Stepping
-            st: attrs.active_augmentations.sste,
+            string_stepping: attrs.active_augmentations.sste,
             // Ultimate Umbra
-            uu: attrs.active_augmentations.tu,
+            ultimate_umbra: attrs.active_augmentations.tu,
             // Prestige is incremented after each eclipse in the current run. Starts at 1
             prestige: attrs.prestige,
-            // Floor type is 1-8, or 7. 
             // TODO: check eclipse state
+            // Floor type is 1-8, or 1-7.
             floor_type: attrs.floor_type,
+            // true when at eclipse
+            is_at_eclipse: attrs.is_at_eclipse,
         };
     }
 
