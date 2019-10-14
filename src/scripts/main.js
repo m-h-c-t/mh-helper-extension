@@ -1776,18 +1776,21 @@
      */
     function addValourRiftHuntDetails(message, user, user_post, hunt) {
         const attrs = user.environment_atts;
-        message.hunt_details = {
-            elixir_rain: attrs.active_augmentations.er,
-            sigil_hunter: attrs.active_augmentations.hr,
-            secret_research: attrs.active_augmentations.sr,
-            super_siphon: attrs.active_augmentations.ss,
-            string_stepping: attrs.active_augmentations.sste,
-            ultimate_umbra: attrs.active_augmentations.tu,
-            // Prestige is incremented after each eclipse in the current run. Starts at 1
-            prestige: attrs.prestige,
-            // Floor type is 1-8, 8th is the eclipse.
-            floor_type: attrs.floor_type,
-        };
+        // outside tower the active_augmentations is not defined
+        if (attrs.stage === 'tower') {
+            message.hunt_details = {
+                elixir_rain: attrs.active_augmentations.er,
+                sigil_hunter: attrs.active_augmentations.hr,
+                secret_research: attrs.active_augmentations.sr,
+                super_siphon: attrs.active_augmentations.ss,
+                string_stepping: attrs.active_augmentations.sste,
+                ultimate_umbra: attrs.active_augmentations.tu,
+                // Prestige is incremented after each eclipse in the current run. Starts at 1
+                prestige: attrs.prestige,
+                // Floor type is 1-8, 8th is the eclipse.
+                floor_type: attrs.floor_type,
+            };
+        }
     }
 
     /**
