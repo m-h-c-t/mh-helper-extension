@@ -1777,25 +1777,16 @@
     function addValourRiftHuntDetails(message, user, user_post, hunt) {
         const attrs = user.environment_atts;
         message.hunt_details = {
-            // Elexir Rain
-            elexir_rain: attrs.active_augmentations.er,
-            // Sigil Hunter
+            elixir_rain: attrs.active_augmentations.er,
             sigil_hunter: attrs.active_augmentations.hr,
-            // Secret Research
             secret_research: attrs.active_augmentations.sr,
-            // Super Siphon
             super_siphon: attrs.active_augmentations.ss,
-            // String Stepping
             string_stepping: attrs.active_augmentations.sste,
-            // Ultimate Umbra
             ultimate_umbra: attrs.active_augmentations.tu,
             // Prestige is incremented after each eclipse in the current run. Starts at 1
             prestige: attrs.prestige,
-            // TODO: check eclipse state
-            // Floor type is 1-8, or 1-7.
+            // Floor type is 1-8, 8th is the eclipse.
             floor_type: attrs.floor_type,
-            // true when at eclipse
-            is_at_eclipse: attrs.is_at_eclipse,
         };
     }
 
