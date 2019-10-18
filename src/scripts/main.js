@@ -1398,7 +1398,7 @@
     }
 
     /**
-     * Report the tower stage - outside, tower floor, umbra run
+     * Report the tower stage - outside, eclipse, tower floor 1-7, 9-15, 25+-31+, umbra run
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
@@ -1408,13 +1408,23 @@
         const attrs = user.environment_atts;
         switch (attrs.state) {
             case 'tower':
-                if (attrs.active_augmentations.tu) {
-                    // Umbra Floor #
-                    message.stage = "Umbra Floor " + attrs.floor;
+                var floor, prefix;
+                if (attrs.floor % 8) {
+                    floor = 'Eclipse';
+                } else if (attrs.floor < 25) {
+                    floor = attrs.floor
                 } else {
-                    // Floor #
-                    message.stage = "Floor " + attrs.floor;
+                    // Convert 25+ into 25-31
+                    floor = (((attrs.floor - 25) % 8) + 25) + '+'
                 }
+
+                if (attrs.active_augmentations.tu) {
+                    prefix = "UU Floor";
+                } else {
+                    prefix = "Floor";
+                }
+
+                message.stage = prefix + ' ' + floor
                 break;
             case 'farming':
                 message.stage = "Outside";
@@ -1425,7 +1435,7 @@
                 break;
         }
     }
-    
+
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
@@ -1766,7 +1776,7 @@
         zt.cm_available = (zt.technic === 16 || zt.mystic === 16) && message.cheese.id === 371;
         message.hunt_details = zt;
     }
-    
+
     /**
      * Report the active buffs and floor details
      * @param {Object <string, any>} message The message to be sent.
@@ -1789,6 +1799,8 @@
                 prestige: attrs.prestige,
                 // Floor type is 1-8, 8th is the eclipse.
                 floor_type: attrs.floor_type,
+                // Floor is actual floor number 1+
+                floor: attrs.floor,
             };
         }
     }
