@@ -1398,7 +1398,7 @@
     }
 
     /**
-     * Report the tower stage - outside, eclipse, tower floor 1-7, 9-15, 25+-31+, umbra run
+     * Report tower stage: Outside, Eclipse, Floors 1-7, 9-15, 17-23, 25-31+, Umbra
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
@@ -1781,7 +1781,7 @@
     }
 
     /**
-     * Report the active buffs and floor details
+     * Report active augmentations and floor number
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
