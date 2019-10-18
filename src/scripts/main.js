@@ -1419,7 +1419,7 @@
                     stageName = "Floors 9-15";
                 } else if (floor >= 17 && floor <= 23) {
                     stageName = "Floors 17-23";
-                } else {
+                } else if (floor >= 25) {
                     stageName = "Floors 25-31+";
                 }
 
