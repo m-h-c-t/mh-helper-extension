@@ -1407,26 +1407,29 @@
     function addValourRiftStage(message, user, user_post, hunt) {
         const attrs = user.environment_atts;
         switch (attrs.state) {
-            case 'tower':
-                var floor, prefix;
-                if (attrs.floor % 8) {
-                    floor = 'Eclipse';
-                } else if (attrs.floor < 25) {
-                    floor = attrs.floor
+            case "tower":
+                var floor = attrs.floor;
+                var stageName;
+
+                if (floor >= 1 && floor % 8 === 0) {
+                    stageName = "Eclipse";
+                } else if (floor >= 1 && floor <= 7) {
+                    stageName = "Floors 1-7";
+                } else if (floor >= 9 && floor <= 15) {
+                    stageName = "Floors 9-15";
+                } else if (floor >= 17 && floor <= 23) {
+                    stageName = "Floors 17-23";
                 } else {
-                    // Convert 25+ into 25-31
-                    floor = (((attrs.floor - 25) % 8) + 25) + '+'
+                    stageName = "Floors 25-31+";
                 }
 
                 if (attrs.active_augmentations.tu) {
-                    prefix = "UU Floor";
-                } else {
-                    prefix = "Floor";
+                    stageName = "UU " + stageName;
                 }
 
-                message.stage = prefix + ' ' + floor
+                message.stage = stageName;
                 break;
-            case 'farming':
+            case "farming":
                 message.stage = "Outside";
                 break;
             default:
@@ -1786,21 +1789,12 @@
      */
     function addValourRiftHuntDetails(message, user, user_post, hunt) {
         const attrs = user.environment_atts;
-        // outside tower the active_augmentations is not defined
-        if (attrs.stage === 'tower') {
+        // active_augmentations is undefined outside of the tower
+        if (attrs.stage === "tower") {
             message.hunt_details = {
-                elixir_rain: attrs.active_augmentations.er,
-                sigil_hunter: attrs.active_augmentations.hr,
-                secret_research: attrs.active_augmentations.sr,
-                super_siphon: attrs.active_augmentations.ss,
-                string_stepping: attrs.active_augmentations.sste,
-                ultimate_umbra: attrs.active_augmentations.tu,
-                // Prestige is incremented after each eclipse in the current run. Starts at 1
-                prestige: attrs.prestige,
-                // Floor type is 1-8, 8th is the eclipse.
-                floor_type: attrs.floor_type,
-                // Floor is actual floor number 1+
-                floor: attrs.floor,
+                super_siphon: attrs.active_augmentations.ss, // 'true' when active, 'undefined' when inactive
+                string_stepping: attrs.active_augmentations.sste, // ^
+                floor: attrs.floor, // actual floor number (can be used to derive prestige and floor_type)
             };
         }
     }
