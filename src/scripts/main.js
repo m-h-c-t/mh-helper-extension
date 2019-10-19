@@ -751,6 +751,7 @@
         "Sunken City": addSunkenCityStage,
         "Toxic Spill": addToxicSpillStage,
         "Twisted Garden": addGardenStage,
+        "Valour Rift": addValourRiftStage,
         "Whisker Woods Rift": addWhiskerWoodsRiftStage,
         "Zokor": addZokorStage,
     };
@@ -1396,6 +1397,48 @@
         }
     }
 
+    /**
+     * Report tower stage: Outside, Eclipse, Floors 1-7, 9-15, 17-23, 25-31+, Umbra
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addValourRiftStage(message, user, user_post, hunt) {
+        const attrs = user.environment_atts;
+        switch (attrs.state) {
+            case "tower":
+                let floor = attrs.floor;
+                let stageName;
+
+                if (floor >= 1 && floor % 8 === 0) {
+                    stageName = "Eclipse";
+                } else if (floor >= 1 && floor <= 7) {
+                    stageName = "Floors 1-7";
+                } else if (floor >= 9 && floor <= 15) {
+                    stageName = "Floors 9-15";
+                } else if (floor >= 17 && floor <= 23) {
+                    stageName = "Floors 17-23";
+                } else if (floor >= 25) {
+                    stageName = "Floors 25-31+";
+                }
+
+                if (attrs.active_augmentations.tu) {
+                    stageName = "UU " + stageName;
+                }
+
+                message.stage = stageName;
+                break;
+            case "farming":
+                message.stage = "Outside";
+                break;
+            default:
+                if (debug_logging) {window.console.log({message: "Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts});}
+                message.location = null;
+                break;
+        }
+    }
+
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
@@ -1404,6 +1447,7 @@
         "Fort Rox": addFortRoxHuntDetails,
         "Harbour": addHarbourHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
+        "Valour Rift": addValourRiftHuntDetails,
         "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
         "Zokor": addZokorHuntDetails,
         "Zugzwang's Tower": addZugzwangsTowerHuntDetails
@@ -1734,6 +1778,25 @@
         };
         zt.cm_available = (zt.technic === 16 || zt.mystic === 16) && message.cheese.id === 371;
         message.hunt_details = zt;
+    }
+
+    /**
+     * Report active augmentations and floor number
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addValourRiftHuntDetails(message, user, user_post, hunt) {
+        const attrs = user.environment_atts;
+        // active_augmentations is undefined outside of the tower
+        if (attrs.stage === "tower") {
+            message.hunt_details = {
+                super_siphon: !!attrs.active_augmentations.ss, // active = true, inactive = false
+                string_stepping: !!attrs.active_augmentations.sste,
+                floor: attrs.floor, // exact floor number (can be used to derive prestige and floor_type)
+            };
+        }
     }
 
     /**
