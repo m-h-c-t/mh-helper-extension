@@ -1792,9 +1792,9 @@
         // active_augmentations is undefined outside of the tower
         if (attrs.stage === "tower") {
             message.hunt_details = {
-                super_siphon: attrs.active_augmentations.ss, // 'true' when active, 'undefined' when inactive
-                string_stepping: attrs.active_augmentations.sste, // ^
-                floor: attrs.floor, // actual floor number (can be used to derive prestige and floor_type)
+                super_siphon: !!attrs.active_augmentations.ss, // active = true, inactive = false
+                string_stepping: !!attrs.active_augmentations.sste,
+                floor: attrs.floor, // exact floor number (can be used to derive prestige and floor_type)
             };
         }
     }
