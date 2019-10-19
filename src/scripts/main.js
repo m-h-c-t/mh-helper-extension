@@ -1408,8 +1408,8 @@
         const attrs = user.environment_atts;
         switch (attrs.state) {
             case "tower":
-                var floor = attrs.floor;
-                var stageName;
+                let floor = attrs.floor;
+                let stageName;
 
                 if (floor >= 1 && floor % 8 === 0) {
                     stageName = "Eclipse";
