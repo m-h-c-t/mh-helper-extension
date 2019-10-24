@@ -174,7 +174,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 /**
  * Promise to submit the given crowns for external storage (e.g. for MHCC or others)
  * @param {Object <string, any>} crowns Crown counts for the given user
- * @returns {Promise <number>|Promise <boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
+ * @returns {Promise <number | boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
  */
 function submitCrowns(crowns) {
     if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond) === 0) {
