@@ -1471,6 +1471,7 @@
         // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
         [
             addEggHuntDetails,
+            addHalloweenHuntDetails,
             addLNYHuntDetails,
             addLuckyCatchHuntDetails
         ].forEach(details_func => details_func(message, user, user_post, hunt));
@@ -1492,6 +1493,24 @@
                 egg_charge_pre: parseInt(quest.charge_quantity, 10),
                 egg_charge_post: parseInt(post_quest.charge_quantity, 10),
                 can_double_eggs: (quest.charge_doubler === "active"),
+            });
+        }
+    }
+
+    /**
+     * Record the Cannon state and whether the hunt was taken in a stockpile location.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addHalloweenHuntDetails(message, user, user_post, hunt) {
+        const quest = getActiveHalloweenQuest(user.quests);
+        if (quest) {
+            message.hunt_details = Object.assign(message.hunt_details || {}, {
+                is_halloween_hunt: true,
+                is_firing_cannon: !!(quest.is_cannon_enabled || quest.is_long_range_cannon_enabled),
+                is_in_stockpile: !!quest.has_stockpile
             });
         }
     }
@@ -1893,6 +1912,19 @@
         version = version[0] + pad(version[1], 2) + pad(version[2], 2);
         version = Number(version);
         return version;
+    }
+
+    /**
+     * Return the active Halloween quest object, if possible.
+     * @param {Object <string, Object <string, any>>} allQuests the `user.quests` object containing all of the user's quests
+     * @returns {Object <string, any> | null} The quest if it exists, else `null`
+     */
+    function getActiveHalloweenQuest(allQuests) {
+        const quest_names = Object.keys(allQuests)
+            .filter(name => name.includes("QuestHalloween"));
+        return (quest_names.length
+            ? allQuests[quest_names[0]]
+            : null);
     }
 
     /**
