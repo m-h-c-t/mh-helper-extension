@@ -1405,7 +1405,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addValourRiftStage(message, user, user_post, hunt) {
-        const attrs = user.environment_atts;
+        const attrs = user.environment_atts || user.enviroment_atts;
         switch (attrs.state) {
             case "tower":
                 let floor = attrs.floor;
@@ -1433,7 +1433,7 @@
                 message.stage = "Outside";
                 break;
             default:
-                if (debug_logging) {window.console.log({message: "Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts});}
+                if (debug_logging) {window.console.log({message: "Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts || user_post.enviroment_atts});}
                 message.location = null;
                 break;
         }
@@ -1807,7 +1807,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addValourRiftHuntDetails(message, user, user_post, hunt) {
-        const attrs = user.environment_atts;
+        const attrs = user.environment_atts || user.enviroment_atts;
         // active_augmentations is undefined outside of the tower
         if (attrs.stage === "tower") {
             message.hunt_details = {
