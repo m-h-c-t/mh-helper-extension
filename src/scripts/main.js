@@ -166,7 +166,7 @@
             return;
         }
         const mhhh_flash_message_div = $('#mhhh_flash_message_div');
-        mhhh_flash_message_div.text("Jack's MH Helper: " + message);
+        mhhh_flash_message_div.text("MHCT Helper: " + message);
 
         mhhh_flash_message_div.css('left', 'calc(50% - ' + (mhhh_flash_message_div.width() / 2) + 'px)');
 

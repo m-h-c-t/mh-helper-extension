@@ -97,11 +97,11 @@ function icon_timer_updateBadge(tab_id, settings) {
                 }
                 if (settings.horn_alert) {
                     chrome.notifications.create(
-                        "Jacks MH Horn",
+                        "MHCT Horn",
                         {
                             type: "basic",
                             iconUrl: "images/icon128.png",
-                            title: "Jack's MH Tools",
+                            title: "MHCT Tools",
                             message: "MouseHunt Horn is ready!!! Good luck!",
                         }
                     );
