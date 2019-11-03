@@ -30,7 +30,7 @@ function sendMessageToScript(tab_id, button_id) {
     }
 
     // Send message to content script
-    chrome.tabs.sendMessage(tab_id, {jacks_link: button_id});
+    chrome.tabs.sendMessage(tab_id, {mhct_link: button_id});
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * @param {HTMLElement} [huntTimerField] The div element corresponding to the horn countdown timer.
  */
 function updateHuntTimerField(tab, huntTimerField) {
-    chrome.tabs.sendMessage(tab, {jacks_link: "huntTimer"}, response => {
+    chrome.tabs.sendMessage(tab, {mhct_link: "huntTimer"}, response => {
         if (chrome.runtime.lastError) {
             displayErrorPopup(chrome.runtime.lastError.message);
         }

@@ -18,7 +18,7 @@
 
     // Listening for calls
     window.addEventListener('message', ev => {
-        if (ev.data.jacks_message == null) {
+        if (ev.data.mhct_message == null) {
             return;
         }
 
@@ -26,29 +26,29 @@
             alert('Please make sure you are logged in into MH.');
             return;
         }
-        if (ev.data.jacks_message === 'userhistory') {
+        if (ev.data.mhct_message === 'userhistory') {
             window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}`);
             return;
         }
 
-        if (ev.data.jacks_message === 'mhmh'
-            || ev.data.jacks_message === 'ryonn') {
-            openMapMiceSolver(ev.data.jacks_message);
+        if (ev.data.mhct_message === 'mhmh'
+            || ev.data.mhct_message === 'ryonn') {
+            openMapMiceSolver(ev.data.mhct_message);
             return;
         }
 
-        if (ev.data.jacks_message === 'horn') {
+        if (ev.data.mhct_message === 'horn') {
             sound_horn();
             return;
         }
 
-        if ('tsitu_loader' === ev.data.jacks_message) {
+        if ('tsitu_loader' === ev.data.mhct_message) {
             window.tsitu_loader_offset = ev.data.tsitu_loader_offset;
             openBookmarklet(ev.data.file_link);
             return;
         }
 
-        if (ev.data.jacks_message === 'show_horn_alert') {
+        if (ev.data.mhct_message === 'show_horn_alert') {
             const sound_the_horn = confirm("Horn is Ready! Sound it?");
             if (sound_the_horn) {
                 sound_horn();
@@ -57,7 +57,7 @@
         }
 
         // Crown submission results in either the boolean `false`, or the total submitted crowns.
-        if (ev.data.jacks_message === 'crownSubmissionStatus') {
+        if (ev.data.mhct_message === 'crownSubmissionStatus') {
             const counts = ev.data.submitted;
             if (counts) {
                 displayFlashMessage(ev.data.settings, "success",
@@ -248,7 +248,7 @@
     // Get settings
     function getSettings(callback) {
         window.addEventListener("message", function listenSettings(event) {
-            if (event.data.jacks_settings_response !== 1) {
+            if (event.data.mhct_settings_response !== 1) {
                 return;
             }
 
@@ -260,7 +260,7 @@
                 callback(event.data.settings);
             }
         }, false);
-        window.postMessage({jacks_settings_request: 1}, "*");
+        window.postMessage({mhct_settings_request: 1}, "*");
     }
 
     /**
@@ -307,7 +307,7 @@
         // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
         // submission by submitting from the content script.
         window.postMessage({
-            "jacks_crown_update": 1,
+            "mhct_crown_update": 1,
             "crowns": payload,
             "settings": settings
         }, window.origin);
@@ -548,7 +548,7 @@
                 // Handle a prize mouse attraction.
                 if (debug_logging) {
                     window.postMessage({
-                        "jacks_log_request": 1,
+                        "mhct_log_request": 1,
                         "prize mouse journal": markup
                     }, window.origin);
                 }
