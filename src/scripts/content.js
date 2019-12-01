@@ -37,7 +37,7 @@ s.onload = () => {
         if (items.tsitu_loader_on) {
             // There must be a better way of doing this
             window.postMessage({
-                "jacks_message": 'tsitu_loader',
+                "mhct_message": 'tsitu_loader',
                 "tsitu_loader_offset": items.tsitu_loader_offset,
                 "file_link": chrome.runtime.getURL('third_party/tsitu_auto_loader')
             }, "*");
@@ -54,14 +54,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         "ryonn",
         "horn",
         "tsitu_loader"
-    ].includes(request.jacks_link)) {
+    ].includes(request.mhct_link)) {
         let file_link = '';
-        if (request.jacks_link == "tsitu_loader") {
+        if (request.mhct_link == "tsitu_loader") {
             file_link = chrome.extension.getURL('third_party/tsitu_auto_loader');
         }
         // Forwards messages from popup to main script
-        window.postMessage({ "jacks_message": request.jacks_link, "file_link": file_link }, "*");
-    } else if (request.jacks_link === "huntTimer") {
+        window.postMessage({ "mhct_message": request.mhct_link, "file_link": file_link }, "*");
+    } else if (request.mhct_link === "huntTimer") {
         // Check for a King's Reward, otherwise report the displayed time until next horn.
         let message = "Logged out";
         const krElement = document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0];
@@ -72,8 +72,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             message = hunt_timer.textContent;
         }
         sendResponse(message);
-    } else if (request.jacks_link === "show_horn_alert") {
-        window.postMessage({ "jacks_message": request.jacks_link }, "*");
+    } else if (request.mhct_link === "show_horn_alert") {
+        window.postMessage({ "mhct_message": request.mhct_link }, "*");
     }
 });
 
@@ -82,20 +82,20 @@ window.addEventListener("message",
     event => {
         // Lots of MessageEvents are sent, so only respond to ones we know about.
         const data = event.data;
-        if (data.jacks_settings_request === 1) {
+        if (data.mhct_settings_request === 1) {
             getSettings()
                 .then(settings => event.source.postMessage({
-                    "jacks_settings_response": 1,
+                    "mhct_settings_response": 1,
                     "settings": settings
                 }, event.origin));
-        } else if (data.jacks_crown_update === 1) {
+        } else if (data.mhct_crown_update === 1) {
             data.origin = event.origin;
             chrome.runtime.sendMessage(data, wasSubmitted => event.source.postMessage({
-                "jacks_message": "crownSubmissionStatus",
+                "mhct_message": "crownSubmissionStatus",
                 "submitted": wasSubmitted,
                 "settings": data.settings
             }, event.origin));
-        } else if (data.jacks_log_request === 1) {
+        } else if (data.mhct_log_request === 1) {
             chrome.runtime.sendMessage({ "log": data });
         }
     },

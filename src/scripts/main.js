@@ -18,7 +18,7 @@
 
     // Listening for calls
     window.addEventListener('message', ev => {
-        if (ev.data.jacks_message == null) {
+        if (ev.data.mhct_message == null) {
             return;
         }
 
@@ -26,29 +26,29 @@
             alert('Please make sure you are logged in into MH.');
             return;
         }
-        if (ev.data.jacks_message === 'userhistory') {
+        if (ev.data.mhct_message === 'userhistory') {
             window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}`);
             return;
         }
 
-        if (ev.data.jacks_message === 'mhmh'
-            || ev.data.jacks_message === 'ryonn') {
-            openMapMiceSolver(ev.data.jacks_message);
+        if (ev.data.mhct_message === 'mhmh'
+            || ev.data.mhct_message === 'ryonn') {
+            openMapMiceSolver(ev.data.mhct_message);
             return;
         }
 
-        if (ev.data.jacks_message === 'horn') {
+        if (ev.data.mhct_message === 'horn') {
             sound_horn();
             return;
         }
 
-        if ('tsitu_loader' === ev.data.jacks_message) {
+        if ('tsitu_loader' === ev.data.mhct_message) {
             window.tsitu_loader_offset = ev.data.tsitu_loader_offset;
             openBookmarklet(ev.data.file_link);
             return;
         }
 
-        if (ev.data.jacks_message === 'show_horn_alert') {
+        if (ev.data.mhct_message === 'show_horn_alert') {
             const sound_the_horn = confirm("Horn is Ready! Sound it?");
             if (sound_the_horn) {
                 sound_horn();
@@ -57,7 +57,7 @@
         }
 
         // Crown submission results in either the boolean `false`, or the total submitted crowns.
-        if (ev.data.jacks_message === 'crownSubmissionStatus') {
+        if (ev.data.mhct_message === 'crownSubmissionStatus') {
             const counts = ev.data.submitted;
             if (counts) {
                 displayFlashMessage(ev.data.settings, "success",
@@ -166,7 +166,7 @@
             return;
         }
         const mhhh_flash_message_div = $('#mhhh_flash_message_div');
-        mhhh_flash_message_div.text("Jack's MH Helper: " + message);
+        mhhh_flash_message_div.text("MHCT Helper: " + message);
 
         mhhh_flash_message_div.css('left', 'calc(50% - ' + (mhhh_flash_message_div.width() / 2) + 'px)');
 
@@ -258,7 +258,7 @@
     // Get settings
     function getSettings(callback) {
         window.addEventListener("message", function listenSettings(event) {
-            if (event.data.jacks_settings_response !== 1) {
+            if (event.data.mhct_settings_response !== 1) {
                 return;
             }
 
@@ -270,7 +270,7 @@
                 callback(event.data.settings);
             }
         }, false);
-        window.postMessage({jacks_settings_request: 1}, "*");
+        window.postMessage({mhct_settings_request: 1}, "*");
     }
 
     /**
@@ -317,7 +317,7 @@
         // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
         // submission by submitting from the content script.
         window.postMessage({
-            "jacks_crown_update": 1,
+            "mhct_crown_update": 1,
             "crowns": payload,
             "settings": settings
         }, window.origin);
@@ -558,7 +558,7 @@
                 // Handle a prize mouse attraction.
                 if (debug_logging) {
                     window.postMessage({
-                        "jacks_log_request": 1,
+                        "mhct_log_request": 1,
                         "prize mouse journal": markup
                     }, window.origin);
                 }
@@ -1415,7 +1415,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addValourRiftStage(message, user, user_post, hunt) {
-        const attrs = user.environment_atts;
+        const attrs = user.environment_atts || user.enviroment_atts;
         switch (attrs.state) {
             case "tower":
                 let floor = attrs.floor;
@@ -1443,7 +1443,7 @@
                 message.stage = "Outside";
                 break;
             default:
-                if (debug_logging) {window.console.log({message: "Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts});}
+                if (debug_logging) {window.console.log({message: "Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts || user_post.enviroment_atts});}
                 message.location = null;
                 break;
         }
@@ -1481,6 +1481,7 @@
         // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
         [
             addEggHuntDetails,
+            addHalloweenHuntDetails,
             addLNYHuntDetails,
             addLuckyCatchHuntDetails
         ].forEach(details_func => details_func(message, user, user_post, hunt));
@@ -1502,6 +1503,24 @@
                 egg_charge_pre: parseInt(quest.charge_quantity, 10),
                 egg_charge_post: parseInt(post_quest.charge_quantity, 10),
                 can_double_eggs: (quest.charge_doubler === "active"),
+            });
+        }
+    }
+
+    /**
+     * Record the Cannon state and whether the hunt was taken in a stockpile location.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addHalloweenHuntDetails(message, user, user_post, hunt) {
+        const quest = getActiveHalloweenQuest(user.quests);
+        if (quest) {
+            message.hunt_details = Object.assign(message.hunt_details || {}, {
+                is_halloween_hunt: true,
+                is_firing_cannon: !!(quest.is_cannon_enabled || quest.is_long_range_cannon_enabled),
+                is_in_stockpile: !!quest.has_stockpile
             });
         }
     }
@@ -1798,7 +1817,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addValourRiftHuntDetails(message, user, user_post, hunt) {
-        const attrs = user.environment_atts;
+        const attrs = user.environment_atts || user.enviroment_atts;
         // active_augmentations is undefined outside of the tower
         if (attrs.stage === "tower") {
             message.hunt_details = {
@@ -1903,6 +1922,19 @@
         version = version[0] + pad(version[1], 2) + pad(version[2], 2);
         version = Number(version);
         return version;
+    }
+
+    /**
+     * Return the active Halloween quest object, if possible.
+     * @param {Object <string, Object <string, any>>} allQuests the `user.quests` object containing all of the user's quests
+     * @returns {Object <string, any> | null} The quest if it exists, else `null`
+     */
+    function getActiveHalloweenQuest(allQuests) {
+        const quest_names = Object.keys(allQuests)
+            .filter(name => name.includes("QuestHalloween"));
+        return (quest_names.length
+            ? allQuests[quest_names[0]]
+            : null);
     }
 
     /**

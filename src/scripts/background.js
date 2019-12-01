@@ -71,7 +71,7 @@ function icon_timer_updateBadge(tab_id, settings) {
     }
 
     // Query the MH page and update the badge based on the response.
-    const request = {jacks_link: "huntTimer"};
+    const request = {mhct_link: "huntTimer"};
     chrome.tabs.sendMessage(tab_id, request, response => {
         if (chrome.runtime.lastError || !response) {
             const logInfo = {tab_id, request, response, time: new Date(),
@@ -97,18 +97,18 @@ function icon_timer_updateBadge(tab_id, settings) {
                 }
                 if (settings.horn_alert) {
                     chrome.notifications.create(
-                        "Jacks MH Horn",
+                        "MHCT Horn",
                         {
                             type: "basic",
                             iconUrl: "images/icon128.png",
-                            title: "Jack's MH Tools",
+                            title: "MHCT Tools",
                             message: "MouseHunt Horn is ready!!! Good luck!",
                         }
                     );
                 }
                 if (settings.horn_webalert) {
                     chrome.tabs.update(tab_id, {'active': true});
-                    chrome.tabs.sendMessage(tab_id, {jacks_link: "show_horn_alert"});
+                    chrome.tabs.sendMessage(tab_id, {mhct_link: "show_horn_alert"});
                 }
             }
             notification_done = true;
@@ -163,7 +163,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.log({msg, msg_sender: sender});
     }
 
-    if (msg.jacks_crown_update === 1) {
+    if (msg.mhct_crown_update === 1) {
         submitCrowns(msg.crowns).then(sendResponse);
         // Keep the response port open since we're responding asynchronously.
         return true;
@@ -174,7 +174,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 /**
  * Promise to submit the given crowns for external storage (e.g. for MHCC or others)
  * @param {Object <string, any>} crowns Crown counts for the given user
- * @returns {Promise <number>|Promise <boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
+ * @returns {Promise <number | boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
  */
 function submitCrowns(crowns) {
     if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond) === 0) {
