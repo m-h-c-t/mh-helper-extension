@@ -838,7 +838,7 @@
             return;
         }
 
-        if (quest.comet.at_boss === true) {
+        if (quest.comet.current_phase === 11) {
             message.stage = "Boss";
         } else {
             let theme = quest.decorations.current_decoration || "none";
