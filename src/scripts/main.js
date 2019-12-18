@@ -833,7 +833,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addFestiveCometStage(message, user, user_post, hunt) {
-        const quest = user.quests.QuestWinterHunt2018;
+        const quest = user.quests.QuestWinterHunt2019;
         if (!quest) {
             return;
         }
