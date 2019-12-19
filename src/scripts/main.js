@@ -845,12 +845,8 @@
             if (theme == "none") {
                 theme = "No Decor";
             } else {
-                // Capitalize every useful word in the decoration string.
-                theme = theme.replace(/_festive_decoration_stat_item/i, '')
-                    .replace(/_/i, ' ')
-                    .split(" ")
-                    .map(word => word[0].toUpperCase() + word.substr(1))
-                    .join(" ");
+                theme = theme.replace(/festive_([a-z]+)_shorts_stat_item/i, "$1");
+                theme = theme.charAt(0).toUpperCase() + theme.slice(1);
             }
             message.stage = theme;
         }
