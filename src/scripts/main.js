@@ -833,24 +833,20 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addFestiveCometStage(message, user, user_post, hunt) {
-        const quest = user.quests.QuestWinterHunt2018;
+        const quest = user.quests.QuestWinterHunt2019;
         if (!quest) {
             return;
         }
 
-        if (quest.comet.at_boss === true) {
+        if (quest.comet.current_phase === 11) {
             message.stage = "Boss";
         } else {
             let theme = quest.decorations.current_decoration || "none";
             if (theme == "none") {
                 theme = "No Decor";
             } else {
-                // Capitalize every useful word in the decoration string.
-                theme = theme.replace(/_festive_decoration_stat_item/i, '')
-                    .replace(/_/i, ' ')
-                    .split(" ")
-                    .map(word => word[0].toUpperCase() + word.substr(1))
-                    .join(" ");
+                theme = theme.replace(/festive_([a-z_]+)_shorts_stat_item/i, "$1").replace(/_/g, " ");
+                theme = theme.charAt(0).toUpperCase() + theme.slice(1);
             }
             message.stage = theme;
         }
