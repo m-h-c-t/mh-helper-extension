@@ -184,7 +184,7 @@ function submitCrowns(crowns) {
     return new Promise(resolve => {
         const payload = new FormData();
         payload.set("main", JSON.stringify(crowns));
-        fetch("https://script.google.com/macros/s/AKfycbxPI-eLyw-g6VG6s-3f_fbM6EZqOYp524TSAkGrKO23Ge2k38ir/exec", {
+        fetch("https://script.google.com/macros/s/AKfycbwgxsrjNCn0AJ2JXQKCYSv7ZRzRqmBHJVNT8AV5/exec", {
             mode: "cors",
             method: "POST",
             credentials: "omit",
