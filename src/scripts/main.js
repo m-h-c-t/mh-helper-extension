@@ -554,6 +554,48 @@
                 }
                 // TODO: Implement data submission
             }
+            else if (css_class.search(/desert_heater_base_trigger/) !== -1 && css_class.search(/fail/) === -1) {
+                // Handle a Desert Heater Base loot proc.
+                const data = markup.render_data.text;
+                if (data.length > 0) {
+                    const lootQty = parseInt(
+                        data.split("mouse dropped ")[1].split(" <a class")[0]
+                    );
+
+                    const lootName = data
+                        .split("mouse dropped ")[1]
+                        .split("</a> in an attempt")[0]
+                        .split('return false;">')[1];
+
+                    let lootId = 0;
+                    Object.keys(hunt_response.inventory).forEach(item => {
+                        const el = hunt_response.inventory[item];
+                        if (el.name === lootName) {
+                            lootId = el.item_id;
+                        }
+                    });
+
+                    if (lootQty > 0 && lootId > 0) {
+                        const record = {
+                            convertible: {
+                                id: 2952, // DHB's actual item ID
+                                name: "Desert Heater Base",
+                                quantity: 1
+                            },
+                            items: [{ id: lootId, name: lootName, quantity: lootQty }],
+                            extension_version: formatVersion(mhhh_version),
+                            asset_package_hash: Date.now(),
+                            user_id: hunt_response.user.user_id,
+                            entry_timestamp: Math.round(Date.now() / 1000)
+                        };
+
+                        if (debug_logging) { window.console.log(record); }
+
+                        // Send to database
+                        sendMessageToServer(convertible_intake_url, record);
+                    }
+                }
+            }
             else if (Object.keys(journal).length !== 0) {
                 // Only the first regular mouse attraction journal entry can be the active one.
             }
