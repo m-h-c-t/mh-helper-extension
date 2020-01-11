@@ -220,7 +220,7 @@
                     dataType: "json"
                 }).done(userRqResponse => {
                     // The user may have received a King's Reward.
-                    if (userRqResponse.success !== 1 || userRqResponse.puzzle === true) {
+                    if (userRqResponse.puzzle === true) {
                         // Avoid sending an additional request (which will also fail).
                         if (debug_logging) {
                             window.console.log("Unable to sound the horn, perhaps there is a King's Reward?");
