@@ -475,14 +475,31 @@
         if (!message.isNew || !message.messageData || !message.messageData.items || message.messageData.items.length === 0) {
             return;
         }
-        const items = message.messageData.items;
 
+        const items = message.messageData.items;
+        submitConvertible(convertible, items, response.user.user_id);
+    }
+
+    /**
+     * @typedef {Object} HgItem
+     * @property {number} item_id HitGrab's ID for this item
+     * @property {string} name HitGrab's display name for this item
+     * @property {number} quantity the number of this item received or opened
+     */
+
+    /**
+     * Helper function to submit opened items.
+     * @param {HgItem} convertible The item that was opened.
+     * @param {HgItem[]} items An array of items that were obtained by opening the convertible
+     * @param {string} userId the user associated with the submission
+     */
+    function submitConvertible(convertible, items, user_id) {
         const record = {
             convertible: getItem(convertible),
-            items: items.map(getItem.bind(null)),
+            items: items.map(getItem),
             extension_version: formatVersion(mhhh_version),
             asset_package_hash: Date.now(),
-            user_id: response.user.user_id,
+            user_id: user_id,
             entry_timestamp: Math.round(Date.now() / 1000)
         };
 
@@ -557,43 +574,47 @@
             else if (css_class.search(/desert_heater_base_trigger/) !== -1 && css_class.search(/fail/) === -1) {
                 // Handle a Desert Heater Base loot proc.
                 const data = markup.render_data.text;
-                if (data.length > 0) {
-                    const lootQty = parseInt(
-                        data.split("mouse dropped ")[1].split(" <a class")[0]
-                    );
+                const quantityRegex = /mouse dropped ([\d,]+) <a class/;
+                const nameRegex = />(.+?)<\/a>/g; // "g" flag used for stickiness
+                if (quantityRegex.test(data) && nameRegex.test(data)) {
+                    const quantityMatch = quantityRegex.exec(data);
+                    const strQuantity = quantityMatch[1].replace(/,/g, '').trim();
+                    const lootQty = parseInt(strQuantity, 10);
 
-                    const lootName = data
-                        .split("mouse dropped ")[1]
-                        .split("</a> in an attempt")[0]
-                        .split('return false;">')[1];
+                    // Update the loot name search to start where the loot quantity was found.
+                    nameRegex.lastIndex = quantityMatch.index;
+                    const lootName = nameRegex.exec(data)[1];
 
-                    let lootId = 0;
-                    Object.keys(hunt_response.inventory).forEach(item => {
-                        const el = hunt_response.inventory[item];
-                        if (el.name === lootName) {
-                            lootId = el.item_id;
-                        }
-                    });
+                    const loot = Object.values(hunt_response.inventory)
+                        .find(item => item.name === lootName);
 
-                    if (lootQty > 0 && lootId > 0) {
-                        const record = {
-                            convertible: {
-                                id: 2952, // DHB's actual item ID
-                                name: "Desert Heater Base",
-                                quantity: 1
-                            },
-                            items: [{ id: lootId, name: lootName, quantity: lootQty }],
-                            extension_version: formatVersion(mhhh_version),
-                            asset_package_hash: Date.now(),
-                            user_id: hunt_response.user.user_id,
-                            entry_timestamp: Math.round(Date.now() / 1000)
+                    if (!lootQty || !loot) {
+                        window.postMessage({
+                            "mhct_log_request": 1,
+                            "is_error": true,
+                            "desert heater journal": markup,
+                            "inventory": hunt_response.inventory,
+                            "reason": `Didn't find named loot "${lootName}" in inventory`
+                        }, window.origin);
+                    } else {
+                        const convertible = {
+                            id: 2952, // DHB's actual item ID
+                            name: "Desert Heater Base",
+                            quantity: 1
                         };
+                        const items = [{ id: loot.item_id, name: lootName, quantity: lootQty }];
+                        if (debug_logging) { window.console.log({ desert_heater_loot: items }); }
 
-                        if (debug_logging) { window.console.log(record); }
-
-                        // Send to database
-                        sendMessageToServer(convertible_intake_url, record);
+                        submitConvertible(convertible, items, hunt_response.user.user_id)
                     }
+                } else {
+                    window.postMessage({
+                        "mhct_log_request": 1,
+                        "is_error": true,
+                        "desert heater journal": markup,
+                        "inventory": hunt_response.inventory,
+                        "reason": "Didn't match quantity and loot name regex patterns"
+                    }, window.origin);
                 }
             }
             else if (Object.keys(journal).length !== 0) {
@@ -1931,7 +1952,7 @@
 
     function getItem(item) {
         return {
-            id: item.item_id,
+            id: item.item_id || item.id,
             name: item.name,
             // type: item.type,
             quantity: item.quantity
