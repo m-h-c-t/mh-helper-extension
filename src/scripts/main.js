@@ -738,8 +738,7 @@
         }
 
         const quest = getActiveLNYQuest(user.quests);
-        // TODO: check if the last costumed mouse is caught, not the specific one.
-        if (quest && quest.has_stockpile === "found" && !quest.mice.costumed_pig.includes("caught")) {
+        if (quest && quest.has_stockpile === "found" && !quest.mice.every(boss => boss.is_caught === true)) {
             // Ignore event cheese hunts as the player is attracting the Costumed mice in a specific order.
             const event_cheese = Object.keys(quest.items)
                 .filter(itemName => itemName.search(/lunar_new_year\w+cheese/) >= 0)
