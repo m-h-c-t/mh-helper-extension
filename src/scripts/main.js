@@ -485,14 +485,31 @@
         if (!message.isNew || !message.messageData || !message.messageData.items || message.messageData.items.length === 0) {
             return;
         }
-        const items = message.messageData.items;
 
+        const items = message.messageData.items;
+        submitConvertible(convertible, items, response.user.user_id);
+    }
+
+    /**
+     * @typedef {Object} HgItem
+     * @property {number} item_id HitGrab's ID for this item
+     * @property {string} name HitGrab's display name for this item
+     * @property {number} quantity the number of this item received or opened
+     */
+
+    /**
+     * Helper function to submit opened items.
+     * @param {HgItem} convertible The item that was opened.
+     * @param {HgItem[]} items An array of items that were obtained by opening the convertible
+     * @param {string} userId the user associated with the submission
+     */
+    function submitConvertible(convertible, items, user_id) {
         const record = {
             convertible: getItem(convertible),
-            items: items.map(getItem.bind(null)),
+            items: items.map(getItem),
             extension_version: formatVersion(mhhh_version),
             asset_package_hash: Date.now(),
-            user_id: response.user.user_id,
+            user_id: user_id,
             entry_timestamp: Math.round(Date.now() / 1000)
         };
 
@@ -563,6 +580,52 @@
                     }, window.origin);
                 }
                 // TODO: Implement data submission
+            }
+            else if (css_class.search(/desert_heater_base_trigger/) !== -1 && css_class.search(/fail/) === -1) {
+                // Handle a Desert Heater Base loot proc.
+                const data = markup.render_data.text;
+                const quantityRegex = /mouse dropped ([\d,]+) <a class/;
+                const nameRegex = />(.+?)<\/a>/g; // "g" flag used for stickiness
+                if (quantityRegex.test(data) && nameRegex.test(data)) {
+                    const quantityMatch = quantityRegex.exec(data);
+                    const strQuantity = quantityMatch[1].replace(/,/g, '').trim();
+                    const lootQty = parseInt(strQuantity, 10);
+
+                    // Update the loot name search to start where the loot quantity was found.
+                    nameRegex.lastIndex = quantityMatch.index;
+                    const lootName = nameRegex.exec(data)[1];
+
+                    const loot = Object.values(hunt_response.inventory)
+                        .find(item => item.name === lootName);
+
+                    if (!lootQty || !loot) {
+                        window.postMessage({
+                            "mhct_log_request": 1,
+                            "is_error": true,
+                            "desert heater journal": markup,
+                            "inventory": hunt_response.inventory,
+                            "reason": `Didn't find named loot "${lootName}" in inventory`
+                        }, window.origin);
+                    } else {
+                        const convertible = {
+                            id: 2952, // DHB's actual item ID
+                            name: "Desert Heater Base",
+                            quantity: 1
+                        };
+                        const items = [{ id: loot.item_id, name: lootName, quantity: lootQty }];
+                        if (debug_logging) { window.console.log({ desert_heater_loot: items }); }
+
+                        submitConvertible(convertible, items, hunt_response.user.user_id)
+                    }
+                } else {
+                    window.postMessage({
+                        "mhct_log_request": 1,
+                        "is_error": true,
+                        "desert heater journal": markup,
+                        "inventory": hunt_response.inventory,
+                        "reason": "Didn't match quantity and loot name regex patterns"
+                    }, window.origin);
+                }
             }
             else if (Object.keys(journal).length !== 0) {
                 // Only the first regular mouse attraction journal entry can be the active one.
@@ -685,8 +748,7 @@
         }
 
         const quest = getActiveLNYQuest(user.quests);
-        // TODO: check if the last costumed mouse is caught, not the specific one.
-        if (quest && quest.has_stockpile === "found" && !quest.mice.costumed_pig.includes("caught")) {
+        if (quest && quest.has_stockpile === "found" && !quest.mice.every(boss => boss.is_caught === true)) {
             // Ignore event cheese hunts as the player is attracting the Costumed mice in a specific order.
             const event_cheese = Object.keys(quest.items)
                 .filter(itemName => itemName.search(/lunar_new_year\w+cheese/) >= 0)
@@ -1899,7 +1961,7 @@
 
     function getItem(item) {
         return {
-            id: item.item_id,
+            id: item.item_id || item.id,
             name: item.name,
             // type: item.type,
             quantity: item.quantity
