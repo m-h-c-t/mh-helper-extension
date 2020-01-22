@@ -114,7 +114,7 @@
             uh: user.unique_hash,
             last_read_journal_entry_id: lastReadJournalEntryId
         };
-        $.post('https://www.mousehuntgame.com/managers/ajax/users/relichunter.php', payload, null, 'json')
+        $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap.php', payload, null, 'json')
             .done(data => {
                 if (data) {
                     if (!data.treasure_map || data.treasure_map.view_state === "noMap") {
@@ -134,15 +134,20 @@
 
     // Extract map mice from a map
     function getMapMice(data, uncaught_only) {
-        const mice = [];
-        $.each(data.treasure_map.groups, (key, group) => {
-            if (uncaught_only && !group.name.includes('Uncaught mice ')) {
-                return;
-            }
-
-            $.each(group.goals, (key, mouse) => mice.push(mouse.name));
+        const mice = {};
+        $.each(data.treasure_map.goals.mouse, (key, mouse) => {
+            mice[mouse.unique_id] = mouse.name;
         });
-        return mice;
+
+        if (!uncaught_only) {
+            $.each(data.treasure_map.hunters, (key, hunter) => {
+                $.each(hunter.completed_goal_ids.mouse, (key, mouse_id) => {
+                    delete mice[mouse_id];
+                });
+            });
+        }
+
+        return Object.values(mice);
     }
 
     /**
@@ -236,7 +241,7 @@
     $(document).ajaxSend(getUserBeforeHunting);
     $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
         const url = ajaxOptions.url;
-        if (url.includes("mousehuntgame.com/managers/ajax/users/relichunter.php")) {
+        if (url.includes("mousehuntgame.com/managers/ajax/users/treasuremap.php")) {
             recordMap(xhr);
         } else if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
             recordConvertible(xhr);
@@ -1634,7 +1639,7 @@
     }
 
     /**
-     * Track the poster type. Specific available mice require information from `relichunter.php`.
+     * Track the poster type. Specific available mice require information from `treasuremap.php`.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
