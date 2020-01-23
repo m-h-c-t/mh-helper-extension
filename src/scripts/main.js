@@ -139,7 +139,7 @@
             mice[mouse.unique_id] = mouse.name;
         });
 
-        if (!uncaught_only) {
+        if (uncaught_only) {
             $.each(data.treasure_map.hunters, (key, hunter) => {
                 $.each(hunter.completed_goal_ids.mouse, (key, mouse_id) => {
                     delete mice[mouse_id];
