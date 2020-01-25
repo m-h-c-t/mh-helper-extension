@@ -603,7 +603,7 @@
                         }, window.origin);
                     } else {
                         const convertible = {
-                            id: 2952, // DHB's actual item ID
+                            id: 2952, // Desert Heater Base's item ID
                             name: "Desert Heater Base",
                             quantity: 1
                         };
@@ -620,6 +620,37 @@
                         "inventory": hunt_response.inventory,
                         "reason": "Didn't match quantity and loot name regex patterns"
                     }, window.origin);
+                }
+            }
+            else if (css_class.search(/chesla_trap_trigger/) !== -1) {
+                // Handle a potential Gilded Charm proc.
+                const data = markup.render_data.text;
+                const gildedRegex = /my Gilded Charm/;
+                const quantityRegex = /([\d]+)/;
+                if (gildedRegex.test(data) && quantityRegex.test(data)) {
+                    const quantityMatch = quantityRegex.exec(data);
+                    const strQuantity = quantityMatch[1].replace(/,/g, '').trim();
+                    const lootQty = parseInt(strQuantity, 10);
+
+                    if (!lootQty) {
+                        window.postMessage({
+                            "mhct_log_request": 1,
+                            "is_error": true,
+                            "gilded charm journal": markup,
+                            "inventory": hunt_response.inventory,
+                            "reason": "Unable to parse Gilded Charm proc quantity"
+                        }, window.origin);
+                    } else {
+                        const convertible = {
+                            id: 2174, // Gilded Charm's item ID
+                            name: "Gilded Charm",
+                            quantity: 1
+                        };
+                        const items = [{ id: 114, name: "SUPER|brie+", quantity: lootQty }];
+                        if (debug_logging) { window.console.log({ gilded_charm: items }); }
+
+                        submitConvertible(convertible, items, hunt_response.user.user_id)
+                    }
                 }
             }
             else if (Object.keys(journal).length !== 0) {
