@@ -692,16 +692,16 @@
         message.entry_timestamp = journal.render_data.entry_timestamp;
 
         // Location
-        if (!user.location || !user_post.location) {
+        if (!user.environment_name || !user_post.environment_name) {
             window.console.error('MH Helper: Missing Location');
             return null;
         }
         message.location = {
-            name: user.location,
+            name: user.environment_name,
             id: user.environment_id
         };
         if (user_post.environment_id != user.environment_id) {
-            debug_logs.push(`User auto-traveled from ${user.location} to ${user_post.location}`);
+            debug_logs.push(`User auto-traveled from ${user.environment_name} to ${user_post.environment_name}`);
         }
 
         // Shield (true / false)
@@ -862,7 +862,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
      */
     function addStage(message, user, user_post, hunt) {
-        const stage_func = location_stage_lookup[user.location];
+        const stage_func = location_stage_lookup[user.environment_name];
         if (stage_func) {
             stage_func(message, user, user_post, hunt);
         }
@@ -1557,7 +1557,7 @@
      */
     function addHuntDetails(message, user, user_post, hunt) {
         // First add any location-specific details:
-        const details_func = location_huntdetails_lookup[user.location];
+        const details_func = location_huntdetails_lookup[user.environment_name];
         if (details_func) {
             details_func(message, user, user_post, hunt);
         }
