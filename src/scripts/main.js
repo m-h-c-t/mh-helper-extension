@@ -1456,7 +1456,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addSBFactoryStage(message, user, user_post, hunt) {
-        const factory = user.quests.QuestBirthday2019.factory_atts;
+        const factory = user.quests.QuestBirthday2020.factory_atts;
         if (message.mouse === "Vincent, The Magnificent" || factory.boss_warning) {
             message.stage = "Boss";
         } else {
