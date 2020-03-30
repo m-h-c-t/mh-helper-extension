@@ -1936,6 +1936,10 @@
 
             // Exceptions
             switch (loot_obj.name) {
+                case 'Tower Secret':
+                case 'Tower Secrets':
+                    loot_obj.name = 'Tower Secrets';
+                    break;
                 case 'Rift-torn Roots':
                 case 'Rift Cherries':
                 case 'Savoury Vegetables':
