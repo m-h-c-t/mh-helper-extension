@@ -831,6 +831,7 @@
         "Cursed City": addLostCityStage,
         "Festive Comet": addFestiveCometStage,
         "Fiery Warpath": addFieryWarpathStage,
+        "Floating Islands": addFloatingIslandsStage,
         "Forbidden Grove": addForbiddenGroveStage,
         "Fort Rox": addFortRoxStage,
         "Furoma Rift": addFuromaRiftStage,
@@ -1533,11 +1534,17 @@
         }
     }
 
+    function addFloatingIslandsStage(message, user, user_post, hunt) {
+        const envAttributes = user.environment_atts || user.enviroment_atts;
+        message.stage = envAttributes.hunting_site_atts.island_name
+    }
+
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
         "Claw Shot City": addClawShotCityHuntDetails,
         "Fiery Warpath": addFieryWarpathHuntDetails,
+        "Floating Islands": addFloatingIslandsHuntDetails,
         "Fort Rox": addFortRoxHuntDetails,
         "Harbour": addHarbourHuntDetails,
         "Sand Crypts": addSandCryptsHuntDetails,
@@ -1912,6 +1919,19 @@
                 // elixir_rain: !!attrs.active_augmentations.er,
             };
         }
+    }
+
+    function addFloatingIslandsHuntDetails(message, user, user_post, hunt) {
+        const envAttributes = user.environment_atts || user.enviroment_atts;
+        const huntingSiteAttributes = envAttributes.hunting_site_atts
+        const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, { [current.type]: current.quantity}), {})
+
+        message.hunt_details = Object.assign({
+            beforeWarden: huntingSiteAttributes.has_enemy && !huntingSiteAttributes.has_encountered_enemy,
+            atWarden: !!huntingSiteAttributes.is_enemy_encounter,
+            afterWarden: huntingSiteAttributes.has_enemy && !!huntingSiteAttributes.has_defeated_enemy,
+            enemy: huntingSiteAttributes.enemy ? huntingSiteAttributes.enemy.type : null,
+        }, lootItems);
     }
 
     /**
