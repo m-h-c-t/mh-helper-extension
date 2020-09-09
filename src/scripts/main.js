@@ -1926,6 +1926,10 @@
         const huntingSiteAttributes = envAttributes.hunting_site_atts
 
         message.hunt_details = {
+            beforeWarden: huntingSiteAttributes.has_enemy && !huntingSiteAttributes.has_encountered_enemy,
+            atWarden: huntingSiteAttributes.is_enemy_encounter,
+            afterWarden: huntingSiteAttributes.has_enemy && huntingSiteAttributes.has_defeated_enemy,
+            enemy: huntingSiteAttributes.enemy ? huntingSiteAttributes.enemy.type : null,
             islandModifiers: huntingSiteAttributes.activated_island_mod_types,
         }
     }
