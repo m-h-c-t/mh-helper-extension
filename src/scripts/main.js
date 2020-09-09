@@ -1924,14 +1924,14 @@
     function addFloatingIslandsHuntDetails(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
         const huntingSiteAttributes = envAttributes.hunting_site_atts
+        const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, { [current.type]: current.quantity}), {})
 
-        message.hunt_details = {
+        message.hunt_details = Object.assign({
             beforeWarden: huntingSiteAttributes.has_enemy && !huntingSiteAttributes.has_encountered_enemy,
-            atWarden: huntingSiteAttributes.is_enemy_encounter,
-            afterWarden: huntingSiteAttributes.has_enemy && huntingSiteAttributes.has_defeated_enemy,
+            atWarden: !!huntingSiteAttributes.is_enemy_encounter,
+            afterWarden: huntingSiteAttributes.has_enemy && !!huntingSiteAttributes.has_defeated_enemy,
             enemy: huntingSiteAttributes.enemy ? huntingSiteAttributes.enemy.type : null,
-            islandModifiers: huntingSiteAttributes.activated_island_mod_types,
-        }
+        }, lootItems);
     }
 
     /**
