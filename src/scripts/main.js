@@ -1962,7 +1962,7 @@
                 case 'Tower Secrets':
                     loot_obj.name = 'Tower Secrets';
                     break;
-                case 'Sky Glass':
+                case 'Sky Glas':
                     loot_obj.name = 'Sky Glass';
                     break;
                 case 'Rift-torn Roots':
