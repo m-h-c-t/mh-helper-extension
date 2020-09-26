@@ -2001,6 +2001,9 @@
                 case "Mild Spice Leave":
                     loot_obj.name = loot_obj.name.replace(/ Leaves?/, ' Leaf');
                     break;
+                case "Fragments of the Eclipse":
+                    loot_obj.name = 'Fragment of the Eclipse';
+                    break;
             }
 
             if (loot_obj.name.includes(' of Gold ')) {
