@@ -1958,22 +1958,12 @@
 
             // Exceptions
             switch (loot_obj.name) {
-                case 'Tower Secret':
-                case 'Tower Secrets':
-                    loot_obj.name = 'Tower Secrets';
-                    break;
                 case 'Sky Glas':
-                    loot_obj.name = 'Sky Glass';
+                case 'Ancient Hourglas':
+                    loot_obj.name = loot_obj.name + 's';
                     break;
-                case 'Rift-torn Roots':
-                case 'Rift Cherries':
-                case 'Savoury Vegetables':
-                case 'Sap-filled Thorns':
-                case 'Doobers':
-                case 'Crumbly Rift Salts':
-                case 'Brain Bits':
-                case 'Plumepearl Herbs':
-                    loot_obj.name = loot_obj.name.replace(/s$/i, '');
+                case 'Rift Cherrie':
+                    loot_obj.name = 'Rift Cherry';
                     break;
                 case 'Plates of Fealty':
                     loot_obj.name = 'Plate of Fealty';
@@ -1981,24 +1971,17 @@
                 case 'Cavern Fungi':
                     loot_obj.name = 'Cavern Fungus';
                     break;
-                case 'Ancient Hourglas':
-                    loot_obj.name = 'Ancient Hourglass';
-                    break;
-                case 'Shards of Glass':
                 case 'Shards of Glas':
                     loot_obj.name = 'Shard of Glass';
                     break;
                 case 'Bolts of Cloth':
                     loot_obj.name = 'Bolt of Cloth';
                     break;
-                case "Flamin' Spice Leaves":
-                case "Hot Spice Leaves":
-                case "Medium Spice Leaves":
-                case "Mild Spice Leaves":
                 case "Flamin' Spice Leave":
                 case "Hot Spice Leave":
                 case "Medium Spice Leave":
                 case "Mild Spice Leave":
+                case "Gold Leave":
                     loot_obj.name = loot_obj.name.replace(/ Leaves?/, ' Leaf');
                     break;
                 case "Fragments of the Eclipse":
@@ -2006,9 +1989,6 @@
                     break;
                 case "Cores of the Eclipse":
                     loot_obj.name = 'Core of the Eclipse';
-                    break;
-                case "Gold Leave":
-                    loot_obj.name = 'Gold Leaf';
                     break;
             }
 
