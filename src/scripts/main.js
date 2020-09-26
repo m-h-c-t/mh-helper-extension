@@ -2004,6 +2004,9 @@
                 case "Fragments of the Eclipse":
                     loot_obj.name = 'Fragment of the Eclipse';
                     break;
+                case "Cores of the Eclipse":
+                    loot_obj.name = 'Core of the Eclipse';
+                    break;
             }
 
             if (loot_obj.name.includes(' of Gold ')) {
