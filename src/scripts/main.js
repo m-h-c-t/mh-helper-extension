@@ -2007,6 +2007,9 @@
                 case "Cores of the Eclipse":
                     loot_obj.name = 'Core of the Eclipse';
                     break;
+                case "Gold Leave":
+                    loot_obj.name = 'Gold Leaf';
+                    break;
             }
 
             if (loot_obj.name.includes(' of Gold ')) {
