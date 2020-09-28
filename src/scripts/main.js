@@ -1945,14 +1945,12 @@
         if (!hunt_description.includes("following loot:")) { return; }
 
         hunt_description = hunt_description.substring(hunt_description.indexOf("following loot:") + 15);
-
-        let loot_array = hunt_description.split(/<\s*\/\s*a\s*>/g).filter(i => i);
-
+        const loot_array = hunt_description.split(/<\s*\/\s*a\s*>/g).filter(i => i);
         message.loot = loot_array.map(item_text => {
 
             let item_name = item_text.substring(item_text.indexOf("item_type=") + 10);
             item_name = item_name.substring(0, item_name.indexOf('"'));
-            const item_amount = parseInt(item_text.match(/(\d+)+/i)[0]);
+            const item_amount = parseInt(item_text.match(/\d+/));
 
             const loot_object = {
               amount:      item_amount,
