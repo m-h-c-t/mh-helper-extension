@@ -4,7 +4,7 @@
     "name": "MHCT  MouseHunt Helper",
     "short_name": "MHCT Helper",
     "description": "Provides useful links and tracks MouseHunt game data for tools like rate calculators. Worked on by Tsitu, Tehhowch, Jack and others",
-    "version": "20.9.27",
+    "version": "20.9.28",
     "icons": {
         "16": "images/icon16.png",
         "48": "images/icon48.png",
