@@ -444,7 +444,7 @@
             return;
         }
 
-        addLoot(message, hunt);
+        addLoot(message, hunt, response.inventory);
         if (debug_logging) {window.console.log({message, user_pre, user_post, hunt});}
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
@@ -1938,79 +1938,31 @@
      * Extract loot information from the hunt's journal entry.
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     * @param {Object <string, any>} inventory The inventory object in hg server response, has item info
      */
-    function addLoot(message, hunt) {
-        const desc = hunt.render_data.text;
-        if (!desc.includes("following loot:")) {
-            return;
-        }
-        const loot_text = desc.substring(desc.indexOf("following loot:") + 15);
-        const loot_array = loot_text.split(/,\s|\sand\s/g);
-        // let render_array = desc.split(/<a\s/);
+    function addLoot(message, hunt, inventory) {
+        let hunt_description = hunt.render_data.text;
+        if (!hunt_description.includes("following loot:")) { return; }
 
+        hunt_description = hunt_description.substring(hunt_description.indexOf("following loot:") + 15);
+        const loot_array = hunt_description.split(/<\s*\/\s*a\s*>/g).filter(i => i);
         message.loot = loot_array.map(item_text => {
-            const loot_obj = {
-                amount: item_text.match(/(\d+,?)+/i)[0].replace(/,/g, ''),
-                lucky: item_text.includes('class="lucky"')
+
+            let item_name = item_text.substring(item_text.indexOf("item_type=") + 10);
+            item_name = item_name.substring(0, item_name.indexOf('"'));
+            const item_amount = parseInt(item_text.match(/\d+/));
+
+            const loot_object = {
+              amount:      item_amount,
+              lucky:       item_text.includes('class="lucky"'),
+              id:          inventory[item_name].item_id,
+              name:        inventory[item_name].name,
+              plural_name: item_amount > 1 ? inventory[item_name].name : ''
             };
-            const name = item_text.replace(/^(.*?);">/, '').replace(/<\/a>/, '');
-            loot_obj.name = (loot_obj.amount > 1) ? name.replace(/s$/i, '') : name;
 
-            // Exceptions
-            switch (loot_obj.name) {
-                case 'Tower Secret':
-                case 'Tower Secrets':
-                    loot_obj.name = 'Tower Secrets';
-                    break;
-                case 'Sky Glass':
-                    loot_obj.name = 'Sky Glass';
-                    break;
-                case 'Rift-torn Roots':
-                case 'Rift Cherries':
-                case 'Savoury Vegetables':
-                case 'Sap-filled Thorns':
-                case 'Doobers':
-                case 'Crumbly Rift Salts':
-                case 'Brain Bits':
-                case 'Plumepearl Herbs':
-                    loot_obj.name = loot_obj.name.replace(/s$/i, '');
-                    break;
-                case 'Plates of Fealty':
-                    loot_obj.name = 'Plate of Fealty';
-                    break;
-                case 'Cavern Fungi':
-                    loot_obj.name = 'Cavern Fungus';
-                    break;
-                case 'Ancient Hourglas':
-                    loot_obj.name = 'Ancient Hourglass';
-                    break;
-                case 'Shards of Glass':
-                case 'Shards of Glas':
-                    loot_obj.name = 'Shard of Glass';
-                    break;
-                case 'Bolts of Cloth':
-                    loot_obj.name = 'Bolt of Cloth';
-                    break;
-                case "Flamin' Spice Leaves":
-                case "Hot Spice Leaves":
-                case "Medium Spice Leaves":
-                case "Mild Spice Leaves":
-                case "Flamin' Spice Leave":
-                case "Hot Spice Leave":
-                case "Medium Spice Leave":
-                case "Mild Spice Leave":
-                    loot_obj.name = loot_obj.name.replace(/ Leaves?/, ' Leaf');
-                    break;
-            }
+            if (debug_logging) { window.console.log({ message: "Loot object", loot_object }); }
 
-            if (loot_obj.name.includes(' of Gold ')) {
-                const loot_name = loot_obj.name;
-                const loot_amount = loot_name.substring(loot_name.indexOf('(') + 1, loot_name.indexOf(')'));
-                loot_obj.amount = loot_obj.amount * parseInt(loot_amount.replace(/,/g, ''), 10);
-                loot_obj.name = 'Gold';
-            }
-
-            return loot_obj;
+            return loot_object;
         });
     }
 
