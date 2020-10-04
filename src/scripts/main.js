@@ -3,10 +3,11 @@
 (function () {
     'use strict';
 
-    const base_domain_url = "https://mhhunthelper.agiletravels.com";
+    const base_domain_url = "https://www.agiletravels.com";
     const db_url = base_domain_url + "/intake.php";
     const map_intake_url = base_domain_url + "/map_intake.php";
     const convertible_intake_url = base_domain_url + "/convertible_intake.php";
+    const map_helper_url = "https://mhmaphelper.agiletravels.com";
 
     if (!window.jQuery) {
         console.log("MHHH: Can't find jQuery, exiting.");
@@ -99,7 +100,7 @@
         let url = '';
         let glue = '';
         if (solver === 'mhmh') {
-            url = 'https://mhmaphelper.agiletravels.com/mice/';
+            url = map_helper_url + '/mice/';
             glue = '+';
         } else if (solver === 'ryonn') {
             url = 'http://dbgames.info/mousehunt/tavern?q=';
