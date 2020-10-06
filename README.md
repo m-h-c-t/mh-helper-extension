@@ -26,4 +26,4 @@ Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devja
 </kbd>
 
 ### Credits
-Special thanks to all who have contributed with advice, bug reports, and/or code! A few honorable mentions: tehhowch, AardWolf, tsitu, Loaf, groupsky, Nick (HornTracker), and the Discord server mods.
+Special thanks to all who have contributed with advice, bug reports, and/or code! A few honorable mentions: tehhowch, AardWolf, tsitu, Loaf, groupsky, Nick (HornTracker), wOen, and the Discord server mods.
