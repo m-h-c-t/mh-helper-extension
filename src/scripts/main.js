@@ -7,7 +7,7 @@
     const db_url = base_domain_url + "/intake.php";
     const map_intake_url = base_domain_url + "/map_intake.php";
     const convertible_intake_url = base_domain_url + "/convertible_intake.php";
-    const map_helper_url = "https://mhmaphelper.agiletravels.com";
+    const map_helper_url = base_domain_url + "/maphelper.php";
 
     if (!window.jQuery) {
         console.log("MHHH: Can't find jQuery, exiting.");
@@ -99,12 +99,18 @@
     function openMapMiceSolver(solver) {
         let url = '';
         let glue = '';
+        let method = '';
+        let input_name ='';
         if (solver === 'mhmh') {
-            url = map_helper_url + '/mice/';
-            glue = '+';
+            url = map_helper_url;
+            glue = '\n';
+            method = 'POST';
+            input_name = 'mice';
         } else if (solver === 'ryonn') {
-            url = 'http://dbgames.info/mousehunt/tavern?q=';
+            url = 'http://dbgames.info/mousehunt/tavern';
             glue = ';';
+            method = 'GET';
+            input_name = 'q';
         } else {
             return;
         }
@@ -127,8 +133,9 @@
                         return;
                     }
                     const mice = getMapMice(data, true);
-                    const new_window = window.open('');
-                    new_window.location = encodeURI(url + mice.join(glue));
+                    $('<form method="' + method + '" action="' + url + '" target="_blank">' +
+                    '<input type="hidden" name="' + input_name + '" value="' + mice.join(glue) +
+                    '"></form>').appendTo('body').submit().remove();
                 }
             });
     }
