@@ -214,9 +214,10 @@
             hunt_xhr.send = (...huntArgs) => {
                 $.ajax({
                     method: "post",
-                    url: "/managers/ajax/users/marketplace.php",
+                    url: "/managers/ajax/pages/page.php",
                     data: {
                         sn: "Hitgrab",
+                        page_class: "Camp",
                         hg_is_ajax: 1,
                         last_read_journal_entry_id: lastReadJournalEntryId,
                         uh: user.unique_hash
