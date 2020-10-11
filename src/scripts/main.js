@@ -850,10 +850,12 @@
         "Lost City": addLostCityStage,
         "Mousoleum": addMousoleumStage,
         "Moussu Picchu": addMoussuPicchuStage,
+        "Muridae Market": addMuridaeMarketStage,
         "Queso Geyser": addQuesoGeyserStage,
         "SUPER|brie+ Factory": addSBFactoryStage,
         "Sand Dunes": addSandDunesStage,
         "Seasonal Garden": addSeasonalGardenStage,
+        "Slushy Shoreline": addSlushyShorelineStage,
         "Sunken City": addSunkenCityStage,
         "Toxic Spill": addToxicSpillStage,
         "Twisted Garden": addGardenStage,
@@ -1166,6 +1168,34 @@
         if (!message.stage) {
             if (debug_logging) {window.console.log({message: "Skipping unknown Iceberg stage", pre: quest, post: user_post.quests.QuestIceberg, hunt});}
             message.location = null;
+        }
+    }
+
+    /**
+     * Report the Softserve Charm status.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addSlushyShorelineStage(message, user, user_post, hunt) {
+        message.stage = "Not Softserve";
+        if (user.trinket_name === "Softserve Charm") {
+            message.stage = "Softserve";
+        }
+    }
+
+    /**
+     * Report the Artisan Charm status.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addMuridaeMarketStage(message, user, user_post, hunt) {
+        message.stage = "Not Artisan";
+        if (user.trinket_name === "Artisan Charm") {
+            message.stage = "Artisan";
         }
     }
 
@@ -1543,7 +1573,10 @@
 
     function addFloatingIslandsStage(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        message.stage = envAttributes.hunting_site_atts.island_name
+        message.stage = envAttributes.hunting_site_atts.island_name;
+        if (envAttributes.huntingSiteAttributes.is_enemy_encounter && !envAttributes.huntingSiteAttributes.is_high_tier_island) {
+            message.stage = "At Warden";
+        }
     }
 
     /** @type {Object <string, Function>} */
