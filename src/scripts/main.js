@@ -1574,7 +1574,7 @@
     function addFloatingIslandsStage(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
         message.stage = envAttributes.hunting_site_atts.island_name;
-        if (envAttributes.huntingSiteAttributes.is_enemy_encounter && !envAttributes.huntingSiteAttributes.is_high_tier_island) {
+        if (envAttributes.hunting_site_atts.is_enemy_encounter && !envAttributes.hunting_site_atts.is_high_tier_island) {
             message.stage = "At Warden";
         }
     }
