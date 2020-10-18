@@ -774,7 +774,7 @@
                     const match = journal.render_data.text.match(/Additionally, .* ([0-9,]+) .*(gold|bait|points)/);
                     if (match && match.length && match.length === 3) {
                         message.hunt_details = Object.assign(message.hunt_details, {
-                            "pillage_amount": parseInt(match[1]),
+                            "pillage_amount": parseInt(match[1].replace(/,/g,'')),
                             "pillage_type": match[2]
                         });
                     }
@@ -1976,12 +1976,7 @@
         const huntingSiteAttributes = envAttributes.hunting_site_atts
         const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, { [current.type]: current.quantity}), {})
 
-        message.hunt_details = Object.assign(message.hunt_details, {
-            beforeWarden: huntingSiteAttributes.has_enemy && !huntingSiteAttributes.has_encountered_enemy,
-            atWarden: !!huntingSiteAttributes.is_enemy_encounter,
-            afterWarden: huntingSiteAttributes.has_enemy && !!huntingSiteAttributes.has_defeated_enemy,
-            enemy: huntingSiteAttributes.enemy ? huntingSiteAttributes.enemy.type : null,
-        }, lootItems);
+        message.hunt_details = Object.assign(message.hunt_details, lootItems);
     }
 
     /**
