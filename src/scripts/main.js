@@ -682,7 +682,8 @@
      */
     function createMessageFromHunt(journal, user, user_post) {
         const message = {
-            extension_version: formatVersion(mhhh_version)
+            extension_version: formatVersion(mhhh_version),
+            hunt_details: {}
         };
         const debug_logs = [];
 
@@ -769,6 +770,15 @@
                 message.caught = 1;
             } else if (journal_css.includes('catchfailure')) {
                 message.caught = 0;
+                if (journal_css.includes('catchfailuredamage')) {
+                    const match = journal.render_data.text.match(/Additionally, .* ([0-9,]+) .*(gold|bait|points)/);
+                    if (match && match.length && match.length === 3) {
+                        message.hunt_details = Object.assign(message.hunt_details, {
+                            "pillage_amount": parseInt(match[1].replace(/,/g,'')),
+                            "pillage_type": match[2]
+                        });
+                    }
+                }
             } else {
                 window.console.error(`MHHH: Unknown "catch" journal css: ${journal_css}`);
                 return null;
@@ -1713,7 +1723,7 @@
             details.obelisk_charged = quest.obelisk_percent === 100;
             details.acolyte_sand_drained = details.obelisk_charged && quest.acolyte_sand === 0;
         }
-        message.hunt_details = details;
+        message.hunt_details = Object.assign(message.hunt_details, details);
     }
 
     /**
@@ -1726,10 +1736,10 @@
     function addClawShotCityHuntDetails(message, user, user_post, hunt) {
         const map = user.quests.QuestRelicHunter.maps.filter(m => m.name.endsWith("Wanted Poster"))[0];
         if (map && !map.is_complete) {
-            message.hunt_details = {
+            message.hunt_details = Object.assign(message.hunt_details, {
                 poster_type: map.name.replace(/Wanted Poster/i, "").trim(),
                 at_boss: (map.remaining === 1)
-            };
+            });
         }
     }
 
@@ -1803,7 +1813,7 @@
             throw new Error(`Unknown FW Wave "${attrs.wave}"`);
         }
 
-        message.hunt_details = fw;
+        message.hunt_details = Object.assign(message.hunt_details, fw);
     }
 
     /**
@@ -1835,7 +1845,7 @@
                 : parseInt(quest.fort.t.level, 10);
         details.can_autocatch_any = (tower_state >= 2);
 
-        message.hunt_details = details;
+        message.hunt_details = Object.assign(message.hunt_details, details);
     }
 
     /**
@@ -1853,7 +1863,7 @@
         quest.crew.forEach(mouse => {
             details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
         });
-        message.hunt_details = details;
+        message.hunt_details = Object.assign(details);
     }
 
     /**
@@ -1867,9 +1877,9 @@
         const quest = user.quests.QuestSandDunes;
         if (quest && !quest.is_normal && quest.minigame && quest.minigame.type === 'grubling') {
             if (["King Grub", "King Scarab"].includes(message.mouse)) {
-                message.hunt_details = {
+                message.hunt_details = Object.assign(message.hunt_details, {
                     salt: quest.minigame.salt_charms_used
-                };
+                });
             }
         }
     }
@@ -1892,7 +1902,7 @@
             const total_rage = rage.clearing + rage.tree + rage.lagoon;
             if (total_rage < 150 && total_rage >= 75) {
                 if (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24) {
-                    message.hunt_details = Object.assign(rage, {total_rage});
+                    message.hunt_details = Object.assign(message.hunt_details, rage, {total_rage});
                 }
             }
         }
@@ -1909,15 +1919,15 @@
     function addZokorHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestAncientCity;
         if (quest.boss.includes("hiddenDistrict")) {
-            message.hunt_details = {
+            message.hunt_details = Object.assign(message.hunt_details, {
                 minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
                 lair_catches: -(quest.countdown - 20),
                 minotaur_meter: parseFloat(quest.width)
-            };
+            });
         } else if (quest.district_tier === 3) {
-            message.hunt_details = {
+            message.hunt_details = Object.assign(message.hunt_details, {
                 boss_defeated: (quest.boss === "defeated"),
-            };
+            });
         }
     }
 
@@ -1937,7 +1947,7 @@
             mystic: parseInt(attrs.zzt_mage_progress, 10)
         };
         zt.cm_available = (zt.technic === 16 || zt.mystic === 16) && message.cheese.id === 371;
-        message.hunt_details = zt;
+        message.hunt_details = Object.assign(message.hunt_details, zt);
     }
 
     /**
@@ -1951,13 +1961,13 @@
         const attrs = user.environment_atts || user.enviroment_atts;
         // active_augmentations is undefined outside of the tower
         if (attrs.state === "tower") {
-            message.hunt_details = {
+            message.hunt_details = Object.assign(message.hunt_details, {
                 floor: attrs.floor, // exact floor number (can be used to derive prestige and floor_type)
                 // No compelling use case for the following 3 augments at the moment
                 // super_siphon: !!attrs.active_augmentations.ss, // active = true, inactive = false
                 // string_stepping: !!attrs.active_augmentations.sste,
                 // elixir_rain: !!attrs.active_augmentations.er,
-            };
+            });
         }
     }
 
@@ -1966,12 +1976,7 @@
         const huntingSiteAttributes = envAttributes.hunting_site_atts
         const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, { [current.type]: current.quantity}), {})
 
-        message.hunt_details = Object.assign({
-            beforeWarden: huntingSiteAttributes.has_enemy && !huntingSiteAttributes.has_encountered_enemy,
-            atWarden: !!huntingSiteAttributes.is_enemy_encounter,
-            afterWarden: huntingSiteAttributes.has_enemy && !!huntingSiteAttributes.has_defeated_enemy,
-            enemy: huntingSiteAttributes.enemy ? huntingSiteAttributes.enemy.type : null,
-        }, lootItems);
+        message.hunt_details = Object.assign(message.hunt_details, lootItems);
     }
 
     /**
