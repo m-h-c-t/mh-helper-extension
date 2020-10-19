@@ -1591,7 +1591,7 @@
         else if (user.bait_name === "Sky Pirate Swiss Cheese") {
             message.stage = pirates[user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "sky_pirates").length];
         }
-        else if (user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "sky_pirates").length === 2) {
+        else if (user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "loot_cache").length === 2) {
             message.stage += " - L2";
         }
     }
