@@ -1583,9 +1583,16 @@
 
     function addFloatingIslandsStage(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
+        const pirates = ["No Pirates", "Some Pirates", "All The Pirates"];
         message.stage = envAttributes.hunting_site_atts.island_name;
         if (envAttributes.hunting_site_atts.is_enemy_encounter && !envAttributes.hunting_site_atts.is_high_tier_island) {
             message.stage = "Warden";
+        }
+        else if (user.bait_name === "Sky Pirate Swiss Cheese") {
+            message.stage = pirates[user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "sky_pirates").length];
+        }
+        else if (user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "sky_pirates").length === 2) {
+            message.stage += " - L2";
         }
     }
 
