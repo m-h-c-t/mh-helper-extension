@@ -2003,21 +2003,23 @@
 
             let item_name = item_text.substring(item_text.indexOf("item_type=") + 10);
             item_name = item_name.substring(0, item_name.indexOf('"'));
-            const item_amount = parseInt(item_text.match(/[0-9,]+/)[0].replace(/,/g, ''));
+            const item_amount = parseInt(item_text.match(/\d+[0-9,]*/)[0].replace(/,/g, ''));
             const plural_name = $($.parseHTML(item_text)).filter("a").text();
 
-            const loot_object = {
-              amount:      item_amount,
-              lucky:       item_text.includes('class="lucky"'),
-              id:          inventory[item_name].item_id,
-              name:        inventory[item_name].name,
-              plural_name: item_amount > 1 ? plural_name : ''
-            };
+            if (item_name in inventory) {
+                const loot_object = {
+                amount:      item_amount,
+                lucky:       item_text.includes('class="lucky"'),
+                id:          inventory[item_name].item_id,
+                name:        inventory[item_name].name,
+                plural_name: item_amount > 1 ? plural_name : ''
+                };
 
-            if (debug_logging) { window.console.log({ message: "Loot object", loot_object }); }
+                if (debug_logging) { window.console.log({ message: "Loot object", loot_object }); }
 
-            return loot_object;
-        });
+                return loot_object;
+            }
+        }).filter(loot => loot);
     }
 
     function getItem(item) {
