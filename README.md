@@ -1,23 +1,22 @@
 # MouseHunt Helper Extension
 
 <a href="https://chrome.google.com/webstore/detail/mh-hunt-helper/ghfmjkamilolkalibpmokjigalmncfek" target="_blank"><img src="badge-chrome.png"></a>
-<a href="https://addons.mozilla.org/en-US/firefox/addon/jacks-mousehunt-helper" target="_blank"><img src="badge-firefox.png"></a>
-<a href="https://addons.opera.com/en/extensions/details/jacks-mousehunt-helper" target="_blank"><img src="badge-opera.png" width="206"></a>
+<a href="https://addons.mozilla.org/en-US/firefox/addon/mhct-mousehunt-helper/" target="_blank"><img src="badge-firefox.png"></a>
 
 ### Introduction
-This browser extension collects hunt info for [MouseHunt](https://www.mousehuntgame.com), a popular browser game from [HitGrab Inc.](http://www.hitgrab.com/) Collected data is inserted into a crowdsourced database that can be queried to gain insight about various game mechanics and interactions. This database provides the statistics for tools such as catch rate estimators, map solvers, convertible trackers, and more.
+This browser extension collects crowdsourced hunt info for [MouseHunt](https://www.mousehuntgame.com), a popular browser game from [HitGrab Inc.](http://www.hitgrab.com/) Collected data is inserted into a database that can be queried to gain insight about various game mechanics and interactions. It provides vital statistics for various community tools, such as catch rate estimators, map solvers, convertible trackers, spreadsheets, and more.
 
 ### Features
- - Collects data from hunts (e.g. trap setup, mouse, location), maps, crowns, and convertibles (e.g. treasure chests)
- - Only collects hunt data from **active** hunts and not passive friend hunts or trap checks
+ - Collects hunt data (e.g. trap setup, mouse, location), map contents, crowns, and convertibles (e.g. treasure chests)
+ - Only collects data from **active** hunts, not passive friend hunts or trap checks
  - Only collects game-related data (no names or personal information)
- - Does not change anything in-game to provide an unfair advantage
+ - Does not modify anything in-game to provide an unfair advantage
  - Comes bundled with tsitu's [Auto-Loader](https://github.com/tsitu/MH-Tools/blob/master/src/bookmarklet/bookmarkletloader.js) bookmarklet
 
 ### Developers
-All necessary files to run this extension are included in the `src/` folder. After making changes, you may load it into your browser as a temporary add-on for testing & debugging purposes. However, please change the version number in `src/manifest.json` to avoid getting banned.
+All necessary files to run this extension are included in the `src` folder. After making changes, you may load it into your browser as a temporary add-on for testing & debugging purposes. However, please change the version number in `src/manifest.json` to avoid getting banned.
 
-Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devjacksmith/mh_backups/).
+Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devjacksmith/mh_backups/). They are also preloaded into handy [Docker images](https://hub.docker.com/r/tsitu/mhct-db-docker) if time is a greater bottleneck for you than bandwidth.
 
 ### Screenshots
 <kbd align="center">
@@ -26,4 +25,4 @@ Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devja
 </kbd>
 
 ### Credits
-Special thanks to all who have contributed with advice, bug reports, and/or code! A few honorable mentions: tehhowch, AardWolf, tsitu, Loaf, groupsky, Nick (HornTracker), wOen, and the Discord server mods.
+Special thanks to all who have contributed with advice, bug reports, or code! A few honorable mentions: Jack (OG creator), tehhowch, AardWolf, tsitu, Loaf, groupsky, Nick (HornTracker), wOen, plasmoidia, Mistborn94, and the Discord server mods.
