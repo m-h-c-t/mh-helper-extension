@@ -252,8 +252,10 @@
             recordMap(xhr);
         } else if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
             recordConvertible(xhr);
-        } else if (url.includes("mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges")) {
-            getSettings(settings => recordCrowns(settings, xhr, url));
+        } else if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
+            if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
+                getSettings(settings => recordCrowns(settings, xhr, url));
+            }
         }
     });
 
@@ -286,10 +288,12 @@
         if (!settings.track_crowns) {
             return;
         }
+
         // Traditional snuids are digit-only, but new snuids are `hg_` plus a hash, e.g.
         //    hg_0ffb7add4e6e14d8e1147cb3f12fe84d
-        const url_params = url.match(/snuid=(\w+)/);
-        if (!url_params || !Object.keys(xhr.responseJSON.mouse_data).length) {
+        const url_params = url.match(/snuid%5D=(\w+)/);
+        const badgeGroups = xhr.responseJSON.page.tabs.kings_crowns.subtabs[0].mouse_crowns.badge_groups;   
+        if (!url_params || badgeGroups == undefined) {
             return;
         }
 
@@ -314,7 +318,13 @@
          *     ...
          * ]
          */
-        $.each(xhr.responseJSON.badges, (index, obj) => payload[obj.type] = obj.mice.length);
+        badgeGroups.forEach(group => {
+            const type = group.type;
+            if (payload[type] != undefined) {
+                payload[type] = group.count;
+            }
+        });
+        if (debug_logging) {window.console.log(payload);}
 
         // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
         // submission by submitting from the content script.
@@ -2092,18 +2102,37 @@
 
         // If this page is a profile page, query the crown counts (if the user tracks crowns).
         if (settings.track_crowns) {
-            const profile_RE = /profile.php\?snuid=(\w+)/g;
-            const profile_RE_matches = document.URL.match(profile_RE);
-            if (profile_RE_matches !== null && profile_RE_matches.length) {
-                const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
-                const crownUrl = `https://www.mousehuntgame.com/managers/ajax/users/profiletabs.php?action=badges&snuid=${profile_snuid}`;
-                $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
-                    .fail(err => {
-                        if (settings.debug_logging) {
-                            window.console.log({message: `Crown query failed for snuid=${profile_snuid}`, err});
-                        }
-                    });
+            function profileAutoScan() {
+                const profile_RE = /profile.php\?snuid=(\w+)$/g; // "$" at regex end = only auto-fetch when AJAX route changing onto a plain profile page
+                const profile_RE_matches = document.URL.match(profile_RE);
+                if (profile_RE_matches !== null && profile_RE_matches.length) {
+                    const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
+
+                    // Form data directly in URL to distinguish it from a profile "King's Crowns" tab click
+                    const crownUrl = `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=HunterProfile&page_arguments%5Btab%5D=kings_crowns&page_arguments%5Bsub_tab%5D=false&page_arguments%5Bsnuid%5D=${profile_snuid}&uh=${user.user_id}`;
+
+                    $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
+                        .fail(err => {
+                            if (settings.debug_logging) {
+                                window.console.log({message: `Crown query failed for snuid=${profile_snuid}`, err});
+                            }
+                        });
+                }
             }
+            
+            // Checks for route changes and then rescans for plain profiles
+            function URLDiffCheck() {
+                const cachedURL = localStorage.getItem("mhct-url-cache");
+                const currentURL = document.URL;
+                
+                if (!cachedURL || (cachedURL && cachedURL !== currentURL)) {
+                    localStorage.setItem("mhct-url-cache", currentURL);
+                    profileAutoScan();
+                }
+            }
+
+            URLDiffCheck(); // Initial call on page load
+            $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
         }
 
         window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
