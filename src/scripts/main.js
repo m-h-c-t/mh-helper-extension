@@ -2109,7 +2109,7 @@
                     const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
 
                     // Form data directly in URL to distinguish it from a profile "King's Crowns" tab click
-                    const crownUrl = `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=HunterProfile&page_arguments%5Btab%5D=kings_crowns&page_arguments%5Bsub_tab%5D=false&page_arguments%5Bsnuid%5D=${profile_snuid}&uh=${user.user_id}`;
+                    const crownUrl = `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=HunterProfile&page_arguments%5Btab%5D=kings_crowns&page_arguments%5Bsub_tab%5D=false&page_arguments%5Bsnuid%5D=${profile_snuid}&uh=${user.unique_hash}`;
 
                     $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
                         .fail(err => {
