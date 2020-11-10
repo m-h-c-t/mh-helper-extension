@@ -153,9 +153,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // Check the message for something to log in the background's console.
     if (msg.log) {
         let fn = console.log;
-        if (msg.is_error) {
+        if (msg.log.is_error) {
             fn = console.error;
-        } else if (msg.is_warning) {
+        } else if (msg.log.is_warning) {
             fn = console.warn;
         }
         fn({message: msg.log, sender});

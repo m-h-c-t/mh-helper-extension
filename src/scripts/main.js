@@ -285,15 +285,28 @@
      * @param {string} url The URL that invoked the function call.
      */
     function recordCrowns(settings, xhr, url) {
-        if (!settings.track_crowns) {
+        if (!settings || !settings.track_crowns) {
+            return;
+        // TODO: Replace with optional chaining, once full spec compliance is obtained.
+        } else if (!xhr.responseJSON || !xhr.responseJSON.page || !xhr.responseJSON.page.tabs
+            || !xhr.responseJSON.page.tabs.kings_crowns || !Array.isArray(xhr.responseJSON.page.tabs.kings_crowns.subtabs)
+            || !xhr.responseJSON.page.tabs.kings_crowns.subtabs[0] || !xhr.responseJSON.page.tabs.kings_crowns.subtabs[0].mouse_crowns
+        ) {
+            if (debug_logging) window.console.log('Skipped crown submission due to unhandled XHR structure');
+            window.postMessage({
+                "mhct_log_request": 1,
+                "is_error": true,
+                "crown_submit_xhr_response": xhr.responseJSON,
+                "reason": "Unable to determine King's Crowns"
+            }, window.origin);
             return;
         }
 
         // Traditional snuids are digit-only, but new snuids are `hg_` plus a hash, e.g.
         //    hg_0ffb7add4e6e14d8e1147cb3f12fe84d
         const url_params = url.match(/snuid%5D=(\w+)/);
-        const badgeGroups = xhr.responseJSON.page.tabs.kings_crowns.subtabs[0].mouse_crowns.badge_groups;   
-        if (!url_params || badgeGroups == undefined) {
+        const badgeGroups = xhr.responseJSON.page.tabs.kings_crowns.subtabs[0].mouse_crowns.badge_groups;
+        if (!url_params || !badgeGroups) {
             return;
         }
 
@@ -1601,7 +1614,7 @@
         else if (user.bait_name === "Sky Pirate Swiss Cheese") {
             message.stage = pirates[user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "sky_pirates").length];
         }
-        else if ((user.bait_name === "Cloud Cheesecake") && 
+        else if ((user.bait_name === "Cloud Cheesecake") &&
                  (user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "loot_cache").length === 2)) {
             message.stage += " - L2";
         }
@@ -2119,12 +2132,12 @@
                         });
                 }
             }
-            
+
             // Checks for route changes and then rescans for plain profiles
             function URLDiffCheck() {
                 const cachedURL = localStorage.getItem("mhct-url-cache");
                 const currentURL = document.URL;
-                
+
                 if (!cachedURL || (cachedURL && cachedURL !== currentURL)) {
                     localStorage.setItem("mhct-url-cache", currentURL);
                     profileAutoScan();
