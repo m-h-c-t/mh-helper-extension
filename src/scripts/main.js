@@ -756,10 +756,10 @@
 
         // Setup components
         const components = [
-            { prop: 'weapon', message_field: 'trap', required: true, replacer: /\ trap/i },
-            { prop: 'base', message_field: 'base', required: true, replacer: /\ base/i },
-            { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese/i },
-            { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm/i }
+            { prop: 'weapon', message_field: 'trap', required: true, replacer: /\ trap$/i },
+            { prop: 'base', message_field: 'base', required: true, replacer: /\ base$/i },
+            { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese$/i },
+            { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm$/i }
         ];
         // All pre-hunt users must have a weapon, base, and cheese.
         const missing = components.filter(component => component.required === true && !user.hasOwnProperty(`${component.prop}_name`));
