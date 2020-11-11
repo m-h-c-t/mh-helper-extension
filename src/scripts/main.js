@@ -706,7 +706,6 @@
     function createMessageFromHunt(journal, user, user_post) {
         const message = {
             extension_version: formatVersion(mhhh_version),
-            hunt_details: {}
         };
         const debug_logs = [];
 
@@ -793,15 +792,6 @@
                 message.caught = 1;
             } else if (journal_css.includes('catchfailure')) {
                 message.caught = 0;
-                if (journal_css.includes('catchfailuredamage')) {
-                    const match = journal.render_data.text.match(/Additionally, .* ([0-9,]+) .*(gold|bait|points)/);
-                    if (match && match.length && match.length === 3) {
-                        message.hunt_details = Object.assign(message.hunt_details, {
-                            "pillage_amount": parseInt(match[1].replace(/,/g,'')),
-                            "pillage_type": match[2]
-                        });
-                    }
-                }
             } else {
                 window.console.error(`MHHH: Unknown "catch" journal css: ${journal_css}`);
                 return null;
@@ -1650,12 +1640,13 @@
             details_func(message, user, user_post, hunt);
         }
 
-        // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
+        // Apply any global hunt details (such as from ongoing events, auras, etc).
         [
             addEggHuntDetails,
             addHalloweenHuntDetails,
             addLNYHuntDetails,
-            addLuckyCatchHuntDetails
+            addLuckyCatchHuntDetails,
+            addPillageHuntDetails,
         ].forEach(details_func => details_func(message, user, user_post, hunt));
     }
 
@@ -1732,6 +1723,26 @@
     }
 
     /**
+     * Track whether a FTC resulted in a pillage, and if so, the damage dealt.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addPillageHuntDetails(message, user, user_post, { render_data }) {
+        if (!message.caught && render_data.css_class.includes('catchfailuredamage')) {
+            const match = render_data.text.match(/Additionally, .+ ([\d,]+) .*(gold|bait|points)/);
+            if (!match || match.length !== 3)
+                return;
+
+            message.hunt_details = Object.assign(message.hunt_details || {}, {
+                "pillage_amount": parseInt(match[1].replace(/,/g,''), 10),
+                "pillage_type": match[2],
+            });
+        }
+    }
+
+    /**
      * Track additional state for the Bristle Woods Rift
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
@@ -1754,7 +1765,7 @@
             details.obelisk_charged = quest.obelisk_percent === 100;
             details.acolyte_sand_drained = details.obelisk_charged && quest.acolyte_sand === 0;
         }
-        message.hunt_details = Object.assign(message.hunt_details, details);
+        message.hunt_details = details;
     }
 
     /**
@@ -1767,10 +1778,10 @@
     function addClawShotCityHuntDetails(message, user, user_post, hunt) {
         const map = user.quests.QuestRelicHunter.maps.filter(m => m.name.endsWith("Wanted Poster"))[0];
         if (map && !map.is_complete) {
-            message.hunt_details = Object.assign(message.hunt_details, {
+            message.hunt_details = {
                 poster_type: map.name.replace(/Wanted Poster/i, "").trim(),
-                at_boss: (map.remaining === 1)
-            });
+                at_boss: (map.remaining === 1),
+            };
         }
     }
 
@@ -1844,7 +1855,7 @@
             throw new Error(`Unknown FW Wave "${attrs.wave}"`);
         }
 
-        message.hunt_details = Object.assign(message.hunt_details, fw);
+        message.hunt_details = fw;
     }
 
     /**
@@ -1876,7 +1887,7 @@
                 : parseInt(quest.fort.t.level, 10);
         details.can_autocatch_any = (tower_state >= 2);
 
-        message.hunt_details = Object.assign(message.hunt_details, details);
+        message.hunt_details = details;
     }
 
     /**
@@ -1894,7 +1905,7 @@
         quest.crew.forEach(mouse => {
             details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
         });
-        message.hunt_details = Object.assign(details);
+        message.hunt_details = details;
     }
 
     /**
@@ -1908,9 +1919,9 @@
         const quest = user.quests.QuestSandDunes;
         if (quest && !quest.is_normal && quest.minigame && quest.minigame.type === 'grubling') {
             if (["King Grub", "King Scarab"].includes(message.mouse)) {
-                message.hunt_details = Object.assign(message.hunt_details, {
-                    salt: quest.minigame.salt_charms_used
-                });
+                message.hunt_details = {
+                    salt: quest.minigame.salt_charms_used,
+                };
             }
         }
     }
@@ -1933,7 +1944,7 @@
             const total_rage = rage.clearing + rage.tree + rage.lagoon;
             if (total_rage < 150 && total_rage >= 75) {
                 if (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24) {
-                    message.hunt_details = Object.assign(message.hunt_details, rage, {total_rage});
+                    message.hunt_details = Object.assign(rage, {total_rage});
                 }
             }
         }
@@ -1950,15 +1961,15 @@
     function addZokorHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestAncientCity;
         if (quest.boss.includes("hiddenDistrict")) {
-            message.hunt_details = Object.assign(message.hunt_details, {
+            message.hunt_details = {
                 minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
                 lair_catches: -(quest.countdown - 20),
                 minotaur_meter: parseFloat(quest.width)
-            });
+            };
         } else if (quest.district_tier === 3) {
-            message.hunt_details = Object.assign(message.hunt_details, {
+            message.hunt_details = {
                 boss_defeated: (quest.boss === "defeated"),
-            });
+            };
         }
     }
 
@@ -1978,7 +1989,7 @@
             mystic: parseInt(attrs.zzt_mage_progress, 10)
         };
         zt.cm_available = (zt.technic === 16 || zt.mystic === 16) && message.cheese.id === 371;
-        message.hunt_details = Object.assign(message.hunt_details, zt);
+        message.hunt_details = zt;
     }
 
     /**
@@ -1992,22 +2003,24 @@
         const attrs = user.environment_atts || user.enviroment_atts;
         // active_augmentations is undefined outside of the tower
         if (attrs.state === "tower") {
-            message.hunt_details = Object.assign(message.hunt_details, {
+            message.hunt_details = {
                 floor: attrs.floor, // exact floor number (can be used to derive prestige and floor_type)
                 // No compelling use case for the following 3 augments at the moment
                 // super_siphon: !!attrs.active_augmentations.ss, // active = true, inactive = false
                 // string_stepping: !!attrs.active_augmentations.sste,
                 // elixir_rain: !!attrs.active_augmentations.er,
-            });
+            };
         }
     }
 
     function addFloatingIslandsHuntDetails(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        const huntingSiteAttributes = envAttributes.hunting_site_atts
-        const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, { [current.type]: current.quantity}), {})
+        const { island_loot } = envAttributes.hunting_site_atts
+        const lootItems = island_loot.reduce((prev, current) => Object.assign(prev, {
+            [current.type]: current.quantity},
+        ), {});
 
-        message.hunt_details = Object.assign(message.hunt_details, lootItems);
+        message.hunt_details = lootItems;
     }
 
     /**
