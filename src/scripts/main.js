@@ -333,7 +333,7 @@
          */
         badgeGroups.forEach(group => {
             const type = group.type;
-            if (payload[type] != undefined) {
+            if (payload.hasOwnProperty(type)) {
                 payload[type] = group.count;
             }
         });
