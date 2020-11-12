@@ -2026,22 +2026,24 @@
 
             let item_name = item_text.substring(item_text.indexOf("item_type=") + 10);
             item_name = item_name.substring(0, item_name.indexOf('"'));
-            const item_amount = parseInt(item_text.match(/\d+[0-9,]*/)[0].replace(/,/g, ''));
+            const item_amount = parseInt(item_text.match(/\d+[\d,]*/)[0].replace(/,/g, ''), 10);
             const plural_name = $($.parseHTML(item_text)).filter("a").text();
 
-            if (item_name in inventory) {
-                const loot_object = {
+            if (!inventory.hasOwnProperty(item_name)) {
+                if (debug_logging) window.console.log(`Looted "${item_name}", but it is not in user inventory`);
+                return null;
+            }
+            const loot_object = {
                 amount:      item_amount,
                 lucky:       item_text.includes('class="lucky"'),
                 id:          inventory[item_name].item_id,
                 name:        inventory[item_name].name,
-                plural_name: item_amount > 1 ? plural_name : ''
-                };
+                plural_name: item_amount > 1 ? plural_name : '',
+            };
 
-                if (debug_logging) { window.console.log({ message: "Loot object", loot_object }); }
+            if (debug_logging) { window.console.log({ message: "Loot object", loot_object }); }
 
-                return loot_object;
-            }
+            return loot_object;
         }).filter(loot => loot);
     }
 
