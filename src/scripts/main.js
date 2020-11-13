@@ -333,7 +333,7 @@
          */
         badgeGroups.forEach(group => {
             const type = group.type;
-            if (payload.hasOwnProperty(type)) {
+            if (Object.prototype.hasOwnProperty.call(payload, type)) {
                 payload[type] = group.count;
             }
         });
@@ -493,7 +493,7 @@
 
         let convertible;
         for (const key in response.items) {
-            if (!response.items.hasOwnProperty(key)) continue;
+            if (!Object.prototype.hasOwnProperty.call(response.items, key)) continue;
             if (convertible) {
                 window.console.log("MHHH: Multiple items are not supported (yet)");
                 return;
@@ -762,7 +762,9 @@
             { prop: 'trinket', message_field: 'charm', required: false, replacer: / charm$/i }
         ];
         // All pre-hunt users must have a weapon, base, and cheese.
-        const missing = components.filter(component => component.required === true && !user.hasOwnProperty(`${component.prop}_name`));
+        const missing = components.filter(component => component.required === true
+            && !Object.prototype.hasOwnProperty.call(user, `${component.prop}_name`)
+        );
         if (missing.length) {
             window.console.error(`MH Helper: Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
             return null;
@@ -2030,7 +2032,7 @@
             const item_amount = parseInt(item_text.match(/\d+[\d,]*/)[0].replace(/,/g, ''), 10);
             const plural_name = $($.parseHTML(item_text)).filter("a").text();
 
-            if (!inventory.hasOwnProperty(item_name)) {
+            if (!Object.prototype.hasOwnProperty.call(inventory, item_name)) {
                 if (debug_logging) window.console.log(`Looted "${item_name}", but it is not in user inventory`);
                 return null;
             }
