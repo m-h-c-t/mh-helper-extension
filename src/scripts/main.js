@@ -15,7 +15,7 @@
     }
     const mhhh_version = $("#mhhh_version").val();
 
-    var debug_logging = false;
+    let debug_logging = false;
 
     // Listening for calls
     window.addEventListener('message', ev => {
@@ -1577,7 +1577,7 @@
         const attrs = user.environment_atts || user.enviroment_atts;
         switch (attrs.state) {
             case "tower": {
-                let floor = attrs.floor;
+                const { floor } = attrs;
                 let stageName;
 
                 if (floor >= 1 && floor % 8 === 0) {

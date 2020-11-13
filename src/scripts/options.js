@@ -1,5 +1,5 @@
 // JS script available only within the embedded options.html page
-let mhhhOptions = [
+const mhhhOptions = [
     {name: 'success_messages', p: 'checked', default: true},
     {name: 'error_messages', p: 'checked', default: true},
     {name: 'debug_logging', p: 'checked', default: false},

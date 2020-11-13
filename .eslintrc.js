@@ -23,6 +23,8 @@ module.exports = {
             },
         ],
         semi: ['error', 'always'],
+        'no-var': ['warn'],
+        'prefer-const': ['error'],
         'no-unused-vars': [
             'error',
             { args: 'none' },
