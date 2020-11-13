@@ -25,6 +25,8 @@ module.exports = {
         semi: ['error', 'always'],
         'no-var': ['warn'],
         'prefer-const': ['error'],
+        'array-bracket-newline': ['error', 'consistent'],
+        'comma-dangle': ['error', 'always-multiline'],
         'no-unused-vars': [
             'error',
             { args: 'none' },

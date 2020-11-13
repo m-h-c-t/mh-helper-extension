@@ -13,7 +13,7 @@ const mhhhOptions = [
     {name: 'track_crowns', p: 'checked', default: true},
     {name: 'tsitu_loader_on', p: 'checked', default: false},
     {name: 'tsitu_loader_offset', p: 'value', default: 80},
-    {name: 'tsitu_loader_offset_output', p: 'value'}
+    {name: 'tsitu_loader_offset_output', p: 'value'},
 ];
 
 // Click "Save" -> store the extension's settings in chrome.storage.

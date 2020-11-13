@@ -119,7 +119,7 @@
             map_id: user.quests.QuestRelicHunter.default_map_id,
             action: "map_info",
             uh: user.unique_hash,
-            last_read_journal_entry_id: lastReadJournalEntryId
+            last_read_journal_entry_id: lastReadJournalEntryId,
         };
         $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap.php', payload, null, 'json')
             .done(data => {
@@ -227,9 +227,9 @@
                         page_class: "Camp",
                         hg_is_ajax: 1,
                         last_read_journal_entry_id: lastReadJournalEntryId,
-                        uh: user.unique_hash
+                        uh: user.unique_hash,
                     },
-                    dataType: "json"
+                    dataType: "json",
                 }).done(userRqResponse => {
                     if (debug_logging) {window.console.log({message: "Got user object, invoking huntSend", userRqResponse});}
                     hunt_xhr.addEventListener("loadend", () => {
@@ -297,7 +297,7 @@
                 "mhct_log_request": 1,
                 "is_error": true,
                 "crown_submit_xhr_response": xhr.responseJSON,
-                "reason": "Unable to determine King's Crowns"
+                "reason": "Unable to determine King's Crowns",
             }, window.origin);
             return;
         }
@@ -318,7 +318,7 @@
             silver: 0,
             gold: 0,
             platinum: 0,
-            diamond: 0
+            diamond: 0,
         };
 
         /** Rather than compute counts ourselves, use the `badge` display data.
@@ -344,7 +344,7 @@
         window.postMessage({
             "mhct_crown_update": 1,
             "crowns": payload,
-            "settings": settings
+            "settings": settings,
         }, window.origin);
     }
 
@@ -362,7 +362,7 @@
                 .replace(/common /i, '')
                 .replace(/Ardouous/i, 'Arduous'),
             user_id: resp.user.user_id,
-            entry_timestamp: Math.round(Date.now() / 1000)
+            entry_timestamp: Math.round(Date.now() / 1000),
         };
 
         map.extension_version = formatVersion(mhhh_version);
@@ -381,7 +381,7 @@
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const required_differences = [
             "num_active_turns",
-            "next_activeturn_seconds"
+            "next_activeturn_seconds",
         ];
         const user_post = response.user;
 
@@ -535,7 +535,7 @@
             extension_version: formatVersion(mhhh_version),
             asset_package_hash: Date.now(),
             user_id: user_id,
-            entry_timestamp: Math.round(Date.now() / 1000)
+            entry_timestamp: Math.round(Date.now() / 1000),
         };
 
         // Send to database
@@ -545,7 +545,7 @@
     function sendMessageToServer(url, final_message) {
         const basic_info = {
             user_id: final_message.user_id,
-            entry_timestamp: final_message.entry_timestamp
+            entry_timestamp: final_message.entry_timestamp,
         };
 
         // Get UUID
@@ -587,7 +587,7 @@
                     extension_version: formatVersion(mhhh_version),
                     user_id: hunt_response.user.user_id,
                     rh_environment: markup.render_data.environment,
-                    entry_timestamp: markup.render_data.entry_timestamp
+                    entry_timestamp: markup.render_data.entry_timestamp,
                 };
                 // If this occurred after the daily reset, submit it. (Trap checks & friend hunts
                 // may appear and have been back-calculated as occurring before reset).
@@ -601,7 +601,7 @@
                 if (debug_logging) {
                     window.postMessage({
                         "mhct_log_request": 1,
-                        "prize mouse journal": markup
+                        "prize mouse journal": markup,
                     }, window.origin);
                 }
                 // TODO: Implement data submission
@@ -629,13 +629,13 @@
                             "is_error": true,
                             "desert heater journal": markup,
                             "inventory": hunt_response.inventory,
-                            "reason": `Didn't find named loot "${lootName}" in inventory`
+                            "reason": `Didn't find named loot "${lootName}" in inventory`,
                         }, window.origin);
                     } else {
                         const convertible = {
                             id: 2952, // Desert Heater Base's item ID
                             name: "Desert Heater Base",
-                            quantity: 1
+                            quantity: 1,
                         };
                         const items = [{ id: loot.item_id, name: lootName, quantity: lootQty }];
                         if (debug_logging) { window.console.log({ desert_heater_loot: items }); }
@@ -648,7 +648,7 @@
                         "is_error": true,
                         "desert heater journal": markup,
                         "inventory": hunt_response.inventory,
-                        "reason": "Didn't match quantity and loot name regex patterns"
+                        "reason": "Didn't match quantity and loot name regex patterns",
                     }, window.origin);
                 }
             }
@@ -668,13 +668,13 @@
                             "is_error": true,
                             "gilded charm journal": markup,
                             "inventory": hunt_response.inventory,
-                            "reason": "Unable to parse Gilded Charm proc quantity"
+                            "reason": "Unable to parse Gilded Charm proc quantity",
                         }, window.origin);
                     } else {
                         const convertible = {
                             id: 2174, // Gilded Charm's item ID
                             name: "Gilded Charm",
-                            quantity: 1
+                            quantity: 1,
                         };
                         const items = [{ id: 114, name: "SUPER|brie+", quantity: lootQty }];
                         if (debug_logging) { window.console.log({ gilded_charm: items }); }
@@ -706,7 +706,7 @@
     function createMessageFromHunt(journal, user, user_post) {
         const message = {
             extension_version: formatVersion(mhhh_version),
-            hunt_details: {}
+            hunt_details: {},
         };
         const debug_logs = [];
 
@@ -729,7 +729,7 @@
         }
         message.location = {
             name: user.environment_name,
-            id: user.environment_id
+            id: user.environment_id,
         };
         if (user_post.environment_id != user.environment_id) {
             debug_logs.push(`User auto-traveled from ${user.environment_name} to ${user_post.environment_name}`);
@@ -759,7 +759,7 @@
             { prop: 'weapon', message_field: 'trap', required: true, replacer: / trap$/i },
             { prop: 'base', message_field: 'base', required: true, replacer: / base$/i },
             { prop: 'bait', message_field: 'cheese', required: true, replacer: / cheese$/i },
-            { prop: 'trinket', message_field: 'charm', required: false, replacer: / charm$/i }
+            { prop: 'trinket', message_field: 'charm', required: false, replacer: / charm$/i },
         ];
         // All pre-hunt users must have a weapon, base, and cheese.
         const missing = components.filter(component => component.required === true
@@ -776,7 +776,7 @@
             const item_name = user[prop_name];
             message[component.message_field] = (!item_name) ? {} : {
                 id: user[prop_id],
-                name: item_name.replace(component.replacer, '')
+                name: item_name.replace(component.replacer, ''),
             };
 
             if (item_name !== user_post[prop_name]) {
@@ -800,7 +800,7 @@
                     if (match && match.length && match.length === 3) {
                         message.hunt_details = Object.assign(message.hunt_details, {
                             "pillage_amount": parseInt(match[1].replace(/,/g,'')),
-                            "pillage_type": match[2]
+                            "pillage_type": match[2],
                         });
                     }
                 }
@@ -850,7 +850,7 @@
                 "false": {id: 41, name: "Cursed City"}},
             42: {"quest": "QuestSandDunes",
                 "true": {id: 5001, name: "Sand Dunes"},
-                "false": {id: 42, name: "Sand Crypts"}}
+                "false": {id: 42, name: "Sand Crypts"}},
         };
         const env = env_to_location[message.location.id];
         if (env) {
@@ -1008,7 +1008,7 @@
         const elements = user.quests.QuestMoussuPicchu.elements;
         message.stage = {
             rain: `Rain ${elements.rain.level}`,
-            wind: `Wind ${elements.wind.level}`
+            wind: `Wind ${elements.wind.level}`,
         };
     }
 
@@ -1199,7 +1199,7 @@
             "Icewing's Lair":       "1800ft",
             "Hidden Depths":   "1801-2000ft",
             "The Deep Lair":        "2000ft",
-            "General":            "Generals"
+            "General":            "Generals",
         })[quest.current_phase]);
 
         if (!message.stage) {
@@ -1289,7 +1289,7 @@
                 "Vault":      "Treasure 50+",
                 "Library":    "Scholar 80+",
                 "Manaforge":  "Tech 80+",
-                "Sanctum":    "Fealty 80+"
+                "Sanctum":    "Fealty 80+",
             };
             for (const [key, value] of Object.entries(zokor_stages)) {
                 const pattern = new RegExp(key, "i");
@@ -1328,7 +1328,7 @@
                 "charge_level_seven": "Battery 7",
                 "charge_level_eight": "Battery 8",
                 "charge_level_nine":  "Battery 9",
-                "charge_level_ten":   "Battery 10"
+                "charge_level_ten":   "Battery 10",
             })[quest.droid.charge_level]);
         }
 
@@ -1356,7 +1356,7 @@
             count_countess:       'Count/Countess',
             duke_dutchess:        'Duke/Duchess',
             grand_duke:           'Grand Duke/Duchess',
-            archduke_archduchess: 'Archduke/Archduchess'
+            archduke_archduchess: 'Archduke/Archduchess',
         };
         for (const [title, level] of Object.entries(titles)) {
             if (level.active) {
@@ -1385,7 +1385,7 @@
             "tier_0": "Mist 0",
             "tier_1": "Mist 1-5",
             "tier_2": "Mist 6-18",
-            "tier_3": "Mist 19-20"
+            "tier_3": "Mist 19-20",
         })[quest.mist_tier]);
         if (!message.stage) {
             if (debug_logging) {window.console.log({message: "Skipping unknown Burroughs Rift mist state", user, user_post, hunt});}
@@ -1437,7 +1437,7 @@
                         const has_correct_charm = (({
                             "door": 1210,
                             "rails": 1211,
-                            "roof": 1212
+                            "roof": 1212,
                         })[area] === charm_id);
                         if (has_correct_charm) {
                             stage += " - Defending Target";
@@ -1476,7 +1476,7 @@
                 "stage_two":   "Midnight",
                 "stage_three": "Pitch",
                 "stage_four":  "Utter Darkness",
-                "stage_five":  "First Light"
+                "stage_five":  "First Light",
             })[quest.current_stage]);
         }
 
@@ -1539,7 +1539,7 @@
                 "pumping_room":           "Pump Room",
                 "mixing_room":            "Mixing Room",
                 "break_room":             "Break Room",
-                "quality_assurance_room": "QA Room"
+                "quality_assurance_room": "QA Room",
             })[factory.current_room]);
             if (!message.stage) {
                 message.stage = "No Room";
@@ -1637,7 +1637,7 @@
         "Valour Rift": addValourRiftHuntDetails,
         "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
         "Zokor": addZokorHuntDetails,
-        "Zugzwang's Tower": addZugzwangsTowerHuntDetails
+        "Zugzwang's Tower": addZugzwangsTowerHuntDetails,
     };
 
     /**
@@ -1660,7 +1660,7 @@
             addEggHuntDetails,
             addHalloweenHuntDetails,
             addLNYHuntDetails,
-            addLuckyCatchHuntDetails
+            addLuckyCatchHuntDetails,
         ].forEach(details_func => details_func(message, user, user_post, hunt));
     }
 
@@ -1697,7 +1697,7 @@
             message.hunt_details = Object.assign(message.hunt_details || {}, {
                 is_halloween_hunt: true,
                 is_firing_cannon: !!(quest.is_cannon_enabled || quest.is_long_range_cannon_enabled),
-                is_in_stockpile: !!quest.has_stockpile
+                is_in_stockpile: !!quest.has_stockpile,
             });
         }
     }
@@ -1716,7 +1716,7 @@
                 is_lny_hunt: true,
                 lny_luck: (quest.lantern_status.includes("noLantern") || !quest.is_lantern_active)
                     ? 0
-                    : Math.min(50, Math.floor(parseInt(quest.lantern_height, 10) / 10))
+                    : Math.min(50, Math.floor(parseInt(quest.lantern_height, 10) / 10)),
             });
         }
     }
@@ -1731,7 +1731,7 @@
     function addLuckyCatchHuntDetails(message, user, user_post, hunt) {
         if (message.caught) {
             message.hunt_details = Object.assign(message.hunt_details || {}, {
-                is_lucky_catch: hunt.render_data.css_class.includes("luckycatchsuccess")
+                is_lucky_catch: hunt.render_data.css_class.includes("luckycatchsuccess"),
             });
         }
     }
@@ -1748,7 +1748,7 @@
         const details = {
             has_hourglass: quest.items.rift_hourglass_stat_item.quantity >= 1,
             chamber_status: quest.chamber_status,
-            cleaver_status: quest.cleaver_status
+            cleaver_status: quest.cleaver_status,
         };
         // Buffs & debuffs are 'active', 'removed', or ""
         for (const [key, value] of Object.entries(quest.status_effects)) {
@@ -1774,7 +1774,7 @@
         if (map && !map.is_complete) {
             message.hunt_details = Object.assign(message.hunt_details, {
                 poster_type: map.name.replace(/Wanted Poster/i, "").trim(),
-                at_boss: (map.remaining === 1)
+                at_boss: (map.remaining === 1),
             });
         }
     }
@@ -1818,7 +1818,7 @@
                 "desert_mage_strong",
                 "desert_cavalry",
                 "desert_cavalry_strong",
-                "desert_artillery"
+                "desert_artillery",
             ].filter(name => name in attrs.mice).forEach(mouse => {
                 const q = parseInt(attrs.mice[mouse].quantity, 10);
                 fw[`num_${asType(mouse)}`] = q;
@@ -1916,7 +1916,7 @@
         if (quest && !quest.is_normal && quest.minigame && quest.minigame.type === 'grubling') {
             if (["King Grub", "King Scarab"].includes(message.mouse)) {
                 message.hunt_details = Object.assign(message.hunt_details, {
-                    salt: quest.minigame.salt_charms_used
+                    salt: quest.minigame.salt_charms_used,
                 });
             }
         }
@@ -1935,7 +1935,7 @@
             const rage = {
                 clearing: parseInt(zones.clearing.level, 10),
                 tree: parseInt(zones.tree.level, 10),
-                lagoon: parseInt(zones.lagoon.level, 10)
+                lagoon: parseInt(zones.lagoon.level, 10),
             };
             const total_rage = rage.clearing + rage.tree + rage.lagoon;
             if (total_rage < 150 && total_rage >= 75) {
@@ -1960,7 +1960,7 @@
             message.hunt_details = Object.assign(message.hunt_details, {
                 minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
                 lair_catches: -(quest.countdown - 20),
-                minotaur_meter: parseFloat(quest.width)
+                minotaur_meter: parseFloat(quest.width),
             });
         } else if (quest.district_tier === 3) {
             message.hunt_details = Object.assign(message.hunt_details, {
@@ -1982,7 +1982,7 @@
         const zt = {
             amplifier: parseInt(attrs.zzt_amplifier, 10),
             technic: parseInt(attrs.zzt_tech_progress, 10),
-            mystic: parseInt(attrs.zzt_mage_progress, 10)
+            mystic: parseInt(attrs.zzt_mage_progress, 10),
         };
         zt.cm_available = (zt.technic === 16 || zt.mystic === 16) && message.cheese.id === 371;
         message.hunt_details = Object.assign(message.hunt_details, zt);
@@ -2059,7 +2059,7 @@
             id: item.item_id || item.id,
             name: item.name,
             // type: item.type,
-            quantity: item.quantity
+            quantity: item.quantity,
             // class: item.class || item.classification
         };
     }

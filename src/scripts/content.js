@@ -32,14 +32,14 @@ s.onload = () => {
     // Display Tsitu's Loader
     chrome.storage.sync.get({
         tsitu_loader_on: false,
-        tsitu_loader_offset: 80
+        tsitu_loader_offset: 80,
     }, items => {
         if (items.tsitu_loader_on) {
             // There must be a better way of doing this
             window.postMessage({
                 "mhct_message": 'tsitu_loader',
                 "tsitu_loader_offset": items.tsitu_loader_offset,
-                "file_link": chrome.runtime.getURL('third_party/tsitu_auto_loader')
+                "file_link": chrome.runtime.getURL('third_party/tsitu_auto_loader'),
             }, "*");
         }
     });
@@ -53,7 +53,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         "mhmh",
         "ryonn",
         "horn",
-        "tsitu_loader"
+        "tsitu_loader",
     ].includes(request.mhct_link)) {
         let file_link = '';
         if (request.mhct_link == "tsitu_loader") {
@@ -86,14 +86,14 @@ window.addEventListener("message",
             getSettings()
                 .then(settings => event.source.postMessage({
                     "mhct_settings_response": 1,
-                    "settings": settings
+                    "settings": settings,
                 }, event.origin));
         } else if (data.mhct_crown_update === 1) {
             data.origin = event.origin;
             chrome.runtime.sendMessage(data, wasSubmitted => event.source.postMessage({
                 "mhct_message": "crownSubmissionStatus",
                 "submitted": wasSubmitted,
-                "settings": data.settings
+                "settings": data.settings,
             }, event.origin));
         } else if (data.mhct_log_request === 1) {
             chrome.runtime.sendMessage({ "log": data });
@@ -118,7 +118,7 @@ function getSettings() {
             horn_volume: 100, // defaults
             horn_alert: false, // defaults
             horn_webalert: false, // defaults
-            track_crowns: true // defaults
+            track_crowns: true, // defaults
         },
         items => {
             if (chrome.runtime.lastError) {
