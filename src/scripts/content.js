@@ -107,7 +107,7 @@ window.addEventListener("message",
  * @returns {Promise <Object <string, any>>} The extension's settings
  */
 function getSettings() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         chrome.storage.sync.get({
             success_messages: true, // defaults
             error_messages: true, // defaults
