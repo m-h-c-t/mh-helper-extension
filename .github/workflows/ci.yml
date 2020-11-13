@@ -1,0 +1,49 @@
+name: CI Lint & Test
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - src/**
+  pull_request:
+    paths:
+      - src/**
+      - tests/**
+      - .github/workflows/**
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npx eslint src
+
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install dependencies
+      run: npm ci
+    - name: Setup package & env
+      run: npm run build --if-present
+    - name: Run tests
+      env:
+        CI: true
+      run: npm test
