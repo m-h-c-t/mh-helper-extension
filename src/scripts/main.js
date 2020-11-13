@@ -2120,7 +2120,7 @@
 
         // If this page is a profile page, query the crown counts (if the user tracks crowns).
         if (settings.track_crowns) {
-            function profileAutoScan() {
+            const profileAutoScan = () => {
                 const profile_RE = /profile.php\?snuid=(\w+)$/g; // "$" at regex end = only auto-fetch when AJAX route changing onto a plain profile page
                 const profile_RE_matches = document.URL.match(profile_RE);
                 if (profile_RE_matches !== null && profile_RE_matches.length) {
@@ -2139,7 +2139,7 @@
             }
 
             // Checks for route changes and then rescans for plain profiles
-            function URLDiffCheck() {
+            const URLDiffCheck = () => {
                 const cachedURL = localStorage.getItem("mhct-url-cache");
                 const currentURL = document.URL;
 
