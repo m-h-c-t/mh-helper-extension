@@ -33,6 +33,7 @@
     "url": "https://github.com/mh-community-tools/mh-helper-extension/issues"
   },
   "scripts": {
+    "lint": "eslint src",
     "test": "echo 'Nothing to see here, move along'"
   },
   "private": true,
