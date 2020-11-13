@@ -14,7 +14,9 @@ module.exports = {
         ecmaVersion: 6,
     },
     rules: {
-        indent: [
+        'array-bracket-newline': ['error', 'consistent'],
+        'comma-dangle': ['error', 'always-multiline'],
+        'indent': [
             'error',
             4,
             {
@@ -22,15 +24,15 @@ module.exports = {
                 outerIIFEBody: 'off',
             },
         ],
-        semi: ['error', 'always'],
-        'no-var': ['warn'],
-        'prefer-const': ['error'],
-        'array-bracket-newline': ['error', 'consistent'],
-        'comma-dangle': ['error', 'always-multiline'],
-        'object-curly-spacing': ['error', 'never'],
+        'no-unneeded-ternary': ['error'],
         'no-unused-vars': [
             'error',
             { args: 'none' },
-        ]
+        ],
+        'no-var': ['warn'],
+        'object-curly-spacing': ['error', 'never'],
+        'object-curly-newline': ['error'],
+        'prefer-const': ['error'],
+        'semi': ['error', 'always'],
     },
 };

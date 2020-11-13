@@ -75,8 +75,7 @@ function icon_timer_updateBadge(tab_id, settings) {
     chrome.tabs.sendMessage(tab_id, request, response => {
         if (chrome.runtime.lastError || !response) {
             const logInfo = {tab_id, request, response, time: new Date(),
-                message: "Error occurred while updating badge icon timer.",
-            };
+                message: "Error occurred while updating badge icon timer."};
             if (chrome.runtime.lastError) {
                 logInfo.message += `\n${chrome.runtime.lastError.message}`;
             }
