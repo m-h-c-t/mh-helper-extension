@@ -357,9 +357,9 @@
         const map = {
             mice: getMapMice(resp),
             id: resp.treasure_map.map_id,
-            name: resp.treasure_map.name.replace(/\ treasure/i, '')
-                .replace(/rare\ /i, '')
-                .replace(/common\ /i, '')
+            name: resp.treasure_map.name.replace(/ treasure/i, '')
+                .replace(/rare /i, '')
+                .replace(/common /i, '')
                 .replace(/Ardouous/i, 'Arduous'),
             user_id: resp.user.user_id,
             entry_timestamp: Math.round(Date.now() / 1000)
@@ -756,10 +756,10 @@
 
         // Setup components
         const components = [
-            { prop: 'weapon', message_field: 'trap', required: true, replacer: /\ trap$/i },
-            { prop: 'base', message_field: 'base', required: true, replacer: /\ base$/i },
-            { prop: 'bait', message_field: 'cheese', required: true, replacer: /\ cheese$/i },
-            { prop: 'trinket', message_field: 'charm', required: false, replacer: /\ charm$/i }
+            { prop: 'weapon', message_field: 'trap', required: true, replacer: / trap$/i },
+            { prop: 'base', message_field: 'base', required: true, replacer: / base$/i },
+            { prop: 'bait', message_field: 'cheese', required: true, replacer: / cheese$/i },
+            { prop: 'trinket', message_field: 'charm', required: false, replacer: / charm$/i }
         ];
         // All pre-hunt users must have a weapon, base, and cheese.
         const missing = components.filter(component => component.required === true && !user.hasOwnProperty(`${component.prop}_name`));
@@ -808,9 +808,9 @@
             }
             // Remove HTML tags and other text around the mouse name.
             message.mouse = journal.render_data.text
-                .replace(/^.*?;\">/, '')    // Remove all text through the first sequence of `;">`
+                .replace(/^.*?;">/, '')    // Remove all text through the first sequence of `;">`
                 .replace(/<\/a>.*/i, '')    // Remove text after the first <a href>'s closing tag </a>
-                .replace(/\ mouse$/i, '');  // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
+                .replace(/ mouse$/i, '');  // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
 
         const quest = getActiveLNYQuest(user.quests);
@@ -1064,7 +1064,7 @@
         if (user.quests.QuestLabyrinth.status === "hallway") {
             const hallway = user.quests.QuestLabyrinth.hallway_name;
             // Remove first word (like Short)
-            message.stage = hallway.substr(hallway.indexOf(" ") + 1).replace(/\ hallway/i, '');
+            message.stage = hallway.substr(hallway.indexOf(" ") + 1).replace(/ hallway/i, '');
         } else {
             // Not recording intersections at this time.
             message.location = null;
