@@ -22,6 +22,7 @@ module.exports = {
                 outerIIFEBody: 'off',
             },
         ],
+        semi: ['error', 'always'],
         'no-unused-vars': [
             'error',
             { args: 'none' },

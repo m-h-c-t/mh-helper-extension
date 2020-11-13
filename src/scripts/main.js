@@ -640,7 +640,7 @@
                         const items = [{ id: loot.item_id, name: lootName, quantity: lootQty }];
                         if (debug_logging) { window.console.log({ desert_heater_loot: items }); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id)
+                        submitConvertible(convertible, items, hunt_response.user.user_id);
                     }
                 } else {
                     window.postMessage({
@@ -679,7 +679,7 @@
                         const items = [{ id: 114, name: "SUPER|brie+", quantity: lootQty }];
                         if (debug_logging) { window.console.log({ gilded_charm: items }); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id)
+                        submitConvertible(convertible, items, hunt_response.user.user_id);
                     }
                 }
             }
@@ -2011,8 +2011,8 @@
 
     function addFloatingIslandsHuntDetails(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        const huntingSiteAttributes = envAttributes.hunting_site_atts
-        const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, { [current.type]: current.quantity}), {})
+        const huntingSiteAttributes = envAttributes.hunting_site_atts;
+        const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, { [current.type]: current.quantity}), {});
 
         message.hunt_details = Object.assign(message.hunt_details, lootItems);
     }
@@ -2140,7 +2140,7 @@
                             }
                         });
                 }
-            }
+            };
 
             // Checks for route changes and then rescans for plain profiles
             const URLDiffCheck = () => {
@@ -2151,7 +2151,7 @@
                     localStorage.setItem("mhct-url-cache", currentURL);
                     profileAutoScan();
                 }
-            }
+            };
 
             URLDiffCheck(); // Initial call on page load
             $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
