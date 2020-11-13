@@ -60,7 +60,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             file_link = chrome.extension.getURL('third_party/tsitu_auto_loader');
         }
         // Forwards messages from popup to main script
-        window.postMessage({ "mhct_message": request.mhct_link, "file_link": file_link }, "*");
+        window.postMessage({"mhct_message": request.mhct_link, "file_link": file_link}, "*");
     } else if (request.mhct_link === "huntTimer") {
         // Check for a King's Reward, otherwise report the displayed time until next horn.
         let message = "Logged out";
@@ -73,7 +73,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         sendResponse(message);
     } else if (request.mhct_link === "show_horn_alert") {
-        window.postMessage({ "mhct_message": request.mhct_link }, "*");
+        window.postMessage({"mhct_message": request.mhct_link}, "*");
     }
 });
 
@@ -96,7 +96,7 @@ window.addEventListener("message",
                 "settings": data.settings,
             }, event.origin));
         } else if (data.mhct_log_request === 1) {
-            chrome.runtime.sendMessage({ "log": data });
+            chrome.runtime.sendMessage({"log": data});
         }
     },
     false

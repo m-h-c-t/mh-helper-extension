@@ -637,8 +637,8 @@
                             name: "Desert Heater Base",
                             quantity: 1,
                         };
-                        const items = [{ id: loot.item_id, name: lootName, quantity: lootQty }];
-                        if (debug_logging) { window.console.log({ desert_heater_loot: items }); }
+                        const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
+                        if (debug_logging) { window.console.log({desert_heater_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
                     }
@@ -676,8 +676,8 @@
                             name: "Gilded Charm",
                             quantity: 1,
                         };
-                        const items = [{ id: 114, name: "SUPER|brie+", quantity: lootQty }];
-                        if (debug_logging) { window.console.log({ gilded_charm: items }); }
+                        const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
+                        if (debug_logging) { window.console.log({gilded_charm: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
                     }
@@ -756,10 +756,10 @@
 
         // Setup components
         const components = [
-            { prop: 'weapon', message_field: 'trap', required: true, replacer: / trap$/i },
-            { prop: 'base', message_field: 'base', required: true, replacer: / base$/i },
-            { prop: 'bait', message_field: 'cheese', required: true, replacer: / cheese$/i },
-            { prop: 'trinket', message_field: 'charm', required: false, replacer: / charm$/i },
+            {prop: 'weapon', message_field: 'trap', required: true, replacer: / trap$/i},
+            {prop: 'base', message_field: 'base', required: true, replacer: / base$/i},
+            {prop: 'bait', message_field: 'cheese', required: true, replacer: / cheese$/i},
+            {prop: 'trinket', message_field: 'charm', required: false, replacer: / charm$/i},
         ];
         // All pre-hunt users must have a weapon, base, and cheese.
         const missing = components.filter(component => component.required === true
@@ -1577,7 +1577,7 @@
         const attrs = user.environment_atts || user.enviroment_atts;
         switch (attrs.state) {
             case "tower": {
-                const { floor } = attrs;
+                const {floor} = attrs;
                 let stageName;
 
                 if (floor >= 1 && floor % 8 === 0) {
@@ -2012,7 +2012,7 @@
     function addFloatingIslandsHuntDetails(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
         const huntingSiteAttributes = envAttributes.hunting_site_atts;
-        const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, { [current.type]: current.quantity}), {});
+        const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, {[current.type]: current.quantity}), {});
 
         message.hunt_details = Object.assign(message.hunt_details, lootItems);
     }
@@ -2048,7 +2048,7 @@
                 plural_name: item_amount > 1 ? plural_name : '',
             };
 
-            if (debug_logging) { window.console.log({ message: "Loot object", loot_object }); }
+            if (debug_logging) { window.console.log({message: "Loot object", loot_object}); }
 
             return loot_object;
         }).filter(loot => loot);

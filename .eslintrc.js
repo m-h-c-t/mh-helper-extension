@@ -27,6 +27,7 @@ module.exports = {
         'prefer-const': ['error'],
         'array-bracket-newline': ['error', 'consistent'],
         'comma-dangle': ['error', 'always-multiline'],
+        'object-curly-spacing': ['error', 'never'],
         'no-unused-vars': [
             'error',
             { args: 'none' },
