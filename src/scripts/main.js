@@ -1572,7 +1572,7 @@
     function addValourRiftStage(message, user, user_post, hunt) {
         const attrs = user.environment_atts || user.enviroment_atts;
         switch (attrs.state) {
-            case "tower":
+            case "tower": {
                 let floor = attrs.floor;
                 let stageName;
 
@@ -1594,6 +1594,7 @@
 
                 message.stage = stageName;
                 break;
+            }
             case "farming":
                 message.stage = "Outside";
                 break;
