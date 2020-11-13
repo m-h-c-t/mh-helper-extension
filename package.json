@@ -39,5 +39,8 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mh-community-tools/mh-helper-extension.git"
+  },
+  "devDependencies": {
+    "eslint": "^7.13.0"
   }
 }

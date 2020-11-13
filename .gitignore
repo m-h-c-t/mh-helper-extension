@@ -1,4 +1,6 @@
-﻿# General-purpose ignores
+﻿node_modules
+
+# General-purpose ignores
 client_secret_*
 [Tt]humbs.db
 *.DS_Store
