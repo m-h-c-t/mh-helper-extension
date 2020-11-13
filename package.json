@@ -1,0 +1,43 @@
+{
+  "name": "mhct-extension-env",
+  "version": "1.0.0",
+  "description": "Dev environment for the MHCT browser extension",
+  "homepage": "https://github.com/mh-community-tools/mh-helper-extension#readme",
+  "license": "MIT",
+  "keywords": [
+    "mousehunt"
+  ],
+  "author": {
+    "name": "DevJackSmith",
+    "url": "https://github.com/DevJackSmith/"
+  },
+  "maintainers": [
+    {
+      "name": "AardWolf",
+      "url": "https://github.com/AardWolf/"
+    },
+    {
+      "name": "DevJackSmith",
+      "url": "https://github.com/DevJackSmith/"
+    },
+    {
+      "name": "tehhowch",
+      "url": "https://github.com/tehhowch/"
+    },
+    {
+      "name": "tsitu",
+      "url": "https://github.com/tsitu/"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/mh-community-tools/mh-helper-extension/issues"
+  },
+  "scripts": {
+    "test": "echo 'Nothing to see here, move along'"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mh-community-tools/mh-helper-extension.git"
+  }
+}
