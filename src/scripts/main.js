@@ -706,7 +706,6 @@
     function createMessageFromHunt(journal, user, user_post) {
         const message = {
             extension_version: formatVersion(mhhh_version),
-            hunt_details: {},
         };
         const debug_logs = [];
 
@@ -795,15 +794,6 @@
                 message.caught = 1;
             } else if (journal_css.includes('catchfailure')) {
                 message.caught = 0;
-                if (journal_css.includes('catchfailuredamage')) {
-                    const match = journal.render_data.text.match(/Additionally, .* ([0-9,]+) .*(gold|bait|points)/);
-                    if (match && match.length && match.length === 3) {
-                        message.hunt_details = Object.assign(message.hunt_details, {
-                            "pillage_amount": parseInt(match[1].replace(/,/g,'')),
-                            "pillage_type": match[2],
-                        });
-                    }
-                }
             } else {
                 window.console.error(`MHHH: Unknown "catch" journal css: ${journal_css}`);
                 return null;
@@ -1627,17 +1617,17 @@
 
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
-        "Bristle Woods Rift": addBristleWoodsRiftHuntDetails,
-        "Claw Shot City": addClawShotCityHuntDetails,
-        "Fiery Warpath": addFieryWarpathHuntDetails,
-        "Floating Islands": addFloatingIslandsHuntDetails,
-        "Fort Rox": addFortRoxHuntDetails,
-        "Harbour": addHarbourHuntDetails,
-        "Sand Crypts": addSandCryptsHuntDetails,
-        "Valour Rift": addValourRiftHuntDetails,
-        "Whisker Woods Rift": addWhiskerWoodsRiftHuntDetails,
-        "Zokor": addZokorHuntDetails,
-        "Zugzwang's Tower": addZugzwangsTowerHuntDetails,
+        "Bristle Woods Rift": calcBristleWoodsRiftHuntDetails,
+        "Claw Shot City": calcClawShotCityHuntDetails,
+        "Fiery Warpath": calcFieryWarpathHuntDetails,
+        "Floating Islands": calcFloatingIslandsHuntDetails,
+        "Fort Rox": calcFortRoxHuntDetails,
+        "Harbour": calcHarbourHuntDetails,
+        "Sand Crypts": calcSandCryptsHuntDetails,
+        "Valour Rift": calcValourRiftHuntDetails,
+        "Whisker Woods Rift": calcWhiskerWoodsRiftHuntDetails,
+        "Zokor": calcZokorHuntDetails,
+        "Zugzwang's Tower": calcZugzwangsTowerHuntDetails
     };
 
     /**
@@ -1649,19 +1639,24 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addHuntDetails(message, user, user_post, hunt) {
-        // First add any location-specific details:
+        // First, get any location-specific details:
         const details_func = location_huntdetails_lookup[user.environment_name];
-        if (details_func) {
-            details_func(message, user, user_post, hunt);
-        }
+        const locationHuntDetails = details_func ? details_func(message, user, user_post, hunt) : undefined;
 
-        // TODO: Apply any global hunt details (such as from ongoing events, auras, etc).
-        [
-            addEggHuntDetails,
-            addHalloweenHuntDetails,
-            addLNYHuntDetails,
-            addLuckyCatchHuntDetails,
-        ].forEach(details_func => details_func(message, user, user_post, hunt));
+        // Then, get any global hunt details (such as from ongoing events, auras, etc).
+        const globalHuntDetails = [
+            calcEggHuntDetails,
+            calcHalloweenHuntDetails,
+            calcLNYHuntDetails,
+            calcLuckyCatchHuntDetails,
+            calcPillageHuntDetails,
+        ].map((details_func) => details_func(message, user, user_post, hunt))
+            .filter(details => details);
+
+        // Finally, merge the details objects and add it to the message.
+        if (locationHuntDetails || globalHuntDetails.length >= 0) {
+            message.hunt_details = Object.assign({}, locationHuntDetails, ...globalHuntDetails);
+        }
     }
 
     /**
@@ -1671,16 +1666,16 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addEggHuntDetails(message, user, user_post, hunt) {
+    function calcEggHuntDetails(message, user, user_post, hunt) {
         const quest = getActiveSEHQuest(user.quests);
         const post_quest = getActiveSEHQuest(user_post.quests);
         if (quest && post_quest) {
-            message.hunt_details = Object.assign(message.hunt_details || {}, {
+            return {
                 is_egg_hunt: true,
                 egg_charge_pre: parseInt(quest.charge_quantity, 10),
                 egg_charge_post: parseInt(post_quest.charge_quantity, 10),
                 can_double_eggs: (quest.charge_doubler === "active"),
-            });
+            };
         }
     }
 
@@ -1691,14 +1686,14 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addHalloweenHuntDetails(message, user, user_post, hunt) {
+    function calcHalloweenHuntDetails(message, user, user_post, hunt) {
         const quest = getActiveHalloweenQuest(user.quests);
         if (quest) {
-            message.hunt_details = Object.assign(message.hunt_details || {}, {
+            return {
                 is_halloween_hunt: true,
                 is_firing_cannon: !!(quest.is_cannon_enabled || quest.is_long_range_cannon_enabled),
-                is_in_stockpile: !!quest.has_stockpile,
-            });
+                is_in_stockpile: !!quest.has_stockpile
+            };
         }
     }
 
@@ -1709,15 +1704,15 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addLNYHuntDetails(message, user, user_post, hunt) {
+    function calcLNYHuntDetails(message, user, user_post, hunt) {
         const quest = getActiveLNYQuest(user.quests);
         if (quest) {
-            message.hunt_details = Object.assign(message.hunt_details || {}, {
+            return {
                 is_lny_hunt: true,
                 lny_luck: (quest.lantern_status.includes("noLantern") || !quest.is_lantern_active)
                     ? 0
-                    : Math.min(50, Math.floor(parseInt(quest.lantern_height, 10) / 10)),
-            });
+                    : Math.min(50, Math.floor(parseInt(quest.lantern_height, 10) / 10))
+            };
         }
     }
 
@@ -1728,11 +1723,30 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addLuckyCatchHuntDetails(message, user, user_post, hunt) {
+    function calcLuckyCatchHuntDetails(message, user, user_post, { render_data }) {
         if (message.caught) {
-            message.hunt_details = Object.assign(message.hunt_details || {}, {
-                is_lucky_catch: hunt.render_data.css_class.includes("luckycatchsuccess"),
-            });
+            return {
+                is_lucky_catch: render_data.css_class.includes("luckycatchsuccess")
+            };
+        }
+    }
+
+    /**
+     * Track whether a FTC resulted in a pillage, and if so, the damage dealt.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function calcPillageHuntDetails(message, user, user_post, { render_data }) {
+        if (message.attracted && !message.caught && render_data.css_class.includes('catchfailuredamage')) {
+            const match = render_data.text.match(/Additionally, .+ ([\d,]+) .*(gold|bait|points)/);
+            if (match && match.length === 3) {
+                return {
+                    pillage_amount: parseInt(match[1].replace(/,/g,''), 10),
+                    pillage_type: match[2],
+                };
+            }
         }
     }
 
@@ -1743,7 +1757,7 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addBristleWoodsRiftHuntDetails(message, user, user_post, hunt) {
+    function calcBristleWoodsRiftHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestRiftBristleWoods;
         const details = {
             has_hourglass: quest.items.rift_hourglass_stat_item.quantity >= 1,
@@ -1759,7 +1773,7 @@
             details.obelisk_charged = quest.obelisk_percent === 100;
             details.acolyte_sand_drained = details.obelisk_charged && quest.acolyte_sand === 0;
         }
-        message.hunt_details = Object.assign(message.hunt_details, details);
+        return details;
     }
 
     /**
@@ -1769,13 +1783,13 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addClawShotCityHuntDetails(message, user, user_post, hunt) {
+    function calcClawShotCityHuntDetails(message, user, user_post, hunt) {
         const map = user.quests.QuestRelicHunter.maps.filter(m => m.name.endsWith("Wanted Poster"))[0];
         if (map && !map.is_complete) {
-            message.hunt_details = Object.assign(message.hunt_details, {
+            return {
                 poster_type: map.name.replace(/Wanted Poster/i, "").trim(),
                 at_boss: (map.remaining === 1),
-            });
+            };
         }
     }
 
@@ -1789,7 +1803,7 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addFieryWarpathHuntDetails(message, user, user_post, hunt) {
+    function calcFieryWarpathHuntDetails(message, user, user_post, hunt) {
         const attrs = user.viewing_atts.desert_warpath;
         const fw = {};
         if ([1, 2, 3].includes(parseInt(attrs.wave, 10))) {
@@ -1850,7 +1864,24 @@
             throw new Error(`Unknown FW Wave "${attrs.wave}"`);
         }
 
-        message.hunt_details = Object.assign(message.hunt_details, fw);
+        return fw;
+    }
+
+    /**
+     * Get the loot available for the hunt.
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function calcFloatingIslandsHuntDetails(message, user, user_post, hunt) {
+        const envAttributes = user.environment_atts || user.enviroment_atts;
+        const { island_loot } = envAttributes.hunting_site_atts
+        const lootItems = island_loot.reduce((prev, current) => Object.assign(prev, {
+            [current.type]: current.quantity},
+        ), {});
+
+        return lootItems;
     }
 
     /**
@@ -1861,7 +1892,7 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addFortRoxHuntDetails(message, user, user_post, hunt) {
+    function calcFortRoxHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestFortRox;
         const ballista_level = parseInt(quest.fort.b.level, 10);
         const cannon_level = parseInt(quest.fort.c.level, 10);
@@ -1883,7 +1914,7 @@
             : parseInt(quest.fort.t.level, 10);
         details.can_autocatch_any = (tower_state >= 2);
 
-        message.hunt_details = Object.assign(message.hunt_details, details);
+        return details;
     }
 
     /**
@@ -1893,7 +1924,7 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addHarbourHuntDetails(message, user, user_post, hunt) {
+    function calcHarbourHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestHarbour;
         const details = {
             on_bounty: (quest.status === "searchStarted"),
@@ -1901,7 +1932,7 @@
         quest.crew.forEach(mouse => {
             details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
         });
-        message.hunt_details = Object.assign(details);
+        return details;
     }
 
     /**
@@ -1911,14 +1942,35 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addSandCryptsHuntDetails(message, user, user_post, hunt) {
+    function calcSandCryptsHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestSandDunes;
         if (quest && !quest.is_normal && quest.minigame && quest.minigame.type === 'grubling') {
             if (["King Grub", "King Scarab"].includes(message.mouse)) {
-                message.hunt_details = Object.assign(message.hunt_details, {
+                return {
                     salt: quest.minigame.salt_charms_used,
-                });
+                };
             }
+        }
+    }
+
+    /**
+     * Report active augmentations and floor number
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function calcValourRiftHuntDetails(message, user, user_post, hunt) {
+        const attrs = user.environment_atts || user.enviroment_atts;
+        // active_augmentations is undefined outside of the tower
+        if (attrs.state === "tower") {
+            return {
+                floor: attrs.floor, // exact floor number (can be used to derive prestige and floor_type)
+                // No compelling use case for the following 3 augments at the moment
+                // super_siphon: !!attrs.active_augmentations.ss, // active = true, inactive = false
+                // string_stepping: !!attrs.active_augmentations.sste,
+                // elixir_rain: !!attrs.active_augmentations.er,
+            };
         }
     }
 
@@ -1929,7 +1981,7 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt) {
+    function calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt) {
         if (message.cheese.id === 1646) {
             const zones = user.quests.QuestRiftWhiskerWoods.zones;
             const rage = {
@@ -1940,7 +1992,7 @@
             const total_rage = rage.clearing + rage.tree + rage.lagoon;
             if (total_rage < 150 && total_rage >= 75) {
                 if (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24) {
-                    message.hunt_details = Object.assign(message.hunt_details, rage, {total_rage});
+                    return Object.assign(rage, { total_rage });
                 }
             }
         }
@@ -1954,18 +2006,18 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addZokorHuntDetails(message, user, user_post, hunt) {
+    function calcZokorHuntDetails(message, user, user_post, hunt) {
         const quest = user.quests.QuestAncientCity;
         if (quest.boss.includes("hiddenDistrict")) {
-            message.hunt_details = Object.assign(message.hunt_details, {
+            return {
                 minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
                 lair_catches: -(quest.countdown - 20),
-                minotaur_meter: parseFloat(quest.width),
-            });
+                minotaur_meter: parseFloat(quest.width)
+            };
         } else if (quest.district_tier === 3) {
-            message.hunt_details = Object.assign(message.hunt_details, {
+            return {
                 boss_defeated: (quest.boss === "defeated"),
-            });
+            };
         }
     }
 
@@ -1977,7 +2029,7 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function addZugzwangsTowerHuntDetails(message, user, user_post, hunt) {
+    function calcZugzwangsTowerHuntDetails(message, user, user_post, hunt) {
         const attrs = user.viewing_atts;
         const zt = {
             amplifier: parseInt(attrs.zzt_amplifier, 10),
@@ -1985,36 +2037,7 @@
             mystic: parseInt(attrs.zzt_mage_progress, 10),
         };
         zt.cm_available = (zt.technic === 16 || zt.mystic === 16) && message.cheese.id === 371;
-        message.hunt_details = Object.assign(message.hunt_details, zt);
-    }
-
-    /**
-     * Report active augmentations and floor number
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     */
-    function addValourRiftHuntDetails(message, user, user_post, hunt) {
-        const attrs = user.environment_atts || user.enviroment_atts;
-        // active_augmentations is undefined outside of the tower
-        if (attrs.state === "tower") {
-            message.hunt_details = Object.assign(message.hunt_details, {
-                floor: attrs.floor, // exact floor number (can be used to derive prestige and floor_type)
-                // No compelling use case for the following 3 augments at the moment
-                // super_siphon: !!attrs.active_augmentations.ss, // active = true, inactive = false
-                // string_stepping: !!attrs.active_augmentations.sste,
-                // elixir_rain: !!attrs.active_augmentations.er,
-            });
-        }
-    }
-
-    function addFloatingIslandsHuntDetails(message, user, user_post, hunt) {
-        const envAttributes = user.environment_atts || user.enviroment_atts;
-        const huntingSiteAttributes = envAttributes.hunting_site_atts;
-        const lootItems = huntingSiteAttributes.island_loot.reduce((prev, current) => Object.assign(prev, {[current.type]: current.quantity}), {});
-
-        message.hunt_details = Object.assign(message.hunt_details, lootItems);
+        return zt;
     }
 
     /**
