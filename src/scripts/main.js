@@ -517,7 +517,7 @@
 
     /**
      * @typedef {Object} HgItem
-     * @property {number} item_id HitGrab's ID for this item
+     * @property {number} id HitGrab's ID for this item
      * @property {string} name HitGrab's display name for this item
      * @property {number} quantity the number of this item received or opened
      */
@@ -526,7 +526,7 @@
      * Helper function to submit opened items.
      * @param {HgItem} convertible The item that was opened.
      * @param {HgItem[]} items An array of items that were obtained by opening the convertible
-     * @param {string} userId the user associated with the submission
+     * @param {string} user_id the user associated with the submission
      */
     function submitConvertible(convertible, items, user_id) {
         const record = {
@@ -1627,7 +1627,7 @@
         "Valour Rift": calcValourRiftHuntDetails,
         "Whisker Woods Rift": calcWhiskerWoodsRiftHuntDetails,
         "Zokor": calcZokorHuntDetails,
-        "Zugzwang's Tower": calcZugzwangsTowerHuntDetails
+        "Zugzwang's Tower": calcZugzwangsTowerHuntDetails,
     };
 
     /**
@@ -1692,7 +1692,7 @@
             return {
                 is_halloween_hunt: true,
                 is_firing_cannon: !!(quest.is_cannon_enabled || quest.is_long_range_cannon_enabled),
-                is_in_stockpile: !!quest.has_stockpile
+                is_in_stockpile: !!quest.has_stockpile,
             };
         }
     }
@@ -1711,7 +1711,7 @@
                 is_lny_hunt: true,
                 lny_luck: (quest.lantern_status.includes("noLantern") || !quest.is_lantern_active)
                     ? 0
-                    : Math.min(50, Math.floor(parseInt(quest.lantern_height, 10) / 10))
+                    : Math.min(50, Math.floor(parseInt(quest.lantern_height, 10) / 10)),
             };
         }
     }
@@ -1723,10 +1723,10 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function calcLuckyCatchHuntDetails(message, user, user_post, { render_data }) {
+    function calcLuckyCatchHuntDetails(message, user, user_post, {render_data}) {
         if (message.caught) {
             return {
-                is_lucky_catch: render_data.css_class.includes("luckycatchsuccess")
+                is_lucky_catch: render_data.css_class.includes("luckycatchsuccess"),
             };
         }
     }
@@ -1738,7 +1738,7 @@
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
-    function calcPillageHuntDetails(message, user, user_post, { render_data }) {
+    function calcPillageHuntDetails(message, user, user_post, {render_data}) {
         if (message.attracted && !message.caught && render_data.css_class.includes('catchfailuredamage')) {
             const match = render_data.text.match(/Additionally, .+ ([\d,]+) .*(gold|bait|points)/);
             if (match && match.length === 3) {
@@ -1876,10 +1876,10 @@
      */
     function calcFloatingIslandsHuntDetails(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        const { island_loot } = envAttributes.hunting_site_atts
+        const {island_loot} = envAttributes.hunting_site_atts;
         const lootItems = island_loot.reduce((prev, current) => Object.assign(prev, {
-            [current.type]: current.quantity},
-        ), {});
+            [current.type]: current.quantity,
+        }), {});
 
         return lootItems;
     }
@@ -1992,7 +1992,7 @@
             const total_rage = rage.clearing + rage.tree + rage.lagoon;
             if (total_rage < 150 && total_rage >= 75) {
                 if (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24) {
-                    return Object.assign(rage, { total_rage });
+                    return Object.assign(rage, {total_rage});
                 }
             }
         }
@@ -2012,7 +2012,7 @@
             return {
                 minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
                 lair_catches: -(quest.countdown - 20),
-                minotaur_meter: parseFloat(quest.width)
+                minotaur_meter: parseFloat(quest.width),
             };
         } else if (quest.district_tier === 3) {
             return {
