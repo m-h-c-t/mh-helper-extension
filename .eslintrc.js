@@ -14,6 +14,14 @@ module.exports = {
         ecmaVersion: 6,
     },
     rules: {
+        indent: [
+            'error',
+            4,
+            {
+                SwitchCase: 1,
+                outerIIFEBody: 'off',
+            },
+        ],
         'no-unused-vars': [
             'error',
             { args: 'none' },

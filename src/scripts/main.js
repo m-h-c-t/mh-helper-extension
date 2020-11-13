@@ -367,8 +367,8 @@
 
         map.extension_version = formatVersion(mhhh_version);
 
-       // Send to database
-       sendMessageToServer(map_intake_url, map);
+        // Send to database
+        sendMessageToServer(map_intake_url, map);
     }
 
     /**
@@ -856,9 +856,11 @@
         if (env) {
             const is_normal = user.quests[env.quest].is_normal.toString();
             Object.assign(message.location, env[is_normal]);
-        } else if (["Living Garden", "Twisted Garden",
-                "Lost City", "Cursed City",
-                "Sand Dunes", "Sand Crypts"].includes(message.location.name)) {
+        } else if ([
+            "Living Garden", "Twisted Garden",
+            "Lost City", "Cursed City",
+            "Sand Dunes", "Sand Crypts",
+        ].includes(message.location.name)) {
             if (debug_logging) {window.console.warn({record: message, user, user_post, hunt});}
             throw new Error(`MHHH: Unexpected location id ${message.location.id} for LG-area location`);
         }
@@ -1834,8 +1836,9 @@
         } else if ([4, "4", "portal"].includes(attrs.wave)) {
             // If the Warmonger or Artillery Commander was already caught (i.e. Ultimate Charm),
             // don't record any hunt details since there isn't anything to learn.
-            const boss = attrs.mice[(message.stage === "Portal") ?
-                    "desert_artillery_commander" : "desert_boss"];
+            const boss = (message.stage === "Portal")
+                ? attrs.mice.desert_artillery_commander
+                : attrs.mice.desert_boss;
             if (parseInt(boss.quantity, 10) !== 1) {
                 return;
             }
@@ -1875,8 +1878,9 @@
             });
         }
         // The mage tower's auto-catch can be applied during Day and Dawn phases, too.
-        const tower_state = quest.tower_status.includes("inactive") ? 0
-                : parseInt(quest.fort.t.level, 10);
+        const tower_state = quest.tower_status.includes("inactive")
+            ? 0
+            : parseInt(quest.fort.t.level, 10);
         details.can_autocatch_any = (tower_state >= 2);
 
         message.hunt_details = Object.assign(message.hunt_details, details);

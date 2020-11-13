@@ -44,15 +44,15 @@ function check_settings(callback) {
  */
 function icon_timer_find_open_mh_tab(settings) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
-    found_tabs => {
-        const mhTab = found_tabs[0];
-        if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
-            icon_timer_updateBadge(mhTab.id, settings);
-        } else {
-            // The tab was either not found, or is still loading.
-            icon_timer_updateBadge(false, settings);
-        }
-    });
+        (found_tabs) => {
+            const [mhTab] = found_tabs;
+            if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
+                icon_timer_updateBadge(mhTab.id, settings);
+            } else {
+                // The tab was either not found, or is still loading.
+                icon_timer_updateBadge(false, settings);
+            }
+        });
 }
 
 // Notifications
@@ -189,9 +189,10 @@ function submitCrowns(crowns) {
             method: "POST",
             credentials: "omit",
             body: payload
-        }).then(response => resolve(!response.ok ? false :
-                crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond)
-        ).catch(error => {
+        }).then((response) => resolve(response.ok
+            ? crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond
+            : false
+        )).catch((error) => {
             window.console.error({
                 "message": "Error submitting user crowns",
                 "error": error,
