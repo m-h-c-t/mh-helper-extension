@@ -1,5 +1,5 @@
 // JS script available only within the embedded options.html page
-let mhhhOptions = [
+const mhhhOptions = [
     {name: 'success_messages', p: 'checked', default: true},
     {name: 'error_messages', p: 'checked', default: true},
     {name: 'debug_logging', p: 'checked', default: false},
@@ -13,7 +13,7 @@ let mhhhOptions = [
     {name: 'track_crowns', p: 'checked', default: true},
     {name: 'tsitu_loader_on', p: 'checked', default: false},
     {name: 'tsitu_loader_offset', p: 'value', default: 80},
-    {name: 'tsitu_loader_offset_output', p: 'value'}
+    {name: 'tsitu_loader_offset_output', p: 'value'},
 ];
 
 // Click "Save" -> store the extension's settings in chrome.storage.

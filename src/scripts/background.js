@@ -33,7 +33,7 @@ function check_settings(callback) {
         horn_volume: 100, // defaults
         horn_alert: false, // defaults
         horn_webalert: false, // defaults
-        track_crowns: true // defaults
+        track_crowns: true, // defaults
     },
     settings => callback(settings));
 }
@@ -44,15 +44,15 @@ function check_settings(callback) {
  */
 function icon_timer_find_open_mh_tab(settings) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
-    found_tabs => {
-        const mhTab = found_tabs[0];
-        if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
-            icon_timer_updateBadge(mhTab.id, settings);
-        } else {
-            // The tab was either not found, or is still loading.
-            icon_timer_updateBadge(false, settings);
-        }
-    });
+        (found_tabs) => {
+            const [mhTab] = found_tabs;
+            if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
+                icon_timer_updateBadge(mhTab.id, settings);
+            } else {
+                // The tab was either not found, or is still loading.
+                icon_timer_updateBadge(false, settings);
+            }
+        });
 }
 
 // Notifications
@@ -75,8 +75,7 @@ function icon_timer_updateBadge(tab_id, settings) {
     chrome.tabs.sendMessage(tab_id, request, response => {
         if (chrome.runtime.lastError || !response) {
             const logInfo = {tab_id, request, response, time: new Date(),
-                message: "Error occurred while updating badge icon timer."
-            };
+                message: "Error occurred while updating badge icon timer."};
             if (chrome.runtime.lastError) {
                 logInfo.message += `\n${chrome.runtime.lastError.message}`;
             }
@@ -188,14 +187,15 @@ function submitCrowns(crowns) {
             mode: "cors",
             method: "POST",
             credentials: "omit",
-            body: payload
-        }).then(response => resolve(!response.ok ? false :
-                crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond)
-        ).catch(error => {
+            body: payload,
+        }).then((response) => resolve(response.ok
+            ? crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond
+            : false
+        )).catch((error) => {
             window.console.error({
                 "message": "Error submitting user crowns",
                 "error": error,
-                "crowns": crowns
+                "crowns": crowns,
             });
             resolve(false);
         });

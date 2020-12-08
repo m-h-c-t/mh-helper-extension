@@ -1,0 +1,16 @@
+{
+    "include": ["src/**/*"],
+    "typeAcquisition": {
+        "include": [
+            "chrome",
+            "jquery",
+        ]
+    },
+    "compilerOptions": {
+        "target": "es6",
+        "lib":[
+            "es2017",
+            "dom",
+        ]
+    },
+}

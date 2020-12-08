@@ -32,14 +32,14 @@ s.onload = () => {
     // Display Tsitu's Loader
     chrome.storage.sync.get({
         tsitu_loader_on: false,
-        tsitu_loader_offset: 80
+        tsitu_loader_offset: 80,
     }, items => {
         if (items.tsitu_loader_on) {
             // There must be a better way of doing this
             window.postMessage({
                 "mhct_message": 'tsitu_loader',
                 "tsitu_loader_offset": items.tsitu_loader_offset,
-                "file_link": chrome.runtime.getURL('third_party/tsitu_auto_loader')
+                "file_link": chrome.runtime.getURL('third_party/tsitu_auto_loader'),
             }, "*");
         }
     });
@@ -53,14 +53,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         "mhmh",
         "ryonn",
         "horn",
-        "tsitu_loader"
+        "tsitu_loader",
     ].includes(request.mhct_link)) {
         let file_link = '';
         if (request.mhct_link == "tsitu_loader") {
             file_link = chrome.extension.getURL('third_party/tsitu_auto_loader');
         }
         // Forwards messages from popup to main script
-        window.postMessage({ "mhct_message": request.mhct_link, "file_link": file_link }, "*");
+        window.postMessage({"mhct_message": request.mhct_link, "file_link": file_link}, "*");
     } else if (request.mhct_link === "huntTimer") {
         // Check for a King's Reward, otherwise report the displayed time until next horn.
         let message = "Logged out";
@@ -73,7 +73,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         sendResponse(message);
     } else if (request.mhct_link === "show_horn_alert") {
-        window.postMessage({ "mhct_message": request.mhct_link }, "*");
+        window.postMessage({"mhct_message": request.mhct_link}, "*");
     }
 });
 
@@ -86,17 +86,17 @@ window.addEventListener("message",
             getSettings()
                 .then(settings => event.source.postMessage({
                     "mhct_settings_response": 1,
-                    "settings": settings
+                    "settings": settings,
                 }, event.origin));
         } else if (data.mhct_crown_update === 1) {
             data.origin = event.origin;
             chrome.runtime.sendMessage(data, wasSubmitted => event.source.postMessage({
                 "mhct_message": "crownSubmissionStatus",
                 "submitted": wasSubmitted,
-                "settings": data.settings
+                "settings": data.settings,
             }, event.origin));
         } else if (data.mhct_log_request === 1) {
-            chrome.runtime.sendMessage({ "log": data });
+            chrome.runtime.sendMessage({"log": data});
         }
     },
     false
@@ -107,7 +107,7 @@ window.addEventListener("message",
  * @returns {Promise <Object <string, any>>} The extension's settings
  */
 function getSettings() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         chrome.storage.sync.get({
             success_messages: true, // defaults
             error_messages: true, // defaults
@@ -118,7 +118,7 @@ function getSettings() {
             horn_volume: 100, // defaults
             horn_alert: false, // defaults
             horn_webalert: false, // defaults
-            track_crowns: true // defaults
+            track_crowns: true, // defaults
         },
         items => {
             if (chrome.runtime.lastError) {
