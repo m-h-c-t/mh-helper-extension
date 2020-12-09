@@ -541,20 +541,21 @@
     }
 
     function sendMessageToServer(url, final_message) {
-        if (!settings || !settings.tracking_enabled) { return; }
-        const basic_info = {
-            user_id: final_message.user_id,
-            entry_timestamp: final_message.entry_timestamp,
-        };
+        getSettings(settings => {
+            if (!settings || !settings.tracking_enabled) { return; }
+            const basic_info = {
+                user_id: final_message.user_id,
+                entry_timestamp: final_message.entry_timestamp,
+            };
 
-        // Get UUID
-        $.post(base_domain_url + "/uuid.php", basic_info)
-            .done(data => {
+            // Get UUID
+            $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
                 if (data) {
                     final_message.uuid = data;
                     sendAlready(url, final_message);
                 }
             });
+        });
     }
 
     function sendAlready(url, fin_message) {
