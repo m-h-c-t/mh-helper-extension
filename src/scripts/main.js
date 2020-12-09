@@ -968,7 +968,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addFestiveCometStage(message, user, user_post, hunt) {
-        const quest = user.quests.QuestWinterHunt2019;
+        const quest = user.quests.QuestWinterHunt2020;
         if (!quest) {
             return;
         }
@@ -980,7 +980,7 @@
             if (theme == "none") {
                 theme = "No Decor";
             } else {
-                theme = theme.replace(/festive_([a-z_]+)_shorts_stat_item/i, "$1").replace(/_/g, " ");
+                theme = theme.replace(/festive_([a-z_]+)_wrapping_paper_stat_item/i, "$1").replace(/_/g, " ");
                 theme = theme.charAt(0).toUpperCase() + theme.slice(1);
             }
             message.stage = theme;
