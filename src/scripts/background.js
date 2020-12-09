@@ -33,7 +33,7 @@ function check_settings(callback) {
         horn_volume: 100, // defaults
         horn_alert: false, // defaults
         horn_webalert: false, // defaults
-        track_crowns: true, // defaults
+        tracking_enabled: true, // defaults
     },
     settings => callback(settings));
 }

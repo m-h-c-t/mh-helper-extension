@@ -10,7 +10,7 @@ const mhhhOptions = [
     {name: 'horn_volume_output', p: 'value'},
     {name: 'horn_alert', p: 'checked', default: false},
     {name: 'horn_webalert', p: 'checked', default: false},
-    {name: 'track_crowns', p: 'checked', default: true},
+    {name: 'tracking_enabled', p: 'checked', default: true},
     {name: 'tsitu_loader_on', p: 'checked', default: false},
     {name: 'tsitu_loader_offset', p: 'value', default: 80},
     {name: 'tsitu_loader_offset_output', p: 'value'},
