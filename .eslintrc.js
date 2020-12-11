@@ -1,7 +1,7 @@
 module.exports = {
     env: {
         browser: true,
-        es6: true,
+        es2017: true,
         webextensions: true,
     },
     extends: "eslint:recommended",
@@ -11,11 +11,15 @@ module.exports = {
         lastReadJournalEntryId: false,
     },
     parserOptions: {
-        ecmaVersion: 6,
+        ecmaVersion: 9,
     },
     rules: {
         'array-bracket-newline': ['error', 'consistent'],
-        'comma-dangle': ['error', 'always-multiline'],
+        'comma-dangle': ['error', {
+            arrays: 'always-multiline',
+            objects: 'always-multiline',
+            functions: 'only-multiline',
+        }],
         'indent': [
             'error',
             4,

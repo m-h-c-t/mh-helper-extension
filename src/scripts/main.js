@@ -63,10 +63,22 @@
             if (counts) {
                 displayFlashMessage(ev.data.settings, "success",
                     `Submitted ${counts} crowns for ${$('span[class*="titleBar-name"]').text()}.`);
-            } else {
+            } else if (counts != null) {
                 displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
+            } else if (debug_logging) {
+                window.console.log('Skipped submission (already sent).');
             }
             return;
+        }
+
+        // Golem submission results in either the boolean `false`, or the number of submitted golems.
+        if (ev.data.mhct_message === 'golemSubmissionStatus') {
+            const count = ev.data.submitted;
+            if (count) {
+                displayFlashMessage(ev.data.settings, 'success', 'Snow Golem data submitted successfully');
+            } else {
+                displayFlashMessage(ev.data.settings, 'error', 'Snow Golem data submission failed, sorry!');
+            }
         }
 
     }, false);
@@ -195,7 +207,7 @@
         }
 
         mhhh_flash_message_div.fadeIn(() => {
-            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500 + 1000 * (type !== "success"));
+            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 2500 + 1000 * (type !== "success"));
         });
     }
 
@@ -255,6 +267,12 @@
         } else if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
             if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
                 getSettings(settings => recordCrowns(settings, xhr, url));
+            }
+        } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
+            // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
+            // (GMT): Friday, January 29, 2021 12:00:00 AM [GWH 2020 placeholder end date])
+            if (Date.now() < 1611878400000) {
+                getSettings(settings => recordGWH2020Golems(settings, xhr));
             }
         }
     });
@@ -344,6 +362,71 @@
             "crowns": payload,
             "settings": settings,
         }, window.origin);
+    }
+
+    /**
+     * Record GWH 2020 golem submissions
+     * @param {Object <string, any>} settings The user's extension settings.
+     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
+     */
+    function recordGWH2020Golems(settings, xhr) {
+        // TODO: Replace with optional chaining, once full spec compliance is obtained.
+        if (
+            !xhr.responseJSON || !xhr.responseJSON.messageData || !xhr.responseJSON.messageData.message_model ||
+            !xhr.responseJSON.messageData.message_model.messages
+        ) {
+            if (debug_logging) window.console.log('Skipped GWH 2020 golem submission due to unhandled XHR structure');
+            window.postMessage({
+                "mhct_log_request": 1,
+                "is_error": true,
+                "gwh_2020_submit_xhr_response": xhr.responseJSON,
+                "reason": "Unable to parse GWH 2020 response",
+            }, window.origin);
+            return;
+        }
+
+        const golems = xhr.responseJSON.messageData.message_model.messages
+            .filter(({messageData}) => messageData.content && messageData.content.title.includes('Snow Golem reward'))
+            .map(({messageData}) => {
+                const {title, body} = messageData.content;
+                const locationName = /from (?:the )(.+)!/.exec(title)[1].trim();
+                const userID = messageData.stream_publish_data.params.user_id; // `${user.user_id}`;
+                const payload = {[userID]: {[locationName]: {}}};
+                const ref = payload[userID][locationName];
+
+                // Use an in-memory DOM tree to obtain the items, slots, & quantities.
+                const doc = new DOMParser().parseFromString(body, 'text/html');
+                const gwh_prefix = '.winterHunt2020-claimRewardPopup';
+
+                // Get only the item boxes which actually have an item (i.e. ignore locked slots).
+                const lootDivs = Array.from(doc.querySelectorAll(`${gwh_prefix}-content ${gwh_prefix}-item`))
+                    .map((itemDiv) => [`${gwh_prefix}-item-rarity`, '.quantity', `${gwh_prefix}-item-name`]
+                        .map((sel) => itemDiv.querySelector(sel)))
+                    .filter(([rarityEl, qtyEl, itemEl]) => rarityEl && qtyEl && itemEl);
+
+                // Update the location data with the rarity-item-quantity information.
+                lootDivs.forEach(([rarityEl, qtyEl, itemEl]) => {
+                    const rarity = rarityEl.textContent === 'Magical Hat' ? 'Hat'
+                        : rarityEl.textContent.charAt(0).toUpperCase() + rarityEl.textContent.slice(1);
+                    const quantity = parseInt(qtyEl.textContent.replace(/,/g, '').trim(), 10); // Remove commas from e.g. 10,000 gold
+                    const item = itemEl.textContent.includes('SUPER|brie') ? 'SUPER|brie+' : itemEl.textContent.trim();
+
+                    if (ref[rarity] && ref[rarity][item]) {
+                        ref[rarity][item] += quantity;
+                    } else if (ref[rarity]) {
+                        ref[rarity][item] = quantity;
+                    } else {
+                        ref[rarity] = {count: 0, [item]: quantity};
+                    }
+                    // Lastly, keep track of how many slots we've seen.
+                    ++ref[rarity].count;
+                });
+                return payload;
+            });
+        if (golems.length) {
+            if (debug_logging) window.console.log({message: 'GWH Golem', golems});
+            window.postMessage({mhct_golem_submit: 1, golems, settings}, window.origin);
+        }
     }
 
     // Record map mice

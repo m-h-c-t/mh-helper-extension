@@ -90,13 +90,20 @@ window.addEventListener("message",
                 }, event.origin));
         } else if (data.mhct_crown_update === 1) {
             data.origin = event.origin;
-            chrome.runtime.sendMessage(data, wasSubmitted => event.source.postMessage({
+            chrome.runtime.sendMessage(data, (wasSubmitted) => event.source.postMessage({
                 "mhct_message": "crownSubmissionStatus",
                 "submitted": wasSubmitted,
                 "settings": data.settings,
             }, event.origin));
         } else if (data.mhct_log_request === 1) {
             chrome.runtime.sendMessage({"log": data});
+        } else if (data.mhct_golem_submit === 1) {
+            data.origin = event.origin;
+            chrome.runtime.sendMessage(data, (wasSubmitted) => event.source.postMessage({
+                mhct_message: 'golemSubmissionStatus',
+                submitted: wasSubmitted,
+                settings: data.settings,
+            }, event.origin));
         }
     },
     false

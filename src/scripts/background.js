@@ -162,9 +162,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.log({msg, msg_sender: sender});
     }
 
+    // If responding asynchronously, return `true` to keep the port open.
     if (msg.mhct_crown_update === 1) {
         submitCrowns(msg.crowns).then(sendResponse);
-        // Keep the response port open since we're responding asynchronously.
+        return true;
+    }
+
+    if (msg.mhct_golem_submit === 1) {
+        submitGolems(msg.golems).then(sendResponse);
         return true;
     }
     // TODO: Handle other extension messages.
@@ -175,29 +180,80 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
  * @param {Object <string, any>} crowns Crown counts for the given user
  * @returns {Promise <number | boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
  */
-function submitCrowns(crowns) {
+async function submitCrowns(crowns) {
     if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond) === 0) {
-        return Promise.resolve(false);
+        return false;
     }
 
-    return new Promise(resolve => {
+    const hash = ['bronze', 'silver', 'gold', 'platinum', 'diamond'].map((type) => crowns[type]).join(',');
+    if (window.sessionStorage.getItem(crowns.user) === hash) {
+        window.console.log(`Skipping submission for user "${crowns.user}" (already sent).`);
+        return null;
+    }
+
+    const endpoint = 'https://script.google.com/macros/s/AKfycbztymdfhwOe4hpLIdVLYCbOTB66PWNDtnNRghg-vFx5u2ogHmU/exec';
+    const options = {
+        mode: 'cors',
+        method: 'POST',
+        credentials: 'omit',
+    };
+
+    const payload = new FormData();
+    payload.set('main', JSON.stringify(crowns));
+    try {
+        const resp = await fetch(endpoint, {...options, body: payload});
+        if (!resp.ok) return false;
+    } catch (error) {
+        window.console.error('Fetch/Network Error', {error, crowns});
+        return false;
+    }
+
+    // Cache when we've successfully posted to the endpoint.
+    try {
+        window.sessionStorage.setItem(crowns.user, hash);
+    } catch (error) {
+        window.console.warn('Unable to cache crown request');
+    }
+    setTimeout(() => window.sessionStorage.removeItem(crowns.user), 300 * 1000);
+    return crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond;
+}
+
+/**
+ * Promise to submit the given golem(s) loot for external storage
+ * @param { {
+ *   [userId: string]: {
+ *     [locationName: string]: {
+ *       [tierName: string]: {
+ *           count: number, [lootName: string]: number
+ *       }
+ *     }
+ *   }
+ * }[] } golems
+ */
+async function submitGolems(golems) {
+    if (!golems || !Array.isArray(golems) || !golems.length) {
+        return false;
+    }
+
+    const endpoint = "https://script.google.com/macros/s/AKfycbzQjEgLA5W7ZUVKydZ_l_Cm8419bI8e0Vs2y3vW2S_RwlF-6_I/exec";
+    const options = {
+        mode: 'cors',
+        method: 'POST',
+        credentials: 'omit',
+    };
+
+    let allOk = true;
+    for (const golem of golems) {
         const payload = new FormData();
-        payload.set("main", JSON.stringify(crowns));
-        fetch("https://script.google.com/macros/s/AKfycbztymdfhwOe4hpLIdVLYCbOTB66PWNDtnNRghg-vFx5u2ogHmU/exec", {
-            mode: "cors",
-            method: "POST",
-            credentials: "omit",
-            body: payload,
-        }).then((response) => resolve(response.ok
-            ? crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond
-            : false
-        )).catch((error) => {
-            window.console.error({
-                "message": "Error submitting user crowns",
-                "error": error,
-                "crowns": crowns,
-            });
-            resolve(false);
-        });
-    });
+        payload.set('golemString', JSON.stringify(golem));
+        try {
+            const resp = await fetch(endpoint, {...options, body: payload});
+            allOk = allOk && resp.ok;
+            if (!resp.ok) window.console.error('Error submitting golem', {golem});
+        } catch (error) {
+            allOk = false;
+            window.console.error('Fetch/Network Error', {error});
+        }
+    }
+    return allOk ? golems.length : false;
 }
