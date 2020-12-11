@@ -438,7 +438,7 @@
                             }
                         });
 
-                    if (debug_logging) {window.console.log({gwh_2020_payload: payload});}
+                    if (debug_logging) window.console.log({gwh_2020_payload: payload});
 
                     if (Object.keys(payload).length > 0) {
                         // Send payload to Google Forms
@@ -461,7 +461,7 @@
                             }
                         };
                         xhr.onerror = function () {
-                            console.error(xhr.statusText);
+                            if (debug_logging) window.console.error({gwh_2020_error: xhr.statusText});
                             showFlashMessage("error", "Golem data submission failed");
                         };
 
