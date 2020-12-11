@@ -465,8 +465,7 @@
                             showFlashMessage("error", "Golem data submission failed");
                         };
 
-                        // xhr.send(`golemString=${JSON.stringify(payload)}`);
-                        xhr.send(`golemString=${JSON.stringify(payload)}&testing=true`);
+                        xhr.send(`golemString=${JSON.stringify(payload)}`);
                     }
                 }
             }
