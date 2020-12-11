@@ -69,6 +69,16 @@
             return;
         }
 
+        // Golem submission results in either the boolean `false`, or the number of submitted golems.
+        if (ev.data.mhct_message === 'golemSubmissionStatus') {
+            const count = ev.data.submitted;
+            if (count) {
+                displayFlashMessage(ev.data.settings, 'success', 'Snow Golem data submitted successfully');
+            } else {
+                displayFlashMessage(ev.data.settings, 'error', 'Snow Golem data submission failed, sorry!');
+            }
+        }
+
     }, false);
 
     function sound_horn() {
@@ -257,6 +267,7 @@
                 getSettings(settings => recordCrowns(settings, xhr, url));
             }
         } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
+            // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
             // (GMT): Friday, January 29, 2021 12:00:00 AM [GWH 2020 placeholder end date])
             if (Date.now() < 1611878400000) {
                 getSettings(settings => recordGWH2020Golems(settings, xhr));
@@ -372,103 +383,47 @@
             return;
         }
 
-        const msgs = xhr.responseJSON.messageData.message_model.messages;
-        for (let msg of msgs) {
-            const content = msg.messageData.content;
-            if (content) {
-                const title = content.title;
-                if (title.indexOf("Snow Golem reward") >= 0) {
-                    // Parse location name
-                    let locationName = "N/A";
-                    if (title.indexOf(" from the ") >= 0) {
-                        locationName = title.split("from the ")[1].split("!")[0];
+        const golems = xhr.responseJSON.messageData.message_model.messages
+            .filter(({messageData}) => messageData.content && messageData.content.title.includes('Snow Golem reward'))
+            .map(({messageData}) => {
+                const {title, body} = messageData.content;
+                const locationName = /from (?:the )(.+)!/.exec(title)[1].trim();
+                const userID = messageData.stream_publish_data.params.user_id; // `${user.user_id}`;
+                const payload = {[userID]: {[locationName]: {}}};
+                const ref = payload[userID][locationName];
+
+                // Use an in-memory DOM tree to obtain the items, slots, & quantities.
+                const doc = new DOMParser().parseFromString(body, 'text/html');
+                const gwh_prefix = '.winterHunt2020-claimRewardPopup';
+
+                // Get only the item boxes which actually have an item (i.e. ignore locked slots).
+                const lootDivs = Array.from(doc.querySelectorAll(`${gwh_prefix}-content ${gwh_prefix}-item`))
+                    .map((itemDiv) => [`${gwh_prefix}-item-rarity`, '.quantity', `${gwh_prefix}-item-name`]
+                        .map((sel) => itemDiv.querySelector(sel)))
+                    .filter(([rarityEl, qtyEl, itemEl]) => rarityEl && qtyEl && itemEl);
+
+                // Update the location data with the rarity-item-quantity information.
+                lootDivs.forEach(([rarityEl, qtyEl, itemEl]) => {
+                    const rarity = rarityEl.textContent === 'Magical Hat' ? 'Hat'
+                        : rarityEl.textContent.charAt(0).toUpperCase() + rarityEl.textContent.slice(1);
+                    const quantity = parseInt(qtyEl.textContent.replace(/,/g, '').trim(), 10); // Remove commas from e.g. 10,000 gold
+                    const item = itemEl.textContent.includes('SUPER|brie') ? 'SUPER|brie+' : itemEl.textContent.trim();
+
+                    if (ref[rarity] && ref[rarity][item]) {
+                        ref[rarity][item] += quantity;
+                    } else if (ref[rarity]) {
+                        ref[rarity][item] = quantity;
                     } else {
-                        locationName = title.split("from ")[1].split("!")[0];
+                        ref[rarity] = {count: 0, [item]: quantity};
                     }
-
-                    // Initialize payload object
-                    const userID = msg.messageData.stream_publish_data.params.user_id;
-                    const payload = {};
-                    payload[userID] = {};
-                    payload[userID][locationName] = {};
-
-                    // Initialize DOM parsing of HTML string
-                    const body = content.body;
-                    const dom = new DOMParser();
-                    const doc = dom.parseFromString(body, "text/html");
-                    const itemDiv = doc.querySelector(
-                        ".winterHunt2020-claimRewardPopup-content"
-                    );
-                    itemDiv
-                        .querySelectorAll(".winterHunt2020-claimRewardPopup-item")
-                        .forEach(el => {
-                            const rarityEl = el.querySelector(
-                                ".winterHunt2020-claimRewardPopup-item-rarity"
-                            );
-                            const qtyEl = el.querySelector(".quantity");
-                            const itemEl = el.querySelector(
-                                ".winterHunt2020-claimRewardPopup-item-name"
-                            );
-                            if (rarityEl && qtyEl && itemEl) {
-                                let rarity = rarityEl.textContent;
-                                rarity = rarity == "Magical Hat" ? "Hat" : rarity;
-                                rarity = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-                                const quantity = parseInt(
-                                    qtyEl.textContent.replace(/,/g, "") // Trim commas (e.g. for gold qty)
-                                );
-                                let item = itemEl.textContent;
-
-                                // Item name edge cases
-                                if (item.indexOf("SUPER|brie") >= 0) item = "SUPER|brie+";
-
-                                // Fixed qty rolls -> Avg/Raw = % Chance
-                                // e.g. total qty of 20 in 40 rolls -> 20/40 = 0.5 avg -> 0.5 / 5 per roll = 10% chance
-                                if (payload[userID][locationName][rarity] === undefined) {
-                                    payload[userID][locationName][rarity] = {};
-                                    payload[userID][locationName][rarity].count = 1;
-                                    payload[userID][locationName][rarity][item] = quantity;
-                                } else {
-                                    if (payload[userID][locationName][rarity][item] === undefined) {
-                                        payload[userID][locationName][rarity][item] = quantity;
-                                    } else {
-                                        payload[userID][locationName][rarity][item] += quantity;
-                                    }
-                                    payload[userID][locationName][rarity].count += 1;
-                                }
-                            }
-                        });
-
-                    if (debug_logging) window.console.log({gwh_2020_payload: payload});
-
-                    if (Object.keys(payload).length > 0) {
-                        // Send payload to Google Forms
-                        const xhr = new XMLHttpRequest();
-                        xhr.open(
-                            "POST",
-                            "https://script.google.com/macros/s/AKfycbzQjEgLA5W7ZUVKydZ_l_Cm8419bI8e0Vs2y3vW2S_RwlF-6_I/exec"
-                        );
-                        xhr.setRequestHeader(
-                            "content-type",
-                            "application/x-www-form-urlencoded"
-                        );
-                        xhr.onload = function () {
-                            const response = xhr.responseText;
-                            if (
-                                response.indexOf("success") >= 0 ||
-                                response.indexOf("Thanks") >= 0
-                            ) {
-                                showFlashMessage("success", `${new Date(Date.now()).toLocaleString()} - ${locationName}: GWH 2020 golem data submitted successfully!`);
-                            }
-                        };
-                        xhr.onerror = function () {
-                            if (debug_logging) window.console.error({gwh_2020_error: xhr.statusText});
-                            showFlashMessage("error", "Golem data submission failed");
-                        };
-
-                        xhr.send(`golemString=${JSON.stringify(payload)}`);
-                    }
-                }
-            }
+                    // Lastly, keep track of how many slots we've seen.
+                    ++ref[rarity].count;
+                });
+                return payload;
+            });
+        if (golems.length) {
+            if (debug_logging) window.console.log({message: 'GWH Golem', golems});
+            window.postMessage({mhct_golem_submit: 1, golems, settings}, window.origin);
         }
     }
 

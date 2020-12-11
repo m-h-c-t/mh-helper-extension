@@ -162,9 +162,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         console.log({msg, msg_sender: sender});
     }
 
+    // If responding asynchronously, return `true` to keep the port open.
     if (msg.mhct_crown_update === 1) {
         submitCrowns(msg.crowns).then(sendResponse);
-        // Keep the response port open since we're responding asynchronously.
+        return true;
+    }
+
+    if (msg.mhct_golem_submit === 1) {
+        submitGolems(msg.golems).then(sendResponse);
         return true;
     }
     // TODO: Handle other extension messages.
@@ -200,4 +205,44 @@ function submitCrowns(crowns) {
             resolve(false);
         });
     });
+}
+
+/**
+ * Promise to submit the given golem(s) loot for external storage
+ * @param { {
+ *   [userId: string]: {
+ *     [locationName: string]: {
+ *       [tierName: string]: {
+ *           count: number, [lootName: string]: number
+ *       }
+ *     }
+ *   }
+ * }[] } golems
+ */
+async function submitGolems(golems) {
+    if (!golems || !Array.isArray(golems) || !golems.length) {
+        return false;
+    }
+
+    const endpoint = "https://script.google.com/macros/s/AKfycbzQjEgLA5W7ZUVKydZ_l_Cm8419bI8e0Vs2y3vW2S_RwlF-6_I/exec";
+    const options = {
+        mode: 'cors',
+        method: 'POST',
+        credentials: 'omit',
+    };
+
+    let allOk = true;
+    for (const golem of golems) {
+        const payload = new FormData();
+        payload.set('golemString', JSON.stringify(golem));
+        try {
+            const resp = await fetch(endpoint, {...options, body: payload});
+            allOk = allOk && resp.ok;
+            if (!resp.ok) window.console.error('Error submitting golem', {golem});
+        } catch (error) {
+            allOk = false;
+            window.console.error('Fetch/Network Error', {error});
+        }
+    }
+    return allOk ? golems.length : false;
 }
