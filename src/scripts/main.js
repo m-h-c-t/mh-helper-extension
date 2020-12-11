@@ -195,7 +195,7 @@
         }
 
         mhhh_flash_message_div.fadeIn(() => {
-            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500 + 1000 * (type !== "success"));
+            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 2500 + 1000 * (type !== "success"));
         });
     }
 
@@ -255,6 +255,11 @@
         } else if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
             if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
                 getSettings(settings => recordCrowns(settings, xhr, url));
+            }
+        } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
+            // (GMT): Friday, January 29, 2021 12:00:00 AM [GWH 2020 placeholder end date])
+            if (Date.now() < 1611878400000) {
+                getSettings(settings => recordGWH2020Golems(settings, xhr));
             }
         }
     });
@@ -344,6 +349,128 @@
             "crowns": payload,
             "settings": settings,
         }, window.origin);
+    }
+
+    /**
+     * Record GWH 2020 golem submissions
+     * @param {Object <string, any>} settings The user's extension settings.
+     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
+     */
+    function recordGWH2020Golems(settings, xhr) {
+        // TODO: Replace with optional chaining, once full spec compliance is obtained.
+        if (
+            !xhr.responseJSON || !xhr.responseJSON.messageData || !xhr.responseJSON.messageData.message_model ||
+            !xhr.responseJSON.messageData.message_model.messages
+        ) {
+            if (debug_logging) window.console.log('Skipped GWH 2020 golem submission due to unhandled XHR structure');
+            window.postMessage({
+                "mhct_log_request": 1,
+                "is_error": true,
+                "gwh_2020_submit_xhr_response": xhr.responseJSON,
+                "reason": "Unable to parse GWH 2020 response",
+            }, window.origin);
+            return;
+        }
+
+        const msgs = xhr.responseJSON.messageData.message_model.messages;
+        for (let msg of msgs) {
+            const content = msg.messageData.content;
+            if (content) {
+                const title = content.title;
+                if (title.indexOf("Snow Golem reward") >= 0) {
+                    // Parse location name
+                    let locationName = "N/A";
+                    if (title.indexOf(" from the ") >= 0) {
+                        locationName = title.split("from the ")[1].split("!")[0];
+                    } else {
+                        locationName = title.split("from ")[1].split("!")[0];
+                    }
+
+                    // Initialize payload object
+                    const userID = msg.messageData.stream_publish_data.params.user_id;
+                    const payload = {};
+                    payload[userID] = {};
+                    payload[userID][locationName] = {};
+
+                    // Initialize DOM parsing of HTML string
+                    const body = content.body;
+                    const dom = new DOMParser();
+                    const doc = dom.parseFromString(body, "text/html");
+                    const itemDiv = doc.querySelector(
+                        ".winterHunt2020-claimRewardPopup-content"
+                    );
+                    itemDiv
+                        .querySelectorAll(".winterHunt2020-claimRewardPopup-item")
+                        .forEach(el => {
+                            const rarityEl = el.querySelector(
+                                ".winterHunt2020-claimRewardPopup-item-rarity"
+                            );
+                            const qtyEl = el.querySelector(".quantity");
+                            const itemEl = el.querySelector(
+                                ".winterHunt2020-claimRewardPopup-item-name"
+                            );
+                            if (rarityEl && qtyEl && itemEl) {
+                                let rarity = rarityEl.textContent;
+                                rarity = rarity == "Magical Hat" ? "Hat" : rarity;
+                                rarity = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+                                const quantity = parseInt(
+                                    qtyEl.textContent.replace(/,/g, "") // Trim commas (e.g. for gold qty)
+                                );
+                                let item = itemEl.textContent;
+
+                                // Item name edge cases
+                                if (item.indexOf("SUPER|brie") >= 0) item = "SUPER|brie+";
+
+                                // Fixed qty rolls -> Avg/Raw = % Chance
+                                // e.g. total qty of 20 in 40 rolls -> 20/40 = 0.5 avg -> 0.5 / 5 per roll = 10% chance
+                                if (payload[userID][locationName][rarity] === undefined) {
+                                    payload[userID][locationName][rarity] = {};
+                                    payload[userID][locationName][rarity].count = 1;
+                                    payload[userID][locationName][rarity][item] = quantity;
+                                } else {
+                                    if (payload[userID][locationName][rarity][item] === undefined) {
+                                        payload[userID][locationName][rarity][item] = quantity;
+                                    } else {
+                                        payload[userID][locationName][rarity][item] += quantity;
+                                    }
+                                    payload[userID][locationName][rarity].count += 1;
+                                }
+                            }
+                        });
+
+                    if (debug_logging) {window.console.log({gwh_2020_payload: payload});}
+
+                    if (Object.keys(payload).length > 0) {
+                        // Send payload to Google Forms
+                        const xhr = new XMLHttpRequest();
+                        xhr.open(
+                            "POST",
+                            "https://script.google.com/macros/s/AKfycbzQjEgLA5W7ZUVKydZ_l_Cm8419bI8e0Vs2y3vW2S_RwlF-6_I/exec"
+                        );
+                        xhr.setRequestHeader(
+                            "content-type",
+                            "application/x-www-form-urlencoded"
+                        );
+                        xhr.onload = function () {
+                            const response = xhr.responseText;
+                            if (
+                                response.indexOf("success") >= 0 ||
+                                response.indexOf("Thanks") >= 0
+                            ) {
+                                showFlashMessage("success", `${new Date(Date.now()).toLocaleString()} - ${locationName}: GWH 2020 golem data submitted successfully!`);
+                            }
+                        };
+                        xhr.onerror = function () {
+                            console.error(xhr.statusText);
+                            showFlashMessage("error", "Golem data submission failed");
+                        };
+
+                        // xhr.send(`golemString=${JSON.stringify(payload)}`);
+                        xhr.send(`golemString=${JSON.stringify(payload)}&testing=true`);
+                    }
+                }
+            }
+        }
     }
 
     // Record map mice
