@@ -180,31 +180,29 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
  * @param {Object <string, any>} crowns Crown counts for the given user
  * @returns {Promise <number | boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
  */
-function submitCrowns(crowns) {
+async function submitCrowns(crowns) {
     if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond) === 0) {
-        return Promise.resolve(false);
+        return false;
     }
 
-    return new Promise(resolve => {
-        const payload = new FormData();
-        payload.set("main", JSON.stringify(crowns));
-        fetch("https://script.google.com/macros/s/AKfycbztymdfhwOe4hpLIdVLYCbOTB66PWNDtnNRghg-vFx5u2ogHmU/exec", {
-            mode: "cors",
-            method: "POST",
-            credentials: "omit",
-            body: payload,
-        }).then((response) => resolve(response.ok
+    const endpoint = 'https://script.google.com/macros/s/AKfycbztymdfhwOe4hpLIdVLYCbOTB66PWNDtnNRghg-vFx5u2ogHmU/exec';
+    const options = {
+        mode: 'cors',
+        method: 'POST',
+        credentials: 'omit',
+    };
+
+    const payload = new FormData();
+    payload.set('main', JSON.stringify(crowns));
+    try {
+        const resp = await fetch(endpoint, {...options, body: payload});
+        return resp.ok
             ? crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond
-            : false
-        )).catch((error) => {
-            window.console.error({
-                "message": "Error submitting user crowns",
-                "error": error,
-                "crowns": crowns,
-            });
-            resolve(false);
-        });
-    });
+            : false;
+    } catch (error) {
+        window.console.error('Fetch/Network Error', {error, crowns});
+        return false;
+    }
 }
 
 /**
