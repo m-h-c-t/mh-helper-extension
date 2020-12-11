@@ -185,6 +185,12 @@ async function submitCrowns(crowns) {
         return false;
     }
 
+    const hash = ['bronze', 'silver', 'gold', 'platinum', 'diamond'].map((type) => crowns[type]).join(',');
+    if (window.sessionStorage.getItem(crowns.user) === hash) {
+        window.console.log(`Skipping submission for user "${crowns.user}" (already sent).`);
+        return null;
+    }
+
     const endpoint = 'https://script.google.com/macros/s/AKfycbztymdfhwOe4hpLIdVLYCbOTB66PWNDtnNRghg-vFx5u2ogHmU/exec';
     const options = {
         mode: 'cors',
@@ -196,13 +202,20 @@ async function submitCrowns(crowns) {
     payload.set('main', JSON.stringify(crowns));
     try {
         const resp = await fetch(endpoint, {...options, body: payload});
-        return resp.ok
-            ? crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond
-            : false;
+        if (!resp.ok) return false;
     } catch (error) {
         window.console.error('Fetch/Network Error', {error, crowns});
         return false;
     }
+
+    // Cache when we've successfully posted to the endpoint.
+    try {
+        window.sessionStorage.setItem(crowns.user, hash);
+    } catch (error) {
+        window.console.warn('Unable to cache crown request');
+    }
+    setTimeout(() => window.sessionStorage.removeItem(crowns.user), 300 * 1000);
+    return crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond;
 }
 
 /**

@@ -63,8 +63,10 @@
             if (counts) {
                 displayFlashMessage(ev.data.settings, "success",
                     `Submitted ${counts} crowns for ${$('span[class*="titleBar-name"]').text()}.`);
-            } else {
+            } else if (counts != null) {
                 displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
+            } else if (debug_logging) {
+                window.console.log('Skipped submission (already sent).');
             }
             return;
         }
