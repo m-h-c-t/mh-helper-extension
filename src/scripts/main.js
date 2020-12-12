@@ -389,7 +389,7 @@
             .filter(({messageData}) => messageData.content && messageData.content.title.includes('Snow Golem reward'))
             .map(({messageData}) => {
                 const {title, body} = messageData.content;
-                const locationName = /from (?:the )(.+)!/.exec(title)[1].trim();
+                const locationName = /from (?:the )?(.+)!/.exec(title)[1].trim();
                 const userID = messageData.stream_publish_data.params.user_id; // `${user.user_id}`;
                 const payload = {[userID]: {[locationName]: {}}};
                 const ref = payload[userID][locationName];
