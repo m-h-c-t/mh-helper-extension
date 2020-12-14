@@ -221,13 +221,10 @@ async function submitCrowns(crowns) {
 /**
  * Promise to submit the given golem(s) loot for external storage
  * @param { {
- *   [userId: string]: {
- *     [locationName: string]: {
- *       [tierName: string]: {
- *           count: number, [lootName: string]: number
- *       }
- *     }
- *   }
+ *   uid: string,
+ *   timestamp: number
+ *   location: string,
+ *   loot: { name: string, quantity: number, rarity: string }[],
  * }[] } golems
  */
 async function submitGolems(golems) {
@@ -246,6 +243,7 @@ async function submitGolems(golems) {
     for (const golem of golems) {
         const payload = new FormData();
         payload.set('golemString', JSON.stringify(golem));
+        payload.set('schemaVersion', '2');
         try {
             const resp = await fetch(endpoint, {...options, body: payload});
             allOk = allOk && resp.ok;
