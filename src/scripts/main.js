@@ -391,7 +391,7 @@
                 const {title, body} = messageData.content;
                 const locationName = /from (?:the )?(.+)!/.exec(title)[1].trim();
                 const payload = {
-                    uid: messageData.stream_publish_data.params.user_id,
+                    uid: messageData.stream_publish_data.params.user_id.toString(),
                     timestamp: new Date(`${messageDate}Z`).getTime(),
                     location: locationName,
                     loot: [],
