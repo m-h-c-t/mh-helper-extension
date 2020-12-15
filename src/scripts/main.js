@@ -387,12 +387,19 @@
 
         const golems = xhr.responseJSON.messageData.message_model.messages
             .filter(({messageData}) => messageData.content && messageData.content.title.includes('Snow Golem reward'))
-            .map(({messageData}) => {
+            .map(({messageData, messageDate}) => {
                 const {title, body} = messageData.content;
                 const locationName = /from (?:the )?(.+)!/.exec(title)[1].trim();
-                const userID = messageData.stream_publish_data.params.user_id; // `${user.user_id}`;
-                const payload = {[userID]: {[locationName]: {}}};
-                const ref = payload[userID][locationName];
+                const payload = {
+                    uid: messageData.stream_publish_data.params.user_id.toString(),
+                    timestamp: new Date(`${messageDate}Z`).getTime(),
+                    location: locationName,
+                    loot: [],
+                };
+                // In case the timestamping failed.
+                if (Number.isNaN(payload.timestamp) || Math.abs(Date.now() - payload.timestamp) > 10000) {
+                    payload.timestamp = Date.now();
+                }
 
                 // Use an in-memory DOM tree to obtain the items, slots, & quantities.
                 const doc = new DOMParser().parseFromString(body, 'text/html');
@@ -409,17 +416,8 @@
                     const rarity = rarityEl.textContent === 'Magical Hat' ? 'Hat'
                         : rarityEl.textContent.charAt(0).toUpperCase() + rarityEl.textContent.slice(1);
                     const quantity = parseInt(qtyEl.textContent.replace(/,/g, '').trim(), 10); // Remove commas from e.g. 10,000 gold
-                    const item = itemEl.textContent.includes('SUPER|brie') ? 'SUPER|brie+' : itemEl.textContent.trim();
-
-                    if (ref[rarity] && ref[rarity][item]) {
-                        ref[rarity][item] += quantity;
-                    } else if (ref[rarity]) {
-                        ref[rarity][item] = quantity;
-                    } else {
-                        ref[rarity] = {count: 0, [item]: quantity};
-                    }
-                    // Lastly, keep track of how many slots we've seen.
-                    ++ref[rarity].count;
+                    const name = itemEl.textContent.includes('SUPER|brie') ? 'SUPER|brie+' : itemEl.textContent.trim();
+                    payload.loot.push({name, quantity, rarity});
                 });
                 return payload;
             });
