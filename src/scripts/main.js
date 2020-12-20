@@ -1056,7 +1056,8 @@
 
         if (quest.comet.current_phase === 11) {
             message.stage = "Boss";
-        } else {
+        } 
+        else if (/Pecan Pecorino/.test(user.bait_name)) {
             let theme = quest.decorations.current_decoration || "none";
             if (theme == "none") {
                 theme = "No Decor";
@@ -1065,6 +1066,8 @@
                 theme = theme.charAt(0).toUpperCase() + theme.slice(1);
             }
             message.stage = theme;
+        } else {
+            message.stage = 'N/A';
         }
     }
 
