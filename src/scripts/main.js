@@ -521,6 +521,7 @@
             window.console.log({differences});
         }
 
+        
         const hunt = parseJournalEntries(response);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
         if (!response.success || !response.active_turn) {
@@ -557,6 +558,17 @@
         if (debug_logging) {window.console.log({message, user_pre, user_post, hunt});}
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
+    }
+
+    // Add bonus journal entry stuff to the hunt_details
+    function addMoreDetails(hunt) {
+        let new_details = {};
+        if ('more_details' in hunt) {
+            hunt.more_details.forEach(detail => {
+                new_details = Object.assign(new_details, {detail: true});
+            }) ;
+        }
+        return new_details;
     }
 
     // Record convertible items
@@ -657,6 +669,7 @@
      */
     function parseJournalEntries(hunt_response) {
         let journal = {};
+        let more_details = [];
         if (!hunt_response.journal_markup) {
             return null;
         }
@@ -764,6 +777,11 @@
                     }
                 }
             }
+            else if (css_class.search(/pirate_sleigh_trigger/) !== -1) {
+                // SS Scoundrel Sleigh got 'im!
+                more_details.push('pirate_sleigh_trigger');
+                if (debug_logging) {window.console.warn({record: more_details});}
+            }
             else if (Object.keys(journal).length !== 0) {
                 // Only the first regular mouse attraction journal entry can be the active one.
             }
@@ -774,6 +792,9 @@
                 journal = markup;
             }
         });
+        if (more_details.length) {
+            journal['more_details'] = more_details;
+        }
         return journal;
     }
 
@@ -1737,9 +1758,11 @@
         ].map((details_func) => details_func(message, user, user_post, hunt))
             .filter(details => details);
 
+        const otherJournalDetails = addMoreDetails(hunt);
+
         // Finally, merge the details objects and add it to the message.
         if (locationHuntDetails || globalHuntDetails.length >= 0) {
-            message.hunt_details = Object.assign({}, locationHuntDetails, ...globalHuntDetails);
+            message.hunt_details = Object.assign({}, locationHuntDetails, ...globalHuntDetails, ...otherJournalDetails);
         }
     }
 
