@@ -562,7 +562,7 @@
 
     // Add bonus journal entry stuff to the hunt_details
     function addMoreDetails(hunt) {
-        let new_details = {};
+        const new_details = {};
         if ('more_details' in hunt) {
             hunt.more_details.forEach(detail => {
                 new_details[detail] = true;
@@ -669,7 +669,7 @@
      */
     function parseJournalEntries(hunt_response) {
         let journal = {};
-        let more_details = [];
+        const more_details = [];
         if (!hunt_response.journal_markup) {
             return null;
         }
