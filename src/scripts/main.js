@@ -565,8 +565,8 @@
         let new_details = {};
         if ('more_details' in hunt) {
             hunt.more_details.forEach(detail => {
-                new_details = Object.assign(new_details, {detail: true});
-            }) ;
+                new_details[detail] = true;
+            });
         }
         return new_details;
     }
@@ -1762,7 +1762,7 @@
 
         // Finally, merge the details objects and add it to the message.
         if (locationHuntDetails || globalHuntDetails.length >= 0) {
-            message.hunt_details = Object.assign({}, locationHuntDetails, ...globalHuntDetails, ...otherJournalDetails);
+            message.hunt_details = Object.assign({}, locationHuntDetails, ...globalHuntDetails, otherJournalDetails);
         }
     }
 
