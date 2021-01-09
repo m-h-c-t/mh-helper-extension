@@ -776,24 +776,24 @@
                     }
                 }
             }
-            else if (Object.keys(journal).length !== 0) {
-                // Only the first regular mouse attraction journal entry can be the active one.
-            }
-            else if (css_class.search(/linked|passive|misc/) !== -1) {
-                // Ignore any friend hunts, trap checks, or custom loot journal entries.
-            }
-            else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
-                if (css_class.includes('active')) {
-                    journal = markup;
-                }
-                else if (Object.keys(journal).length !== 0) {
-                    done_procs = true;
-                }
-            }
             else if (!done_procs && css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
                 more_details['pirate_sleigh_trigger'] = true;
-                if (debug_logging) {window.console.warn({record: more_details});}
+                if (debug_logging) {window.console.log({record: more_details});}
+            }
+            else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
+                if (debug_logging) {window.console.log({message: "Got a hunt record"});}
+                if (Object.keys(journal).length !== 0) {
+                    done_procs = true;
+                    if (debug_logging) {window.console.log({done_procs: done_procs});}
+                }
+                else if (css_class.includes('active')) {
+                    journal = markup;
+                    if (debug_logging) {window.console.log({message: "Found the active hunt", journal: journal});}
+                }
+            }
+            else if (css_class.search(/linked|passive|misc/) !== -1) {
+                // Ignore any friend hunts, trap checks, or custom loot journal entries.
             }
         });
         if (journal && Object.keys(journal).length) {
