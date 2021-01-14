@@ -779,13 +779,13 @@
             else if (!done_procs && css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
                 more_details['pirate_sleigh_trigger'] = true;
-                if (debug_logging) {window.console.log({record: more_details});}
+                if (debug_logging) {window.console.log({procs: more_details});}
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
                 if (debug_logging) {window.console.log({message: "Got a hunt record"});}
                 if (Object.keys(journal).length !== 0) {
+                    // When true this means extra journal entries won't be considered for this hunt's data
                     done_procs = true;
-                    if (debug_logging) {window.console.log({done_procs: done_procs});}
                 }
                 else if (css_class.includes('active')) {
                     journal = markup;
@@ -1764,7 +1764,7 @@
         ].map((details_func) => details_func(message, user, user_post, hunt))
             .filter(details => details);
 
-        const otherJournalDetails = calcMoreDetails(hunt);
+        const otherJournalDetails = calcMoreDetails(hunt); // This is probably not needed and can use hunt.more_details below
 
         // Finally, merge the details objects and add it to the message.
         if (locationHuntDetails || globalHuntDetails.length >= 0) {
