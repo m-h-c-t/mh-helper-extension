@@ -521,6 +521,7 @@
             window.console.log({differences});
         }
 
+        
         const hunt = parseJournalEntries(response);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
         if (!response.success || !response.active_turn) {
@@ -557,6 +558,15 @@
         if (debug_logging) {window.console.log({message, user_pre, user_post, hunt});}
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
+    }
+
+    // Add bonus journal entry stuff to the hunt_details
+    function calcMoreDetails(hunt) {
+        let new_details = {};
+        if ('more_details' in hunt) {
+            new_details = hunt.more_details;
+        }
+        return new_details;
     }
 
     // Record convertible items
@@ -657,6 +667,8 @@
      */
     function parseJournalEntries(hunt_response) {
         let journal = {};
+        const more_details = {};
+        let done_procs = false;
         if (!hunt_response.journal_markup) {
             return null;
         }
@@ -764,16 +776,30 @@
                     }
                 }
             }
-            else if (Object.keys(journal).length !== 0) {
-                // Only the first regular mouse attraction journal entry can be the active one.
+            else if (!done_procs && css_class.search(/pirate_sleigh_trigger/) !== -1) {
+                // SS Scoundrel Sleigh got 'im!
+                more_details['pirate_sleigh_trigger'] = true;
+                if (debug_logging) {window.console.log({procs: more_details});}
+            }
+            else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
+                if (debug_logging) {window.console.log({message: "Got a hunt record"});}
+                if (Object.keys(journal).length !== 0) {
+                    // When true this means extra journal entries won't be considered for this hunt's data
+                    done_procs = true;
+                }
+                else if (css_class.includes('active')) {
+                    journal = markup;
+                    if (debug_logging) {window.console.log({message: "Found the active hunt", journal: journal});}
+                }
             }
             else if (css_class.search(/linked|passive|misc/) !== -1) {
                 // Ignore any friend hunts, trap checks, or custom loot journal entries.
             }
-            else if (css_class.includes('active') && css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
-                journal = markup;
-            }
         });
+        if (journal && Object.keys(journal).length) {
+            // Only assign if there's an active hunt
+            journal['more_details'] = more_details;
+        }
         return journal;
     }
 
@@ -945,6 +971,7 @@
         "Claw Shot City": addClawShotCityStage,
         "Cursed City": addLostCityStage,
         "Festive Comet": addFestiveCometStage,
+        "Frozen Vacant Lot": addFestiveCometStage,
         "Fiery Warpath": addFieryWarpathStage,
         "Floating Islands": addFloatingIslandsStage,
         "Forbidden Grove": addForbiddenGroveStage,
@@ -1737,9 +1764,11 @@
         ].map((details_func) => details_func(message, user, user_post, hunt))
             .filter(details => details);
 
+        const otherJournalDetails = calcMoreDetails(hunt); // This is probably not needed and can use hunt.more_details below
+
         // Finally, merge the details objects and add it to the message.
         if (locationHuntDetails || globalHuntDetails.length >= 0) {
-            message.hunt_details = Object.assign({}, locationHuntDetails, ...globalHuntDetails);
+            message.hunt_details = Object.assign({}, locationHuntDetails, ...globalHuntDetails, otherJournalDetails);
         }
     }
 
