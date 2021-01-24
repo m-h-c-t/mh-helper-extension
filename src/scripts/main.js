@@ -1731,7 +1731,7 @@
         "Bristle Woods Rift": calcBristleWoodsRiftHuntDetails,
         "Claw Shot City": calcClawShotCityHuntDetails,
         "Fiery Warpath": calcFieryWarpathHuntDetails,
-        "Floating Islands": calcFloatingIslandsHuntDetails,
+        // "Floating Islands": calcFloatingIslandsHuntDetails, // Moved to stages
         "Fort Rox": calcFortRoxHuntDetails,
         "Harbour": calcHarbourHuntDetails,
         "Sand Crypts": calcSandCryptsHuntDetails,
