@@ -1986,7 +1986,6 @@
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
      * @param {Object <string, any>} user_post The user state object, after the hunt.
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     */
     function calcFloatingIslandsHuntDetails(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
         const {island_loot} = envAttributes.hunting_site_atts;
@@ -1996,6 +1995,7 @@
 
         return lootItems;
     }
+     */
 
     /**
      * Categorize the available buffs that may be applied on the hunt, such as an active Tower's
