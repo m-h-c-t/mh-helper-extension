@@ -1632,7 +1632,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addSBFactoryStage(message, user, user_post, hunt) {
-        const factory = user.quests.QuestBirthday2020.factory_atts;
+        const factory = user.quests.QuestSuperBrieFactory.factory_atts;
         if (message.mouse === "Vincent, The Magnificent" || factory.boss_warning) {
             message.stage = "Boss";
         } else {
@@ -1642,7 +1642,7 @@
                 "break_room":             "Break Room",
                 "quality_assurance_room": "QA Room",
             })[factory.current_room]);
-            if (!message.stage) {
+            if (!message.stage || !/Coggy Colby/.test(user.bait_name) ) {
                 message.stage = "No Room";
             }
         }
