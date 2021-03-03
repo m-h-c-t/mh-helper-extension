@@ -462,7 +462,7 @@
             sandy_bert_bites_snack_pack:	130004,
             hollow_heights_party_pack_snack_pack:	130005,
             riftios_snack_pack:	130006,
-        }
+        };
         const convertible = {};
         if (purchase.type in packs) {
             convertible["name"] = purchase.type;
@@ -553,14 +553,14 @@
             'Rift Glutter Cheese': 2097,
             'Rift Combat Cheese': 2096,
             'Null Onyx Gorgonzola': 2100,
-        }
-        let items = [];
+        };
+        const items = [];
         if ("items" in purchase) {
             purchase.items.forEach(item => {
                 items.push({
-                    id: cheese[item.name], 
+                    id: cheeses[item.name], 
                     name: item.name, 
-                    quantity: item.quantity
+                    quantity: item.quantity,
                 });
             });
         }
