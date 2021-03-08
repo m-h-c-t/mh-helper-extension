@@ -539,7 +539,7 @@
             'Diamond Cheese': 1731,
             'Rift Rumble Cheese': 2101,
             'Polluted Parmesan Cheese': 1550,
-            'Gauntlet String Cheese': 2096,
+            'Gauntlet String Cheese': 2906,
             'Runic String Cheese': 2344,
             'Resonator Cheese': 1425,
             'Lactrodectus Lancashire Cheese': 1646,
@@ -564,7 +564,7 @@
                 });
             });
         }
-        if (debug_logging) window.console.log({convertible: convertible, items: items});
+        if (debug_logging) window.console.log({convertible: convertible, items: items, settings: settings});
         submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
     }
     
