@@ -440,7 +440,7 @@
      */
     function recordSnackPack(settings, xhr) {
         if (
-            !xhr.responseJSON || !xhr.responseJSON.vending_machine_purchase || 
+            !xhr.responseJSON || !xhr.responseJSON.vending_machine_purchase ||
                 !xhr.responseJSON.vending_machine_purchase.type || !xhr.responseJSON.user.user_id
         ) {
             if (debug_logging) window.console.log('Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
@@ -558,8 +558,8 @@
         if ("items" in purchase) {
             purchase.items.forEach(item => {
                 items.push({
-                    id: cheeses[item.name], 
-                    name: item.name, 
+                    id: cheeses[item.name],
+                    name: item.name,
                     quantity: item.quantity,
                 });
             });
@@ -567,7 +567,7 @@
         if (debug_logging) window.console.log({convertible: convertible, items: items, settings: settings});
         submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
     }
-    
+
     // Record map mice
     function recordMap(xhr) {
         const resp = xhr.responseJSON;
@@ -662,7 +662,7 @@
             window.console.log({differences});
         }
 
-        
+
         const hunt = parseJournalEntries(response);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
         if (!response.success || !response.active_turn) {
@@ -1224,7 +1224,7 @@
 
         if (quest.comet.current_phase === 11) {
             message.stage = "Boss";
-        } 
+        }
         else if (/Pecan Pecorino/.test(user.bait_name)) {
             let theme = quest.decorations.current_decoration || "none";
             if (theme == "none") {
@@ -1784,7 +1784,7 @@
                 "quality_assurance_room": "QA Room",
             })[factory.current_room]);
             if (!message.stage || !/Coggy Colby/.test(user.bait_name) ) {
-                message.stage = "No Room";
+                message.stage = "Any Room";
             }
         }
     }
