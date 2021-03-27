@@ -126,6 +126,7 @@ function getSettings() {
             horn_alert: false, // defaults
             horn_webalert: false, // defaults
             tracking_enabled: true, // defaults
+            escape_button_close: false, // defaults
         },
         items => {
             if (chrome.runtime.lastError) {
