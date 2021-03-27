@@ -2410,8 +2410,8 @@
         }
 
         if (settings.escape_button_close) {
-		    escapeButtonClose();
-	    }
+            escapeButtonClose();
+        }
         
         // If this page is a profile page, query the crown counts (if the user tracks crowns).
         const profileAutoScan = () => {
