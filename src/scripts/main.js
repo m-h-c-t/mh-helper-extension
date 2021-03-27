@@ -2393,12 +2393,26 @@
             : null);
     }
 
+    function escapeButtonClose() {
+        $(document).keyup(function (e) {
+            if (e.key === "Escape" && $('a[id*=jsDialogClose],input[class*=jsDialogClose],a[class*=messengerUINotificationClose],a[class*=closeButton],input[value*=Close]').length > 0) {
+                $('a[id*=jsDialogClose],input[class*=jsDialogClose],a[class*=messengerUINotificationClose],a[class*=closeButton],input[value*=Close]').each(function () {
+                    $(this).click();
+                });
+            }
+        });
+    }
+    
     // Finish configuring the extension behavior.
     getSettings(settings => {
         if (settings.debug_logging) {
             window.console.log({message: "Initialized with settings", settings});
         }
 
+        if (settings.escape_button_close) {
+		    escapeButtonClose();
+	    }
+        
         // If this page is a profile page, query the crown counts (if the user tracks crowns).
         const profileAutoScan = () => {
             const profile_RE = /profile.php\?snuid=(\w+)$/g; // "$" at regex end = only auto-fetch when AJAX route changing onto a plain profile page
