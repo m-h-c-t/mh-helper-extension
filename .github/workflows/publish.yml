@@ -20,9 +20,9 @@ jobs:
           cd src/
           pwd
           ls -la
-          sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' src/manifest.yml
-      - name: Output manifest
-        run: cat src/manifest.json
+          cat manifest.json
+          sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.yml
+          cat manifest.json
       # - name: Commit new version
       #   run: git remote set-url origin ${{ secrets.ssh }}
       #   run: git status
