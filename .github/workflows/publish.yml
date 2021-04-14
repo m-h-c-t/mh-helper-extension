@@ -25,6 +25,7 @@ jobs:
       #   run: git push origin HEAD:master
       - name: Zip it! zip it good!
         run: |
+          cd ${{ github.workspace }}/src/
           mkdir ../build
           zip -r ../build/release.zip .
           pwd
