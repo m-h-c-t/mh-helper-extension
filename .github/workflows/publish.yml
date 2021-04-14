@@ -1,0 +1,12 @@
+name: Publish to Chrome and FF webstores
+on:
+  workflow_dispatch:
+jobs:
+  pull-zip-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Zip it! zip it good!
+        run: mkdir build && cd src && zip -r ../build/release.zip .
+        run: pwd
