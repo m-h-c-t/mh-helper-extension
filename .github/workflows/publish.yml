@@ -11,17 +11,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - run: |
-          cd ${{ github.workspace }}
-          ls -la
       - name: Update version
         run: |
-          pwd
-          cd src/
-          pwd
-          ls -la
-          cat manifest.json
-          sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.yml
+          cd ${{ github.workspace }}/src/
+          sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
           cat manifest.json
       # - name: Commit new version
       #   run: git remote set-url origin ${{ secrets.ssh }}
@@ -31,6 +24,10 @@ jobs:
       #   run: git fetch origin master
       #   run: git push origin HEAD:master
       - name: Zip it! zip it good!
-        run: mkdir build && cd src && zip -r ../build/release.zip .
-      - run: pwd
-      - run: ls -la ../build/release.zip
+        run: |
+          cd ../
+          mkdir build
+          cd src
+          zip -r ../build/release.zip .
+          pwd
+          ls -la ../build/release.zip
