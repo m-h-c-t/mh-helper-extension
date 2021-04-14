@@ -1,12 +1,33 @@
 name: Publish to Chrome and FF webstores
 on:
   workflow_dispatch:
+    inputs:
+      newAddonVersion:
+        description: 'Please input version number in this format(YY.MM.DD): 21.07.31'
+        required: true
 jobs:
   pull-zip-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+      - name: Update version
+        run: sed -E -i "" "s|(\"version\":).*|\1 \"${{ github.event.inputs.newAddonVersion }}\",|" src/manifest.json
+      - name: Output manifest
+        run: cat src/manifest.json
+      # - name: switching from HTTPS to SSH
+      #   run: git remote set-url origin ${{ secrets.ssh }}
+      # - name: check for changes
+      #   run: git status
+      # - name: stage changed files
+      #   run: git add .
+      # - name: commit changed files
+      #   run: git commit -m "Auto updating TODO.txt"
+      # - name: fetch from master
+      #   run: git fetch origin master
+      # - name: push code to master
+      #   run: git push origin HEAD:master
       - name: Zip it! zip it good!
         run: mkdir build && cd src && zip -r ../build/release.zip .
-        run: pwd
+      - run: pwd
+      - run: ls -la ../build/release.zip
