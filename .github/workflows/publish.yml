@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+      - run: |
+          cd ${{ github.workspace }}
+          ls src/
       - name: Update version
         run: sed -E -i "" "s|(\"version\":).*|\1 \"${{ github.event.inputs.newAddonVersion }}\",|" src/manifest.json
       - name: Output manifest
