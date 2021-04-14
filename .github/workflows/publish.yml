@@ -9,6 +9,8 @@ jobs:
   CD:
     runs-on: ubuntu-latest
     steps:
+      - name: Show who executed this
+        run: echo "${{ github.event.sender.login }}"
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Update version
