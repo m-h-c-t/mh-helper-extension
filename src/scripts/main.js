@@ -2350,7 +2350,7 @@
 
     function formatVersion(version) {
         version = version.split('.');
-        version = version[0] + pad(version[1], 2) + pad(version[2], 2) + pad(version[3], 2);
+        version = version[0] + pad(version[1], 2) + pad(version[2], 2);
         version = Number(version);
         return version;
     }

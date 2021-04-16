@@ -1,11 +1,11 @@
-name: CD Update version and publish to stores
+name: "CD Update version and publish to stores"
 on:
   workflow_dispatch:
     inputs:
       newAddonVersion:
-        description: 'Please input version number in this format(YY.MM.DD.XX): 21.12.31.01'
+        description: 'Please input version number in this format(YY.MM.XX): 21.12.01'
         required: true
-        default: "date::$(date +'%y.%m.%d.01')"
+
 jobs:
   CD:
     runs-on: ubuntu-latest
@@ -17,29 +17,19 @@ jobs:
       - name: Update version
         run: |
           cd ${{ github.workspace }}/src/
-          # Get current version
-          # content=`cat manifest.json`
-          # content="${content//'%'/'%25'}"
-          # content="${content//$'\n'/'%0A'}"
-          # content="${content//$'\r'/'%0D'}"
-          # oldVersion="${{ fromJson(content).version }}"
-          # echo "Old Version: ${{ oldVersion }}"
-          # TODO: Update old version
-          # newVersion="${{ github.event.inputs.newAddonVersion }}"
-          # if $old.xx != today.xx, new = today.01
-          # else new = old.xx + 1
           echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
           sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
           cat manifest.json
 
       - name: Commit new version
         run: |
-          # run: git remote set-url origin ${{ secrets.ssh }}
-          git status
-          git diff
+          git config --global user.name 'CD Publish Job'
+          git config --global user.email 'MHCT_PUBLISH_WORKFLOW@users.noreply.github.com'
           git add src/manifest.json
-          git commit -m "Auto updating version"
-          git push origin HEAD:master
+          git commit -m "Automated version update"
+          git push
+          git tag "v${{ github.event.inputs.newAddonVersion }}"
+          git push --tags
       - name: Zip it! zip it good!
         run: |
           cd ${{ github.workspace }}/src/
@@ -47,3 +37,28 @@ jobs:
           zip -r ../build/release.zip .
           pwd
           ls -la ../build/release.zip
+      # - name: Upload new release zip to Chrome Webstore
+        # uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
+        # with:
+          # refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
+          # client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
+          # client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
+          # file-name: './build/release.zip'
+          # app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
+          # publish: false
+      - name: Move zip to xpi
+        run: |
+          mv build/release.zip build/release.xpi
+          ls -la build/release.xpi
+          ls -la src/manifest.json
+          cat src/manifest.json
+      - name: Upload new release zip to Firefox Webstore
+        uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
+        with:
+          uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
+          xpi: ./build/release.xpi
+          manifest: ./src/manifest.json
+          api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
+          api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
+        env:
+          VERSION: ${{ github.event.inputs.newAddonVersion }}
