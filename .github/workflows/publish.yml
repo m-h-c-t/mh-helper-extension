@@ -17,17 +17,6 @@ jobs:
       - name: Update version
         run: |
           cd ${{ github.workspace }}/src/
-          # Get current version
-          # content=`cat manifest.json`
-          # content="${content//'%'/'%25'}"
-          # content="${content//$'\n'/'%0A'}"
-          # content="${content//$'\r'/'%0D'}"
-          # oldVersion="${{ fromJson(content).version }}"
-          # echo "Old Version: ${{ oldVersion }}"
-          # TODO: Update old version
-          # newVersion="${{ github.event.inputs.newAddonVersion }}"
-          # if $old.xx != today.xx, new = today.01
-          # else new = old.xx + 1
           echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
           sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
           cat manifest.json
