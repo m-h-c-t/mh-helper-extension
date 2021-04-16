@@ -13,7 +13,8 @@
         console.log("MHHH: Can't find jQuery, exiting.");
         return;
     }
-    const mhhh_version = $("#mhhh_version").val();
+
+    const mhhh_version = formatVersion($("#mhhh_version").val());
 
     let debug_logging = false;
 
@@ -585,7 +586,7 @@
             entry_timestamp: Math.round(Date.now() / 1000),
         };
 
-        map.extension_version = formatVersion(mhhh_version);
+        map.extension_version = mhhh_version;
 
         // Send to database
         sendMessageToServer(map_intake_url, map);
@@ -762,7 +763,7 @@
         const record = {
             convertible: getItem(convertible),
             items: items.map(getItem),
-            extension_version: formatVersion(mhhh_version),
+            extension_version: mhhh_version,
             asset_package_hash: Date.now(),
             user_id: user_id,
             entry_timestamp: Math.round(Date.now() / 1000),
@@ -818,7 +819,7 @@
             // Handle a Relic Hunter attraction.
             if (css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
                 const rh_message = {
-                    extension_version: formatVersion(mhhh_version),
+                    extension_version: mhhh_version,
                     user_id: hunt_response.user.user_id,
                     rh_environment: markup.render_data.environment,
                     entry_timestamp: markup.render_data.entry_timestamp,
@@ -953,7 +954,7 @@
      */
     function createMessageFromHunt(journal, user, user_post) {
         const message = {
-            extension_version: formatVersion(mhhh_version),
+            extension_version: mhhh_version,
         };
         const debug_logs = [];
 
@@ -2349,7 +2350,7 @@
 
     function formatVersion(version) {
         version = version.split('.');
-        version = version[0] + pad(version[1], 2) + pad(version[2], 2);
+        version = version[0] + pad(version[1], 2) + pad(version[2], 2) + pad(version[3], 2);
         version = Number(version);
         return version;
     }
@@ -2402,7 +2403,7 @@
             }
         });
     }
-    
+
     // Finish configuring the extension behavior.
     getSettings(settings => {
         if (settings.debug_logging) {
@@ -2412,7 +2413,7 @@
         if (settings.escape_button_close) {
             escapeButtonClose();
         }
-        
+
         // If this page is a profile page, query the crown counts (if the user tracks crowns).
         const profileAutoScan = () => {
             const profile_RE = /profile.php\?snuid=(\w+)$/g; // "$" at regex end = only auto-fetch when AJAX route changing onto a plain profile page

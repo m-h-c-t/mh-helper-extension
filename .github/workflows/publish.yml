@@ -3,8 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       newAddonVersion:
-        description: 'Please input version number in this format(YY.MM.DD): 21.07.31'
+        description: 'Please input version number in this format(YY.MM.DD.XX): 21.07.31.01'
         required: true
+        default: "$(date +'%y.%m.%d.01')"
 jobs:
   CD:
     runs-on: ubuntu-latest
@@ -16,15 +17,28 @@ jobs:
       - name: Update version
         run: |
           cd ${{ github.workspace }}/src/
+          # Get current version
+          content=`cat manifest.json`
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          oldVersion="${{ fromJson(content).version }}"
+          echo "Old Version: ${{ oldVersion }}"
+          # TODO: Update old version
+          newVersion="${{ github.event.inputs.newAddonVersion }}"
+          # if $old.xx != today.xx, new = today.01
+          # else new = old.xx + 1
+          echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
           sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
           cat manifest.json
-      # - name: Commit new version
-      #   run: git remote set-url origin ${{ secrets.ssh }}
-      #   run: git status
-      #   run: git add .
-      #   run: git commit -m "Auto updating TODO.txt"
-      #   run: git fetch origin master
-      #   run: git push origin HEAD:master
+
+      - name: Commit new version
+        run: |
+          # run: git remote set-url origin ${{ secrets.ssh }}
+          git status
+          git add .
+          git commit -m "Auto updating version"
+          git push origin HEAD:master
       - name: Zip it! zip it good!
         run: |
           cd ${{ github.workspace }}/src/
