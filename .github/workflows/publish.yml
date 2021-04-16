@@ -37,12 +37,20 @@ jobs:
           zip -r ../build/release.zip .
           pwd
           ls -la ../build/release.zip
-      - name: Upload new release zip to Chrome Webstore
-        uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
+      # - name: Upload new release zip to Chrome Webstore
+        # uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
+        # with:
+          # refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
+          # client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
+          # client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
+          # file-name: './build/release.zip'
+          # app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
+          # publish: false
+      - name: Upload new release zip to Firefox Webstore
+        uses: trmcnvn/firefox-addon@v1
         with:
-          refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
-          client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
-          client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
-          file-name: './build/release.zip'
-          app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
-          publish: false
+          uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
+          xpi: build/release.zip
+          manifest: manifest.json
+          api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
+          api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
