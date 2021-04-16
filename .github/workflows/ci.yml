@@ -23,6 +23,8 @@ jobs:
 
       - name: "web-ext lint"
         uses: kewisch/action-web-ext@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           cmd: lint
           source: src
