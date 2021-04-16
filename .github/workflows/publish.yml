@@ -28,7 +28,7 @@ jobs:
           git add src/manifest.json
           git commit -m "Automated version update"
           git push
-          git tag ${{ github.event.inputs.newAddonVersion }}
+          git tag "v${{ github.event.inputs.newAddonVersion }}"
           git push --tags
       - name: Zip it! zip it good!
         run: |
