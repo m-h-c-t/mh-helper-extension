@@ -51,6 +51,6 @@ jobs:
         with:
           uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
           xpi: build/release.zip
-          manifest: manifest.json
+          manifest: src/manifest.json
           api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
           api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
