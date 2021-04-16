@@ -37,7 +37,7 @@ jobs:
           zip -r ../build/release.zip .
           pwd
           ls -la ../build/release.zip
-      - name:
+      - name: Upload new release zip to Chrome Webstore
         uses: Klemensas/chrome-extension-upload-action
         with:
           refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
