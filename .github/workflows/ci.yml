@@ -13,6 +13,19 @@ on:
       - .github/workflows/**
 
 jobs:
+  web-ext-lint:
+    name: "Web Ext Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v1
+
+      - name: "web-ext lint"
+        uses: kewisch/action-web-ext@v1
+        with:
+          cmd: lint
+          source: src
+          channel: listed
   lint:
     runs-on: ubuntu-latest
 
