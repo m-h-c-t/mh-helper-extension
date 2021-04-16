@@ -18,14 +18,14 @@ jobs:
         run: |
           cd ${{ github.workspace }}/src/
           # Get current version
-          content=`cat manifest.json`
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          oldVersion="${{ fromJson(content).version }}"
-          echo "Old Version: ${{ oldVersion }}"
+          # content=`cat manifest.json`
+          # content="${content//'%'/'%25'}"
+          # content="${content//$'\n'/'%0A'}"
+          # content="${content//$'\r'/'%0D'}"
+          # oldVersion="${{ fromJson(content).version }}"
+          # echo "Old Version: ${{ oldVersion }}"
           # TODO: Update old version
-          newVersion="${{ github.event.inputs.newAddonVersion }}"
+          # newVersion="${{ github.event.inputs.newAddonVersion }}"
           # if $old.xx != today.xx, new = today.01
           # else new = old.xx + 1
           echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
@@ -36,7 +36,8 @@ jobs:
         run: |
           # run: git remote set-url origin ${{ secrets.ssh }}
           git status
-          git add .
+          git diff
+          git add src/manifest.json
           git commit -m "Auto updating version"
           git push origin HEAD:master
       - name: Zip it! zip it good!
