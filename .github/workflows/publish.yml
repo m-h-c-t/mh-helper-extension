@@ -38,7 +38,7 @@ jobs:
           pwd
           ls -la ../build/release.zip
       - name: Upload new release zip to Chrome Webstore
-        uses: Klemensas/chrome-extension-upload-action
+        uses: Klemensas/chrome-extension-upload-action@v1.3
         with:
           refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
           client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
