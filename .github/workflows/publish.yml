@@ -5,7 +5,7 @@ on:
       newAddonVersion:
         description: 'Please input version number in this format(YY.MM.DD.XX): 21.12.31.01'
         required: true
-        default: date::$(date +'%y.%m.%d.01')
+        default: `date +'%y.%m.%d.01'`
 jobs:
   CD:
     runs-on: ubuntu-latest
