@@ -46,13 +46,17 @@ jobs:
           # file-name: './build/release.zip'
           # app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
           # publish: false
-      - run: mv build/release.zip build/release.xpi
+      - run: |
+        mv build/release.zip build/release.xpi
+        ls -la build/release.xpi
+        ls -la src/manifest.json
+        cat src/manifest.json
       - name: Upload new release zip to Firefox Webstore
         uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
         with:
           uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
-          xpi: build/release.xpi
-          manifest: src/manifest.json
+          xpi: ./build/release.xpi
+          manifest: ./src/manifest.json
           api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
           api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
         env:
