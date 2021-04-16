@@ -24,10 +24,12 @@ jobs:
       - name: Commit new version
         run: |
           git config --global user.name 'CD Publish Job'
-          git config --global user.email 'noreply@users.noreply.github.com'
+          git config --global user.email 'MHCT_PUBLISH_WORKFLOW@users.noreply.github.com'
           git add src/manifest.json
           git commit -m "Automated version update"
           git push
+          git tag ${{ github.event.inputs.newAddonVersion }}
+          git push --tags
       - name: Zip it! zip it good!
         run: |
           cd ${{ github.workspace }}/src/
@@ -35,3 +37,12 @@ jobs:
           zip -r ../build/release.zip .
           pwd
           ls -la ../build/release.zip
+      - name:
+        uses: Klemensas/chrome-extension-upload-action
+        with:
+          refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
+          client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
+          file-name: './build/release.zip'
+          app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
+          publish: false
