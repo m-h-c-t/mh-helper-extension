@@ -1,4 +1,4 @@
-name: CD Update version and publish to stores
+name: "CD Update version and publish to stores"
 on:
   workflow_dispatch:
     inputs:
@@ -46,11 +46,12 @@ jobs:
           # file-name: './build/release.zip'
           # app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
           # publish: false
-      - run: |
-        mv build/release.zip build/release.xpi
-        ls -la build/release.xpi
-        ls -la src/manifest.json
-        cat src/manifest.json
+      - name: Move zip to xpi
+        run: |
+          mv build/release.zip build/release.xpi
+          ls -la build/release.xpi
+          ls -la src/manifest.json
+          cat src/manifest.json
       - name: Upload new release zip to Firefox Webstore
         uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
         with:
