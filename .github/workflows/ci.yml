@@ -29,6 +29,7 @@ jobs:
           cmd: lint
           source: src
           channel: listed
+          verbose: true
   lint:
     runs-on: ubuntu-latest
 
