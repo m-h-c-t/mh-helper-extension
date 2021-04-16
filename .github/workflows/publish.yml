@@ -55,3 +55,5 @@ jobs:
           manifest: src/manifest.json
           api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
           api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
+        env:
+          VERSION: ${{ github.event.inputs.newAddonVersion }}
