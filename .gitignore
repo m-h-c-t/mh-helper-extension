@@ -39,3 +39,4 @@ _ReSharper*/
 .svn
 ~$*
 /.vs
+/src/third_party/*
