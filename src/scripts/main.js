@@ -97,13 +97,13 @@
     }
 
     function openBookmarklet(url) {
-      fetch(url).then(response => response.text())
-      .then((data) => {
-        let new_source = url.replace("menu", "\" + type + \"");
-        let tsitus_menu = data.replace("el.src = cdn;", "el.src = \"" + new_source + "\";");
-        tsitus_menu = tsitus_menu.replace("<a href='https://www.jsdelivr.com/?docs=gh' target='blank'>jsDelivr</a>", "local files.");
-        eval(tsitus_menu);
-      });
+        fetch(url).then(response => response.text())
+        .then((data) => {
+            let new_source = url.replace("menu", "\" + type + \"");
+            let tsitus_menu = data.replace("el.src = cdn;", "el.src = \"" + new_source + "\";");
+            tsitus_menu = tsitus_menu.replace("<a href='https://www.jsdelivr.com/?docs=gh' target='blank'>jsDelivr</a>", "local files.");
+            eval(tsitus_menu);
+        });
     }
 
     // Get map mice
