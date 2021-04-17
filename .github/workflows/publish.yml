@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       newAddonVersion:
-        description: 'Please input version number (yy.m.d) (no leading zeros): 21.1.31'
+        description: 'Please input version number (yy.m.x) (no leading zeros): 21.12.1'
         required: true
 
 jobs:
