@@ -16,70 +16,69 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
 
-      - name: Pull in Tsitus tools
+      - name: Pull in latest Tsitus tools
         run: |
           cd ${{ github.workspace }}/src/
           mkdir -p third_party/tsitu
           cd third_party/tsitu
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-analyzer.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-crafting.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-cre.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-crown.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-loader.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-map.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-menu.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-powers.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-setup-fields.js
-          curl -O -J https://raw.githubusercontent.com/tsitu/MH-Tools/master/src/bookmarklet/bm-setup-items.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-analyzer.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-crafting.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-cre.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-crown.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-map.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-menu.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-powers.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-setup-fields.js
+          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-setup-items.js
           ls -la
 
-      # - name: Update version
-      #   run: |
-      #     cd ${{ github.workspace }}/src/
-      #     echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
-      #     sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
-      #     cat manifest.json
-      #
-      # - name: Commit new version
-      #   run: |
-      #     git config --global user.name 'CD Publish Job'
-      #     git config --global user.email 'MHCT_PUBLISH_WORKFLOW@users.noreply.github.com'
-      #     git add src/manifest.json
-      #     git commit -m "Automated version update"
-      #     git push
-      #     git tag "v${{ github.event.inputs.newAddonVersion }}"
-      #     git push --tags
+      - name: Update version
+        run: |
+          cd ${{ github.workspace }}/src/
+          echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
+          sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
+          cat manifest.json
 
-      # - name: Zip it! zip it good!
-      #   run: |
-      #     cd ${{ github.workspace }}/src/
-      #     mkdir ../build
-      #     zip -r ../build/release.zip .
-      #     pwd
-      #     ls -la ../build/release.zip
+      - name: Commit new version
+        run: |
+          git config --global user.name 'CD Publish Job'
+          git config --global user.email 'MHCT_PUBLISH_WORKFLOW@users.noreply.github.com'
+          git add src/manifest.json
+          git commit -m "Automated version update"
+          git push
+          git tag "v${{ github.event.inputs.newAddonVersion }}"
+          git push --tags
 
-      # - name: Upload new release zip to Chrome Webstore
-      #   uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
-      #   with:
-      #     refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
-      #     client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
-      #     client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
-      #     file-name: './build/release.zip'
-      #     app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
-      #     publish: true
+      - name: Zip it! zip it good!
+        run: |
+          cd ${{ github.workspace }}/src/
+          mkdir ../build
+          zip -r ../build/release.zip .
+          pwd
+          ls -la ../build/release.zip
 
-      # - name: Rename zip to xpi
-      #   run: |
-      #     mv build/release.zip build/release.xpi
-      #     ls -la build/release.xpi
+      - name: Upload new release zip to Chrome Webstore
+        uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
+        with:
+          refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
+          client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
+          file-name: './build/release.zip'
+          app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
+          publish: true
 
-      # - name: Upload new release xpi to Firefox Webstore
-      #   uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
-      #   with:
-      #     uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
-      #     xpi: ./build/release.xpi
-      #     manifest: ./src/manifest.json
-      #     api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
-      #     api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
-      #   env:
-      #     VERSION: ${{ github.event.inputs.newAddonVersion }}
+      - name: Rename zip to xpi
+        run: |
+          mv build/release.zip build/release.xpi
+          ls -la build/release.xpi
+
+      - name: Upload new release xpi to Firefox Webstore
+        uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
+        with:
+          uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
+          xpi: ./build/release.xpi
+          manifest: ./src/manifest.json
+          api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
+          api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
+        env:
+          VERSION: ${{ github.event.inputs.newAddonVersion }}
