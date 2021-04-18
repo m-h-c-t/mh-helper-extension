@@ -30,15 +30,7 @@
 
     "web_accessible_resources": [
         "scripts/main.js",
-        "third_party/tsitu/bm-analyzer.js",
-        "third_party/tsitu/bm-crafting.js",
-        "third_party/tsitu/bm-cre.js",
-        "third_party/tsitu/bm-crown.js",
-        "third_party/tsitu/bm-map.js",
-        "third_party/tsitu/bm-menu.js",
-        "third_party/tsitu/bm-powers.js",
-        "third_party/tsitu/bm-setup-fields.js",
-        "third_party/tsitu/bm-setup-items.js",
+        "third_party/tsitu/*",
         "images/icon128.png"
     ],
 

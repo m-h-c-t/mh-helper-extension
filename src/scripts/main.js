@@ -99,10 +99,11 @@
     function openBookmarklet(url) {
         fetch(url).then(response => response.text())
         .then((data) => {
-            let new_source = url.replace("menu", "\" + type + \"");
-            let tsitus_menu = data.replace("el.src = cdn;", "el.src = \"" + new_source + "\";");
-            tsitus_menu = tsitus_menu.replace("<a href='https://www.jsdelivr.com/?docs=gh' target='blank'>jsDelivr</a>", "local files.");
-            eval(tsitus_menu);
+            let new_source = url.replace("menu", "\" + t + \"");
+            let tsitus_menu = data.replace(',d="https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@"+e+"/src/bookmarklet/bm-"+t+".min.js";n.src=d', ";n.src=\"" + new_source + "\"");
+            document.location.href = "javascript:" + tsitus_menu;
+
+            console.log(tsitus_menu);
         });
     }
 
