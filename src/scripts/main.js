@@ -101,7 +101,7 @@
         .then((data) => {
             let new_source = url.replace("menu", "\" + t + \"");
             let tsitus_menu = data.replace(',d="https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@"+e+"/src/bookmarklet/bm-"+t+".min.js";n.src=d', ";n.src=\"" + new_source + "\"");
-            document.location.href = "javascript:" + tsitus_menu;
+            document.location.href = "javascript:void function(){" + tsitus_menu + "%0A}();";
 
             console.log(tsitus_menu);
         });
