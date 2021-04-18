@@ -97,15 +97,11 @@
     }
 
     function openBookmarklet(url) {
-        const xhr = new XMLHttpRequest();
-        xhr.overrideMimeType("application/javascript");
-        xhr.open("GET", url, true);
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4) {
-                document.location.href = xhr.responseText;
-            }
-        };
-        xhr.send();
+        fetch(url).then(response => response.text()).then((data) => {
+            const new_source = url.replace("menu", "\" + t + \"");
+            const tsitus_menu = data.replace(',d="https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@"+e+"/src/bookmarklet/bm-"+t+".min.js";n.src=d', ";n.src=\"" + new_source + "\"");
+            document.location.href = "javascript:void function(){" + tsitus_menu + "%0A}();";
+        });
     }
 
     // Get map mice
