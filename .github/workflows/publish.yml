@@ -39,10 +39,15 @@ jobs:
           sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
           cat manifest.json
 
+      - name: Check if there are changes
+        id: changes
+        uses: UnicornGlobal/has-changes-action@v1.0.11
+
       - name: Commit new version
+        if: steps.changes.outputs.changed == 1
         run: |
           git config --global user.name 'CD Publish Job'
-          git config --global user.email 'MHCT_PUBLISH_WORKFLOW@users.noreply.github.com'
+          git config --global user.email 'CD_Publish_Job@users.noreply.github.com'
           git add src/manifest.json
           git commit -m "Automated version update"
           git push
@@ -56,6 +61,7 @@ jobs:
           zip -r ../build/release.zip .
           pwd
           ls -la ../build/release.zip
+          cd ../
 
       - name: Upload new release zip to Chrome Webstore
         uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
@@ -66,6 +72,14 @@ jobs:
           file-name: './build/release.zip'
           app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
           publish: true
+      # - name: Upload & release
+      #   uses: mnao305/chrome-extension-upload@1.1.1
+      #   with:
+      #     file-path: build/release.zip
+      #     extension-id: hogefuga(extension id)
+      #     client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
+      #     client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
+      #     refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
 
       - name: Rename zip to xpi
         run: |
