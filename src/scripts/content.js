@@ -39,7 +39,7 @@ s.onload = () => {
             window.postMessage({
                 "mhct_message": 'tsitu_loader',
                 "tsitu_loader_offset": items.tsitu_loader_offset,
-                "file_link": chrome.runtime.getURL('third_party/tsitu/bm-menu.js'),
+                "file_link": chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js'),
             }, "*");
         }
     });
@@ -57,7 +57,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     ].includes(request.mhct_link)) {
         let file_link = '';
         if (request.mhct_link == "tsitu_loader") {
-            file_link = chrome.extension.getURL('third_party/tsitu/bm-menu.js');
+            file_link = chrome.extension.getURL('third_party/tsitu/bm-menu.min.js');
         }
         // Forwards messages from popup to main script
         window.postMessage({"mhct_message": request.mhct_link, "file_link": file_link}, "*");
