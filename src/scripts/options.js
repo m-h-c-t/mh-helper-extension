@@ -26,8 +26,10 @@ document.getElementById('save').addEventListener('click', () => {
     currentOptions.custom_sound = currentOptions.custom_sound.trim();
 
     chrome.storage.sync.set(currentOptions, () => {
-        document.getElementById('save_status').style.visibility = "visible";
-        setTimeout(() => document.getElementById('save_status').style.visibility = "hidden", 2000);
+        let save_button = document.getElementById('save');
+        save_button.innerText = "Options Saved! (Refreshing MH Page)";
+        save_button.className = "btn btn-success";
+        setTimeout(() => {save_button.innerText = "Save"; save_button.className = "btn btn-primary";}, 2000);
     });
 
     // Reload all open MH pages to apply these settings.
