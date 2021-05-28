@@ -576,10 +576,10 @@
      * @param {Object <string, any>} settings The user's extension settings.
      * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      */
-     function recordPrizePack(settings, xhr) {
+    function recordPrizePack(settings, xhr) {
         if (
             !xhr.responseJSON || !xhr.responseJSON.kings_giveaway_result ||
-                !xhr.responseJSON.kings_giveaway_result.quantity || !xhr.responseJSON.user.user_id
+            !xhr.responseJSON.kings_giveaway_result.quantity || !xhr.responseJSON.user.user_id
         ) {
             if (debug_logging) window.console.log('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
             window.postMessage({
