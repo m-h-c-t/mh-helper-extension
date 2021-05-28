@@ -602,7 +602,7 @@
 
         const item_map = {
             "gold_stat_item": 431,
-        }
+        };
 
         const items = [];
         result.items.forEach(item => {
