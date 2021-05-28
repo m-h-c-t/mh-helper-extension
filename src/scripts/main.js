@@ -277,6 +277,12 @@
             if (Date.now() < 1616598000000) {
                 getSettings(settings => recordSnackPack(settings, xhr));
             }
+        } else if (url.includes("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")) {
+            // Triggers on Birthday Items claim, room change click (+others, perhaps).
+            // Wed Jun 23 2021 22:00:00 GMT-0400 [King's Giveaway Key Vanishing date 15th])
+            if (Date.now() < 1624500000000) {
+                getSettings(settings => recordPrizePack(settings, xhr));
+            }
         }
     });
 
@@ -563,6 +569,37 @@
         }
         if (debug_logging) window.console.log({convertible: convertible, items: items, settings: settings});
         submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
+    }
+
+    /**
+     * Record Mini Prize Pack convertible submissions as convertibles in MHCT
+     * @param {Object <string, any>} settings The user's extension settings.
+     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
+     */
+     function recordPrizePack(settings, xhr) {
+        if (
+            !xhr.responseJSON || !xhr.responseJSON.kings_giveaway_result ||
+                !xhr.responseJSON.kings_giveaway_result.quantity || !xhr.responseJSON.user.user_id
+        ) {
+            if (debug_logging) window.console.log('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
+            window.postMessage({
+                "mhct_log_request": 1,
+                "is_error": true,
+                "kga_2021_response": xhr.responseJSON,
+                "reason": "Unable to parse kga 2021 response. This is normal if a pack wasn't opened",
+            }, window.origin);
+            return;
+        }
+        const result = xhr.responseJSON.kings_giveaway_result;
+
+        const convertible = {
+            name: "Mini Prize Pack",
+            id: 130007,
+            quantity: result.quantity,
+        };
+
+        if (debug_logging) window.console.log({convertible: convertible, items: result.items, settings: settings});
+        submitConvertible(convertible, result.items, xhr.responseJSON.user.user_id);
     }
 
     // Record map mice
