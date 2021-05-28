@@ -579,7 +579,8 @@
     function recordPrizePack(settings, xhr) {
         if (
             !xhr.responseJSON || !xhr.responseJSON.kings_giveaway_result ||
-            !xhr.responseJSON.kings_giveaway_result.quantity || !xhr.responseJSON.user.user_id
+            !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity || 
+            !xhr.responseJSON.user.user_id
         ) {
             if (debug_logging) window.console.log('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
             window.postMessage({
@@ -591,6 +592,7 @@
             return;
         }
         const result = xhr.responseJSON.kings_giveaway_result;
+        const inventory = xhr.responseJSON.inventory;
 
         const convertible = {
             name: "Mini Prize Pack",
@@ -598,8 +600,27 @@
             quantity: result.quantity,
         };
 
-        if (debug_logging) window.console.log({convertible: convertible, items: result.items, settings: settings});
-        submitConvertible(convertible, result.items, xhr.responseJSON.user.user_id);
+        const item_map = {
+            "gold_stat_item": 431,
+        };
+
+        const items = [];
+        result.items.forEach(item => {
+            const i = {
+                "type": item.type,
+                "quantity": parseInt(item.quantity, 10),
+            };
+            if (item.type in inventory && inventory[item.type].item_id) {
+                i.id = inventory[item.type].item_id;
+            }
+            else if (item.type in item_map) {
+                i.id = item_map[item.type];
+            }
+            items.push(i);
+        });
+
+        if (debug_logging) window.console.log({convertible: convertible, items: items, settings: settings});
+        submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
     }
 
     // Record map mice
