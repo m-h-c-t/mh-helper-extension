@@ -580,7 +580,7 @@
         if (
             !xhr.responseJSON || !xhr.responseJSON.kings_giveaway_result ||
             !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity || 
-            !xhr.responseJSON.user.user_id
+            xhr.responseJSON.kings_giveaway_result.slot !== "bonus" || !xhr.responseJSON.user.user_id
         ) {
             if (debug_logging) window.console.log('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
             window.postMessage({
@@ -595,8 +595,8 @@
         const inventory = xhr.responseJSON.inventory;
 
         const convertible = {
-            name: "Mini Prize Pack",
-            id: 130007,
+            name: "King's Mini Prize Pack",
+            id: 130008,
             quantity: result.quantity,
         };
 
