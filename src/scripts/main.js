@@ -280,9 +280,7 @@
         } else if (url.includes("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")) {
             // Triggers on Birthday Items claim, room change click (+others, perhaps).
             // Wed Jun 23 2021 22:00:00 GMT-0400 [King's Giveaway Key Vanishing date 15th])
-            if (Date.now() < 1624500000000) {
-                getSettings(settings => recordPrizePack(settings, xhr));
-            }
+            getSettings(settings => recordPrizePack(settings, xhr));
         }
     });
 
@@ -608,7 +606,7 @@
         result.items.forEach(item => {
             const i = {
                 "type": item.type,
-                "quantity": parseInt(item.quantity, 10),
+                "quantity": parseInt(item.quantity.replace(/,/g, ""), 10),
             };
             if (item.type in inventory && inventory[item.type].item_id) {
                 i.id = inventory[item.type].item_id;
