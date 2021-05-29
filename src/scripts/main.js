@@ -577,7 +577,7 @@
     function recordPrizePack(settings, xhr) {
         if (
             !xhr.responseJSON || !xhr.responseJSON.kings_giveaway_result ||
-            !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity || 
+            !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity ||
             xhr.responseJSON.kings_giveaway_result.slot !== "bonus" || !xhr.responseJSON.user.user_id
         ) {
             if (debug_logging) window.console.log('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
@@ -606,7 +606,7 @@
         result.items.forEach(item => {
             const i = {
                 "type": item.type,
-                "quantity": parseInt((item.quantity + ",").replace(/,/,""), 10),
+                "quantity": parseInt((item.quantity + ",").replace(/,/g, ""), 10),
             };
             if (item.type in inventory && inventory[item.type].item_id) {
                 i.id = inventory[item.type].item_id;
