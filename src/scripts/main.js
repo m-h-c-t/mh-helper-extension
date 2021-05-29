@@ -606,7 +606,7 @@
         result.items.forEach(item => {
             const i = {
                 "type": item.type,
-                "quantity": parseInt(item.quantity.replace(/,/g, ""), 10),
+                "quantity": parseInt((item.quantity + ",").replace(/,/,""), 10),
             };
             if (item.type in inventory && inventory[item.type].item_id) {
                 i.id = inventory[item.type].item_id;
