@@ -47,20 +47,20 @@ jobs:
           git commit -m "Automated tsitus tools update"
           git push
 
-      - name: Bump version and push tag
-        id: bump_version
-        uses: anothrNick/github-tag-action@1.26.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # WITH_V: false
-          DRY_RUN: true
-          DEFAULT_BUMP: "patch"
+      - name: Bump version
+        run: |
+          echo "NEW_CREATED_VERSION=$(git describe --tags `git rev-list --tags --max-count=1` | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g' | sed 's/v//')" >> $GITHUB_ENV
+
+      - name: Tag with new version
+        run: |
+          git tag ${{ env.NEW_CREATED_VERSION }}
+          git push --tags
 
       - name: Update version
         run: |
           cd ${{ github.workspace }}/src/
-          echo "New Version: ${{ steps.bump_version.outputs.new_tag }}"
-          sed -i'' -e 's|"version":.*|"version": "${{ steps.bump_version.outputs.new_tag }}",|' manifest.json
+          echo "New Version: ${{ env.NEW_CREATED_VERSION }}"
+          sed -i'' -e 's|"version":.*|"version": "${{ env.NEW_CREATED_VERSION }}",|' manifest.json
           cat manifest.json
 
       # - name: Zip it! zip it good!
