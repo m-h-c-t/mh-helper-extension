@@ -1,6 +1,6 @@
 name: "CD Update version and publish to stores"
-# on:
-  # workflow_dispatch:
+on:
+  workflow_dispatch:
     # inputs:
       # newAddonVersion:
         # description: 'Please input version number (yy.m.x) (no leading zeros): 21.12.1'
