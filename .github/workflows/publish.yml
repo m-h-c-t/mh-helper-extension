@@ -1,10 +1,10 @@
 name: "CD Update version and publish to stores"
-on:
-  workflow_dispatch:
-    inputs:
-      newAddonVersion:
-        description: 'Please input version number (yy.m.x) (no leading zeros): 21.12.1'
-        required: true
+# on:
+  # workflow_dispatch:
+    # inputs:
+      # newAddonVersion:
+        # description: 'Please input version number (yy.m.x) (no leading zeros): 21.12.1'
+        # required: true
 
 jobs:
   CD:
@@ -48,18 +48,19 @@ jobs:
           git push
 
       - name: Bump version and push tag
+        id: bump_version
         uses: anothrNick/github-tag-action@1.26.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
+          # WITH_V: false
           DRY_RUN: true
           DEFAULT_BUMP: "patch"
 
       - name: Update version
         run: |
           cd ${{ github.workspace }}/src/
-          echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
-          sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
+          echo "New Version: ${{ steps.bump_version.outputs.new_tag }}"
+          sed -i'' -e 's|"version":.*|"version": "${{ steps.bump_version.outputs.new_tag }}",|' manifest.json
           cat manifest.json
 
       # - name: Zip it! zip it good!
