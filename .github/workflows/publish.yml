@@ -2,9 +2,9 @@ name: "CD Update version and publish to stores"
 on:
   workflow_dispatch:
     inputs:
-      newAddonVersion:
-        description: 'Please input version number (yy.m.x) (no leading zeros): 21.12.1'
-        required: true
+      NEW_CUSTOM_VERSION:
+        description: '(OPTIONAL) >>> LEAVE EMPTY BY DEFAULT <<< it will increment xx automatically. For Major/Minor/Custom version number (yy.mm.xx) (no leading zeros) like 1.1.1.'
+        required: false
 
 jobs:
   CD:
@@ -15,6 +15,8 @@ jobs:
 
       - name: Check out repository code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
 
       - name: Pull in latest Tsitus tools
         run: |
@@ -32,13 +34,6 @@ jobs:
           curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-setup-items.min.js
           ls -la
 
-      - name: Update version
-        run: |
-          cd ${{ github.workspace }}/src/
-          echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
-          sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
-          cat manifest.json
-
       - name: Check if there are changes
         id: changes
         uses: UnicornGlobal/has-changes-action@v1.0.11
@@ -49,10 +44,30 @@ jobs:
           git config --global user.name 'CD Publish Job'
           git config --global user.email 'CD_Publish_Job@users.noreply.github.com'
           git add src/manifest.json
-          git commit -m "Automated version update"
+          git commit -m "Automated tsitus tools update"
           git push
-          git tag "v${{ github.event.inputs.newAddonVersion }}"
+
+      - name: Bump version automatically if no custom
+        if: ${{ inputs.NEW_CUSTOM_VERSION == '' }}
+        run: |
+          echo "NEW_CREATED_VERSION=$(git describe --tags `git rev-list --tags --max-count=1` | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g' | sed 's/v//')" >> $GITHUB_ENV
+
+      - name: Bump version to custom if set
+        if: ${{ inputs.NEW_CUSTOM_VERSION != '' }}
+        run: |
+          echo "NEW_CREATED_VERSION=${{ inputs.NEW_CUSTOM_VERSION }}" >> $GITHUB_ENV
+
+      - name: Tag with new version
+        run: |
+          git tag ${{ env.NEW_CREATED_VERSION }}
           git push --tags
+
+      - name: Update version
+        run: |
+          cd ${{ github.workspace }}/src/
+          echo "New Version: ${{ env.NEW_CREATED_VERSION }}"
+          sed -i'' -e 's|"version":.*|"version": "${{ env.NEW_CREATED_VERSION }}",|' manifest.json
+          cat manifest.json
 
       - name: Zip it! zip it good!
         run: |
@@ -87,4 +102,4 @@ jobs:
           api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
           api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
         env:
-          VERSION: ${{ github.event.inputs.newAddonVersion }}
+          VERSION: ${{ env.NEW_CREATED_VERSION }}

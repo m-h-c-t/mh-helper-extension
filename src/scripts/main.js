@@ -2499,6 +2499,6 @@
         URLDiffCheck(); // Initial call on page load
         $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
 
-        window.console.log("MH Hunt Helper v" + mhhh_version + " loaded! Good luck!");
+        window.console.log("MH Hunt Helper version " + mhhh_version + " loaded! Good luck!");
     });
 }());
