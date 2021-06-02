@@ -1,10 +1,10 @@
 name: "CD Update version and publish to stores"
 on:
   workflow_dispatch:
-    # inputs:
-      # newAddonVersion:
-        # description: 'Please input version number (yy.m.x) (no leading zeros): 21.12.1'
-        # required: true
+    inputs:
+      NEW_CUSTOM_VERSION:
+        description: '(OPTIONAL) >>> LEAVE EMPTY BY DEFAULT <<< it will increment xx automatically. For Major/Minor/Custom version number (yy.mm.xx) (no leading zeros) like 1.1.1.'
+        required: false
 
 jobs:
   CD:
@@ -47,9 +47,15 @@ jobs:
           git commit -m "Automated tsitus tools update"
           git push
 
-      - name: Bump version
+      - name: Bump version automatically if no custom
+        if: ${{ inputs.NEW_CUSTOM_VERSION == '' }}
         run: |
           echo "NEW_CREATED_VERSION=$(git describe --tags `git rev-list --tags --max-count=1` | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g' | sed 's/v//')" >> $GITHUB_ENV
+
+      - name: Bump version to custom if set
+        if: ${{ inputs.NEW_CUSTOM_VERSION != '' }}
+        run: |
+          echo "NEW_CREATED_VERSION=${{ inputs.NEW_CUSTOM_VERSION }}" >> $GITHUB_ENV
 
       - name: Tag with new version
         run: |
