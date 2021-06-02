@@ -48,14 +48,14 @@ jobs:
           git push
 
       - name: Bump version automatically if no custom
-        if: ${{ inputs.NEW_CUSTOM_VERSION == '' }}
+        if: ${{ github.event.inputs.NEW_CUSTOM_VERSION == '' }}
         run: |
           echo "NEW_CREATED_VERSION=$(git describe --tags `git rev-list --tags --max-count=1` | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g' | sed 's/v//')" >> $GITHUB_ENV
 
       - name: Bump version to custom if set
-        if: ${{ inputs.NEW_CUSTOM_VERSION != '' }}
+        if: ${{ github.event.inputs.NEW_CUSTOM_VERSION != '' }}
         run: |
-          echo "NEW_CREATED_VERSION=${{ inputs.NEW_CUSTOM_VERSION }}" >> $GITHUB_ENV
+          echo "NEW_CREATED_VERSION=${{ github.event.inputs.NEW_CUSTOM_VERSION }}" >> $GITHUB_ENV
 
       - name: Tag with new version
         run: |
