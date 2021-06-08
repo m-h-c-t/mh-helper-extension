@@ -36,7 +36,7 @@ jobs:
 
       - name: Check if there are changes
         id: changes
-        uses: UnicornGlobal/has-changes-action@v1.0.11
+        uses: UnicornGlobal/has-changes-action@v1.0.12
 
       - name: Commit new version
         if: steps.changes.outputs.changed == 1
