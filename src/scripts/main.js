@@ -1919,9 +1919,11 @@
                  (hsa.activated_island_mod_types.filter(item => item === "loot_cache").length === 2)) {
             message.stage += " - L2";
         }
-        else if (hsa.is_vault_island 
+        // This is a new if situation to account for the above scenarios. It adds to them.
+        if (hsa.is_vault_island 
             && 'activated_island_mod_types' in hsa 
             && Array.isArray(hsa.activated_island_mod_types)) {
+            //NOTE: There is a paperdoll attribute that may be quicker to use
             const panels = {};
             hsa.activated_island_mod_types.forEach(t => t in panels ? panels[t]++ : panels[t] = 1);
             let counter = 0;
