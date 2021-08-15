@@ -1906,17 +1906,36 @@
 
     function addFloatingIslandsStage(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        const pirates = ["No Pirates", "Some Pirates", "All Pirates"];
-        message.stage = envAttributes.hunting_site_atts.island_name;
-        if (envAttributes.hunting_site_atts.is_enemy_encounter && !envAttributes.hunting_site_atts.is_high_tier_island) {
+        const pirates = ["No Pirates", "Some Pirates", "All Pirates", "All Pirates", "All Pirates"];
+        const hsa = envAttributes.hunting_site_atts;
+        message.stage = hsa.island_name;
+        if (hsa.is_enemy_encounter && !hsa.is_high_tier_island) {
             message.stage = "Warden";
         }
         else if (user.bait_name === "Sky Pirate Swiss Cheese") {
-            message.stage = pirates[user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "sky_pirates").length];
+            message.stage = pirates[hsa.activated_island_mod_types.filter(item => item === "sky_pirates").length];
         }
-        else if ((user.bait_name === "Cloud Cheesecake") &&
-                 (user.enviroment_atts.hunting_site_atts.activated_island_mod_types.filter(item => item === "loot_cache").length === 2)) {
+        else if (((user.bait_name === "Extra Rich Cloud Cheesecake") || (user.bait_name === "Cloud Cheesecake")) &&
+                 (hsa.activated_island_mod_types.filter(item => item === "loot_cache").length === 2)) {
             message.stage += " - L2";
+        }
+        // This is a new if situation to account for the above scenarios. It adds to them.
+        if (hsa.is_vault_island 
+            && 'activated_island_mod_types' in hsa 
+            && Array.isArray(hsa.activated_island_mod_types)) {
+            //NOTE: There is a paperdoll attribute that may be quicker to use
+            const panels = {};
+            hsa.activated_island_mod_types.forEach(t => t in panels ? panels[t]++ : panels[t] = 1);
+            let counter = 0;
+            let mod_type = '';
+            for (const [type, num] of Object.entries(panels)) {
+                if (num >= 3) {
+                    counter = num;
+                    mod_type = hsa.island_mod_panels.filter(p => p.type === type)[0].name;
+                }
+            }
+            if (counter && mod_type)
+                message.stage += ` ${counter}x ${mod_type}`;
         }
     }
 
