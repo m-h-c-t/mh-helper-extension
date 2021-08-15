@@ -1906,7 +1906,7 @@
 
     function addFloatingIslandsStage(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        const pirates = ["No Pirates", "Some Pirates", "All Pirates"];
+        const pirates = ["No Pirates", "Some Pirates", "All Pirates", "All Pirates", "All Pirates"];
         const hsa = envAttributes.hunting_site_atts;
         message.stage = hsa.island_name;
         if (hsa.is_enemy_encounter && !hsa.is_high_tier_island) {
