@@ -2,51 +2,65 @@ name: "CD Update version and publish to stores"
 on:
   workflow_dispatch:
     inputs:
-      newAddonVersion:
-        description: 'Please input version number (yy.m.x) (no leading zeros): 21.12.1'
-        required: true
+      NEW_CUSTOM_VERSION:
+        description: '(OPTIONAL) >>> LEAVE EMPTY BY DEFAULT <<< it will increment xx automatically. For Major/Minor/Custom version number (yy.mm.xx) (no leading zeros) like 1.1.1.'
+        required: false
 
 jobs:
   CD:
     runs-on: ubuntu-latest
     steps:
-      - name: Show who executed this
+      - name: Authorized by
         run: echo "${{ github.event.sender.login }}"
 
-      - name: Check out repository code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
 
       - name: Pull in latest Tsitus tools
+        # TODO: Make this runnable via `npm run update-tsitu-tools` by writing a utility script
+        # (It can then also be leveraged by `npm run build` for assembling the complete extension)
+        env:
+          tsitu_cdn: https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet
+          curl_opts: -sSf -O -J
         run: |
-          cd ${{ github.workspace }}/src/
-          mkdir -p third_party/tsitu
-          cd third_party/tsitu
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-analyzer.min.js
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-crafting.min.js
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-cre.min.js
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-crown.min.js
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-map.min.js
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-menu.min.js
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-powers.min.js
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-setup-fields.min.js
-          curl -O -J https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-setup-items.min.js
-          ls -la
+          mkdir -p ${{ github.workspace }}/src/third_party/tsitu
+          cd ${{ github.workspace }}/src/third_party/tsitu
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-analyzer.min.js
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-crafting.min.js
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-cre.min.js
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-crown.min.js
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-map.min.js
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-menu.min.js
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-powers.min.js
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-setup-fields.min.js
+          curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-setup-items.min.js
 
-      - name: Update version
+      - name: Auto-versioning
+        if: ${{ github.event.inputs.NEW_CUSTOM_VERSION == '' }}
         run: |
-          cd ${{ github.workspace }}/src/
-          echo "New Version: ${{ github.event.inputs.newAddonVersion }}"
-          sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
-          cat manifest.json
+          echo "NEW_CREATED_VERSION=$(git describe --tags `git rev-list --tags --max-count=1` | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g' | sed 's/v//')" >> $GITHUB_ENV
+
+      - name: Use custom version
+        if: ${{ github.event.inputs.NEW_CUSTOM_VERSION != '' }}
+        run: |
+          echo "NEW_CREATED_VERSION=${{ github.event.inputs.NEW_CUSTOM_VERSION }}" >> $GITHUB_ENV
+
+      - name: Tag with new version
+        run: |
+          git tag ${{ env.NEW_CREATED_VERSION }}
+          git push --tags
+
+      - name: Update manifest
+        run: |
+          echo "New Version: ${{ env.NEW_CREATED_VERSION }}"
+          sed -i'' -e 's|"version":.*|"version": "${{ env.NEW_CREATED_VERSION }}",|' src/manifest.json
+          cat src/manifest.json
 
       - name: Zip it! zip it good!
         run: |
-          cd ${{ github.workspace }}/src/
-          mkdir ../build
-          zip -r ../build/release.zip .
-          pwd
-          ls -la ../build/release.zip
-          cd ../
+          mkdir build
+          zip -r ./build/release.zip ./src
 
       - name: Upload new release zip to Chrome Webstore
         uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
@@ -59,9 +73,7 @@ jobs:
           publish: true
 
       - name: Rename zip to xpi
-        run: |
-          mv build/release.zip build/release.xpi
-          ls -la build/release.xpi
+        run: mv build/release.zip build/release.xpi
 
       - name: Upload new release xpi to Firefox Webstore
         uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
@@ -72,4 +84,4 @@ jobs:
           api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
           api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
         env:
-          VERSION: ${{ github.event.inputs.newAddonVersion }}
+          VERSION: ${{ env.NEW_CREATED_VERSION }}
