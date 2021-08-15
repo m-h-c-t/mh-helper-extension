@@ -1909,8 +1909,15 @@
         const pirates = ["No Pirates", "Some Pirates", "All Pirates", "All Pirates", "All Pirates"];
         const hsa = envAttributes.hunting_site_atts;
         message.stage = hsa.island_name;
-        if (hsa.is_enemy_encounter && !hsa.is_high_tier_island) {
-            message.stage = "Warden";
+        if (hsa.is_enemy_encounter) {
+            if (hsa.is_low_tier_island)
+                message.stage = "Warden";
+            else if (hsa.is_high_tier_island)
+                message.stage += " Paragon";
+            else if (hsa.is_vault_island)
+                message.stage = "Empress";
+            else
+                message.stage += " Enemy Encounter";
         }
         else if (user.bait_name === "Sky Pirate Swiss Cheese") {
             message.stage = pirates[hsa.activated_island_mod_types.filter(item => item === "sky_pirates").length];
