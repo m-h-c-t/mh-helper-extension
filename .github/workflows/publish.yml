@@ -39,21 +39,6 @@ jobs:
           sed -i'' -e 's|"version":.*|"version": "${{ github.event.inputs.newAddonVersion }}",|' manifest.json
           cat manifest.json
 
-      - name: Check if there are changes
-        id: changes
-        uses: UnicornGlobal/has-changes-action@v1.0.11
-
-      - name: Commit new version
-        if: steps.changes.outputs.changed == 1
-        run: |
-          git config --global user.name 'CD Publish Job'
-          git config --global user.email 'CD_Publish_Job@users.noreply.github.com'
-          git add src/manifest.json
-          git commit -m "Automated version update"
-          git push
-          git tag "v${{ github.event.inputs.newAddonVersion }}"
-          git push --tags
-
       - name: Zip it! zip it good!
         run: |
           cd ${{ github.workspace }}/src/
