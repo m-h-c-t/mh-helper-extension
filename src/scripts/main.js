@@ -1928,8 +1928,7 @@
             message.stage += ` - Loot x${hsa.activated_island_mod_types.filter(item => item === "loot_cache").length}`;
         }
         // This is a new if situation to account for the above scenarios. It adds to them.
-        else if (set_stage === 0
-            && hsa.is_vault_island 
+        else if (hsa.is_vault_island 
             && 'activated_island_mod_types' in hsa 
             && Array.isArray(hsa.activated_island_mod_types)) {
             //NOTE: There is a paperdoll attribute that may be quicker to use
