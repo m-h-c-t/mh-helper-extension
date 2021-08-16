@@ -1906,11 +1906,12 @@
 
     function addFloatingIslandsStage(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        // I realize this could now just use the length of the array
-        const pirates = ["Pirate x0", "Pirate x1", "Pirate x2", "Pirate x3", "Pirate x4"];
+        const pirates = ["No Pirates", "Pirates x1", "Pirate x2", "Pirate x3", "Pirate x4"];
         const hsa = envAttributes.hunting_site_atts;
+        let set_stage = 0;
         message.stage = hsa.island_name;
         if (hsa.is_enemy_encounter) {
+            set_stage = 1;
             if (hsa.is_low_tier_island)
                 message.stage = "Warden";
             else if (hsa.is_high_tier_island)
@@ -1922,13 +1923,15 @@
         }
         else if (user.bait_name === "Sky Pirate Swiss Cheese") {
             message.stage = pirates[hsa.activated_island_mod_types.filter(item => item === "sky_pirates").length];
+            set_stage = 1;
         }
         else if (((user.bait_name === "Extra Rich Cloud Cheesecake") || (user.bait_name === "Cloud Cheesecake")) &&
-                 (hsa.activated_island_mod_types.filter(item => item === "loot_cache").length === 2)) {
-            message.stage += " - L2";
+                 (hsa.activated_island_mod_types.filter(item => item === "loot_cache").length >= 2)) {
+            message.stage += ` - Loot x${hsa.activated_island_mod_types.filter(item => item === "loot_cache").length}`;
+            set_stage = 1;
         }
         // This is a new if situation to account for the above scenarios. It adds to them.
-        if (user.bait_name !== "Sky Pirate Swiss Cheese"
+        if (set_stage === 0
             && hsa.is_vault_island 
             && 'activated_island_mod_types' in hsa 
             && Array.isArray(hsa.activated_island_mod_types)) {
