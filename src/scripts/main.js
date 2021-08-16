@@ -1908,10 +1908,9 @@
         const envAttributes = user.environment_atts || user.enviroment_atts;
         const pirates = ["No Pirates", "Pirates x1", "Pirates x2", "Pirates x3", "Pirates x4"];
         const hsa = envAttributes.hunting_site_atts;
-        let set_stage = 0;
         message.stage = hsa.island_name;
+
         if (hsa.is_enemy_encounter) {
-            set_stage = 1;
             if (hsa.is_low_tier_island)
                 message.stage = "Warden";
             else if (hsa.is_high_tier_island)
@@ -1923,15 +1922,13 @@
         }
         else if (user.bait_name === "Sky Pirate Swiss Cheese") {
             message.stage = pirates[hsa.activated_island_mod_types.filter(item => item === "sky_pirates").length];
-            set_stage = 1;
         }
         else if (((user.bait_name === "Extra Rich Cloud Cheesecake") || (user.bait_name === "Cloud Cheesecake")) &&
                  (hsa.activated_island_mod_types.filter(item => item === "loot_cache").length >= 2)) {
             message.stage += ` - Loot x${hsa.activated_island_mod_types.filter(item => item === "loot_cache").length}`;
-            set_stage = 1;
         }
         // This is a new if situation to account for the above scenarios. It adds to them.
-        if (set_stage === 0
+        else if (set_stage === 0
             && hsa.is_vault_island 
             && 'activated_island_mod_types' in hsa 
             && Array.isArray(hsa.activated_island_mod_types)) {
