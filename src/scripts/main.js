@@ -1906,7 +1906,8 @@
 
     function addFloatingIslandsStage(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        const pirates = ["No Pirates", "Some Pirates", "All Pirates", "All Pirates", "All Pirates"];
+        // I realize this could now just use the length of the array
+        const pirates = ["Pirate x0", "Pirate x1", "Pirate x2", "Pirate x3", "Pirate x4"];
         const hsa = envAttributes.hunting_site_atts;
         message.stage = hsa.island_name;
         if (hsa.is_enemy_encounter) {
@@ -1927,7 +1928,8 @@
             message.stage += " - L2";
         }
         // This is a new if situation to account for the above scenarios. It adds to them.
-        if (hsa.is_vault_island 
+        if (user.bait_name !== "Sky Pirate Swiss Cheese"
+            && hsa.is_vault_island 
             && 'activated_island_mod_types' in hsa 
             && Array.isArray(hsa.activated_island_mod_types)) {
             //NOTE: There is a paperdoll attribute that may be quicker to use
