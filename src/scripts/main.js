@@ -1906,7 +1906,7 @@
 
     function addFloatingIslandsStage(message, user, user_post, hunt) {
         const envAttributes = user.environment_atts || user.enviroment_atts;
-        const pirates = ["No Pirates", "Pirates x1", "Pirate x2", "Pirate x3", "Pirate x4"];
+        const pirates = ["No Pirates", "Pirates x1", "Pirates x2", "Pirates x3", "Pirates x4"];
         const hsa = envAttributes.hunting_site_atts;
         let set_stage = 0;
         message.stage = hsa.island_name;
