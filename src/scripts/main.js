@@ -1921,7 +1921,8 @@
                 message.stage += " Enemy Encounter";
         }
         else if (user.bait_name === "Sky Pirate Swiss Cheese") {
-            message.stage = pirates[hsa.activated_island_mod_types.filter(item => item === "sky_pirates").length];
+            message.stage = hsa.is_vault_island ? "Vault " : "Island ";
+            message.stage += pirates[hsa.activated_island_mod_types.filter(item => item === "sky_pirates").length];
         }
         else if (((user.bait_name === "Extra Rich Cloud Cheesecake") || (user.bait_name === "Cloud Cheesecake")) &&
                  (hsa.activated_island_mod_types.filter(item => item === "loot_cache").length >= 2)) {
