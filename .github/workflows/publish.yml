@@ -67,15 +67,16 @@ jobs:
           name: release.zip
           path: build/release.zip
 
-      - uses: johnyherangi/create-release-notes@main
-        id: create-release-notes
+      - name: Create release notes
+        id: create_release_notes
+        uses: mikepenz/release-changelog-builder-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/release.zip"
-          body: ${{ steps.create-release-notes.outputs.release-notes }}
+          body: ${{ steps.create_release_notes.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Upload new release zip to Chrome Webstore
