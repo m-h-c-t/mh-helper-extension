@@ -70,11 +70,15 @@ jobs:
       - name: Create release notes
         id: create_release_notes
         uses: mikepenz/release-changelog-builder-action@v1
+        with:
+          commitMode: true
+          failOnError: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ncipollo/release-action@v1
         with:
+          name: ${{ env.NEW_CREATED_VERSION }}
           artifacts: "build/release.zip"
           body: ${{ steps.create_release_notes.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
