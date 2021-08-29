@@ -79,6 +79,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           name: ${{ env.NEW_CREATED_VERSION }}
+          tag: ${{ env.NEW_CREATED_VERSION }}
           artifacts: "build/release.zip"
           body: ${{ steps.create_release_notes.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
