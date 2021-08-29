@@ -47,25 +47,30 @@ jobs:
           echo "NEW_CREATED_VERSION=${{ github.event.inputs.NEW_CUSTOM_VERSION }}" >> $GITHUB_ENV
 
       - name: Tag with new version
+        id: create-tag
         run: |
           git tag ${{ env.NEW_CREATED_VERSION }}
           git push --tags
+          echo "::set-output name=version-tag::${{ env.NEW_CREATED_VERSION }}"
 
       - name: Update manifest
         run: |
-          echo "New Version: ${{ env.NEW_CREATED_VERSION }}"
-          sed -i'' -e 's|"version":.*|"version": "${{ env.NEW_CREATED_VERSION }}",|' src/manifest.json
+          echo "New Version: ${{ steps.create-tag.outputs.version-tag }}"
+          sed -i'' -e 's|"version":.*|"version": "${{ steps.create-tag.outputs.version-tag }}",|' src/manifest.json
           cat src/manifest.json
 
       - name: Zip it! zip it good!
+        id: create-zip
         run: |
           mkdir build
-          zip -r ./build/release.zip ./src
+          zip -r ./build/release-${{ steps.create-tag.outputs.version-tag }}.zip ./src
+          echo "::set-output name=artifact-name::release-${{ steps.create-tag.outputs.version-tag }}.zip"
+          echo "::set-output name=artifact-path::build/release-${{ steps.create-tag.outputs.version-tag }}.zip"
 
       - uses: actions/upload-artifact@v2
         with:
-          name: release.zip
-          path: build/release.zip
+          name: ${{ steps.create-zip.outputs.artifact-name }}
+          path: ${{ steps.create-zip.outputs.artifact-path }}
 
       - name: Create release notes
         id: create_release_notes
@@ -78,9 +83,9 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          name: ${{ env.NEW_CREATED_VERSION }}
-          tag: ${{ env.NEW_CREATED_VERSION }}
-          artifacts: "build/release.zip"
+          name: ${{ steps.create-tag.outputs.version-tag }}
+          tag: ${{ steps.create-tag.outputs.version-tag }}
+          artifacts: ${{ steps.create-zip.outputs.artifact-path }}
           body: ${{ steps.create_release_notes.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
