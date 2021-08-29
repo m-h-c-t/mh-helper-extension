@@ -62,6 +62,11 @@ jobs:
           mkdir build
           zip -r ./build/release.zip ./src
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: release.zip
+          path: build/release.zip
+
       - name: Upload new release zip to Chrome Webstore
         uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
         with:
