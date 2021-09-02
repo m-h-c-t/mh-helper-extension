@@ -1,4 +1,5 @@
 # MouseHunt Helper Extension
+[![CI Lint & Test](https://github.com/mh-community-tools/mh-helper-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/mh-community-tools/mh-helper-extension/actions/workflows/ci.yml)
 
 <a href="https://chrome.google.com/webstore/detail/mh-hunt-helper/ghfmjkamilolkalibpmokjigalmncfek" target="_blank"><img src="badge-chrome.png"></a>
 <a href="https://addons.mozilla.org/en-US/firefox/addon/mhct-mousehunt-helper/" target="_blank"><img src="badge-firefox.png"></a>
