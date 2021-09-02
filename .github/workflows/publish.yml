@@ -1,4 +1,4 @@
-name: "CD Update version and publish to stores"
+name: "Publish Extension"
 on:
   workflow_dispatch:
     inputs:
