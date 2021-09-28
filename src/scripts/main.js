@@ -8,6 +8,7 @@
     const map_intake_url = base_domain_url + "/map_intake.php";
     const convertible_intake_url = base_domain_url + "/convertible_intake.php";
     const map_helper_url = base_domain_url + "/maphelper.php";
+    const rh_intake_url = base_domain_url + "/rh_intake.php";
 
     if (!window.jQuery) {
         console.log("MHHH: Can't find jQuery, exiting.");
@@ -624,6 +625,15 @@
     // Record map mice
     function recordMap(xhr) {
         const resp = xhr.responseJSON;
+        const entry_timestamp = Math.round(Date.now() / 1000);
+        if (resp.treasure_map_inventory && resp.treasure_map_inventory.relic_hunter_hint) {
+            sendMessageToServer(rh_intake_url, {
+                hint: resp.treasure_map_inventory.relic_hunter_hint,
+                user: resp.user.user_id,
+                entry_timestamp: entry_timestamp,
+            });
+        }
+
         if (!resp.treasure_map || !resp.treasure_map.map_id || !resp.treasure_map.name) {
             return;
         }
@@ -635,7 +645,7 @@
                 .replace(/common /i, '')
                 .replace(/Ardouous/i, 'Arduous'),
             user_id: resp.user.user_id,
-            entry_timestamp: Math.round(Date.now() / 1000),
+            entry_timestamp: entry_timestamp,
         };
 
         map.extension_version = mhhh_version;
