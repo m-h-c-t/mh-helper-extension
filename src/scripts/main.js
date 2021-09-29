@@ -629,7 +629,7 @@
         if (resp.treasure_map_inventory && resp.treasure_map_inventory.relic_hunter_hint) {
             sendMessageToServer(rh_intake_url, {
                 hint: resp.treasure_map_inventory.relic_hunter_hint,
-                user: resp.user.user_id,
+                user_id: resp.user.user_id,
                 entry_timestamp: entry_timestamp,
             });
         }
