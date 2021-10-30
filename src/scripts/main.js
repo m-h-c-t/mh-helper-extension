@@ -311,11 +311,8 @@
      * @param {string} url The URL that invoked the function call.
      */
     function recordCrowns(settings, xhr, url) {
-        // TODO: Replace with optional chaining, once full spec compliance is obtained.
-        if (!xhr.responseJSON || !xhr.responseJSON.page || !xhr.responseJSON.page.tabs
-            || !xhr.responseJSON.page.tabs.kings_crowns || !Array.isArray(xhr.responseJSON.page.tabs.kings_crowns.subtabs)
-            || !xhr.responseJSON.page.tabs.kings_crowns.subtabs[0] || !xhr.responseJSON.page.tabs.kings_crowns.subtabs[0].mouse_crowns
-        ) {
+        const mouseCrowns = xhr.responseJSON?.page?.tabs?.kings_crowns?.subtabs?.[0]?.mouse_crowns;
+        if (!mouseCrowns) {
             if (debug_logging) window.console.log('Skipped crown submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
@@ -329,7 +326,7 @@
         // Traditional snuids are digit-only, but new snuids are `hg_` plus a hash, e.g.
         //    hg_0ffb7add4e6e14d8e1147cb3f12fe84d
         const url_params = url.match(/snuid%5D=(\w+)/);
-        const badgeGroups = xhr.responseJSON.page.tabs.kings_crowns.subtabs[0].mouse_crowns.badge_groups;
+        const badgeGroups = mouseCrowns.badge_groups;
         if (!url_params || !badgeGroups) {
             return;
         }
@@ -378,22 +375,19 @@
      * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      */
     function recordGWH2020Golems(settings, xhr) {
-        // TODO: Replace with optional chaining, once full spec compliance is obtained.
-        if (
-            !xhr.responseJSON || !xhr.responseJSON.messageData || !xhr.responseJSON.messageData.message_model ||
-            !xhr.responseJSON.messageData.message_model.messages
-        ) {
-            if (debug_logging) window.console.log('Skipped GWH 2020 golem submission due to unhandled XHR structure');
+        const {messages} = xhr.responseJSON?.messageData?.message_model ?? {};
+        if (!messages) {
+            if (debug_logging) window.console.log('Skipped GWH golem submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
                 "is_error": true,
-                "gwh_2020_submit_xhr_response": xhr.responseJSON,
-                "reason": "Unable to parse GWH 2020 response",
+                "gwh_golem_submit_xhr_response": xhr.responseJSON,
+                "reason": "Unable to parse GWH response",
             }, window.origin);
             return;
         }
 
-        const golems = xhr.responseJSON.messageData.message_model.messages
+        const golems = messages
             .filter(({messageData}) => messageData.content && messageData.content.title.includes('Snow Golem reward'))
             .map(({messageData, messageDate}) => {
                 const {title, body} = messageData.content;
@@ -441,10 +435,8 @@
      * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      */
     function recordSnackPack(settings, xhr) {
-        if (
-            !xhr.responseJSON || !xhr.responseJSON.vending_machine_purchase ||
-                !xhr.responseJSON.vending_machine_purchase.type || !xhr.responseJSON.user.user_id
-        ) {
+        const {vending_machine_purchase: purchase, user} = xhr.responseJSON ?? {};
+        if (!purchase.type || !user?.user_id) {
             if (debug_logging) window.console.log('Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
@@ -454,7 +446,6 @@
             }, window.origin);
             return;
         }
-        const purchase = xhr.responseJSON.vending_machine_purchase;
 
         // Convert pack code names to made-up internal identifiers
         const packs = {
@@ -566,8 +557,8 @@
                 });
             });
         }
-        if (debug_logging) window.console.log({convertible: convertible, items: items, settings: settings});
-        submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
+        if (debug_logging) window.console.log({convertible, items, settings});
+        submitConvertible(convertible, items, user.user_id);
     }
 
     /**
@@ -626,7 +617,7 @@
     function recordMap(xhr) {
         const resp = xhr.responseJSON;
         const entry_timestamp = Math.round(Date.now() / 1000);
-        if (resp.treasure_map_inventory && resp.treasure_map_inventory.relic_hunter_hint) {
+        if (resp.treasure_map_inventory?.relic_hunter_hint) {
             sendMessageToServer(rh_intake_url, {
                 hint: resp.treasure_map_inventory.relic_hunter_hint,
                 user_id: resp.user.user_id,
@@ -634,13 +625,14 @@
             });
         }
 
-        if (!resp.treasure_map || !resp.treasure_map.map_id || !resp.treasure_map.name) {
+        const {map_id, name} = resp.treasure_map ?? {};
+        if (!map_id || !name) {
             return;
         }
         const map = {
             mice: getMapMice(resp),
-            id: resp.treasure_map.map_id,
-            name: resp.treasure_map.name.replace(/ treasure/i, '')
+            id: map_id,
+            name: name.replace(/ treasure/i, '')
                 .replace(/rare /i, '')
                 .replace(/common /i, '')
                 .replace(/Ardouous/i, 'Arduous'),
@@ -775,14 +767,15 @@
 
     // Record convertible items
     function recordConvertible(xhr) {
-        if (!xhr || !xhr.responseJSON || !xhr.responseJSON.items || !xhr.responseJSON.messageData || !xhr.responseJSON.messageData.message_model) {
+        const response = xhr?.responseJSON;
+
+        if (!response || !response.items || !response.messageData?.message_model) {
             return;
         }
-        if (!xhr.responseJSON.messageData.message_model.messages || xhr.responseJSON.messageData.message_model.messages.length !== 1) {
+        if (response.messageData.message_model.messages?.length !== 1) {
             return;
         }
 
-        const response = xhr.responseJSON;
 
         let convertible;
         for (const key in response.items) {
@@ -800,11 +793,11 @@
         }
 
         const message = response.messageData.message_model.messages[0];
-        if (!message.isNew || !message.messageData || !message.messageData.items || message.messageData.items.length === 0) {
+        const items = message.messageData.items ?? [];
+        if (!message.isNew || items.length === 0) {
             return;
         }
 
-        const items = message.messageData.items;
         submitConvertible(convertible, items, response.user.user_id);
     }
 
@@ -827,7 +820,7 @@
             items: items.map(getItem),
             extension_version: mhhh_version,
             asset_package_hash: Date.now(),
-            user_id: user_id,
+            user_id,
             entry_timestamp: Math.round(Date.now() / 1000),
         };
 
@@ -837,7 +830,7 @@
 
     function sendMessageToServer(url, final_message) {
         getSettings(settings => {
-            if (!settings || !settings.tracking_enabled) { return; }
+            if (!settings?.tracking_enabled) { return; }
             const basic_info = {
                 user_id: final_message.user_id,
                 entry_timestamp: final_message.entry_timestamp,
@@ -1939,8 +1932,8 @@
             message.stage += ` - Loot x${hsa.activated_island_mod_types.filter(item => item === "loot_cache").length}`;
         }
         // This is a new if situation to account for the above scenarios. It adds to them.
-        else if (hsa.is_vault_island 
-            && 'activated_island_mod_types' in hsa 
+        else if (hsa.is_vault_island
+            && 'activated_island_mod_types' in hsa
             && Array.isArray(hsa.activated_island_mod_types)) {
             //NOTE: There is a paperdoll attribute that may be quicker to use
             const panels = {};

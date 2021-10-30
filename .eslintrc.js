@@ -11,7 +11,7 @@ module.exports = {
         lastReadJournalEntryId: 'readonly',
     },
     parserOptions: {
-        ecmaVersion: 9,
+        ecmaVersion: 12,
     },
     rules: {
         'array-bracket-newline': ['error', 'consistent'],
