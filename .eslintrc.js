@@ -6,12 +6,12 @@ module.exports = {
     },
     extends: "eslint:recommended",
     globals: {
-        $: false,
-        user: false,
-        lastReadJournalEntryId: false,
+        $: 'readonly',
+        user: 'readonly',
+        lastReadJournalEntryId: 'readonly',
     },
     parserOptions: {
-        ecmaVersion: 9,
+        ecmaVersion: 12,
     },
     rules: {
         'array-bracket-newline': ['error', 'consistent'],
