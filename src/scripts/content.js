@@ -26,7 +26,7 @@ document.body.appendChild(mhhh_flash_message_div);
 
 // Inject main script
 const s = document.createElement('script');
-s.src = chrome.extension.getURL('scripts/main.js');
+s.src = chrome.runtime.getURL('scripts/main.js');
 (document.head || document.documentElement).appendChild(s);
 s.onload = () => {
     // Display Tsitu's Loader
@@ -57,7 +57,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     ].includes(request.mhct_link)) {
         let file_link = '';
         if (request.mhct_link == "tsitu_loader") {
-            file_link = chrome.extension.getURL('third_party/tsitu/bm-menu.min.js');
+            file_link = chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js');
         }
         // Forwards messages from popup to main script
         window.postMessage({"mhct_message": request.mhct_link, "file_link": file_link}, "*");

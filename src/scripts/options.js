@@ -68,7 +68,7 @@ document.querySelectorAll('.input_range').forEach(
 document.querySelector("#play_sound").addEventListener('click', () => {
     let file_path = document.querySelector("#custom_sound").value.trim();
     if (!file_path) {
-        file_path = chrome.extension.getURL('sounds/bell.mp3');
+        file_path = chrome.runtime.getURL('sounds/bell.mp3');
     }
     const mySound = new Audio(file_path);
     mySound.volume = document.getElementById('horn_volume').value / 100;

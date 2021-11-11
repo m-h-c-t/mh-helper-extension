@@ -56,7 +56,7 @@ function icon_timer_find_open_mh_tab(settings) {
 }
 
 // Notifications
-const default_sound = chrome.extension.getURL('sounds/bell.mp3');
+const default_sound = chrome.runtime.getURL('sounds/bell.mp3');
 let notification_done = false;
 /**
  * Scheduled function that sets the badge color & text based on current settings.
