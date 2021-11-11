@@ -101,7 +101,7 @@ jobs:
 
       - name: Rename zip to xpi
         run: |
-          mv ${{ steps.create-zip.outputs.artifact-path }} build/release-${{ steps.create-tag.outputs.version-tag }}.xpi
+          mv ${{ steps.create-zip.outputs.artifact-path }} "build/release-${{ steps.create-tag.outputs.version-tag }}.xpi"
           echo "::set-output name=artifact-path-xpi::build/release-${{ steps.create-tag.outputs.version-tag }}.xpi"
 
       - name: Upload new release xpi to Firefox Webstore
