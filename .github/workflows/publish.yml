@@ -100,6 +100,7 @@ jobs:
           publish: true
 
       - name: Rename zip to xpi
+        id: rename_zip_to_xpi
         run: |
           mv ${{ steps.create-zip.outputs.artifact-path }} "build/release-${{ steps.create-tag.outputs.version-tag }}.xpi"
           echo "::set-output name=artifact-path-xpi::build/release-${{ steps.create-tag.outputs.version-tag }}.xpi"
@@ -108,7 +109,7 @@ jobs:
         uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
         with:
           uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
-          xpi: ${{ steps.create-zip.outputs.artifact-path-xpi }}
+          xpi: ${{ steps.rename_zip_to_xpi.outputs.artifact-path-xpi }}
           manifest: ./src/manifest.json
           api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
           api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
