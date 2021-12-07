@@ -1286,7 +1286,7 @@
             if (theme == "none") {
                 theme = "No Decor";
             } else {
-                theme = theme.replace(/festive_([a-z_]+)_yule_log_stat_item/i, "$1").replace(/_/g, " ");
+                theme = theme.replace(/^([a-z_]+)_yule_log_stat_item/i, "$1").replace(/_/g, " ");
                 theme = theme.charAt(0).toUpperCase() + theme.slice(1);
             }
             message.stage = theme;
