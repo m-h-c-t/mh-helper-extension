@@ -268,9 +268,9 @@
             }
         } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
             // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-            // (GMT): Friday, January 29, 2021 12:00:00 AM [GWH 2020 placeholder end date])
-            if (Date.now() < 1611878400000) {
-                getSettings(settings => recordGWH2020Golems(settings, xhr));
+            // (GMT): Friday, January 31, 2022 12:00:00 AM [GWH 2021 placeholder end date])
+            if (Date.now() < 1643605200000) {
+                getSettings(settings => recordGWH2021Golems(settings, xhr));
             }
         } else if (url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php")) {
             // Triggers on Birthday Items claim, room change click (+others, perhaps).
@@ -370,11 +370,11 @@
     }
 
     /**
-     * Record GWH 2020 golem submissions
+     * Record GWH 2021 golem submissions
      * @param {Object <string, any>} settings The user's extension settings.
      * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      */
-    function recordGWH2020Golems(settings, xhr) {
+    function recordGWH2021Golems(settings, xhr) {
         const {messages} = xhr.responseJSON?.messageData?.message_model ?? {};
         if (!messages) {
             if (debug_logging) window.console.log('Skipped GWH golem submission due to unhandled XHR structure');
@@ -405,7 +405,7 @@
 
                 // Use an in-memory DOM tree to obtain the items, slots, & quantities.
                 const doc = new DOMParser().parseFromString(body, 'text/html');
-                const gwh_prefix = '.winterHunt2020-claimRewardPopup';
+                const gwh_prefix = '.winterHunt2021-claimRewardPopup';
 
                 // Get only the item boxes which actually have an item (i.e. ignore locked slots).
                 const lootDivs = Array.from(doc.querySelectorAll(`${gwh_prefix}-content ${gwh_prefix}-item`))
@@ -1273,7 +1273,7 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addFestiveCometStage(message, user, user_post, hunt) {
-        const quest = user.quests.QuestWinterHunt2020;
+        const quest = user.quests.QuestWinterHunt2021;
         if (!quest) {
             return;
         }
@@ -1286,7 +1286,7 @@
             if (theme == "none") {
                 theme = "No Decor";
             } else {
-                theme = theme.replace(/festive_([a-z_]+)_wrapping_paper_stat_item/i, "$1").replace(/_/g, " ");
+                theme = theme.replace(/festive_([a-z_]+)_yule_log_stat_item/i, "$1").replace(/_/g, " ");
                 theme = theme.charAt(0).toUpperCase() + theme.slice(1);
             }
             message.stage = theme;
