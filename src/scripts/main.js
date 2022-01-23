@@ -168,6 +168,15 @@
         return Object.values(mice);
     }
 
+    function getMapItems(data) {
+        const items = {};
+        $.each(data.treasure_map.goals.item, (key, item) => {
+            items[item.unique_id] = item.name;
+        });
+
+        return Object.values(items);
+    }
+
     /**
      * Wrapper for flash message pop-up, when settings need to be acquired.
      * @param {"error"|"warning"|"success"} type The type of message being displayed, which controls the color and duration.
@@ -630,7 +639,6 @@
             return;
         }
         const map = {
-            mice: getMapMice(resp),
             id: map_id,
             name: name.replace(/ treasure/i, '')
                 .replace(/rare /i, '')
@@ -640,6 +648,13 @@
             entry_timestamp: entry_timestamp,
         };
 
+        // Check map type and get map items/mice
+        map.type = resp.treasure_map.map_type;
+        if (resp.treasure_map.is_scavenger_hunt) {
+            map.items = getMapItems(resp);
+        } else {
+            map.mice = getMapMice(resp);
+        }
         map.extension_version = mhhh_version;
 
         // Send to database
