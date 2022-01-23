@@ -153,7 +153,8 @@
     // Extract map mice from a map
     function getMapMice(data, uncaught_only) {
         const mice = {};
-        $.each(data.treasure_map.goals.mouse, (key, mouse) => {
+        const map_things = data.treasure_map.is_scavenger_hunt ? 'item' : 'mouse';
+        $.each(data.treasure_map.goals[map_things], (key, mouse) => {
             mice[mouse.unique_id] = mouse.name;
         });
 
@@ -631,6 +632,7 @@
         }
         const map = {
             mice: getMapMice(resp),
+            type: resp.treasure_map.map_type,
             id: map_id,
             name: name.replace(/ treasure/i, '')
                 .replace(/rare /i, '')
