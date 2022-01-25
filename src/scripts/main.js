@@ -944,6 +944,14 @@
                 }
             }
             else if (markup.render_data.entry_timestamp === live_ts && 
+                css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
+
+                if (markup.render_data.entry_timestamp === live_ts) {
+                    more_details['alchemists_cookbook_base_bonus'] = true;
+                    if (debug_logging) {window.console.log({procs: more_details});}
+                }
+            }
+            else if (markup.render_data.entry_timestamp === live_ts && 
                     css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
                 const data = markup.render_data.text;
                 const potionRegex = /item\.php\?item_type=(.*?)"/; 
@@ -969,10 +977,8 @@
                         }
                     }
                 }
-                if (markup.render_data.entry_timestamp === live_ts) {
-                    more_details['boiling_cauldron_trap_bonus'] = true;
-                    if (debug_logging) {window.console.log({procs: more_details});}
-                }
+                more_details['boiling_cauldron_trap_bonus'] = true;
+                if (debug_logging) {window.console.log({procs: more_details});}
             }
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {
                 // Handle a potential Gilded Charm proc.
