@@ -964,8 +964,12 @@
                             if (debug_logging) { window.console.log({boiling_cauldron_trap: items}); }
 
                             submitConvertible(convertible, items, hunt_response.user.user_id);
-                            }
+                        }
                     }
+                }
+                if (!done_procs) {
+                    more_details['boiling_cauldron_trap_bonus'] = true;
+                    if (debug_logging) {window.console.log({procs: more_details});}
                 }
             }
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {
