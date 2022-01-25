@@ -943,12 +943,13 @@
                     }, window.origin);
                 }
             }
-            else if (css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
+            else if (markup.render_data.entry_timestamp === live_ts && 
+                    css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
                 const data = markup.render_data.text;
                 const potionRegex = /item\.php\?item_type=(.*?)"/; 
                 if (potionRegex.test(data)) {
                     const resultPotion = data.match(potionRegex)[1].trim();
-                    if (hunt_response.inventory[resultPotion]) {
+                    if ("inventory" in hunt_response && resultPotion in hunt_response.inventory) {
                         const potionName = hunt_response.inventory[resultPotion].name;
                         const potionId = hunt_response.inventory[resultPotion].item_id;
                         if (potionName && potionId) {
