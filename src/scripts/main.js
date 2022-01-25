@@ -866,6 +866,7 @@
         let journal = {};
         const more_details = {};
         let done_procs = false;
+        let live_ts = 0;
         if (!hunt_response.journal_markup) {
             return null;
         }
@@ -967,7 +968,7 @@
                         }
                     }
                 }
-                if (!done_procs) {
+                if (markup.render_data.entry_timestamp === live_ts) {
                     more_details['boiling_cauldron_trap_bonus'] = true;
                     if (debug_logging) {window.console.log({procs: more_details});}
                 }
@@ -1016,6 +1017,7 @@
                 }
                 else if (css_class.includes('active')) {
                     journal = markup;
+                    live_ts = journal.render_data.entry_timestamp;
                     if (debug_logging) {window.console.log({message: "Found the active hunt", journal: journal});}
                 }
             }
