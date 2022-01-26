@@ -946,20 +946,17 @@
             else if (markup.render_data.entry_timestamp === live_ts && 
                 css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
-                if (markup.render_data.entry_timestamp === live_ts) {
-                    more_details['alchemists_cookbook_base_bonus'] = true;
-                    if (debug_logging) {window.console.log({procs: more_details});}
-                }
+                more_details['alchemists_cookbook_base_bonus'] = true;
+                if (debug_logging) {window.console.log({procs: more_details});}
             }
             else if (markup.render_data.entry_timestamp === live_ts && 
                     css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
                 const data = markup.render_data.text;
                 const potionRegex = /item\.php\?item_type=(.*?)"/; 
                 if (potionRegex.test(data)) {
-                    const resultPotion = data.match(potionRegex)[1].trim();
+                    const resultPotion = data.match(potionRegex)[1];
                     if ("inventory" in hunt_response && resultPotion in hunt_response.inventory) {
-                        const potionName = hunt_response.inventory[resultPotion].name;
-                        const potionId = hunt_response.inventory[resultPotion].item_id;
+                        const {name: potionName, item_id: potionId} = hunt_response.inventory[resultPotion];
                         if (potionName && potionId) {
                             const convertible = {
                                 id: 3304, // Boiling Cauldron Trap
