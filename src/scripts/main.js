@@ -1022,7 +1022,7 @@
                 else if (css_class.includes('active')) {
                     journal = markup;
                     live_ts = journal.render_data.entry_timestamp;
-                    if (debug_logging) {window.console.log({message: "Found the active hunt", journal: journal});}
+                    if (debug_logging) {window.console.log({message: "Found the active hunt", journal});}
                 }
             }
             else if (css_class.search(/linked|passive|misc/) !== -1) {
