@@ -866,6 +866,7 @@
         let journal = {};
         const more_details = {};
         let done_procs = false;
+        let live_ts = 0;
         if (!hunt_response.journal_markup) {
             return null;
         }
@@ -942,6 +943,40 @@
                     }, window.origin);
                 }
             }
+            else if (markup.render_data.entry_timestamp === live_ts && 
+                css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
+
+                more_details['alchemists_cookbook_base_bonus'] = true;
+                if (debug_logging) {window.console.log({procs: more_details});}
+            }
+            else if (markup.render_data.entry_timestamp === live_ts && 
+                    css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
+                const data = markup.render_data.text;
+                const potionRegex = /item\.php\?item_type=(.*?)"/; 
+                if (potionRegex.test(data)) {
+                    const resultPotion = data.match(potionRegex)[1];
+                    if ("inventory" in hunt_response && resultPotion in hunt_response.inventory) {
+                        const {name: potionName, item_id: potionId} = hunt_response.inventory[resultPotion];
+                        if (potionName && potionId) {
+                            const convertible = {
+                                id: 3304, // Boiling Cauldron Trap
+                                name: "Boiling Cauldron Trap",
+                                quantity: 1,
+                            };
+                            const items = [{
+                                id: potionId, //need to get this
+                                name: potionName,
+                                quantity: 1,
+                            }];
+                            if (debug_logging) { window.console.log({boiling_cauldron_trap: items}); }
+
+                            submitConvertible(convertible, items, hunt_response.user.user_id);
+                        }
+                    }
+                }
+                more_details['boiling_cauldron_trap_bonus'] = true;
+                if (debug_logging) {window.console.log({procs: more_details});}
+            }
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {
                 // Handle a potential Gilded Charm proc.
                 const data = markup.render_data.text;
@@ -987,6 +1022,7 @@
                 else if (css_class.includes('active')) {
                     journal = markup;
                     if (debug_logging) {window.console.log({message: "Found the active hunt", journal});}
+                    live_ts = journal.render_data.entry_timestamp;
                 }
             }
             else if (css_class.search(/linked|passive|misc/) !== -1) {
