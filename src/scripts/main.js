@@ -1014,7 +1014,7 @@
                 if (debug_logging) {window.console.log({procs: more_details});}
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
-                if (debug_logging) {window.console.log({message: "Got a hunt record"});}
+                if (debug_logging) {window.console.log("Got a hunt record");}
                 if (Object.keys(journal).length !== 0) {
                     // When true this means extra journal entries won't be considered for this hunt's data
                     done_procs = true;
@@ -1145,16 +1145,6 @@
                 .replace(/ mouse$/i, '');  // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
 
-        const quest = getActiveLNYQuest(user.quests);
-        if (quest && quest.has_stockpile === "found" && !quest.mice.every(boss => boss.is_caught === true)) {
-            // Ignore event cheese hunts as the player is attracting the Costumed mice in a specific order.
-            const event_cheese = Object.keys(quest.items)
-                .filter(itemName => itemName.search(/lunar_new_year\w+cheese/) >= 0)
-                .map(cheeseName => quest.items[cheeseName]);
-            if (event_cheese.some(cheese => cheese.status === "active")) {
-                return null;
-            }
-        }
         if (debug_logging) {
             debug_logs.forEach(m => window.console.log(m));
         }
