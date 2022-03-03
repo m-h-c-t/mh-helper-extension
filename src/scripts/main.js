@@ -274,10 +274,7 @@
             }
         } else if (url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php")) {
             // Triggers on Birthday Items claim, room change click (+others, perhaps).
-            // (GMT): Mar 24 2021 15:00:00 GMT+0000 [Birthday 2021 placeholder end date])
-            if (Date.now() < 1616598000000) {
-                getSettings(settings => recordSnackPack(settings, xhr));
-            }
+            getSettings(settings => recordSnackPack(settings, xhr));
         } else if (url.includes("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")) {
             // Triggers on Birthday Items claim, room change click (+others, perhaps).
             // Wed Jun 23 2021 22:00:00 GMT-0400 [King's Giveaway Key Vanishing date 15th])
