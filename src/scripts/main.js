@@ -543,6 +543,7 @@
             'Rift Glutter Cheese': 2097,
             'Rift Combat Cheese': 2096,
             'Null Onyx Gorgonzola': 2100,
+            'Extra Rich Cloud Cheesecake': 3274,
         };
         const items = [];
         if ("items" in purchase) {
