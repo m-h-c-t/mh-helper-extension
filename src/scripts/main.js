@@ -1417,9 +1417,10 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addBalacksCoveStage(message, user, user_post, hunt) {
-        const tide = user.viewing_atts.tide;
-        const direction = user.viewing_atts.tide_direction;
-        const imminent_state_change = (user.viewing_atts.cycle_progress >= 99
+        const tide = user.quests.QuestBalacksCove.tide.level;
+        const direction = user.quests.QuestBalacksCove.tide.direction;
+        const progress = user.quests.QuestBalacksCove.tide.percent;
+        const imminent_state_change = (progress >= 99
                 // Certain transitions do not change the tide intensity, and are OK to track.
                 && !(tide === "low" && direction === "in")
                 && !(tide === "high" && direction === "out"));
