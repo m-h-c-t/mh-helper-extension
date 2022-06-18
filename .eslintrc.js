@@ -28,6 +28,7 @@ module.exports = {
                 outerIIFEBody: 'off',
             },
         ],
+        'no-constant-binary-expression': ['error'],
         'no-unneeded-ternary': ['error'],
         'no-unused-vars': [
             'error',
