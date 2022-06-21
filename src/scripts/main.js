@@ -1821,10 +1821,8 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addForbiddenGroveStage(message, user, user_post, hunt) {
-        const was_open = user.viewing_atts.grove_open;
-        // 1% time => 9.6 minutes for door open and state_progress rounds to 100 (2.4 minutes for closed).
-        const imminent_state_change = (user.viewing_atts.state_progress >= 99);
-        if (imminent_state_change) {
+        const was_open = user.quests.QuestForbiddenGrove.grove.is_open;
+        if (was_open != user_post.quests.QuestForbiddenGrove.grove.is_open) {
             if (debug_logging) {window.console.log({message: "Skipping hunt during server-side door change", user, user_post, hunt});}
             message.location = null;
         } else {
