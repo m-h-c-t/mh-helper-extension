@@ -1196,6 +1196,7 @@
         "Fiery Warpath": addFieryWarpathStage,
         "Floating Islands": addFloatingIslandsStage,
         "Forbidden Grove": addForbiddenGroveStage,
+        "Foreword Farm": addForewordFarmStage,
         "Fort Rox": addFortRoxStage,
         "Furoma Rift": addFuromaRiftStage,
         "Gnawnian Express Station": addTrainStage,
@@ -1207,6 +1208,7 @@
         "Mousoleum": addMousoleumStage,
         "Moussu Picchu": addMoussuPicchuStage,
         "Muridae Market": addMuridaeMarketStage,
+        "Prologue Pond": addProloguePondStage,
         "Queso Geyser": addQuesoGeyserStage,
         "SUPER|brie+ Factory": addSBFactoryStage,
         "Sand Dunes": addSandDunesStage,
@@ -1779,6 +1781,19 @@
     }
 
     /**
+     * Add the pest indication
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addForewordFarmStage(message, user, user_post, hunt) {
+        if (user.enviroment_atts.mice_state && typeof user.enviroment_atts.mice_state === "string") {
+            message.stage = user.enviroment_atts.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
+        }
+    }
+
+    /**
      * Report the progress through the night
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
@@ -1866,6 +1881,26 @@
                 message.stage = "Any Room";
             }
         }
+    }
+
+    /**
+     * Report the state of Chum
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addProloguePondStage(message, user, user_post, hunt) {
+        if (user.enviroment_atts.can_enable_chum) {
+            message.stage = 'No Chum';
+            if (user.enviroment_atts.is_chum_enabled) {
+                message.stage = 'Chum Scattered';
+            }
+        }
+        else {
+            message.stage = 'On Shore';
+        }
+
     }
 
     /**

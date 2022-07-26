@@ -40,3 +40,4 @@ _ReSharper*/
 ~$*
 /.vs
 /src/third_party/*
+mh-helper-extension.code-workspace
