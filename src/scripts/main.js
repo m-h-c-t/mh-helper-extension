@@ -1882,7 +1882,11 @@
             if (user.enviroment_atts.is_chum_enabled) {
               message.stage = 'Chum Scattered';
             }
-          }
+        }
+        else {
+            message.stage = 'On Shore';
+        }
+
     }
 
     /**
