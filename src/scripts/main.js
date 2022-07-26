@@ -1196,6 +1196,7 @@
         "Fiery Warpath": addFieryWarpathStage,
         "Floating Islands": addFloatingIslandsStage,
         "Forbidden Grove": addForbiddenGroveStage,
+        "Foreword Farm": addForewordFarmStage,
         "Fort Rox": addFortRoxStage,
         "Furoma Rift": addFuromaRiftStage,
         "Gnawnian Express Station": addTrainStage,
@@ -1776,6 +1777,19 @@
             } else if (quest.current_phase === "bridge_jump") {
                 message.stage = "3. Daredevil Canyon";
             }
+        }
+    }
+
+    /**
+     * Add the pest indication
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addForewordFarmStage(message, user, user_post, hunt) {
+        if (user.enviroment_atts.mice_state && typeof user.enviroment_atts.mice_state === "string") {
+            message.stage = user.enviroment_atts.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
         }
     }
 
