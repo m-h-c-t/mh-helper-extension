@@ -1215,6 +1215,7 @@
         "Seasonal Garden": addSeasonalGardenStage,
         "Slushy Shoreline": addSlushyShorelineStage,
         "Sunken City": addSunkenCityStage,
+        "Table of Contents": addTableOfContentsStage,
         "Toxic Spill": addToxicSpillStage,
         "Twisted Garden": addGardenStage,
         "Valour Rift": addValourRiftStage,
@@ -1664,6 +1665,28 @@
     }
 
     /**
+     * Set the Table of Contents Stage
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addTableOfContentsStage(message, user, user_post, hunt) {
+        if (typeof user.quests.QuestTableOfContents === 'undefined') {
+            return; // This is not the Table of Contents!
+        }
+        if (user.quests.QuestTableOfContents.is_writing) {
+            if (user.quests.QuestTableOfContents.current_book.volume > 0) {
+                message.stage = 'Encyclopedia';
+            } else {
+                message.stage = 'Pre-Encyclopedia';
+            }
+        } else {
+            message.stage = 'Not Writing';
+        }
+    }
+
+    /**
      *
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
@@ -1788,8 +1811,11 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addForewordFarmStage(message, user, user_post, hunt) {
-        if (user.enviroment_atts.mice_state && typeof user.enviroment_atts.mice_state === "string") {
-            message.stage = user.enviroment_atts.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
+        if (typeof user.quests.QuestForewordFarm === 'undefined') {
+            return; // This is not the Farm!
+        }
+        if (user.quests.QuestForewordFarm.mice_state && typeof user.quests.QuestForewordFarm.mice_state === "string") {
+            message.stage = user.quests.QuestForewordFarm.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
         }
     }
 
@@ -1891,9 +1917,12 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addProloguePondStage(message, user, user_post, hunt) {
-        if (user.enviroment_atts.can_enable_chum) {
+        if (typeof user.quests.QuestProloguePond === 'undefined') {
+            return; // This is not the pond!
+        }
+        if (user.quests.QuestProloguePond.can_enable_chum) {
             message.stage = 'No Chum';
-            if (user.enviroment_atts.is_chum_enabled) {
+            if (user.quests.QuestProloguePond.is_chum_enabled) {
                 message.stage = 'Chum Scattered';
             }
         }
