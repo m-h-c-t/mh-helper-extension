@@ -1672,17 +1672,17 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addTableOfContentsStage(message, user, user_post, hunt) {
-        if (typeof user.quests.QuestTableOfContents === 'undefined') {
-            return; // This is not the Table of Contents!
-        }
-        if (user.quests.QuestTableOfContents.is_writing) {
-            if (user.quests.QuestTableOfContents.current_book.volume > 0) {
-                message.stage = 'Encyclopedia';
+        const quest = user.quests.QuestTableOfContents;
+        if (quest) {
+            if (quest.is_writing) {
+                if (quest.current_book.volume > 0) {
+                    message.stage = 'Encyclopedia';
+                } else {
+                    message.stage = 'Pre-Encyclopedia';
+                }
             } else {
-                message.stage = 'Pre-Encyclopedia';
+                message.stage = 'Not Writing';
             }
-        } else {
-            message.stage = 'Not Writing';
         }
     }
 
@@ -1811,11 +1811,9 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addForewordFarmStage(message, user, user_post, hunt) {
-        if (typeof user.quests.QuestForewordFarm === 'undefined') {
-            return; // This is not the Farm!
-        }
-        if (user.quests.QuestForewordFarm.mice_state && typeof user.quests.QuestForewordFarm.mice_state === "string") {
-            message.stage = user.quests.QuestForewordFarm.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
+        const quest = user.quests.QuestForewordFarm;
+        if (quest && quest.mice_state && typeof quest.mice_state === "string") {
+            message.stage = quest.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
         }
     }
 
@@ -1917,19 +1915,18 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addProloguePondStage(message, user, user_post, hunt) {
-        if (typeof user.quests.QuestProloguePond === 'undefined') {
-            return; // This is not the pond!
-        }
-        if (user.quests.QuestProloguePond.can_enable_chum) {
-            message.stage = 'No Chum';
-            if (user.quests.QuestProloguePond.is_chum_enabled) {
-                message.stage = 'Chum Scattered';
+        const quest = user.quests.QuestProloguePond;
+        if (quest) {
+            if (quest.can_enable_chum) {
+                message.stage = 'No Chum';
+                if (quest.is_chum_enabled) {
+                    message.stage = 'Chum Scattered';
+                }
+            }
+            else {
+                message.stage = 'On Shore';
             }
         }
-        else {
-            message.stage = 'On Shore';
-        }
-
     }
 
     /**
