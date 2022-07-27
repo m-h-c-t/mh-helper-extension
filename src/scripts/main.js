@@ -1215,6 +1215,7 @@
         "Seasonal Garden": addSeasonalGardenStage,
         "Slushy Shoreline": addSlushyShorelineStage,
         "Sunken City": addSunkenCityStage,
+        "Table of Contents": addTableOfContentsStage,
         "Toxic Spill": addToxicSpillStage,
         "Twisted Garden": addGardenStage,
         "Valour Rift": addValourRiftStage,
@@ -1664,6 +1665,28 @@
     }
 
     /**
+     * Set the Table of Contents Stage
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function addTableOfContentsStage(message, user, user_post, hunt) {
+        const quest = user.quests.QuestTableOfContents;
+        if (quest) {
+            if (quest.is_writing) {
+                if (quest.current_book.volume > 0) {
+                    message.stage = 'Encyclopedia';
+                } else {
+                    message.stage = 'Pre-Encyclopedia';
+                }
+            } else {
+                message.stage = 'Not Writing';
+            }
+        }
+    }
+
+    /**
      *
      * @param {Object <string, any>} message The message to be sent.
      * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
@@ -1788,8 +1811,9 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addForewordFarmStage(message, user, user_post, hunt) {
-        if (user.enviroment_atts.mice_state && typeof user.enviroment_atts.mice_state === "string") {
-            message.stage = user.enviroment_atts.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
+        const quest = user.quests.QuestForewordFarm;
+        if (quest && quest.mice_state && typeof quest.mice_state === "string") {
+            message.stage = quest.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
         }
     }
 
@@ -1891,16 +1915,18 @@
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
      */
     function addProloguePondStage(message, user, user_post, hunt) {
-        if (user.enviroment_atts.can_enable_chum) {
-            message.stage = 'No Chum';
-            if (user.enviroment_atts.is_chum_enabled) {
-                message.stage = 'Chum Scattered';
+        const quest = user.quests.QuestProloguePond;
+        if (quest) {
+            if (quest.can_enable_chum) {
+                message.stage = 'No Chum';
+                if (quest.is_chum_enabled) {
+                    message.stage = 'Chum Scattered';
+                }
+            }
+            else {
+                message.stage = 'On Shore';
             }
         }
-        else {
-            message.stage = 'On Shore';
-        }
-
     }
 
     /**
@@ -2018,6 +2044,7 @@
         "Fort Rox": calcFortRoxHuntDetails,
         "Harbour": calcHarbourHuntDetails,
         "Sand Crypts": calcSandCryptsHuntDetails,
+        "Table of Contents": calcTableofContentsHuntDetails,
         "Valour Rift": calcValourRiftHuntDetails,
         "Whisker Woods Rift": calcWhiskerWoodsRiftHuntDetails,
         "Zokor": calcZokorHuntDetails,
@@ -2349,6 +2376,22 @@
         }
     }
 
+    /**
+     * Track the current volume if we're in an Encyclopedia
+     * @param {Object <string, any>} message The message to be sent.
+     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
+     * @param {Object <string, any>} user_post The user state object, after the hunt.
+     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     */
+    function calcTableofContentsHuntDetails(message, user, user_post, hunt) {
+        const quest = user.quests.QuestTableOfContents;
+        if (quest && quest.current_book.volume > 0) {
+            return {
+                volume: quest.current_book.volume,
+            };
+        }
+    }
+    
     /**
      * Report active augmentations and floor number
      * @param {Object <string, any>} message The message to be sent.
