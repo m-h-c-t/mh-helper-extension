@@ -1208,7 +1208,6 @@
         "Mousoleum": addMousoleumStage,
         "Moussu Picchu": addMoussuPicchuStage,
         "Muridae Market": addMuridaeMarketStage,
-        "Prologue Pond": addProloguePondStage,
         "Queso Geyser": addQuesoGeyserStage,
         "SUPER|brie+ Factory": addSBFactoryStage,
         "Sand Dunes": addSandDunesStage,
@@ -1903,28 +1902,6 @@
             })[factory.current_room]);
             if (!message.stage || !/Coggy Colby/.test(user.bait_name) ) {
                 message.stage = "Any Room";
-            }
-        }
-    }
-
-    /**
-     * Report the state of Chum
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     */
-    function addProloguePondStage(message, user, user_post, hunt) {
-        const quest = user.quests.QuestProloguePond;
-        if (quest) {
-            if (quest.can_enable_chum) {
-                message.stage = 'No Chum';
-                if (quest.is_chum_enabled) {
-                    message.stage = 'Chum Scattered';
-                }
-            }
-            else {
-                message.stage = 'On Shore';
             }
         }
     }
