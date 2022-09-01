@@ -5,18 +5,22 @@
     <base href="/">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/popup.css">
     <script defer type="text/javascript" src="scripts/popup.js"></script>
 </head>
 <body class="text-center">
-    <div class="container-fluid">
-        <br/>
-        <table class="table text-center table-responsive table-hover table-bordered">
-        <thead></thead>
+    <main>
+        <div class="header-spacer"></div>
+        <table>
         <tbody>
             <tr><td>
-                <a href="popup.html" class="popup-link-out"><span class="pull-left">&lt;&lt;</span>Back</a>
+                <a href="https://www.mhct.win/faq.php" target="_blank" class="popup-link-out">F.A.Q.</a>
+            </td></tr>
+            <tr><td>
+                <a href="https://www.mhct.win/tracker.php" target="_blank" class="popup-link-out">Stats</a>
+            </td></tr>
+            <tr><td>
+                <a href="https://www.mhct.win/countdown.php" target="_blank" class="popup-link-out">Events Countdown</a>
             </td></tr>
             <tr><td id="tsitu_loader" class="popup-link">
                 tsitu's Auto-Loader
@@ -25,7 +29,10 @@
                 <a href="https://dbgames.info/mousehunt/" target="_blank" class="popup-link-out">Ryonn's MH Database</a>
             </td></tr>
             <tr><td id="ryonn" class="popup-link">
-                Ryonn's Tavern (auto-populated)
+                Ryonn's Tavern
+            </td></tr>
+            <tr><td>
+                <a href="https://chrome.google.com/webstore/detail/dsxcs-mousehunt-helper/engkjbflhflegibopjicncfjpbjfldph?hl=en" target="_blank" class="popup-link-out">DSXC's MH Helper</a>
             </td></tr>
             <tr><td>
                 <a href="https://www.reddit.com/r/mousehunt/" target="_blank" class="popup-link-out">Subreddit</a>
@@ -43,14 +50,16 @@
                 <a href="https://discord.gg/E4utmBD" target="_blank" class="popup-link-out">Discord Server</a>
             </td></tr>
             <tr><td>
-                <a href="https://mhwiki.hitgrab.com/wiki/index.php/Main_Page" target="_blank" class="popup-link-out">Wiki</a>
+                <a href="http://mhwiki.hitgrab.com/wiki/index.php/Main_Page" target="_blank" class="popup-link-out">Wiki</a>
             </td></tr>
             <tr><td>
-                <a href="popup.html" class="popup-link-out""><span class="pull-left">&lt;&lt;</span>Back</a>
+                <a href="popup.html" class="popup-link-out"><span class="arrow">←</span> Back</a>
             </td></tr>
         </tbody>
         </table>
+        <h4>Support us on <a href="https://www.patreon.com/mhct" target="_blank">Patreon</a>!</h4>
+        <span id="version"></span>
     </div>
-    <div id="error_popup" class="alert alert-danger error_popup"></div>
+    <div id="error-popup"></div>
 </body>
 </html>

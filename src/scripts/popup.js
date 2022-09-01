@@ -5,7 +5,7 @@
  * @param {string} [button_id] the HTML id of the pressed button, to be forwarded to callback
  * @param {boolean} [silent] if true, errors will not be displayed to the user.
  */
-function findOpenMHTab(callback, button_id, silent) {
+ function findOpenMHTab(callback, button_id, silent) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, tabs => {
         if (tabs.length > 0) {
             callback(tabs[0].id, button_id);
@@ -36,7 +36,7 @@ function sendMessageToScript(tab_id, button_id) {
 document.addEventListener('DOMContentLoaded', () => {
     const version_element = document.getElementById("version");
     if (version_element) {
-        version_element.innerText = ` version: ${chrome.runtime.getManifest().version}`;
+        version_element.innerText = chrome.runtime.getManifest().version;
     }
     // Schedule updates of the horn timer countdown.
     findOpenMHTab(tab => {
@@ -74,15 +74,20 @@ document.addEventListener('DOMContentLoaded', () => {
  * @param {HTMLElement} [huntTimerField] The div element corresponding to the horn countdown timer.
  */
 function updateHuntTimerField(tab, huntTimerField) {
+    const hornImage = '<img src="images/horn.png" class="horn-img">';
+
     chrome.tabs.sendMessage(tab, {mhct_link: "huntTimer"}, response => {
         if (chrome.runtime.lastError) {
             displayErrorPopup(chrome.runtime.lastError.message);
         }
+
         if (huntTimerField) {
-            if (response === "Ready!") {
-                huntTimerField.innerHTML = '<img src="images/horn.png" class="horn">';
+            if (response === "Ready!" ) {
+                if ( hornImage !== document.getElementById("huntTimer").innerHTML ) {
+                    huntTimerField.innerHTML = hornImage;
+                }
             } else {
-                huntTimerField.textContent = response;
+                huntTimerField.textContent = `Horn ready in ${response}`
             }
         }
     });
@@ -93,8 +98,8 @@ function updateHuntTimerField(tab, huntTimerField) {
  * @param {string} message The message to display
  */
 function displayErrorPopup(message) {
-    const error_popup = document.getElementById('error_popup');
-    error_popup.innerText = message;
-    error_popup.style.display = 'block';
-    setTimeout(() => error_popup.style.display = 'none', 2000);
+    const errorPopup = document.getElementById('error-popup');
+    errorPopup.innerText = message;
+    errorPopup.style.display = 'block';
+    setTimeout(() => errorPopup.style.display = 'none', 2000);
 }

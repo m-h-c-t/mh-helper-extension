@@ -5,48 +5,40 @@
     <base href="/">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/popup.css">
     <script defer type="text/javascript" src="scripts/popup.js"></script>
 </head>
 <body class="text-center">
     <div id="horn" class="popup-link bg-warning">
-        Sound Horn: <span id="huntTimer">-:--</span>
+        <span id="huntTimer"></span>
     </div>
-    <div class="container-fluid">
+    <main>
         <h3><a href="https://www.mhct.win" target="_blank" class="popup-link-out">MH Community Tools</a></h3>
-        <span id="version" class="text-muted" style="font-size:small;"></span>
         <table class="table text-center table-responsive table-hover table-bordered">
         <tbody>
             <tr><td id="userhistory" class="popup-link">
                 Your Hunt History
             </td></tr>
             <tr><td id="mhmh" class="popup-link">
-                MHCT Map Helper (auto)
+                Map Helper
             </td></tr>
             <tr><td>
-                <a href="https://www.mhct.win/attractions.php" target="_blank" class="popup-link-out">Mouse Attraction Rates</a>
+                <a href="https://www.mhct.win/attractions.php" target="_blank" class="popup-link-out">Attraction Rates</a>
             </td></tr>
             <tr><td>
-                <a href="https://www.mhct.win/loot.php" target="_blank" class="popup-link-out">Looter (Drop Rates)</a>
-            </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/mapper.php" target="_blank" class="popup-link-out">Mapper (Map Contents)</a>
+                <a href="https://www.mhct.win/mapper.php" target="_blank" class="popup-link-out">Mapper</a>
             </td></tr>
             <tr><td>
                 <a href="https://www.mhct.win/reverse-mapper.php" target="_blank" class="popup-link-out">Reverse Mapper</a>
+            </td></tr>
+            <tr><td>
+                <a href="https://www.mhct.win/loot.php" target="_blank" class="popup-link-out">Looter <em>(Drop Rates)</em></a>
             </td></tr>
             <tr><td>
                 <a href="https://www.mhct.win/converter.php" target="_blank" class="popup-link-out">Convertibles</a>
             </td></tr>
             <tr><td>
                 <a href="https://www.mhct.win/rh-tracker.php" target="_blank" class="popup-link-out">Relic Hunter Tracker</a>
-            </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/countdown.php" target="_blank" class="popup-link-out">Events Countdown</a>
-            </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/tracker.php" target="_blank" class="popup-link-out">Stats</a>
             </td></tr>
             <tr><td>
                 <a href="https://www.mhct.win/faq.php" target="_blank" class="popup-link-out">F.A.Q.</a>
@@ -58,12 +50,13 @@
                 Options
             </td></tr>
             <tr><td>
-                <a href="popup2.html" class="popup-link-out"><div class="pull-right">&gt;&gt;</div>Other Links</a>
+                <a href="popup2.html" class="popup-link-out">Other Links <span class="arrow">→</span></a>
             </td></tr>
         </tbody>
         </table>
-        <h4>Support us on <a href="https://www.patreon.com/mhct" target="_blank">Patreon</a>!</h4>
+        <h4>Support us on <a href="https://www.patreon.com/mhct" target="_blank" rel="noopener noreferrer">Patreon</a>!</h4>
+        <span id="version"></span>
     </div>
-    <div id="error_popup" class="alert alert-danger error_popup"></div>
+    <div id="error-popup"></div>
 </body>
 </html>

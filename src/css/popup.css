@@ -1,3 +1,111 @@
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    font-size: 10px;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+body {
+    margin: 0;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+    background-color: #fff;
+    height: 600px;
+    width: 270px
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+}
+
+h1, h2, h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+h3 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 22px;
+    padding: 0 10px;
+}
+
+h4 {
+    margin-bottom: 5px;
+    margin-top: 0;
+    font-size: 18px;
+}
+
+a {
+    background-color: transparent;
+	color: #337ab7;
+    text-decoration: none;
+}
+
+table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 15px;
+	border: 1px solid #ddd;
+	text-align: center;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+td {
+	border: 1px solid #ddd;
+	padding: 8px;
+	line-height: 1.5;
+	vertical-align: top;
+}
+
+main {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+main:before,
+main:after {
+	display: table;
+    content: " ";
+}
+
+main:after {
+	clear: both;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+
+.header-spacer {
+    height: 7px;
+}
+
 .popup-link {
     cursor: pointer;
     white-space: nowrap;
@@ -29,8 +137,29 @@
     100% { transform: rotate(0deg); }
 }
 
-.horn {
+#horn {
+    min-height: 40px;
+    vertical-align: middle;
+    height: auto;
+    padding: 12px;
+    background-color: #ffffaa;
+}
+
+.horn-img {
     width: 80px;
     animation-name: wiggle;
     animation-duration: 1s;
+    animation-iteration-count: infinite;
+    margin-bottom: -10px;
+    margin-top: -10px;
+}
+
+#version {
+    font-size: 11px;
+    vertical-align: top;
+    color: #c1c1c1;
+}
+
+.small {
+    font-size: 10px;
 }
