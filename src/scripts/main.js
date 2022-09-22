@@ -741,7 +741,16 @@
 
         // Perform validations and stage corrections.
         fixLGLocations(message, user_pre, user_post, hunt);
+        const temp_message_post = message; // For transition check
         addStage(message, user_pre, user_post, hunt);
+
+        // Disabling transitions
+        addStage(temp_message_post, user_post, user_post, hunt);
+        if (message.stage && message.stage != temp_message_post.stage) {
+            if (debug_logging) {window.console.log(`MHCT: Ignoring transition from stage ${message.stage} to ${temp_message_post.stage}`);}
+            return;
+        }
+
         addHuntDetails(message, user_pre, user_post, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
             window.console.log("MHHH: Missing Info (will try better next hunt)(2)");
@@ -863,6 +872,7 @@
     function parseJournalEntries(hunt_response) {
         let journal = {};
         const more_details = {};
+        more_details['hunt_count'] = 0;
         let done_procs = false;
         let live_ts = 0;
         if (!hunt_response.journal_markup) {
@@ -1012,7 +1022,9 @@
                 if (debug_logging) {window.console.log({procs: more_details});}
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
+                more_details['hunt_count']++;
                 if (debug_logging) {window.console.log("Got a hunt record");}
+                if (debug_logging) {window.console.log({procs: more_details});}
                 if (Object.keys(journal).length !== 0) {
                     // When true this means extra journal entries won't be considered for this hunt's data
                     done_procs = true;
