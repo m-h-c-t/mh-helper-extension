@@ -11,13 +11,14 @@
     const rh_intake_url = base_domain_url + "/rh_intake.php";
 
     if (!window.jQuery) {
-        console.log("MHHH: Can't find jQuery, exiting.");
+        console.log("MHCT: Can't find jQuery, exiting.");
         return;
     }
 
     const mhhh_version = formatVersion($("#mhhh_version").val());
 
-    let debug_logging = false;
+    let debug_logging = true;
+    if (debug_logging) {window.console.time("MHCT: Debug mode activated!");}
 
     // Listening for calls
     window.addEventListener('message', ev => {
@@ -26,7 +27,7 @@
         }
 
         if (typeof user.user_id === 'undefined') {
-            alert('Please make sure you are logged in into MH.');
+            alert('MHCT: Please make sure you are logged in into MH.');
             return;
         }
         if (ev.data.mhct_message === 'userhistory') {
@@ -719,23 +720,23 @@
         const hunt = parseJournalEntries(response);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
         if (!response.success || !response.active_turn) {
-            window.console.log("MHHH: Missing Info (trap check or friend hunt)(1)");
+            window.console.log("MHCT: Missing Info (trap check or friend hunt)(1)");
             return;
         } else if (!hunt || Object.keys(hunt).length === 0) {
-            window.console.log("MHHH: Missing Info (trap check or friend hunt)(2)");
+            window.console.log("MHCT: Missing Info (trap check or friend hunt)(2)");
             return;
         }
 
         if (!required_differences.every(key => user_pre[key] != user_post[key])
                 || user_post.num_active_turns - user_pre.num_active_turns !== 1) {
-            window.console.log("MHHH: Required pre/post hunt differences not observed.");
+            window.console.log("MHCT: Required pre/post hunt differences not observed.");
             return;
         }
 
         // Obtain the main hunt information from the journal entry and user objects.
         const message = createMessageFromHunt(hunt, user_pre, user_post);
         if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
-            window.console.log("MHHH: Missing Info (will try better next hunt)(1)");
+            window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
             return;
         }
 
@@ -753,7 +754,7 @@
 
         addHuntDetails(message, user_pre, user_post, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
-            window.console.log("MHHH: Missing Info (will try better next hunt)(2)");
+            window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
             return;
         }
 
@@ -788,14 +789,14 @@
         for (const key in response.items) {
             if (!Object.prototype.hasOwnProperty.call(response.items, key)) continue;
             if (convertible) {
-                window.console.log("MHHH: Multiple items are not supported (yet)");
+                window.console.log("MHCT: Multiple items are not supported (yet)");
                 return;
             }
             convertible = response.items[key];
         }
 
         if (!convertible) {
-            window.console.log("MHHH: Couldn't find any item");
+            window.console.log("MHCT: Couldn't find any item");
             return;
         }
 
@@ -892,7 +893,7 @@
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
                     sendMessageToServer(db_url, rh_message);
-                    if (debug_logging) {window.console.log(`MHHH: Found the Relic Hunter in ${rh_message.rh_environment}`);}
+                    if (debug_logging) {window.console.log(`MHCT: Found the Relic Hunter in ${rh_message.rh_environment}`);}
                 }
             }
             else if (css_class.search(/prizemouse/) !== -1) {
@@ -1062,7 +1063,7 @@
         // Hunter ID.
         message.user_id = parseInt(user.user_id, 10);
         if (isNaN(message.user_id)) {
-            throw new Error(`MHHH: Unexpected user id value ${user.user_id}`);
+            throw new Error(`MHCT: Unexpected user id value ${user.user_id}`);
         }
 
         // Entry ID
@@ -1145,7 +1146,7 @@
             } else if (journal_css.includes('catchfailure')) {
                 message.caught = 0;
             } else {
-                window.console.error(`MHHH: Unknown "catch" journal css: ${journal_css}`);
+                window.console.error(`MHCT: Unknown "catch" journal css: ${journal_css}`);
                 return null;
             }
             // Remove HTML tags and other text around the mouse name.
@@ -1192,7 +1193,7 @@
             "Sand Dunes", "Sand Crypts",
         ].includes(message.location.name)) {
             if (debug_logging) {window.console.warn({record: message, user, user_post, hunt});}
-            throw new Error(`MHHH: Unexpected location id ${message.location.id} for LG-area location`);
+            throw new Error(`MHCT: Unexpected location id ${message.location.id} for LG-area location`);
         }
     }
 
@@ -1299,7 +1300,7 @@
             message.stage = "Using poster";
         } else {
             if (debug_logging) {window.console.warn({record: message, pre: quest, post: user_post.quests.QuestClawShotCity});}
-            throw new Error("MHHH: Unexpected Claw Shot City quest state");
+            throw new Error("MHCT: Unexpected Claw Shot City quest state");
         }
     }
 
@@ -2620,6 +2621,6 @@
         URLDiffCheck(); // Initial call on page load
         $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
 
-        window.console.log("MH Hunt Helper version " + mhhh_version + " loaded! Good luck!");
+        window.console.log("MHCT version " + mhhh_version + " loaded! Good luck!");
     });
 }());
