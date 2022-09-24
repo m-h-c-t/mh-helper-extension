@@ -68,7 +68,7 @@
             } else if (counts != null) {
                 displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
             } else if (debug_logging) {
-                window.console.log('Skipped submission (already sent).');
+                window.console.log('MHCT: Skipped submission (already sent).');
             }
             return;
         }
@@ -241,7 +241,7 @@
                     },
                     dataType: "json",
                 }).done(userRqResponse => {
-                    if (debug_logging) {window.console.log({message: "Got user object, invoking huntSend", userRqResponse});}
+                    if (debug_logging) {window.console.log({message: "MHCT: Got user object, invoking huntSend", userRqResponse});}
                     hunt_xhr.addEventListener("loadend", () => {
                         if (debug_logging) {window.console.timeEnd("Overall 'Hunt Requested' Timing");}
                         // Call record hunt with the pre-hunt and hunt (post) user objects.
@@ -310,7 +310,7 @@
     function recordCrowns(settings, xhr, url) {
         const mouseCrowns = xhr.responseJSON?.page?.tabs?.kings_crowns?.subtabs?.[0]?.mouse_crowns;
         if (!mouseCrowns) {
-            if (debug_logging) window.console.log('Skipped crown submission due to unhandled XHR structure');
+            if (debug_logging) window.console.log('MHCT: Skipped crown submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
                 "is_error": true,
@@ -355,7 +355,7 @@
                 payload[type] = group.count;
             }
         });
-        if (debug_logging) {window.console.log(payload);}
+        if (debug_logging) {window.console.log(`MHCT: Crowns payload: ${payload}`);}
 
         // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
         // submission by submitting from the content script.
@@ -374,7 +374,7 @@
     function recordGWH2021Golems(settings, xhr) {
         const {messages} = xhr.responseJSON?.messageData?.message_model ?? {};
         if (!messages) {
-            if (debug_logging) window.console.log('Skipped GWH golem submission due to unhandled XHR structure');
+            if (debug_logging) window.console.log('MHCT: Skipped GWH golem submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
                 "is_error": true,
@@ -421,7 +421,7 @@
                 return payload;
             });
         if (golems.length) {
-            if (debug_logging) window.console.log({message: 'GWH Golem', golems});
+            if (debug_logging) window.console.log({message: 'MHCT: GWH Golem:', golems});
             window.postMessage({mhct_golem_submit: 1, golems, settings}, window.origin);
         }
     }
@@ -434,7 +434,7 @@
     function recordSnackPack(settings, xhr) {
         const {vending_machine_purchase: purchase, user} = xhr.responseJSON ?? {};
         if (!purchase.type || !user?.user_id) {
-            if (debug_logging) window.console.log('Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
+            if (debug_logging) window.console.log('MHCT: Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
                 "is_error": true,
@@ -570,7 +570,7 @@
             !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity ||
             xhr.responseJSON.kings_giveaway_result.slot !== "bonus" || !xhr.responseJSON.user.user_id
         ) {
-            if (debug_logging) window.console.log('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
+            if (debug_logging) window.console.log('MHCT: Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
             window.postMessage({
                 "mhct_log_request": 1,
                 "is_error": true,
@@ -607,7 +607,7 @@
             items.push(i);
         });
 
-        if (debug_logging) window.console.log({convertible: convertible, items: items, settings: settings});
+        if (debug_logging) window.console.log(`MHCT: Prizepack: ${{convertible: convertible, items: items, settings: settings}}`);
         submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
     }
 
@@ -649,7 +649,7 @@
      * @param {Object <string, any>} post_response Parsed JSON representation of the response from calling activeturn.php
      */
     function recordHuntWithPrehuntUser(pre_response, post_response) {
-        if (debug_logging) {window.console.log({message: "In recordHuntWithPrehuntUser pre and post:", pre_response, post_response});}
+        if (debug_logging) {window.console.log({message: "MHCT: In recordHuntWithPrehuntUser pre and post:", pre_response, post_response});}
         // Require some difference between the user and response.user objects. If there is
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const required_differences = [
@@ -713,7 +713,7 @@
         if (debug_logging) {
             const differences = {};
             diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
-            window.console.log({differences});
+            window.console.log(`MHCT: ${differences}`);
         }
 
 
@@ -763,7 +763,7 @@
         }
 
         addLoot(message, hunt, post_response.inventory);
-        if (debug_logging) {window.console.log({message, user_pre, user_post, hunt});}
+        if (debug_logging) {window.console.log(`MHCT: ${{message, user_pre, user_post, hunt}}`);}
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
     }
@@ -885,9 +885,13 @@
 
         // Filter out stale entries
         journal_entries = journal_entries.filter(x => x.render_data.entry_id <= max_old_entry_id);
+        if (debug_logging) {window.console.log(`MHCT: After filterting there's ${journal_entries.length} journal entries left. ${{journal_entries:journal_entries, max_old_entry_id:max_old_entry_id}}`);}
 
         // Cancel everything if there's trap check somewhere
-        if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1)) { return null; }
+        if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1)) {
+            window.console.log("MHCT: Found trap check too close to hunt. Aborting.")
+            return null;
+        }
 
         journal_entries.forEach(markup => {
             const css_class = markup.render_data.css_class;
@@ -948,7 +952,7 @@
                             quantity: 1,
                         };
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
-                        if (debug_logging) { window.console.log({desert_heater_loot: items}); }
+                        if (debug_logging) { window.console.log(`MHCT: ${{desert_heater_loot: items}}`); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
                     }
@@ -966,7 +970,7 @@
                 css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
-                if (debug_logging) {window.console.log({procs: more_details});}
+                if (debug_logging) {window.console.log(`MHCT: ${{procs: more_details}}`);}
             }
             else if (markup.render_data.entry_timestamp === live_ts &&
                     css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
@@ -987,14 +991,14 @@
                                 name: potionName,
                                 quantity: 1,
                             }];
-                            if (debug_logging) { window.console.log({boiling_cauldron_trap: items}); }
+                            if (debug_logging) { window.console.log(`MHCT: ${{boiling_cauldron_trap: items}}`); }
 
                             submitConvertible(convertible, items, hunt_response.user.user_id);
                         }
                     }
                 }
                 more_details['boiling_cauldron_trap_bonus'] = true;
-                if (debug_logging) {window.console.log({procs: more_details});}
+                if (debug_logging) {window.console.log(`MHCT: ${{procs: more_details}}`);}
             }
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {
                 // Handle a potential Gilded Charm proc.
@@ -1021,7 +1025,7 @@
                             quantity: 1,
                         };
                         const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
-                        if (debug_logging) { window.console.log({gilded_charm: items}); }
+                        if (debug_logging) { window.console.log(`MHCT: ${{gilded_charm: items}}`); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
                     }
@@ -1030,19 +1034,18 @@
             else if (!done_procs && css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
                 more_details['pirate_sleigh_trigger'] = true;
-                if (debug_logging) {window.console.log({procs: more_details});}
+                if (debug_logging) {window.console.log(`MHCT: ${{procs: more_details}}`);}
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
                 more_details['hunt_count']++;
-                if (debug_logging) {window.console.log("Got a hunt record");}
-                if (debug_logging) {window.console.log({procs: more_details});}
+                if (debug_logging) {window.console.log(`MHCT: Got a hunt record ${{procs: more_details}}`);}
                 if (Object.keys(journal).length !== 0) {
                     // When true this means extra journal entries won't be considered for this hunt's data
                     done_procs = true;
                 }
                 else if (css_class.includes('active')) {
                     journal = markup;
-                    if (debug_logging) {window.console.log({message: "Found the active hunt", journal});}
+                    if (debug_logging) {window.console.log({message: "MHCT: Found the active hunt", journal});}
                     live_ts = journal.render_data.entry_timestamp;
                 }
             }
@@ -1084,7 +1087,7 @@
 
         // Location
         if (!user.environment_name || !user_post.environment_name) {
-            window.console.error('MH Helper: Missing Location');
+            window.console.error('MHCT: Missing Location');
             return null;
         }
         message.location = {
@@ -1126,7 +1129,7 @@
             && !Object.prototype.hasOwnProperty.call(user, `${component.prop}_name`)
         );
         if (missing.length) {
-            window.console.error(`MH Helper: Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
+            window.console.error(`MHCT: Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
             return null;
         }
         // Assign component values to the message.
@@ -1167,7 +1170,7 @@
         }
 
         if (debug_logging) {
-            debug_logs.forEach(m => window.console.log(m));
+            debug_logs.forEach(log_message => window.console.log(`MHCT: ${log_message}`));
         }
 
         return message;
