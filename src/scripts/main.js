@@ -18,7 +18,6 @@
     const mhhh_version = formatVersion($("#mhhh_version").val());
 
     let debug_logging = false;
-    if (debug_logging) {console.log("MHCT: Debug mode activated!");}
 
     // Listening for calls
     window.addEventListener('message', ev => {
@@ -2591,6 +2590,10 @@
 
     // Finish configuring the extension behavior.
     getSettings(settings => {
+        if (settings.debug_logging) {
+            debug_logging = true;
+            console.log("MHCT: Debug mode activated!");
+        }
         if (settings.debug_logging) {
             window.console.log({message: "Initialized with settings", settings});
         }
