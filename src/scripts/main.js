@@ -355,7 +355,7 @@
                 payload[type] = group.count;
             }
         });
-        if (debug_logging) {window.console.log(`MHCT: Crowns payload: ${payload}`);}
+        if (debug_logging) {window.console.log({message: "MHCT: Crowns payload: ", payload});}
 
         // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
         // submission by submitting from the content script.
@@ -555,7 +555,7 @@
                 });
             });
         }
-        if (debug_logging) window.console.log({convertible, items, settings});
+        if (debug_logging) window.console.log({message:"MHCT: ", convertible, items, settings});
         submitConvertible(convertible, items, user.user_id);
     }
 
@@ -607,7 +607,7 @@
             items.push(i);
         });
 
-        if (debug_logging) window.console.log(`MHCT: Prizepack: ${{convertible: convertible, items: items, settings: settings}}`);
+        if (debug_logging) window.console.log({messsage: "MHCT: Prizepack: ", convertible: convertible, items: items, settings: settings});
         submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
     }
 
@@ -713,11 +713,12 @@
         if (debug_logging) {
             const differences = {};
             diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
-            window.console.log(`MHCT: ${differences}`);
+            window.console.log({message: "MHCT: ", differences});
         }
 
 
-        const max_old_entry_id = /data-entry-id='(\d+)'/.exec(pre_response.page.journal.entries_string);
+        let max_old_entry_id = /data-entry-id='(\d+)'/.exec(pre_response.page.journal.entries_string);
+        max_old_entry_id = max_old_entry_id[1];
         if (debug_logging) {window.console.log(`MHCT: Pre maximum (old) entry id: ${max_old_entry_id}`);}
 
         const hunt = parseJournalEntries(post_response, max_old_entry_id);
@@ -763,7 +764,7 @@
         }
 
         addLoot(message, hunt, post_response.inventory);
-        if (debug_logging) {window.console.log(`MHCT: ${{message, user_pre, user_post, hunt}}`);}
+        if (debug_logging) {window.console.log({message:"MHCT: ", message_var:message, user_pre, user_post, hunt});}
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
     }
@@ -884,8 +885,8 @@
         if (!journal_entries) { return null; }
 
         // Filter out stale entries
-        journal_entries = journal_entries.filter(x => x.render_data.entry_id <= max_old_entry_id);
-        if (debug_logging) {window.console.log(`MHCT: After filterting there's ${journal_entries.length} journal entries left. ${{journal_entries:journal_entries, max_old_entry_id:max_old_entry_id}}`);}
+        journal_entries = journal_entries.filter(x => Number(x.render_data.entry_id) <= Number(max_old_entry_id));
+        if (debug_logging) {window.console.log({message: `MHCT: After filterting there's ${journal_entries.length} journal entries left.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
 
         // Cancel everything if there's trap check somewhere
         if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1)) {
@@ -952,7 +953,7 @@
                             quantity: 1,
                         };
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
-                        if (debug_logging) { window.console.log(`MHCT: ${{desert_heater_loot: items}}`); }
+                        if (debug_logging) { window.console.log({message:"MHCT: ", desert_heater_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
                     }
@@ -970,7 +971,7 @@
                 css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
-                if (debug_logging) {window.console.log(`MHCT: ${{procs: more_details}}`);}
+                if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
             else if (markup.render_data.entry_timestamp === live_ts &&
                     css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
@@ -991,14 +992,14 @@
                                 name: potionName,
                                 quantity: 1,
                             }];
-                            if (debug_logging) { window.console.log(`MHCT: ${{boiling_cauldron_trap: items}}`); }
+                            if (debug_logging) { window.console.log({message: "MHCT: ", boiling_cauldron_trap: items}); }
 
                             submitConvertible(convertible, items, hunt_response.user.user_id);
                         }
                     }
                 }
                 more_details['boiling_cauldron_trap_bonus'] = true;
-                if (debug_logging) {window.console.log(`MHCT: ${{procs: more_details}}`);}
+                if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {
                 // Handle a potential Gilded Charm proc.
@@ -1025,7 +1026,7 @@
                             quantity: 1,
                         };
                         const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
-                        if (debug_logging) { window.console.log(`MHCT: ${{gilded_charm: items}}`); }
+                        if (debug_logging) { window.console.log({message: "MHCT: ", gilded_charm: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
                     }
@@ -1034,11 +1035,11 @@
             else if (!done_procs && css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
                 more_details['pirate_sleigh_trigger'] = true;
-                if (debug_logging) {window.console.log(`MHCT: ${{procs: more_details}}`);}
+                if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
                 more_details['hunt_count']++;
-                if (debug_logging) {window.console.log(`MHCT: Got a hunt record ${{procs: more_details}}`);}
+                if (debug_logging) {window.console.log({message: "MHCT: Got a hunt record ", procs: more_details});}
                 if (Object.keys(journal).length !== 0) {
                     // When true this means extra journal entries won't be considered for this hunt's data
                     done_procs = true;
