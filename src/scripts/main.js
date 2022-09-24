@@ -2593,8 +2593,6 @@
         if (settings.debug_logging) {
             debug_logging = true;
             console.log("MHCT: Debug mode activated!");
-        }
-        if (settings.debug_logging) {
             window.console.log({message: "Initialized with settings", settings});
         }
 
