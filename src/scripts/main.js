@@ -646,11 +646,11 @@
     }
 
     /**
-     * @param {Object <string, any>} pre_response The user object obtained prior to invoking `activeturn.php`.
+     * @param {Object <string, any>} pre_response The object obtained prior to invoking `activeturn.php`.
      * @param {Object <string, any>} post_response Parsed JSON representation of the response from calling activeturn.php
      */
     function recordHuntWithPrehuntUser(pre_response, post_response) {
-        if (debug_logging) {window.console.log({message: "In recordHuntWithPrehuntUser pre and post:", post_response, pre_response});}
+        if (debug_logging) {window.console.log({message: "In recordHuntWithPrehuntUser pre and post:", pre_response, post_response});}
         // Require some difference between the user and response.user objects. If there is
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const required_differences = [
@@ -718,16 +718,16 @@
         }
 
 
-        let max_old_entry_id = /data-entry-id='(\d+)'/.exec(pre_response.page.journal.entries_string);
+        const max_old_entry_id = /data-entry-id='(\d+)'/.exec(pre_response.page.journal.entries_string);
         if (debug_logging) {window.console.log(`MHCT: Pre maximum (old) entry id: ${max_old_entry_id}`);}
 
         const hunt = parseJournalEntries(post_response, max_old_entry_id);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
         if (!post_response.success || !post_response.active_turn) {
-            window.console.log("MHCT: Missing Info (trap check or friend hunt)(1)");
+            window.console.log("MHCT: Missing Info (trap check or friend hunt)(ErrorCode: 1)");
             return;
         } else if (!hunt || Object.keys(hunt).length === 0) {
-            window.console.log("MHCT: Missing Info (trap check or friend hunt)(2)");
+            window.console.log("MHCT: Missing Info (trap check or friend hunt)(ErrorCode: 2)");
             return;
         }
 
@@ -740,7 +740,7 @@
         // Obtain the main hunt information from the journal entry and user objects.
         const message = createMessageFromHunt(hunt, user_pre, user_post);
         if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
+            window.console.log("MHCT: Missing Info (will try better next hunt)(ErrorCode: 3)");
             return;
         }
 
@@ -748,7 +748,7 @@
         fixLGLocations(message, user_pre, user_post, hunt);
 
         // Adding stage and disabling transitions
-        const temp_message_post = JSON.parse(JSON.stringify(message)); // For transition check
+        const temp_message_post = JSON.parse(JSON.stringify(message));
         addStage(message, user_pre, user_post, hunt); // with pre
         addStage(temp_message_post, user_post, user_post, hunt); // with post
         // If pre stage != post stage, disregard the hunt
@@ -759,7 +759,7 @@
 
         addHuntDetails(message, user_pre, user_post, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
+            window.console.log("MHCT: Missing Info (will try better next hunt)(ErrorCode: 4)");
             return;
         }
 
