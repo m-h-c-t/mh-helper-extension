@@ -17,8 +17,8 @@
 
     const mhhh_version = formatVersion($("#mhhh_version").val());
 
-    let debug_logging = true;
-    if (debug_logging) {window.console.time("MHCT: Debug mode activated!");}
+    let debug_logging = false;
+    if (debug_logging) {console.log("MHCT: Debug mode activated!");}
 
     // Listening for calls
     window.addEventListener('message', ev => {
@@ -245,8 +245,8 @@
                     if (debug_logging) {window.console.log({message: "Got user object, invoking huntSend", userRqResponse});}
                     hunt_xhr.addEventListener("loadend", () => {
                         if (debug_logging) {window.console.timeEnd("Overall 'Hunt Requested' Timing");}
-                        // Call record hunt with the pre-hunt user object.
-                        recordHuntWithPrehuntUser(JSON.parse(hunt_xhr.responseText), userRqResponse.user);
+                        // Call record hunt with the pre-hunt and hunt (post) user objects.
+                        recordHuntWithPrehuntUser(userRqResponse, JSON.parse(hunt_xhr.responseText));
                     }, false);
                     hunt_send.apply(hunt_xhr, huntArgs);
                 });
@@ -646,18 +646,19 @@
     }
 
     /**
-     * @param {Object <string, any>} response Parsed JSON representation of the response from calling activeturn.php
-     * @param {Object <string, any>} user_pre The user object obtained prior to invoking `activeturn.php`.
+     * @param {Object <string, any>} pre_response The user object obtained prior to invoking `activeturn.php`.
+     * @param {Object <string, any>} post_response Parsed JSON representation of the response from calling activeturn.php
      */
-    function recordHuntWithPrehuntUser(response, user_pre) {
-        if (debug_logging) {window.console.log({message: "In recordHuntWithPrehuntUser", response, user_pre});}
+    function recordHuntWithPrehuntUser(pre_response, post_response) {
+        if (debug_logging) {window.console.log({message: "In recordHuntWithPrehuntUser pre and post:", post_response, pre_response});}
         // Require some difference between the user and response.user objects. If there is
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const required_differences = [
             "num_active_turns",
             "next_activeturn_seconds",
         ];
-        const user_post = response.user;
+        const user_pre = pre_response.user;
+        const user_post = post_response.user;
 
         /**
          * Store the difference between generic primitives and certain objects in `result`
@@ -717,9 +718,12 @@
         }
 
 
-        const hunt = parseJournalEntries(response);
+        let max_old_entry_id = /data-entry-id='(\d+)'/.exec(pre_response.page.journal.entries_string);
+        if (debug_logging) {window.console.log(`MHCT: Pre maximum (old) entry id: ${max_old_entry_id}`);}
+
+        const hunt = parseJournalEntries(post_response, max_old_entry_id);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
-        if (!response.success || !response.active_turn) {
+        if (!post_response.success || !post_response.active_turn) {
             window.console.log("MHCT: Missing Info (trap check or friend hunt)(1)");
             return;
         } else if (!hunt || Object.keys(hunt).length === 0) {
@@ -742,12 +746,13 @@
 
         // Perform validations and stage corrections.
         fixLGLocations(message, user_pre, user_post, hunt);
-        const temp_message_post = message; // For transition check
-        addStage(message, user_pre, user_post, hunt);
 
-        // Disabling transitions
-        addStage(temp_message_post, user_post, user_post, hunt);
-        if (message.stage && message.stage != temp_message_post.stage) {
+        // Adding stage and disabling transitions
+        const temp_message_post = JSON.parse(JSON.stringify(message)); // For transition check
+        addStage(message, user_pre, user_post, hunt); // with pre
+        addStage(temp_message_post, user_post, user_post, hunt); // with post
+        // If pre stage != post stage, disregard the hunt
+        if ((message.stage || temp_message_post.stage) && message.stage != temp_message_post.stage) {
             if (debug_logging) {window.console.log(`MHCT: Ignoring transition from stage ${message.stage} to ${temp_message_post.stage}`);}
             return;
         }
@@ -758,7 +763,7 @@
             return;
         }
 
-        addLoot(message, hunt, response.inventory);
+        addLoot(message, hunt, post_response.inventory);
         if (debug_logging) {window.console.log({message, user_pre, user_post, hunt});}
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
@@ -870,16 +875,22 @@
      * @param {Object <string, any>} hunt_response The JSON response returned from a horn sound.
      * @returns {Object <string, any>} The journal entry corresponding to the active hunt.
      */
-    function parseJournalEntries(hunt_response) {
+    function parseJournalEntries(hunt_response, max_old_entry_id) {
         let journal = {};
         const more_details = {};
         more_details['hunt_count'] = 0;
         let done_procs = false;
         let live_ts = 0;
-        if (!hunt_response.journal_markup) {
-            return null;
-        }
-        hunt_response.journal_markup.forEach(markup => {
+        let journal_entries = hunt_response.journal_markup;
+        if (!journal_entries) { return null; }
+
+        // Filter out stale entries
+        journal_entries = journal_entries.filter(x => x.render_data.entry_id <= max_old_entry_id);
+
+        // Cancel everything if there's trap check somewhere
+        if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1)) { return null; }
+
+        journal_entries.forEach(markup => {
             const css_class = markup.render_data.css_class;
             // Handle a Relic Hunter attraction.
             if (css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
