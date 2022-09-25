@@ -718,8 +718,8 @@
         if (!max_old_entry_id.length) {
             max_old_entry_id = 0;
         } else {
-            max_old_entry_id = max_old_entry_id.map(x => x.replace(/^data-entry-id='/,''));
-            max_old_entry_id = max_old_entry_id.map(x => Number(x.replace("'","")));
+            max_old_entry_id = max_old_entry_id.map(x => x.replace(/^data-entry-id='/, ''));
+            max_old_entry_id = max_old_entry_id.map(x => Number(x.replace("'", "")));
             max_old_entry_id = Math.max(...max_old_entry_id);
         }
         if (debug_logging) {window.console.log(`MHCT: Pre (old) maximum entry id: ${max_old_entry_id}`);}
