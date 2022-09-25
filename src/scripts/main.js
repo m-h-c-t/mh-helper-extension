@@ -220,7 +220,7 @@
         if (event.type !== "ajaxSend" || !ajaxOptions.url.includes("ajax/turns/activeturn.php"))
             return;
         const create_hunt_XHR = ajaxOptions.xhr;
-        if (debug_logging) {window.console.time("Overall 'Hunt Requested' Timing");}
+        if (debug_logging) {window.console.time("MHCT: Overall 'Hunt Requested' Timing");}
         // Override the XMLHttpRequest that will be used with our own.
         ajaxOptions.xhr = function () {
             // Create the original XMLHttpRequest, whose `send()` will sound the horn.
@@ -243,7 +243,7 @@
                 }).done(userRqResponse => {
                     if (debug_logging) {window.console.log({message: "MHCT: Got user object, invoking huntSend", userRqResponse});}
                     hunt_xhr.addEventListener("loadend", () => {
-                        if (debug_logging) {window.console.timeEnd("Overall 'Hunt Requested' Timing");}
+                        if (debug_logging) {window.console.timeEnd("MHCT: Overall 'Hunt Requested' Timing");}
                         // Call record hunt with the pre-hunt and hunt (post) user objects.
                         recordHuntWithPrehuntUser(userRqResponse, JSON.parse(hunt_xhr.responseText));
                     }, false);
@@ -724,10 +724,10 @@
         const hunt = parseJournalEntries(post_response, max_old_entry_id);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
         if (!post_response.success || !post_response.active_turn) {
-            window.console.log("MHCT: Missing Info (trap check or friend hunt)(ErrorCode: 1)");
+            window.console.log("MHCT: Missing Info (trap check or friend hunt)(1)");
             return;
         } else if (!hunt || Object.keys(hunt).length === 0) {
-            window.console.log("MHCT: Missing Info (trap check or friend hunt)(ErrorCode: 2)");
+            window.console.log("MHCT: Missing Info (trap check or friend hunt)(2)");
             return;
         }
 
@@ -740,7 +740,7 @@
         // Obtain the main hunt information from the journal entry and user objects.
         const message = createMessageFromHunt(hunt, user_pre, user_post);
         if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(ErrorCode: 3)");
+            window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
             return;
         }
 
@@ -759,7 +759,7 @@
 
         addHuntDetails(message, user_pre, user_post, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(ErrorCode: 4)");
+            window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
             return;
         }
 
@@ -1460,7 +1460,7 @@
             }
             message.stage += " Tide";
         } else {
-            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side tide change", user, user_post, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side tide change", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1487,12 +1487,12 @@
                     message.stage = "Winter";
                     break;
                 default:
-                    if (debug_logging) {window.console.log({message: "Assumed spring", season, user, user_post});}
+                    if (debug_logging) {window.console.log({message: "MHCT: Assumed spring", season, user, user_post});}
                     message.stage = "Spring";
                     break;
             }
         } else {
-            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side season change", user, user_post, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side season change", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1555,7 +1555,7 @@
         })[quest.current_phase]);
 
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "Skipping unknown Iceberg stage", pre: quest, post: user_post.quests.QuestIceberg, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Iceberg stage", pre: quest, post: user_post.quests.QuestIceberg, hunt});}
             message.location = null;
         }
     }
@@ -1653,7 +1653,7 @@
         }
 
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "Skipping unknown Zokor district", user, user_post, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Zokor district", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1685,7 +1685,7 @@
         }
 
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "Skipping unknown Furoma Rift droid state", user, user_post, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Furoma Rift droid state", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1741,7 +1741,7 @@
             }
         }
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side pollution change", user, user_post, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side pollution change", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1762,7 +1762,7 @@
             "tier_3": "Mist 19-20",
         })[quest.mist_tier]);
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "Skipping unknown Burroughs Rift mist state", user, user_post, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Burroughs Rift mist state", user, user_post, hunt});}
             message.location = null;
         }
     }
@@ -1782,7 +1782,7 @@
         const changed_state = (quest.on_train !== final_quest.on_train
                 || quest.current_phase !== final_quest.current_phase);
         if (changed_state) {
-            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side train stage change", user, user_post, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side train stage change", user, user_post, hunt});}
             message.location = null;
         } else {
             // Pre- & post-hunt user object agree on train & phase statuses.
@@ -1804,7 +1804,7 @@
                     const area = quest.minigame.trouble_area;
                     const final_area = final_quest.minigame.trouble_area;
                     if (area !== final_area) {
-                        if (debug_logging) {window.console.log({message: "Skipping hunt during server-side trouble area change", user, user_post, hunt});}
+                        if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side trouble area change", user, user_post, hunt});}
                         message.location = null;
                     } else {
                         const charm_id = message.charm.id;
@@ -1869,7 +1869,7 @@
         }
 
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "Skipping unknown Fort Rox stage", pre: quest, post: user_post.quests.QuestFortRox});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Fort Rox stage", pre: quest, post: user_post.quests.QuestFortRox});}
             message.location = null;
         }
     }
@@ -1888,7 +1888,7 @@
     function addForbiddenGroveStage(message, user, user_post, hunt) {
         const was_open = user.quests.QuestForbiddenGrove.grove.is_open;
         if (was_open != user_post.quests.QuestForbiddenGrove.grove.is_open) {
-            if (debug_logging) {window.console.log({message: "Skipping hunt during server-side door change", user, user_post, hunt});}
+            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side door change", user, user_post, hunt});}
             message.location = null;
         } else {
             message.stage = (was_open) ? "Open" : "Closed";
@@ -1989,7 +1989,7 @@
                 message.stage = "Outside";
                 break;
             default:
-                if (debug_logging) {window.console.log({message: "Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts || user_post.enviroment_atts});}
+                if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts || user_post.enviroment_atts});}
                 message.location = null;
                 break;
         }
@@ -2503,7 +2503,7 @@
             const plural_name = $($.parseHTML(item_text)).filter("a").text();
 
             if (!Object.prototype.hasOwnProperty.call(inventory, item_name)) {
-                if (debug_logging) window.console.log(`Looted "${item_name}", but it is not in user inventory`);
+                if (debug_logging) window.console.log(`MHCT: Looted "${item_name}", but it is not in user inventory`);
                 return null;
             }
             const loot_object = {
@@ -2514,7 +2514,7 @@
                 plural_name: item_amount > 1 ? plural_name : '',
             };
 
-            if (debug_logging) { window.console.log({message: "Loot object", loot_object}); }
+            if (debug_logging) { window.console.log({message: "MHCT: Loot object", loot_object}); }
 
             return loot_object;
         }).filter(loot => loot);
@@ -2597,7 +2597,7 @@
         if (settings.debug_logging) {
             debug_logging = true;
             console.log("MHCT: Debug mode activated!");
-            window.console.log({message: "Initialized with settings", settings});
+            window.console.log({message: "MHCT: Initialized with settings", settings});
         }
 
         if (settings.escape_button_close) {
@@ -2617,7 +2617,7 @@
                 $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
                     .fail(err => {
                         if (settings.debug_logging) {
-                            window.console.log({message: `Crown query failed for snuid=${profile_snuid}`, err});
+                            window.console.log({message: `MHCT: Crown query failed for snuid=${profile_snuid}`, err});
                         }
                     });
             }
@@ -2637,6 +2637,6 @@
         URLDiffCheck(); // Initial call on page load
         $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
 
-        window.console.log("MHCT version " + mhhh_version + " loaded! Good luck!");
+        window.console.log("MHCT: version " + mhhh_version + " loaded! Good luck!");
     });
 }());
