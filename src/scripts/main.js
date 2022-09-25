@@ -713,10 +713,16 @@
             window.console.log({message: "MHCT: ", differences});
         }
 
-
-        let max_old_entry_id = /data-entry-id='(\d+)'/.exec(pre_response.page.journal.entries_string);
-        max_old_entry_id = max_old_entry_id[1];
-        if (debug_logging) {window.console.log(`MHCT: Pre maximum (old) entry id: ${max_old_entry_id}`);}
+        // Find maximum entry id from pre_response
+        let max_old_entry_id = pre_response.page.journal.entries_string.match(/data-entry-id='(\d+)'/g);
+        if (!max_old_entry_id.length) {
+            max_old_entry_id = 0;
+        } else {
+            max_old_entry_id.map(x => x.replace(/^data-entry-id='/,''));
+            max_old_entry_id.map(x => Number(x.replace(/'/,'')));
+            max_old_entry_id = Math.max( ...max_old_entry_id);
+        }
+        if (debug_logging) {window.console.log(`MHCT: Pre (old) maximum entry id: ${max_old_entry_id}`);}
 
         const hunt = parseJournalEntries(post_response, max_old_entry_id);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
