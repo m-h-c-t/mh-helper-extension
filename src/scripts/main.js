@@ -888,7 +888,7 @@
 
         // Cancel everything if there's trap check somewhere
         if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1) !== -1) {
-            window.console.log("MHCT: Found trap check too close to hunt. Aborting.")
+            window.console.log("MHCT: Found trap check too close to hunt. Aborting.");
             return null;
         }
 
