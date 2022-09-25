@@ -72,7 +72,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             message = hunt_timer.textContent;
         }
         sendResponse(message);
-    } else if (request.mhct_link === "show_horn_alert") {
+    } else if (request.mhct_link === "sound_horn") {
         window.postMessage({"mhct_message": request.mhct_link}, "*");
     }
 });
@@ -127,6 +127,7 @@ function getSettings() {
             horn_webalert: false, // defaults
             tracking_enabled: true, // defaults
             escape_button_close: false, // defaults
+            show_mh_tab_on_alert: true, // defaults
         },
         items => {
             if (chrome.runtime.lastError) {

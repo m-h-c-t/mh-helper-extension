@@ -34,6 +34,7 @@ function check_settings(callback) {
         horn_alert: false, // defaults
         horn_webalert: false, // defaults
         tracking_enabled: true, // defaults
+        show_mh_tab_on_alert: true, //defaults
     },
     settings => callback(settings));
 }
@@ -106,8 +107,14 @@ function icon_timer_updateBadge(tab_id, settings) {
                     );
                 }
                 if (settings.horn_webalert) {
-                    chrome.tabs.update(tab_id, {'active': true});
-                    chrome.tabs.sendMessage(tab_id, {mhct_link: "show_horn_alert"});
+                    if (settings.show_mh_tab_on_alert) {
+                        chrome.tabs.update(tab_id, {'active': true});
+                    }
+
+                    const sound_the_horn = confirm("Horn is Ready! Sound it?");
+                    if (sound_the_horn) {
+                        chrome.tabs.sendMessage(tab_id, {mhct_link: "sound_horn"});
+                    }
                 }
             }
             notification_done = true;

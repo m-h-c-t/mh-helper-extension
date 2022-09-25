@@ -15,6 +15,7 @@ const mhhhOptions = [
     {name: 'tsitu_loader_offset', p: 'value', default: 80},
     {name: 'tsitu_loader_offset_output', p: 'value'},
     {name: 'escape_button_close', p:'checked', default: false},
+    {name: 'show_mh_tab_on_alert', p:'checked', default: true},
 ];
 
 // Click "Save" -> store the extension's settings in chrome.storage.
