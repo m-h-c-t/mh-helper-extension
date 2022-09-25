@@ -885,11 +885,12 @@
         if (!journal_entries) { return null; }
 
         // Filter out stale entries
-        journal_entries = journal_entries.filter(x => Number(x.render_data.entry_id) <= Number(max_old_entry_id));
+        if (debug_logging) {window.console.log({message: `MHCT: Before filterting there's ${journal_entries.length} journal entries.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
+        journal_entries = journal_entries.filter(x => Number(x.render_data.entry_id) > Number(max_old_entry_id));
         if (debug_logging) {window.console.log({message: `MHCT: After filterting there's ${journal_entries.length} journal entries left.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
 
         // Cancel everything if there's trap check somewhere
-        if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1)) {
+        if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1) !== -1) {
             window.console.log("MHCT: Found trap check too close to hunt. Aborting.")
             return null;
         }
