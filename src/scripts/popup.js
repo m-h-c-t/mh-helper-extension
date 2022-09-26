@@ -23,6 +23,12 @@ function findOpenMHTab(callback, button_id, silent) {
  * @param {string} button_id The HTML element ID of the button that was clicked
  */
 function sendMessageToScript(tab_id, button_id) {
+    // Switch to MH tab if needed.
+    const needsMHPageActive = ['horn', 'tsitu_loader', 'mhmh', 'ryonn'];
+    if (needsMHPageActive.includes(button_id)) {
+        chrome.tabs.update(tab_id, {'active': true});
+    }
+
     // Send message to content script
     chrome.tabs.sendMessage(tab_id, {mhct_link: button_id});
 }

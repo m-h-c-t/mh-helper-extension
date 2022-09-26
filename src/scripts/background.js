@@ -106,16 +106,19 @@ function icon_timer_updateBadge(tab_id, settings) {
                         }
                     );
                 }
-                if (settings.horn_webalert) {
-                    if (settings.show_mh_tab_on_alert) {
-                        chrome.tabs.update(tab_id, {'active': true});
-                    }
-
-                    const sound_the_horn = confirm("Horn is Ready! Sound it?");
-                    if (sound_the_horn) {
-                        chrome.tabs.sendMessage(tab_id, {mhct_link: "sound_horn"});
+                async function show_webalert() {
+                    if (settings.horn_webalert) {
+                        await new Promise(r => setTimeout(r, 2000));
+                        if (settings.show_mh_tab_on_alert) {
+                            chrome.tabs.update(tab_id, {'active': true});
+                        }
+                        const sound_the_horn = confirm("Horn is Ready! Sound it?");
+                        if (sound_the_horn) {
+                            chrome.tabs.sendMessage(tab_id, {mhct_link: "sound_horn"});
+                        }
                     }
                 }
+                show_webalert();
             }
             notification_done = true;
         } else if (["King's Reward", "Logged out"].includes(response)) {
