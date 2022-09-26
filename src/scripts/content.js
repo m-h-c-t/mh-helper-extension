@@ -72,7 +72,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             message = hunt_timer.textContent;
         }
         sendResponse(message);
-    } else if (request.mhct_link === "sound_horn") {
+    } else if (request.mhct_link === "show_horn_alert") {
         window.postMessage({"mhct_message": request.mhct_link}, "*");
     }
 });
@@ -125,9 +125,9 @@ function getSettings() {
             horn_volume: 100, // defaults
             horn_alert: false, // defaults
             horn_webalert: false, // defaults
+            horn_popalert: false, // defaults
             tracking_enabled: true, // defaults
             escape_button_close: false, // defaults
-            show_mh_tab_on_alert: true, // defaults
         },
         items => {
             if (chrome.runtime.lastError) {

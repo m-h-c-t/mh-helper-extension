@@ -33,8 +33,8 @@ function check_settings(callback) {
         horn_volume: 100, // defaults
         horn_alert: false, // defaults
         horn_webalert: false, // defaults
+        horn_popalert: false, //defaults
         tracking_enabled: true, // defaults
-        show_mh_tab_on_alert: true, //defaults
     },
     settings => callback(settings));
 }
@@ -75,33 +75,17 @@ function icon_timer_updateBadge(tab_id, settings) {
     const request = {mhct_link: "huntTimer"};
     chrome.tabs.sendMessage(tab_id, request, response => {
 
-        function show_desktop_alert() {
-            chrome.notifications.create(
-                "MHCT Horn",
-                {
-                    type: "basic",
-                    iconUrl: "images/icon128.png",
-                    title: "MHCT Tools",
-                    message: "MouseHunt Horn is ready!!! Good luck!",
-                }
-            );
-        }
-
         async function show_web_alert() {
-            await new Promise(r => setTimeout(r, 2000));
-            if (settings.show_mh_tab_on_alert) {
-                chrome.tabs.update(tab_id, {'active': true});
-            }
-            const sound_the_horn = confirm("Horn is Ready! Sound it?");
-            if (sound_the_horn) {
-                chrome.tabs.sendMessage(tab_id, {mhct_link: "sound_horn"});
-            }
+            await new Promise(r => setTimeout(r, 1000));
+            chrome.tabs.update(tab_id, {'active': true});
+            chrome.tabs.sendMessage(tab_id, {mhct_link: "show_horn_alert"});
         }
 
-        function play_horn_sound() {
-            const myAudio = new Audio(settings.custom_sound || default_sound);
-            myAudio.volume = (settings.horn_volume / 100).toFixed(2);
-            myAudio.play();
+        async function show_pop_alert() {
+            await new Promise(r => setTimeout(r, 1000));
+            if (confirm("Mousehunt Horn is Ready! Sound it now?")) {
+                chrome.tabs.sendMessage(tab_id, {mhct_link: "horn"});
+            }
         }
 
         if (chrome.runtime.lastError || !response) {
@@ -121,15 +105,29 @@ function icon_timer_updateBadge(tab_id, settings) {
             // If we haven't yet sent a notification about the horn, do so if warranted.
             if (!notification_done) {
                 if (settings.horn_sound && settings.horn_volume > 0) {
-                    play_horn_sound();
+                    const myAudio = new Audio(settings.custom_sound || default_sound);
+                    myAudio.volume = (settings.horn_volume / 100).toFixed(2);
+                    myAudio.play();
                 }
 
                 if (settings.horn_alert) {
-                    show_desktop_alert();
+                    chrome.notifications.create(
+                        "MHCT Horn",
+                        {
+                            type: "basic",
+                            iconUrl: "images/icon128.png",
+                            title: "MHCT Tools",
+                            message: "MouseHunt Horn is ready!!! Good luck!",
+                        }
+                    );
                 }
 
                 if (settings.horn_webalert) {
                     show_web_alert();
+                }
+
+                if (settings.horn_popalert) {
+                    show_pop_alert();
                 }
             }
             notification_done = true;

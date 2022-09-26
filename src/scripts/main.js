@@ -51,8 +51,11 @@
             return;
         }
 
-        if (ev.data.mhct_message === 'sound_horn') {
-            sound_horn();
+        if (ev.data.mhct_message === 'show_horn_alert') {
+            const sound_the_horn = confirm("Horn is Ready! Sound it?");
+            if (sound_the_horn) {
+                sound_horn();
+            }
             return;
         }
 
