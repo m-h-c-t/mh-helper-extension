@@ -788,22 +788,14 @@
     function recordConvertible(xhr) {
         const response = xhr?.responseJSON;
 
-        if (!response || !response.items || !response.messageData?.message_model) {
+        if (!response?.convertible_open?.items || !response.convertible_open.type) {
             return;
         }
-        if (response.messageData.message_model.messages?.length !== 1) {
-            return;
-        }
-
 
         let convertible;
-        for (const key in response.items) {
-            if (!Object.prototype.hasOwnProperty.call(response.items, key)) continue;
-            if (convertible) {
-                window.console.log("MHCT: Multiple items are not supported (yet)");
-                return;
-            }
-            convertible = response.items[key];
+        const opened_key = response.convertible_open.type;
+        if (Object.prototype.hasOwnProperty.call(response.items, opened_key)) {
+            convertible = response.items[opened_key];
         }
 
         if (!convertible) {
@@ -811,9 +803,20 @@
             return;
         }
 
-        const message = response.messageData.message_model.messages[0];
-        const items = message.messageData.items ?? [];
-        if (!message.isNew || items.length === 0) {
+        const results = response.convertible_open.items;
+        const items = [];
+        results.forEach(result => {
+            if  (Object.prototype.hasOwnProperty.call(response.inventory, result.type)) {
+                items.push({
+                    id: response.inventory[result.type].item_id,
+                    type: result.type,
+                    name: result.name,
+                    pluralized_name: result.pluralized_name,
+                    quantity: result.quantity,
+                });
+            }
+        });
+        if (items.length === 0) {
             return;
         }
 
@@ -854,6 +857,8 @@
                 user_id: final_message.user_id,
                 entry_timestamp: final_message.entry_timestamp,
             };
+            if (settings.debug_logging) {window.console.log({message: "MHCT: submitting convertible", submission:final_message});}
+
 
             // Get UUID
             $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
@@ -885,8 +890,6 @@
         let journal = {};
         const more_details = {};
         more_details['hunt_count'] = 0;
-        let done_procs = false;
-        let live_ts = 0;
         let journal_entries = hunt_response.journal_markup;
         if (!journal_entries) { return null; }
 
@@ -974,14 +977,12 @@
                     }, window.origin);
                 }
             }
-            else if (markup.render_data.entry_timestamp === live_ts &&
-                css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
+            else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
-            else if (markup.render_data.entry_timestamp === live_ts &&
-                    css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
+            else if (css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
                 const data = markup.render_data.text;
                 const potionRegex = /item\.php\?item_type=(.*?)"/;
                 if (potionRegex.test(data)) {
@@ -1039,7 +1040,7 @@
                     }
                 }
             }
-            else if (!done_procs && css_class.search(/pirate_sleigh_trigger/) !== -1) {
+            else if (css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
                 more_details['pirate_sleigh_trigger'] = true;
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
@@ -1047,14 +1048,9 @@
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
                 more_details['hunt_count']++;
                 if (debug_logging) {window.console.log({message: "MHCT: Got a hunt record ", procs: more_details});}
-                if (Object.keys(journal).length !== 0) {
-                    // When true this means extra journal entries won't be considered for this hunt's data
-                    done_procs = true;
-                }
-                else if (css_class.includes('active')) {
+                if (css_class.includes('active')) {
                     journal = markup;
                     if (debug_logging) {window.console.log({message: "MHCT: Found the active hunt", journal});}
-                    live_ts = journal.render_data.entry_timestamp;
                 }
             }
             else if (css_class.search(/linked|passive|misc/) !== -1) {
@@ -2527,6 +2523,11 @@
         }).filter(loot => loot);
     }
 
+    /**
+     * 
+     * @param {Object} item An object that looks like an item for convertibles. Has an id (or item_id), name, and quantity
+     * @returns {Object} An item with an id, name, and quantity
+     */
     function getItem(item) {
         return {
             id: item.item_id || item.id,
