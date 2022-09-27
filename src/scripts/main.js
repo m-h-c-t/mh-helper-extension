@@ -788,13 +788,9 @@
     function recordConvertible(xhr) {
         const response = xhr?.responseJSON;
 
-        if (!response?.convertible_open?.items || !response.messageData?.message_model) {
+        if (!response?.convertible_open?.items || !response.convertible_open.type) {
             return;
         }
-        if (response.messageData.message_model.messages?.length !== 1) {
-            return;
-        }
-
 
         let convertible;
         let opened_key = response.convertible_open.type;
@@ -807,10 +803,20 @@
             return;
         }
 
-        const message = response.messageData.message_model.messages[0];
-        //TODO: Next step is to go through convertible_open.items and get the item_id for each opened from the inventory part of the response
-        const items = message.messageData.items ?? [];
-        if (!message.isNew || items.length === 0) {
+        const results = response.convertible_open.items;
+        const items = [];
+        results.forEach(result => {
+            if  (Object.prototype.hasOwnProperty.call(response.inventory, result.type)) {
+                items.push({
+                    id: response.inventory[result.type].item_id,
+                    type: result.type,
+                    name: result.name,
+                    pluralized_name: result.pluralized_name,
+                    quantity: result.quantity,
+                });
+            }
+        })
+        if (items.length === 0) {
             return;
         }
 
@@ -851,6 +857,8 @@
                 user_id: final_message.user_id,
                 entry_timestamp: final_message.entry_timestamp,
             };
+            if (settings.debug_logging) {window.console.log({message: "MHCT: submitting convertible", submission:final_message});}
+
 
             // Get UUID
             $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
@@ -2518,6 +2526,11 @@
         }).filter(loot => loot);
     }
 
+    /**
+     * 
+     * @param {Object} item An object that looks like an item for convertibles. Has an id (or item_id), name, and quantity
+     * @returns {Object} An item with an id, name, and quantity
+     */
     function getItem(item) {
         return {
             id: item.item_id || item.id,
