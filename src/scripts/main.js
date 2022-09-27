@@ -885,8 +885,6 @@
         let journal = {};
         const more_details = {};
         more_details['hunt_count'] = 0;
-        let done_procs = false;
-        let live_ts = 0;
         let journal_entries = hunt_response.journal_markup;
         if (!journal_entries) { return null; }
 
@@ -1045,15 +1043,6 @@
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
                 more_details['hunt_count']++;
                 if (debug_logging) {window.console.log({message: "MHCT: Got a hunt record ", procs: more_details});}
-                if (Object.keys(journal).length !== 0) {
-                    // When true this means extra journal entries won't be considered for this hunt's data
-                    done_procs = true;
-                }
-                else if (css_class.includes('active')) {
-                    journal = markup;
-                    if (debug_logging) {window.console.log({message: "MHCT: Found the active hunt", journal});}
-                    live_ts = journal.render_data.entry_timestamp;
-                }
             }
             else if (css_class.search(/linked|passive|misc/) !== -1) {
                 // Ignore any friend hunts, trap checks, or custom loot journal entries.
