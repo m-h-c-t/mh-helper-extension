@@ -793,7 +793,7 @@
         }
 
         let convertible;
-        let opened_key = response.convertible_open.type;
+        const opened_key = response.convertible_open.type;
         if (Object.prototype.hasOwnProperty.call(response.items, opened_key)) {
             convertible = response.items[opened_key];
         }
@@ -815,7 +815,7 @@
                     quantity: result.quantity,
                 });
             }
-        })
+        });
         if (items.length === 0) {
             return;
         }
@@ -890,8 +890,6 @@
         let journal = {};
         const more_details = {};
         more_details['hunt_count'] = 0;
-        let done_procs = false;
-        let live_ts = 0;
         let journal_entries = hunt_response.journal_markup;
         if (!journal_entries) { return null; }
 
@@ -1053,7 +1051,6 @@
                 if (css_class.includes('active')) {
                     journal = markup;
                     if (debug_logging) {window.console.log({message: "MHCT: Found the active hunt", journal});}
-                    live_ts = journal.render_data.entry_timestamp;
                 }
             }
             else if (css_class.search(/linked|passive|misc/) !== -1) {
