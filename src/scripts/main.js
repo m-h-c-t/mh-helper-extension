@@ -974,14 +974,12 @@
                     }, window.origin);
                 }
             }
-            else if (markup.render_data.entry_timestamp === live_ts &&
-                css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
+            else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
-            else if (markup.render_data.entry_timestamp === live_ts &&
-                    css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
+            else if (css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
                 const data = markup.render_data.text;
                 const potionRegex = /item\.php\?item_type=(.*?)"/;
                 if (potionRegex.test(data)) {
@@ -1039,7 +1037,7 @@
                     }
                 }
             }
-            else if (!done_procs && css_class.search(/pirate_sleigh_trigger/) !== -1) {
+            else if (css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
                 more_details['pirate_sleigh_trigger'] = true;
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
