@@ -788,7 +788,7 @@
     function recordConvertible(xhr) {
         const response = xhr?.responseJSON;
 
-        if (!response || !response.items || !response.messageData?.message_model) {
+        if (!response?.convertible_open?.items || !response.messageData?.message_model) {
             return;
         }
         if (response.messageData.message_model.messages?.length !== 1) {
@@ -797,13 +797,9 @@
 
 
         let convertible;
-        for (const key in response.items) {
-            if (!Object.prototype.hasOwnProperty.call(response.items, key)) continue;
-            if (convertible) {
-                window.console.log("MHCT: Multiple items are not supported (yet)");
-                return;
-            }
-            convertible = response.items[key];
+        let opened_key = response.convertible_open.type;
+        if (Object.prototype.hasOwnProperty.call(response.items, opened_key)) {
+            convertible = response.items[opened_key];
         }
 
         if (!convertible) {
@@ -812,6 +808,7 @@
         }
 
         const message = response.messageData.message_model.messages[0];
+        //TODO: Next step is to go through convertible_open.items and get the item_id for each opened from the inventory part of the response
         const items = message.messageData.items ?? [];
         if (!message.isNew || items.length === 0) {
             return;
@@ -885,6 +882,8 @@
         let journal = {};
         const more_details = {};
         more_details['hunt_count'] = 0;
+        let done_procs = false;
+        let live_ts = 0;
         let journal_entries = hunt_response.journal_markup;
         if (!journal_entries) { return null; }
 
@@ -1043,6 +1042,11 @@
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
                 more_details['hunt_count']++;
                 if (debug_logging) {window.console.log({message: "MHCT: Got a hunt record ", procs: more_details});}
+                if (css_class.includes('active')) {
+                    journal = markup;
+                    if (debug_logging) {window.console.log({message: "MHCT: Found the active hunt", journal});}
+                    live_ts = journal.render_data.entry_timestamp;
+                }
             }
             else if (css_class.search(/linked|passive|misc/) !== -1) {
                 // Ignore any friend hunts, trap checks, or custom loot journal entries.
