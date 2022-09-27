@@ -244,8 +244,8 @@
                     if (debug_logging) {window.console.log({message: "MHCT: Got user object, invoking huntSend", userRqResponse});}
                     hunt_xhr.addEventListener("loadend", () => {
                         if (debug_logging) {window.console.timeEnd("MHCT: Overall 'Hunt Requested' Timing");}
-                        // Call record hunt with the pre-hunt user object.
-                        recordHuntWithPrehuntUser(JSON.parse(hunt_xhr.responseText), userRqResponse.user);
+                        // Call record hunt with the pre-hunt and hunt (post) user objects.
+                        recordHuntWithPrehuntUser(userRqResponse, JSON.parse(hunt_xhr.responseText));
                     }, false);
                     hunt_send.apply(hunt_xhr, huntArgs);
                 });
@@ -645,18 +645,19 @@
     }
 
     /**
-     * @param {Object <string, any>} response Parsed JSON representation of the response from calling activeturn.php
-     * @param {Object <string, any>} user_pre The user object obtained prior to invoking `activeturn.php`.
+     * @param {Object <string, any>} pre_response The object obtained prior to invoking `activeturn.php`.
+     * @param {Object <string, any>} post_response Parsed JSON representation of the response from calling activeturn.php
      */
-    function recordHuntWithPrehuntUser(response, user_pre) {
-        if (debug_logging) {window.console.log({message: "MHCT: In recordHuntWithPrehuntUser", response, user_pre});}
+    function recordHuntWithPrehuntUser(pre_response, post_response) {
+        if (debug_logging) {window.console.log({message: "MHCT: In recordHuntWithPrehuntUser pre and post:", pre_response, post_response});}
         // Require some difference between the user and response.user objects. If there is
         // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
         const required_differences = [
             "num_active_turns",
             "next_activeturn_seconds",
         ];
-        const user_post = response.user;
+        const user_pre = pre_response.user;
+        const user_post = post_response.user;
 
         /**
          * Store the difference between generic primitives and certain objects in `result`
@@ -715,10 +716,20 @@
             window.console.log({message: "MHCT: ", differences});
         }
 
+        // Find maximum entry id from pre_response
+        let max_old_entry_id = pre_response.page.journal.entries_string.match(/data-entry-id='(\d+)'/g);
+        if (!max_old_entry_id.length) {
+            max_old_entry_id = 0;
+        } else {
+            max_old_entry_id = max_old_entry_id.map(x => x.replace(/^data-entry-id='/, ''));
+            max_old_entry_id = max_old_entry_id.map(x => Number(x.replace(/'/g, "")));
+            max_old_entry_id = Math.max(...max_old_entry_id);
+        }
+        if (debug_logging) {window.console.log(`MHCT: Pre (old) maximum entry id: ${max_old_entry_id}`);}
 
-        const hunt = parseJournalEntries(response);
+        const hunt = parseJournalEntries(post_response, max_old_entry_id);
         // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
-        if (!response.success || !response.active_turn) {
+        if (!post_response.success || !post_response.active_turn) {
             window.console.log("MHCT: Missing Info (trap check or friend hunt)(1)");
             return;
         } else if (!hunt || Object.keys(hunt).length === 0) {
@@ -741,15 +752,25 @@
 
         // Perform validations and stage corrections.
         fixLGLocations(message, user_pre, user_post, hunt);
-        addStage(message, user_pre, user_post, hunt);
+
+        // Adding stage and disabling transitions
+        const temp_message_post = JSON.parse(JSON.stringify(message));
+        addStage(message, user_pre, user_post, hunt); // with pre
+        addStage(temp_message_post, user_post, user_post, hunt); // with post
+        // If pre stage != post stage, disregard the hunt
+        if ((message.stage || temp_message_post.stage) && message.stage != temp_message_post.stage) {
+            if (debug_logging) {window.console.log(`MHCT: Ignoring transition from stage ${message.stage} to ${temp_message_post.stage}`);}
+            return;
+        }
+
         addHuntDetails(message, user_pre, user_post, hunt);
         if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
             window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
             return;
         }
 
-        addLoot(message, hunt, response.inventory);
-        if (debug_logging) {window.console.log({message:"MHCT: ", message_var: message, user_pre, user_post, hunt});}
+        addLoot(message, hunt, post_response.inventory);
+        if (debug_logging) {window.console.log({message:"MHCT: ", message_var:message, user_pre, user_post, hunt});}
         // Upload the hunt record.
         sendMessageToServer(db_url, message);
     }
@@ -1024,6 +1045,7 @@
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
+                more_details['hunt_count']++;
                 if (debug_logging) {window.console.log({message: "MHCT: Got a hunt record ", procs: more_details});}
                 if (Object.keys(journal).length !== 0) {
                     // When true this means extra journal entries won't be considered for this hunt's data
@@ -2622,10 +2644,6 @@
         URLDiffCheck(); // Initial call on page load
         $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
 
-        tempversion = "version " + mhhh_version;
-        if (Number(mhhh_version) == 0) {
-            tempversion = "TEST version";
-        }
-        window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
+        window.console.log("MHCT: version " + mhhh_version + " loaded! Good luck!");
     });
 }());
