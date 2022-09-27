@@ -2644,6 +2644,10 @@
         URLDiffCheck(); // Initial call on page load
         $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
 
-        window.console.log("MHCT: version " + mhhh_version + " loaded! Good luck!");
+        let tempversion = "version " + mhhh_version;
+        if (Number(mhhh_version) == 0) {
+            tempversion = "TEST version";
+        }
+        window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
     });
 }());
