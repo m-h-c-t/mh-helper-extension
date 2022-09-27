@@ -860,27 +860,15 @@
      * @param {Object <string, any>} hunt_response The JSON response returned from a horn sound.
      * @returns {Object <string, any>} The journal entry corresponding to the active hunt.
      */
-    function parseJournalEntries(hunt_response, max_old_entry_id) {
+    function parseJournalEntries(hunt_response) {
         let journal = {};
         const more_details = {};
-        more_details['hunt_count'] = 0;
         let done_procs = false;
         let live_ts = 0;
-        let journal_entries = hunt_response.journal_markup;
-        if (!journal_entries) { return null; }
-
-        // Filter out stale entries
-        if (debug_logging) {window.console.log({message: `MHCT: Before filterting there's ${journal_entries.length} journal entries.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
-        journal_entries = journal_entries.filter(x => Number(x.render_data.entry_id) > Number(max_old_entry_id));
-        if (debug_logging) {window.console.log({message: `MHCT: After filterting there's ${journal_entries.length} journal entries left.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
-
-        // Cancel everything if there's trap check somewhere
-        if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1) !== -1) {
-            window.console.log("MHCT: Found trap check too close to hunt. Aborting.");
+        if (!hunt_response.journal_markup) {
             return null;
         }
-
-        journal_entries.forEach(markup => {
+        hunt_response.journal_markup.forEach(markup => {
             const css_class = markup.render_data.css_class;
             // Handle a Relic Hunter attraction.
             if (css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
@@ -2622,7 +2610,7 @@
         URLDiffCheck(); // Initial call on page load
         $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
 
-        tempversion = "version " + mhhh_version;
+        let tempversion = "version " + mhhh_version;
         if (Number(mhhh_version) == 0) {
             tempversion = "TEST version";
         }
