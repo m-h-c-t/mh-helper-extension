@@ -847,7 +847,7 @@
         };
 
         // Send to database
-        if (settings.debug_logging) {window.console.log({message: "MHCT: submitting convertible", record:record});}
+        if (debug_logging) {window.console.log({message: "MHCT: submitting convertible", record:record});}
         sendMessageToServer(convertible_intake_url, record);
     }
 
