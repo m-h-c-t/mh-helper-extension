@@ -33,6 +33,7 @@ function check_settings(callback) {
         horn_volume: 100, // defaults
         horn_alert: false, // defaults
         horn_webalert: false, // defaults
+        horn_popalert: false, //defaults
         tracking_enabled: true, // defaults
     },
     settings => callback(settings));
@@ -73,6 +74,20 @@ function icon_timer_updateBadge(tab_id, settings) {
     // Query the MH page and update the badge based on the response.
     const request = {mhct_link: "huntTimer"};
     chrome.tabs.sendMessage(tab_id, request, response => {
+
+        async function show_web_alert() {
+            await new Promise(r => setTimeout(r, 1000));
+            chrome.tabs.update(tab_id, {'active': true});
+            chrome.tabs.sendMessage(tab_id, {mhct_link: "show_horn_alert"});
+        }
+
+        async function show_pop_alert() {
+            await new Promise(r => setTimeout(r, 1000));
+            if (confirm("Mousehunt Horn is Ready! Sound it now?")) {
+                chrome.tabs.sendMessage(tab_id, {mhct_link: "horn"});
+            }
+        }
+
         if (chrome.runtime.lastError || !response) {
             const logInfo = {tab_id, request, response, time: new Date(),
                 message: "Error occurred while updating badge icon timer."};
@@ -94,6 +109,7 @@ function icon_timer_updateBadge(tab_id, settings) {
                     myAudio.volume = (settings.horn_volume / 100).toFixed(2);
                     myAudio.play();
                 }
+
                 if (settings.horn_alert) {
                     chrome.notifications.create(
                         "MHCT Horn",
@@ -105,9 +121,13 @@ function icon_timer_updateBadge(tab_id, settings) {
                         }
                     );
                 }
+
                 if (settings.horn_webalert) {
-                    chrome.tabs.update(tab_id, {'active': true});
-                    chrome.tabs.sendMessage(tab_id, {mhct_link: "show_horn_alert"});
+                    show_web_alert();
+                }
+
+                if (settings.horn_popalert) {
+                    show_pop_alert();
                 }
             }
             notification_done = true;

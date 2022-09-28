@@ -128,6 +128,7 @@ function getSettings() {
             horn_volume: 100, // defaults
             horn_alert: false, // defaults
             horn_webalert: false, // defaults
+            horn_popalert: false, // defaults
             tracking_enabled: true, // defaults
             escape_button_close: false, // defaults
         },
