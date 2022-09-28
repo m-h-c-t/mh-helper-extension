@@ -5,7 +5,7 @@
  * @param {string} [button_id] the HTML id of the pressed button, to be forwarded to callback
  * @param {boolean} [silent] if true, errors will not be displayed to the user.
  */
- function findOpenMHTab(callback, button_id, silent) {
+function findOpenMHTab(callback, button_id, silent) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, tabs => {
         if (tabs.length > 0) {
             callback(tabs[0].id, button_id);
@@ -86,7 +86,7 @@ function updateHuntTimerField(tab, huntTimerField) {
                     huntTimerField.innerHTML = '<img src="images/horn.png" class="horn-img">';
                 }
             } else {
-                huntTimerField.textContent = `Horn ready in ${response}`
+                huntTimerField.textContent = `Horn ready in ${response}`;
             }
         }
     });
