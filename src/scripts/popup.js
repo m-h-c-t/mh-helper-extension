@@ -82,7 +82,7 @@ function updateHuntTimerField(tab, huntTimerField) {
 
         if (huntTimerField) {
             if (response === "Ready!" ) {
-                const hornImage = '<img src="images/horn.png" id="hunt-timer" class="horn-img">';
+                const hornImage = '<img src="images/horn.png" class="horn-img">';
 
                 if ( hornImage !== document.getElementById("hunt-timer").innerHTML ) {
                     huntTimerField.innerHTML = hornImage;
