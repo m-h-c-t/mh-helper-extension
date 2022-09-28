@@ -9,6 +9,23 @@ extension_version.setAttribute("type", "hidden");
 extension_version.setAttribute("value", chrome.runtime.getManifest().version);
 document.body.appendChild(extension_version);
 
+// Add flash message div
+const mhhh_flash_message_div = document.createElement('div');
+mhhh_flash_message_div.setAttribute('id', 'mhhh_flash_message_div');
+mhhh_flash_message_div.setAttribute('style',
+    'position: fixed;' +
+    'top: 0;' +
+    'left: 0;' +
+    'z-index: 100;' +
+    'display: none;' +
+    'width: 100 %;' +
+    'padding-top: 2em;' +
+    'padding-bottom: 2em;' +
+    'text-align: center;' +
+    'background-color: #fff;' +
+    'opacity: 0.9;'
+);
+document.body.appendChild(mhhh_flash_message_div);
 
 // Inject main script
 const s = document.createElement('script');
@@ -94,23 +111,6 @@ window.addEventListener("message",
     },
     false
 );
-    // Add flash message div
-    const mhhh_flash_message_div = document.createElement('div');
-    mhhh_flash_message_div.setAttribute('id', 'mhhh_flash_message_div');
-    mhhh_flash_message_div.setAttribute('style',
-        'position: fixed;' +
-        'top: 0;' +
-        'left: 0;' +
-        'z-index: 100;' +
-        'display: none;' +
-        'width: 100 %;' +
-        'padding-top: 2em;' +
-        'padding-bottom: 2em;' +
-        'text-align: center;' +
-        'background-color: #fff;' +
-        'opacity: 0.9;'
-    );
-    document.body.appendChild(mhhh_flash_message_div);
 
 /**
  * Promise to get the extension's settings.
