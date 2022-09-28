@@ -99,8 +99,8 @@ function updateHuntTimerField(tab, huntTimerField) {
  * @param {string} message The message to display
  */
 function displayErrorPopup(message) {
-    const errorPopup = document.getElementById('error-popup');
-    errorPopup.innerText = message;
-    errorPopup.style.display = 'block';
-    setTimeout(() => errorPopup.style.display = 'none', 2000);
+    const error_popup = document.getElementById('error-popup');
+    error_popup.innerText = message;
+    error_popup.style.display = 'block';
+    setTimeout(() => error_popup.style.display = 'none', 2000);
 }
