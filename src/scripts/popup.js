@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
  * @param {HTMLElement} [huntTimerField] The div element corresponding to the horn countdown timer.
  */
 function updateHuntTimerField(tab, huntTimerField) {
-
     chrome.tabs.sendMessage(tab, {mhct_link: "huntTimer"}, response => {
         if (chrome.runtime.lastError) {
             displayErrorPopup(chrome.runtime.lastError.message);
