@@ -7,7 +7,7 @@
 <a href="https://addons.mozilla.org/en-US/firefox/addon/mhct-mousehunt-helper/" target="_blank"><img src="badge-firefox.png"></a>
 
 ### Introduction
-This browser extension collects crowdsourced hunt info for [MouseHunt](https://www.mousehuntgame.com), a popular browser game from [HitGrab Inc.](http://www.hitgrab.com/) Collected data is inserted into a database that can be queried to gain insight about various game mechanics and interactions. It provides vital statistics for various community tools, such as catch rate estimators, map solvers, convertible trackers, spreadsheets, and more.
+This browser extension collects crowdsourced hunt info for [MouseHunt](https://www.mousehuntgame.com), a popular browser game from [HitGrab Inc.](https://www.hitgrab.com/) Collected data is inserted into a database that can be queried to gain insight about various game mechanics and interactions. It provides vital statistics for various community tools, such as catch rate estimators, map solvers, convertible trackers, spreadsheets, and more.
 
 ### Features
  - Collects hunt data (e.g. trap setup, mouse, location), map contents, crowns, and convertibles (e.g. treasure chests)

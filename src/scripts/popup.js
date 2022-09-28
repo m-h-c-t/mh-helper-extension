@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
  * @param {HTMLElement} [huntTimerField] The div element corresponding to the horn countdown timer.
  */
 function updateHuntTimerField(tab, huntTimerField) {
-    const hornImage = '<img src="images/horn.png" class="horn-img">';
 
     chrome.tabs.sendMessage(tab, {mhct_link: "huntTimer"}, response => {
         if (chrome.runtime.lastError) {
@@ -84,7 +83,7 @@ function updateHuntTimerField(tab, huntTimerField) {
         if (huntTimerField) {
             if (response === "Ready!" ) {
                 if ( hornImage !== document.getElementById("huntTimer").innerHTML ) {
-                    huntTimerField.innerHTML = hornImage;
+                    huntTimerField.innerHTML = '<img src="images/horn.png" class="horn-img">';
                 }
             } else {
                 huntTimerField.textContent = `Horn ready in ${response}`

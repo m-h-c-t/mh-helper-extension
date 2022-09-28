@@ -117,7 +117,7 @@
             method = 'POST';
             input_name = 'mice';
         } else if (solver === 'ryonn') {
-            url = 'http://dbgames.info/mousehunt/tavern';
+            url = 'https://dbgames.info/mousehunt/tavern';
             glue = ';';
             method = 'GET';
             input_name = 'q';
@@ -2368,7 +2368,7 @@
             };
         }
     }
-    
+
     /**
      * Report active augmentations and floor number
      * @param {Object <string, any>} message The message to be sent.

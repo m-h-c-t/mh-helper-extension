@@ -127,15 +127,17 @@ function icon_timer_updateBadge(tab_id, settings) {
                 const response_int = parseInt(response, 10);
                 if (response.includes('min')) {
                     response = response_int + 'm';
-                } else if (response_int > 59) {
-                    let minutes = Math.floor(response_int / 100);
-                    const seconds = response_int % 100;
-                    if (seconds > 30) {
-                        ++minutes;
-                    }
-                    response = minutes + 'm';
                 } else {
-                    response = response_int + 's';
+                    if (response_int > 59) {
+                        let minutes = Math.floor(response_int / 100);
+                        const seconds = response_int % 100;
+                        if (seconds > 30) {
+                            ++minutes;
+                        }
+                        response = minutes + 'm';
+                    } else {
+                        response = response_int + 's';
+                    }
                 }
             } else { // reset in case user turns icon_timer off
                 response = "";
