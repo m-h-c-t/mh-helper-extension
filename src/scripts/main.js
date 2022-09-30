@@ -804,6 +804,10 @@
         }
 
         const results = response.convertible_open.items;
+        const our_map = {
+            gold_stat_item: 431,
+            point_stat_item: 644,
+        };
         const items = [];
         results.forEach(result => {
             if  (Object.prototype.hasOwnProperty.call(response.inventory, result.type)) {
@@ -811,7 +815,16 @@
                     id: response.inventory[result.type].item_id,
                     type: result.type,
                     name: result.name,
-                    pluralized_name: result.pluralized_name,
+                    pluralized_name: result.pluralized_name || '',
+                    quantity: result.quantity,
+                });
+            }
+            else if (result.type in our_map) {
+                items.push({
+                    id: our_map[result.type],
+                    type: result.type,
+                    name: result.name,
+                    pluralized_name: result.pluralized_name || '',
                     quantity: result.quantity,
                 });
             }
