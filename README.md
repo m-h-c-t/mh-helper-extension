@@ -17,7 +17,23 @@ This browser extension collects crowdsourced hunt info for [MouseHunt](https://w
  - Comes bundled with tsitu's [Auto-Loader](https://github.com/tsitu/MH-Tools/blob/master/src/bookmarklet/bookmarkletloader.js) bookmarklet
 
 ### Developers
-All necessary files to run this extension are included in the `src` folder. After making changes, you may load it into your browser as a temporary add-on for testing & debugging purposes. However, please change the version number in `src/manifest.json` to avoid getting banned.
+
+Requirements: Node v16 or newer installed.  
+Run the following commands to install dependencies and start developing.  
+
+```cmd
+npm install
+```
+
+**Scripts**
+
+- `npm run dev` - run `build:watch` and load extension into temporary chrome profile
+- `npm run dev:firefox` - same as `npm run dev` but for firefox
+- `npm run build` - build the production-ready unpacked extension
+- `npm run build:dev` - build the debug unpacked extension
+
+First, please change the version number in `src/manifest.json` to avoid getting banned.  
+All necessary files to run, test and debug this extension are included in the `dist` folder after building.
 
 Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devjacksmith/mh_backups/). They are also preloaded into handy [Docker images](https://hub.docker.com/r/tsitu/mhct-db-docker) if time is a greater bottleneck for you than bandwidth.
 
