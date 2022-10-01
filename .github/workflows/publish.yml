@@ -99,19 +99,5 @@ jobs:
           app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
           publish: true
 
-      - name: Rename zip to xpi
-        id: rename_zip_to_xpi
-        run: |
-          mv ${{ steps.create-zip.outputs.artifact-path }} "build/release-${{ steps.create-tag.outputs.version-tag }}.xpi"
-          echo "::set-output name=artifact-path-xpi::build/release-${{ steps.create-tag.outputs.version-tag }}.xpi"
-
-      - name: Upload new release xpi to Firefox Webstore
-        uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
-        with:
-          uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
-          xpi: ${{ steps.rename_zip_to_xpi.outputs.artifact-path-xpi }}
-          manifest: ./src/manifest.json
-          api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
-          api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
-        env:
-          VERSION: ${{ steps.create-tag.outputs.version-tag }}
+      - name: Upload new release to Firefox Webstore
+        run: npx -y web-ext-submit@7  --channel 'listed' --source-dir ./src/ --verbose --id '{801e5516-3311-4ee7-8185-7da12ffab807}' --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
