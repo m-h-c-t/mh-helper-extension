@@ -804,6 +804,10 @@
         }
 
         const results = response.convertible_open.items;
+        const our_map = {
+            gold_stat_item: 431,
+            point_stat_item: 644,
+        };
         const items = [];
         results.forEach(result => {
             if  (Object.prototype.hasOwnProperty.call(response.inventory, result.type)) {
@@ -811,7 +815,16 @@
                     id: response.inventory[result.type].item_id,
                     type: result.type,
                     name: result.name,
-                    pluralized_name: result.pluralized_name,
+                    pluralized_name: result.pluralized_name || '',
+                    quantity: result.quantity,
+                });
+            }
+            else if (result.type in our_map) {
+                items.push({
+                    id: our_map[result.type],
+                    type: result.type,
+                    name: result.name,
+                    pluralized_name: result.pluralized_name || '',
                     quantity: result.quantity,
                 });
             }
@@ -847,6 +860,7 @@
         };
 
         // Send to database
+        if (debug_logging) {window.console.log({message: "MHCT: submitting convertible", record:record});}
         sendMessageToServer(convertible_intake_url, record);
     }
 
@@ -857,7 +871,6 @@
                 user_id: final_message.user_id,
                 entry_timestamp: final_message.entry_timestamp,
             };
-            if (settings.debug_logging) {window.console.log({message: "MHCT: submitting convertible", submission:final_message});}
 
 
             // Get UUID
