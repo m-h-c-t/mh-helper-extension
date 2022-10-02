@@ -1,17 +1,17 @@
 const path = require('path');
-const srcScripts = '../src/scripts/';
 const CopyPlugin = require('copy-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
+const srcScripts = path.resolve(__dirname, '../src/scripts/');
 const outpath = path.resolve(__dirname, '../dist/');
 
 module.exports = {
     entry: {
-        background: path.join(__dirname, srcScripts, 'background.js'),
-        content: path.join(__dirname, srcScripts, 'content.js'),
-        main: path.join(__dirname, srcScripts, 'main.js'),
-        options: path.join(__dirname, srcScripts, 'options.js'),
-        popup: path.join(__dirname, srcScripts, 'popup.js'),
+        background: path.join(srcScripts, 'background.js'),
+        content: path.join(srcScripts, 'content.js'),
+        main: path.join(srcScripts, 'main.js'),
+        options: path.join(srcScripts, 'options.js'),
+        popup: path.join(srcScripts, 'popup.js'),
     },
     output: {
         path: outpath,
