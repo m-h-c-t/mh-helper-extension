@@ -32,7 +32,8 @@ npm install
 - `npm run build` - build the production-ready unpacked extension
 - `npm run build:dev` - build the debug unpacked extension
 
-All necessary files to run, test and debug this extension are included in the `dist` folder after building.
+All necessary files to run, test and debug this extension are included in the `dist` folder after building.  
+Please keep the version in `src/manifest.json` at 0.0.0 to avoid getting banned.
 
 Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devjacksmith/mh_backups/). They are also preloaded into handy [Docker images](https://hub.docker.com/r/tsitu/mhct-db-docker) if time is a greater bottleneck for you than bandwidth.
 
