@@ -39,5 +39,6 @@ _ReSharper*/
 .svn
 ~$*
 /.vs
+/src/third_party/*
 mh-helper-extension.code-workspace
 dist/
