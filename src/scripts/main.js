@@ -194,14 +194,11 @@
         mhhh_flash_message_div.css('left', 'calc(50% - ' + (mhhh_flash_message_div.width() / 2) + 'px)');
 
         if (type === 'success') {
-            mhhh_flash_message_div.css('background', 'lightgreen');
-            mhhh_flash_message_div.css('border', '1px solid green');
+            mhhh_flash_message_div.css('background', '#90ee90');
         } else if (type === 'error') {
-            mhhh_flash_message_div.css('background', 'pink');
-            mhhh_flash_message_div.css('border', '1px solid red');
+            mhhh_flash_message_div.css('background', '#ffc0cb');
         } else { // warning
-            mhhh_flash_message_div.css('background', 'gold');
-            mhhh_flash_message_div.css('border', '1px solid darkgoldenrod');
+            mhhh_flash_message_div.css('background', '#ffd700');
         }
 
         mhhh_flash_message_div.fadeIn(() => {
