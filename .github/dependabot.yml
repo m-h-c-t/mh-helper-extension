@@ -13,3 +13,4 @@ updates:
       - "DevJackSmith"
       - "AardWolf"
       - "tehhowch"
+    versioning-strategy: increase
