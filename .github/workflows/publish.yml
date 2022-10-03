@@ -96,8 +96,8 @@ jobs:
           client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
           client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
           file-name: ${{ steps.create-zip.outputs.artifact-path }}
-          app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
+          app-id: ${{ secrets.CHROME_WEBSTORE_ADDON_ID }}
           publish: true
 
       - name: Upload new release to Firefox Webstore
-        run: npx -y web-ext-submit@7  --channel 'listed' --source-dir ./src/ --verbose --id '{801e5516-3311-4ee7-8185-7da12ffab807}' --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
+        run: npx -y web-ext-submit@7  --channel 'listed' --source-dir ./src/ --verbose --id ${{ secrets.FIREFOX_WEBSTORE_ADDON_ID }} --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
