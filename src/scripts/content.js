@@ -64,9 +64,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.mhct_link === "huntTimer") {
         // Check for a King's Reward, otherwise report the displayed time until next horn.
         let message = "Logged out";
-        const krElement = document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0];
+        const krHudElement = document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0];
+        const krPageElement = document.getElementsByClassName('mousehuntPage-puzzle-form-state hasPuzzle')[0];
         const hunt_timer = document.getElementById('huntTimer');
-        if (krElement && window.getComputedStyle(krElement).display === 'block') {
+        // KR can prompt a puzzle without the HUD changing. If either are displaying, a pending KR needs to be claimed
+        if (krHudElement && window.getComputedStyle(krHudElement).display === 'block' ||
+            krPageElement && window.getComputedStyle(krPageElement).display === 'block') {
             message = "King's Reward";
         } else if (hunt_timer) {
             message = hunt_timer.textContent;
