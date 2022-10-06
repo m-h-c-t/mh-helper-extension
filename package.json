@@ -33,6 +33,14 @@
     "url": "https://github.com/mh-community-tools/mh-helper-extension/issues"
   },
   "scripts": {
+    "web-run": "npm run web-run:chrome",
+    "web-run:chrome": "cd dist && web-ext run --start-url https://www.mousehuntgame.com -t chromium",
+    "web-run:firefox": "cd dist && web-ext run --start-url https://www.mousehuntgame.com",
+    "build": "webpack --config webpack/webpack.prod.js",
+    "build:dev": "webpack --config webpack/webpack.dev.js",
+    "build:watch": "webpack --config webpack/webpack.dev.js --watch",
+    "dev": "npm run build:dev && concurrently \"npm run web-run\" \"npm run build:watch\"",
+    "dev:firefox": "npm run build:dev && concurrently \"npm run web-run:firefox\" \"npm run build:watch\"",
     "lint": "eslint src",
     "test": "echo 'Nothing to see here, move along'"
   },
@@ -42,6 +50,15 @@
     "url": "git+https://github.com/mh-community-tools/mh-helper-extension.git"
   },
   "devDependencies": {
-    "eslint": "^8.24.0"
+    "concurrently": "^7.4.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "eslint": "^8.24.0",
+    "fork-ts-checker-webpack-plugin": "^7.2.13",
+    "ts-loader": "^9.4.1",
+    "typescript": "^4.8.4",
+    "web-ext": "^7.2.0",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-merge": "^5.8.0"
   }
 }

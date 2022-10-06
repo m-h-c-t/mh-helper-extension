@@ -1,4 +1,4 @@
-name: CI Lint & Test
+name: CI Lint, Build & Test
 
 on:
   workflow_dispatch:
@@ -45,6 +45,7 @@ jobs:
     - run: npx eslint src
 
   test:
+    name: Build and test
     runs-on: ubuntu-latest
 
     strategy:
@@ -58,8 +59,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: npm ci
-    - name: Setup package & env
-      run: npm run build --if-present
+    - name: Build package
+      run: npm run build
     - name: Run tests
       env:
         CI: true
