@@ -35,8 +35,6 @@ npm install
 All necessary files to run, test and debug this extension are included in the `dist` folder after building.  
 Please keep the version in `src/manifest.json` at 0.0.0 to avoid getting banned.
 
-Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devjacksmith/mh_backups/). They are also preloaded into handy [Docker images](https://hub.docker.com/r/tsitu/mhct-db-docker) if time is a greater bottleneck for you than bandwidth.
-
 ### Screenshots
 <kbd align="center">
 <img src="https://user-images.githubusercontent.com/8228441/46922950-0a6e1800-cfce-11e8-9981-1ad2eb80db9f.PNG" width="49%">
@@ -44,4 +42,4 @@ Nightly and weekly SQL backups are hosted on [Keybase](https://keybase.pub/devja
 </kbd>
 
 ### Credits
-Special thanks to all who have contributed with advice, bug reports, or code! A few honorable mentions: Jack (OG creator), tehhowch, AardWolf, tsitu, Loaf, groupsky, Nick (HornTracker), wOen, plasmoidia, Mistborn94, and the Discord server mods.
+Special thanks to all who have contributed with advice, bug reports, or code! See [this page](https://mhct.win/contributors.php) for all the people who helped so far.
