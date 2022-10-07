@@ -9,6 +9,11 @@ on:
 jobs:
   CD:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
     steps:
       - name: Authorized by
         run: echo "${{ github.event.sender.login }}"
@@ -16,6 +21,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: '0'
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
 
       - name: Pull in latest Tsitus tools
         # TODO: Make this runnable via `npm run update-tsitu-tools` by writing a utility script
@@ -24,8 +32,8 @@ jobs:
           tsitu_cdn: https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet
           curl_opts: -sSf -O -J
         run: |
-          mkdir -p ${{ github.workspace }}/src/third_party/tsitu
-          cd ${{ github.workspace }}/src/third_party/tsitu
+          mkdir -p ${{ github.workspace }}/dist/third_party/tsitu
+          cd ${{ github.workspace }}/dist/third_party/tsitu
           curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-analyzer.min.js
           curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-crafting.min.js
           curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-cre.min.js
@@ -59,6 +67,12 @@ jobs:
           sed -i'' -e 's|"version":.*|"version": "${{ steps.create-tag.outputs.version-tag }}",|' src/manifest.json
           cat src/manifest.json
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
       - uses: actions/upload-artifact@v2
         with:
           name: release-${{ steps.create-tag.outputs.version-tag }}
@@ -68,7 +82,7 @@ jobs:
         id: create-zip
         run: |
           mkdir build
-          zip -r ./build/release-${{ steps.create-tag.outputs.version-tag }}.zip ./src/*
+          zip -r ./build/release-${{ steps.create-tag.outputs.version-tag }}.zip ./dist/*
           echo "::set-output name=artifact-name::release-${{ steps.create-tag.outputs.version-tag }}.zip"
           echo "::set-output name=artifact-path::build/release-${{ steps.create-tag.outputs.version-tag }}.zip"
 
@@ -96,22 +110,8 @@ jobs:
           client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
           client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
           file-name: ${{ steps.create-zip.outputs.artifact-path }}
-          app-id: 'ghfmjkamilolkalibpmokjigalmncfek'
+          app-id: ${{ secrets.CHROME_WEBSTORE_ADDON_ID }}
           publish: true
 
-      - name: Rename zip to xpi
-        id: rename_zip_to_xpi
-        run: |
-          mv ${{ steps.create-zip.outputs.artifact-path }} "build/release-${{ steps.create-tag.outputs.version-tag }}.xpi"
-          echo "::set-output name=artifact-path-xpi::build/release-${{ steps.create-tag.outputs.version-tag }}.xpi"
-
-      - name: Upload new release xpi to Firefox Webstore
-        uses: trmcnvn/firefox-addon@b2d90798a21626e1f4f25ffa279ba2e7199bb4cc
-        with:
-          uuid: '{801e5516-3311-4ee7-8185-7da12ffab807}'
-          xpi: ${{ steps.rename_zip_to_xpi.outputs.artifact-path-xpi }}
-          manifest: ./src/manifest.json
-          api-key: ${{ secrets.FIREFOX_WEBSTORE_API_KEY }}
-          api-secret: ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
-        env:
-          VERSION: ${{ steps.create-tag.outputs.version-tag }}
+      - name: Upload new release to Firefox Webstore
+        run: npx -y web-ext-submit@7  --channel 'listed' --source-dir ./dist/ --verbose --id ${{ secrets.FIREFOX_WEBSTORE_ADDON_ID }} --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}

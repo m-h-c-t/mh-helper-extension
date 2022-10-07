@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+      "baseUrl": ".",
+      "target": "es6",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "rootDir": "./src",
+      "outDir": "dist/scripts",
+      "strict": true,
+      "sourceMap": true,
+      "lib": [
+        "DOM",
+        "DOM.Iterable"
+      ],
+      "experimentalDecorators": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "noEmitOnError": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "allowJs": true,
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

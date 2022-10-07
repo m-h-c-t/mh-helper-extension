@@ -815,7 +815,7 @@
                     id: response.inventory[result.type].item_id,
                     type: result.type,
                     name: result.name,
-                    pluralized_name: result.pluralized_name,
+                    pluralized_name: result.pluralized_name || '',
                     quantity: result.quantity,
                 });
             }
