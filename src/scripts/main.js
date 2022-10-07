@@ -1810,10 +1810,9 @@
                     // More than 0 (aka 1-5) Hoarder turns means a Supply Rush is active
                     stage += " - Rush";
                 } else {
+                    stage += " - No Rush";
                     if (user.trinket_name === "Supply Schedule Charm") {
-                        stage += " - Schedule"
-                    } else {
-                        stage += " - No Rush";
+                        stage += " + SS Charm";
                     }
                 }
                 message.stage = stage;
