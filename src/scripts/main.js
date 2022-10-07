@@ -1,4 +1,5 @@
 /*jslint browser:true */
+import {addStage} from './stages';
 
 (function () {
     'use strict';
@@ -1583,7 +1584,7 @@
             };
         }
     }
-    
+
     /**
      * Report active augmentations and floor number
      * @param {Object <string, any>} message The message to be sent.
@@ -1709,7 +1710,7 @@
     }
 
     /**
-     * 
+     *
      * @param {Object} item An object that looks like an item for convertibles. Has an id (or item_id), name, and quantity
      * @returns {Object} An item with an id, name, and quantity
      */
