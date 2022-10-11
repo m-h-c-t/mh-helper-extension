@@ -11,7 +11,7 @@ export interface IntakeMessage {
     trap: ComponentEntry;
     base: ComponentEntry;
     cheese: ComponentEntry;
-    charm: ComponentEntry;
+    charm: ComponentEntry | null;
     caught: number;
     attracted: number;
     mouse: string;

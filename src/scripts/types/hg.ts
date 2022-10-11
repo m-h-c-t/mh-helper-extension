@@ -1,6 +1,6 @@
 export interface ApiResponse {
     user: User;
-    page?: any;
+    page: {} | undefined;
     success: 0 | 1;
     active_turn?: boolean;
 }
@@ -11,11 +11,11 @@ export interface User {
     num_active_turns: number;
     next_activeturn_seconds: number;
     base_name: string;
-    base_item_id: string;
+    base_item_id: number;
     weapon_name: string;
-    weapon_item_id: string;
-    trinket_name: string;
-    trinket_item_id: string;
+    weapon_item_id: number;
+    trinket_name: string | null;
+    trinket_item_id: number | null;
     bait_name: string;
     bait_item_id: number;
     trap_power: number;
