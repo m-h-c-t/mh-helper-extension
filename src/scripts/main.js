@@ -743,46 +743,54 @@ import {IntakeRejectionEngine} from "./huntfilter";
             return;
         }
 
-        function createMessagePipeline(user_pre, user_post, hunt) {
+        /**
+         *
+         * @param {Object<string, any>} user A the main user object (pre or post) used to populate the message
+         * @param {Object<string, any>} user_post The post-hunt user object
+         * @param {Object <string, any>} hunt Journal entry corresponding with the hunt
+         * @returns
+         */
+        function createMessagePipeline(user, user_post, hunt) {
             // Obtain the main hunt information from the journal entry and user objects.
-            const message = createMessageFromHunt(hunt, user_pre, user_post);
-            // if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
-            //     window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
-            //     return;
-            // }
+            const message = createMessageFromHunt(hunt, user, user_post);
+            if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
+                window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
+                return;
+            }
 
             // Perform validations and stage corrections.
-            fixLGLocations(message, user_pre, user_post, hunt);
+            fixLGLocations(message, user, user_post, hunt);
 
-            addStage(message, user_pre, user_post, hunt);
-            // If pre stage != post stage, disregard the hunt
-            // if ((message.stage || temp_message_post.stage) && message.stage != temp_message_post.stage) {
-            //     if (debug_logging) {window.console.log(`MHCT: Ignoring transition from stage ${message.stage} to ${temp_message_post.stage}`);}
-            //     return;
-            // }
+            addStage(message, user, user_post, hunt);
+            addHuntDetails(message, user, user_post, hunt);
 
-            addHuntDetails(message, user_pre, user_post, hunt);
-            // if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
-            //     window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
-            //     return;
-            // }
+            if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
+                window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
+                return;
+            }
 
             addLoot(message, hunt, post_response.inventory);
 
             return message;
         }
 
-        const preMessage = createMessagePipeline(user_pre, user_post, hunt);
-        const postMessage = createMessagePipeline(user_post, user_post, hunt);
+        // Create two intake messages. One based on pre-response. The other based on post-response.
+        const message_pre = createMessagePipeline(user_pre, user_post, hunt);
+        const message_post = createMessagePipeline(user_post, user_post, hunt);
 
-        validated = rejectionEngine.validateMessage(preMessage, postMessage);
+        if (message_pre === null || message_post === null) {
+            return;
+        }
+
+        // Validate the differences between the two intake messages
+        validated = rejectionEngine.validateMessage(message_pre, message_post);
         if (!validated) {
             return;
         }
 
-        if (debug_logging) {window.console.log({message:"MHCT: ", message_var:preMessage, user_pre, user_post, hunt});}
+        if (debug_logging) {window.console.log({message:"MHCT: ", message_var:message_pre, user_pre, user_post, hunt});}
         // Upload the hunt record.
-        sendMessageToServer(db_url, preMessage);
+        sendMessageToServer(db_url, message_pre);
     }
 
     // Add bonus journal entry stuff to the hunt_details
