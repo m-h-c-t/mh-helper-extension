@@ -1,4 +1,5 @@
 /*jslint browser:true */
+import {IntakeRejectionEngine} from "./huntfilter";
 
 (function () {
     'use strict';
@@ -18,6 +19,7 @@
     const mhhh_version = formatVersion($("#mhhh_version").val());
 
     let debug_logging = false;
+    const rejectionEngine = new IntakeRejectionEngine();
 
     // Listening for calls
     window.addEventListener('message', ev => {
@@ -650,14 +652,22 @@
      */
     function recordHuntWithPrehuntUser(pre_response, post_response) {
         if (debug_logging) {window.console.log({message: "MHCT: In recordHuntWithPrehuntUser pre and post:", pre_response, post_response});}
-        // Require some difference between the user and response.user objects. If there is
-        // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
-        const required_differences = [
-            "num_active_turns",
-            "next_activeturn_seconds",
-        ];
+
+        // This will throw out any hunts where the page.php or activeturn.php calls fail to return
+        // the expected objects (success, active turn, needing a page object on pre)
+        let validated = rejectionEngine.validateResponse(pre_response, post_response);
+        if (!validated) {
+            if (debug_logging) { window.console.log({message: "MHCT: Pre and post response did not pass validation.", pre_response, post_response});}
+            return;
+        }
+
         const user_pre = pre_response.user;
         const user_post = post_response.user;
+        validated = rejectionEngine.validateUser(user_pre, user_post);
+        if (!validated) {
+            if (debug_logging) {window.console.log({message: "MHCT: Pre and post user did not pass validation.", user_pre, user_post});}
+            return;
+        }
 
         /**
          * Store the difference between generic primitives and certain objects in `result`
@@ -728,51 +738,51 @@
         if (debug_logging) {window.console.log(`MHCT: Pre (old) maximum entry id: ${max_old_entry_id}`);}
 
         const hunt = parseJournalEntries(post_response, max_old_entry_id);
-        // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
-        if (!post_response.success || !post_response.active_turn) {
-            window.console.log("MHCT: Missing Info (trap check or friend hunt)(1)");
-            return;
-        } else if (!hunt || Object.keys(hunt).length === 0) {
+        if (!hunt || Object.keys(hunt).length === 0) {
             window.console.log("MHCT: Missing Info (trap check or friend hunt)(2)");
             return;
         }
 
-        if (!required_differences.every(key => user_pre[key] != user_post[key])
-                || user_post.num_active_turns - user_pre.num_active_turns !== 1) {
-            window.console.log("MHCT: Required pre/post hunt differences not observed.");
+        function createMessagePipeline(user_pre, user_post, hunt) {
+            // Obtain the main hunt information from the journal entry and user objects.
+            const message = createMessageFromHunt(hunt, user_pre, user_post);
+            // if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
+            //     window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
+            //     return;
+            // }
+
+            // Perform validations and stage corrections.
+            fixLGLocations(message, user_pre, user_post, hunt);
+
+            addStage(message, user_pre, user_post, hunt);
+            // If pre stage != post stage, disregard the hunt
+            // if ((message.stage || temp_message_post.stage) && message.stage != temp_message_post.stage) {
+            //     if (debug_logging) {window.console.log(`MHCT: Ignoring transition from stage ${message.stage} to ${temp_message_post.stage}`);}
+            //     return;
+            // }
+
+            addHuntDetails(message, user_pre, user_post, hunt);
+            // if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
+            //     window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
+            //     return;
+            // }
+
+            addLoot(message, hunt, post_response.inventory);
+
+            return message;
+        }
+
+        const preMessage = createMessagePipeline(user_pre, user_post, hunt);
+        const postMessage = createMessagePipeline(user_post, user_post, hunt);
+
+        validated = rejectionEngine.validateMessage(preMessage, postMessage);
+        if (!validated) {
             return;
         }
 
-        // Obtain the main hunt information from the journal entry and user objects.
-        const message = createMessageFromHunt(hunt, user_pre, user_post);
-        if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
-            return;
-        }
-
-        // Perform validations and stage corrections.
-        fixLGLocations(message, user_pre, user_post, hunt);
-
-        // Adding stage and disabling transitions
-        const temp_message_post = JSON.parse(JSON.stringify(message));
-        addStage(message, user_pre, user_post, hunt); // with pre
-        addStage(temp_message_post, user_post, user_post, hunt); // with post
-        // If pre stage != post stage, disregard the hunt
-        if ((message.stage || temp_message_post.stage) && message.stage != temp_message_post.stage) {
-            if (debug_logging) {window.console.log(`MHCT: Ignoring transition from stage ${message.stage} to ${temp_message_post.stage}`);}
-            return;
-        }
-
-        addHuntDetails(message, user_pre, user_post, hunt);
-        if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
-            return;
-        }
-
-        addLoot(message, hunt, post_response.inventory);
-        if (debug_logging) {window.console.log({message:"MHCT: ", message_var:message, user_pre, user_post, hunt});}
+        if (debug_logging) {window.console.log({message:"MHCT: ", message_var:preMessage, user_pre, user_post, hunt});}
         // Upload the hunt record.
-        sendMessageToServer(db_url, message);
+        sendMessageToServer(db_url, preMessage);
     }
 
     // Add bonus journal entry stuff to the hunt_details
@@ -907,9 +917,9 @@
         if (!journal_entries) { return null; }
 
         // Filter out stale entries
-        if (debug_logging) {window.console.log({message: `MHCT: Before filterting there's ${journal_entries.length} journal entries.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
+        if (debug_logging) {window.console.log({message: `MHCT: Before filtering there's ${journal_entries.length} journal entries.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
         journal_entries = journal_entries.filter(x => Number(x.render_data.entry_id) > Number(max_old_entry_id));
-        if (debug_logging) {window.console.log({message: `MHCT: After filterting there's ${journal_entries.length} journal entries left.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
+        if (debug_logging) {window.console.log({message: `MHCT: After filtering there's ${journal_entries.length} journal entries left.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
 
         // Cancel everything if there's trap check somewhere
         if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1) !== -1) {
@@ -2430,7 +2440,7 @@
             };
         }
     }
-    
+
     /**
      * Report active augmentations and floor number
      * @param {Object <string, any>} message The message to be sent.
@@ -2556,7 +2566,7 @@
     }
 
     /**
-     * 
+     *
      * @param {Object} item An object that looks like an item for convertibles. Has an id (or item_id), name, and quantity
      * @returns {Object} An item with an id, name, and quantity
      */
