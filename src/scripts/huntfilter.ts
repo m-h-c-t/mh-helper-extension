@@ -41,6 +41,7 @@ export class IntakeRejectionEngine {
 
     private initMessageRules() {
         this.messageRules = [
+            new IntakeMessageSameStage(),
         ]
     }
 }
@@ -84,3 +85,8 @@ class UserNumActiveTurnsIncrementedByOne implements IRule<User> {
     }
 }
 
+class IntakeMessageSameStage implements IRule<IntakeMessage> {
+    isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
+        return (pre.stage || post.stage) && pre.stage === post.stage;
+    }
+}
