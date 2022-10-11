@@ -26,6 +26,9 @@ export class IntakeRejectionEngine {
 
     private initResponseRules() {
         this.responseRules = [
+            new ApiResponseBothRequireSuccess(),
+            new ApiResponsePreNeedsPage(),
+            new ApiResponseActiveTurn(),
         ];
     }
 
@@ -44,3 +47,20 @@ interface IRule<K> {
     isValid(pre: K, post: K): boolean;
 }
 
+class ApiResponseBothRequireSuccess implements IRule<ApiResponse> {
+    isValid(pre: ApiResponse, post: ApiResponse): boolean {
+        return pre.success === 1 && post.success === 1;
+    }
+}
+
+class ApiResponsePreNeedsPage implements IRule<ApiResponse> {
+    isValid(pre: ApiResponse, post: ApiResponse): boolean {
+        return pre.page !== null;
+    }
+}
+
+class ApiResponseActiveTurn implements IRule<ApiResponse> {
+    isValid(pre: ApiResponse, post: ApiResponse): boolean {
+        return post.active_turn === true;
+    }
+}
