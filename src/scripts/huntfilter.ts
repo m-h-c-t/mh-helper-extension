@@ -27,8 +27,8 @@ export class IntakeRejectionEngine {
             return false;
         }
 
-        // Run rules. Build object of invalid keys
-        // { "location": false, "stage": false }
+        // Run rules. Build set of currently invalid properties
+        // { "location", "stage" }
         const invalidProperties = new Set<(keyof IntakeMessage)>();
         for (const rule of this.messageRules) {
             const valid: boolean = rule.isValid(pre, post);
@@ -37,7 +37,7 @@ export class IntakeRejectionEngine {
             }
         }
 
-        // Don't have to run exemption rules if there are no exceptions
+        // Don't have to run exemption rules if there are no violations
         if (invalidProperties.size === 0) {
             return true;
         }
@@ -47,7 +47,7 @@ export class IntakeRejectionEngine {
 
         // Do we need to filter them furthur? 
         // Exception object could give specific key and value to filter on.
-        // Didn't pre-optimize but could be worth if there are many, many exemptions and they are slow (doubt)
+        // Didn't pre-optimize but could be worth if there are many, many exemptions and they are slow (doubtful)
         for (const exemption_provider of relevant_exemptions_providers) {
 
             // Each exemption can give multiple keys that it accounts for.
