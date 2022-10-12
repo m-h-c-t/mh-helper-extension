@@ -997,7 +997,22 @@
             }
             else if (css_class.search(/boiling_cauldron_potion_bonus/) !== -1) {
                 const is_boon = (css_class.search(/boon_potion_bonus/) !== -1);
+                const is_gloom = (user.environment_name === "Gloomy Greenwood");
                 const data = markup.render_data.text;
+                let trap_name = "Boiling Cauldron Trap";
+                if (is_boon || is_gloom) {
+                    trap_name += " (";
+                    if (is_boon) {
+                        trap_name += "Boon";
+                        if (is_gloom) {
+                            trap_name += " ";
+                        }
+                    }
+                    if (is_gloom) {
+                        trap_name += "Gloom";
+                    }
+                    trap_name += ")";
+                }
                 const potionRegex = /item\.php\?item_type=(.*?)"/;
                 if (potionRegex.test(data)) {
                     const resultPotion = data.match(potionRegex)[1];
@@ -1005,8 +1020,8 @@
                         const {name: potionName, item_id: potionId} = hunt_response.inventory[resultPotion];
                         if (potionName && potionId) {
                             const convertible = {
-                                id: 3304 + is_boon ? 10000 : 0, // Boiling Cauldron Trap
-                                name: is_boon ? "Gloomy " : "" + "Boiling Cauldron Trap",
+                                id: 3304 + is_boon ? 100000 : 0 + is_gloom ? 90000 : 0, // Boon / Gloom logic
+                                name: trap_name,
                                 quantity: 1,
                             };
                             const items = [{
