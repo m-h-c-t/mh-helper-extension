@@ -1020,7 +1020,7 @@
                         const {name: potionName, item_id: potionId} = hunt_response.inventory[resultPotion];
                         if (potionName && potionId) {
                             const convertible = {
-                                id: 3304 + is_boon ? 100000 : 0 + is_gloom ? 90000 : 0, // Boon / Gloom logic
+                                id: 3304 + (is_boon ? 100000 : 0) + (is_gloom ? 90000 : 0), // Boon / Gloom logic
                                 name: trap_name,
                                 quantity: 1,
                             };
