@@ -177,7 +177,7 @@ class IntakeMessageSameWeapon implements IFilteredRule<IntakeMessage> {
 class IntakeMessageSameBase implements IFilteredRule<IntakeMessage> {
     readonly property = "base";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
-        return pre.base.name === post.trap.name;
+        return pre.base.name === post.base.name;
     }
 }
 
