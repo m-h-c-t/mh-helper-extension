@@ -750,10 +750,10 @@ import {IntakeRejectionEngine} from "./huntfilter";
          * @param {Object <string, any>} hunt Journal entry corresponding with the hunt
          * @returns
          */
-        function createMessagePipeline(user, user_post, hunt) {
+        function createIntakeMessage(user, user_post, hunt) {
             // Obtain the main hunt information from the journal entry and user objects.
             const message = createMessageFromHunt(hunt, user, user_post);
-            if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
+            if (!message) {
                 window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
                 return;
             }
@@ -763,22 +763,23 @@ import {IntakeRejectionEngine} from "./huntfilter";
 
             addStage(message, user, user_post, hunt);
             addHuntDetails(message, user, user_post, hunt);
-
-            if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
-                window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
-                return;
-            }
-
             addLoot(message, hunt, post_response.inventory);
 
             return message;
         }
 
-        // Create two intake messages. One based on pre-response. The other based on post-response.
-        const message_pre = createMessagePipeline(user_pre, user_post, hunt);
-        const message_post = createMessagePipeline(user_post, user_post, hunt);
+        let message_pre;
+        let message_post;
+        try {
+            // Create two intake messages. One based on pre-response. The other based on post-response.
+            message_pre = createIntakeMessage(user_pre, user_post, hunt);
+            message_post = createIntakeMessage(user_post, user_post, hunt);
+        } catch (error) {
+            window.console.error({message: "MHCT: Something went wrong creating message", error});
+        }
 
         if (message_pre === null || message_post === null) {
+            window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
             return;
         }
 

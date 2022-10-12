@@ -22,6 +22,11 @@ export class IntakeRejectionEngine {
     }
 
     public validateMessage(pre: IntakeMessage, post: IntakeMessage): boolean {
+        // TODO: Refactor? Location is being set to null in stage funcs so it'll fail later
+        if (pre.location === null || post.location === null) {
+            return false;
+        }
+
         // Run rules. Build object of invalid keys
         // { "location": false, "stage": false }
         const invalidProperties = new Set<(keyof IntakeMessage)>();
@@ -120,9 +125,9 @@ interface IMessageExemption {
      * Get exemptions for the given pre and post messages
      * @param pre The pre-hunt IntakeMessage
      * @param post The post-hunt IntakeMessage
-     * @returns An array of keys (of IntakeMessage) for which properties has been exempted. 
+     * @returns An array of keys (of IntakeMessage) for which properties has been exempted or null. 
      */
-    getExemptions(pre: IntakeMessage, post: IntakeMessage): (keyof IntakeMessage)[] | undefined;
+    getExemptions(pre: IntakeMessage, post: IntakeMessage): (keyof IntakeMessage)[] | null;
 }
 
 class ApiResponseBothRequireSuccess implements IRule<ApiResponse> {
@@ -203,13 +208,13 @@ class IntakeMessageSameStage implements IFilteredRule<IntakeMessage> {
  */
 class RealmRipperLocationExemption implements IMessageExemption {
     readonly property = "location";
-    getExemptions(pre: IntakeMessage, post: IntakeMessage): (keyof IntakeMessage)[] | undefined {
+    getExemptions(pre: IntakeMessage, post: IntakeMessage): (keyof IntakeMessage)[] | null {
         if (pre.location?.name === "Forbidden Grove"
             && post.location?.name === "Acolyte Realm" 
             && pre.mouse === "Realm Ripper") {
             return [ "location", "stage" ]
         }
         
-        return;
+        return null;
     }
 }
