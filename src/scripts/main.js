@@ -1021,6 +1021,9 @@
                     }
                 }
                 more_details['boiling_cauldron_trap_bonus'] = true;
+                if (is_boon) {
+                    more_details['gloomy_cauldron_boon'] = true;
+                }
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {
