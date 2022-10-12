@@ -995,7 +995,8 @@
                 more_details['alchemists_cookbook_base_bonus'] = true;
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
-            else if (css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
+            else if (css_class.search(/boiling_cauldron_potion_bonus/) !== -1) {
+                const is_boon = (css_class.search(/boon_potion_bonus/) !== -1);
                 const data = markup.render_data.text;
                 const potionRegex = /item\.php\?item_type=(.*?)"/;
                 if (potionRegex.test(data)) {
@@ -1004,8 +1005,8 @@
                         const {name: potionName, item_id: potionId} = hunt_response.inventory[resultPotion];
                         if (potionName && potionId) {
                             const convertible = {
-                                id: 3304, // Boiling Cauldron Trap
-                                name: "Boiling Cauldron Trap",
+                                id: 3304 + is_boon ? 10000 : 0, // Boiling Cauldron Trap
+                                name: is_boon ? "Gloomy " : "" + "Boiling Cauldron Trap",
                                 quantity: 1,
                             };
                             const items = [{
