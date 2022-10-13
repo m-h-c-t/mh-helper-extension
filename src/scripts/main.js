@@ -1005,7 +1005,7 @@
                         const items = [{
                             id: trinketId,
                             name: trinketName,
-                            quantity: 1
+                            quantity: 1,
                         }];
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
 
