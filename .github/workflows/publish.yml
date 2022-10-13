@@ -76,7 +76,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: release-${{ steps.create-tag.outputs.version-tag }}
-          path: ./src/*
+          path: ./dist/*
 
       - name: Zip it! zip it good!
         id: create-zip
