@@ -1,5 +1,5 @@
 /*jslint browser:true */
-import {IntakeRejectionEngine} from "./huntfilter";
+import {IntakeRejectionEngine} from "./hunt-filter/engine";
 
 (function () {
     'use strict';

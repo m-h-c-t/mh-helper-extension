@@ -1,6 +1,6 @@
-import {IntakeRejectionEngine} from '../../src/scripts/huntfilter';
-import {ApiResponse, User} from '../../src/scripts/types/hg';
-import {IntakeMessage} from '../../src/scripts/types/mhct';
+import {IntakeRejectionEngine} from './engine';
+import {ApiResponse, User} from '../types/hg';
+import {IntakeMessage} from '../types/mhct';
 
 const engine = new IntakeRejectionEngine();
 
