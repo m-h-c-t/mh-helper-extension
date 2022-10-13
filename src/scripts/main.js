@@ -990,6 +990,29 @@
                     }, window.origin);
                 }
             }
+            else if (css_class.search(/unstable_charm_trigger/) !== -1) {
+                const data = markup.render_data.text;
+                const trinketRegex = /item\.php\?item_type=(.*?)"/;
+                if (trinketRegex.test(data)) {
+                    const resultTrinket = data.match(trinketRegex)[1];
+                    if("inventory" in hunt_response && resultTrinket in hunt_response.inventory) {
+                        const {name: trinketName, item_id: trinketId} = hunt_response.inventory[resultTrinket];
+                        const convertible = {
+                            id: 1478, // Unstable Charm's item ID
+                            name: "Unstable Charm",
+                            quantity: 1,
+                        };
+                        const items = [{
+                            id: trinketId,
+                            name: trinketName,
+                            quantity: 1,
+                        }];
+                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
+
+                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                    }                    
+                }
+            }
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
