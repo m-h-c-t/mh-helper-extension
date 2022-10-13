@@ -653,6 +653,13 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
     function recordHuntWithPrehuntUser(pre_response, post_response) {
         if (debug_logging) {window.console.log({message: "MHCT: In recordHuntWithPrehuntUser pre and post:", pre_response, post_response});}
 
+        // General data flow
+        // - Validate API response object
+        // - Validate User object
+        // - Parse journal
+        // - Create pre + post messages from validated responses
+        // - Validate pre + post message differences (rules then allowed exemptions)
+
         // This will throw out any hunts where the page.php or activeturn.php calls fail to return
         // the expected objects (success, active turn, needing a page object on pre)
         let validated = rejectionEngine.validateResponse(pre_response, post_response);

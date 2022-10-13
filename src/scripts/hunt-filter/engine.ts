@@ -3,7 +3,7 @@ import { IntakeMessage } from "../types/mhct";
 import * as ResponseRules from "./responseRules";
 import * as UserRules from "./userRules";
 import * as MessageExemptions from "./messageExemptions";
-import *  as MessageRules from "./messageRules";
+import * as MessageRules from "./messageRules";
 
 /**
  * Describes a way to validate a pre and post object
@@ -39,6 +39,10 @@ export interface IMessageExemption {
     getExemptions(pre: IntakeMessage, post: IntakeMessage): (keyof IntakeMessage)[] | null;
 }
 
+/**
+ * Uses pluggable rule to validate data before a hunt can be
+ * submitted to the database
+ */
 export class IntakeRejectionEngine {
     responseRules: IRule<ApiResponse>[] = [];
     userRules: IRule<User>[] = [];
@@ -133,7 +137,3 @@ export class IntakeRejectionEngine {
         ];
     }
 }
-
-
-
-
