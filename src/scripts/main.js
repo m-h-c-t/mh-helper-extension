@@ -1007,7 +1007,7 @@
                             name: trinketName,
                             quantity: 1
                         }];
-                        if (debug_logging) { window.console.log({message:"Submitting Unstable Charm Data to MHCT: ", unstable_charm_loot: items}); }
+                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
                     }                    
