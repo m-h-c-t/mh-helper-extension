@@ -114,4 +114,4 @@ jobs:
           publish: true
 
       - name: Upload new release to Firefox Webstore
-        run: npx -y web-ext-submit@7  --channel 'listed' --source-dir ./dist/ --verbose --id ${{ secrets.FIREFOX_WEBSTORE_ADDON_ID }} --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
+        run: npx -y web-ext-submit@7  --channel 'listed' --source-dir ./dist/ --verbose --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
