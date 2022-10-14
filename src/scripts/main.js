@@ -1013,6 +1013,29 @@
                     }                    
                 }
             }
+            else if (css_class.search(/torch_charm_event/) !== -1) {
+                const data = markup.render_data.text;
+                const torchprocRegex = /item\.php\?item_type=(.*?)"/;
+                if (torchprocRegex.test(data)) {
+                    const resultItem = data.match(torchprocRegex)[1];
+                    if("inventory" in hunt_response && resultItem in hunt_response.inventory) {
+                        const {name: rItemName, item_id: rItemID} = hunt_response.inventory[resultItem];
+                        const convertible = {
+                            id: 2180, // Unstable Charm's item ID
+                            name: "Torch Charm",
+                            quantity: 1,
+                        };
+                        const items = [{
+                            id: rItemID,
+                            name: rItemName,
+                            quantity: 1,
+                        }];
+                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Torch Charm: ", unstable_charm_loot: items}); }
+
+                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                    }                    
+                }
+            }
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
