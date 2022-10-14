@@ -1013,6 +1013,29 @@
                     }                    
                 }
             }
+            else if (css_class.search(/gift_wrapped_charm_trigger/) !== -1) {
+                const data = markup.render_data.text;
+                const trinketRegex = /item\.php\?item_type=(.*?)"/;
+                if (trinketRegex.test(data)) {
+                    const resultTrinket = data.match(trinketRegex)[1];
+                    if("inventory" in hunt_response && resultTrinket in hunt_response.inventory) {
+                        const {name: trinketName, item_id: trinketId} = hunt_response.inventory[resultTrinket];
+                        const convertible = {
+                            id: 2525, // Gift Wrapped Charm's item ID
+                            name: "Gift Wrapped Charm",
+                            quantity: 1,
+                        };
+                        const items = [{
+                            id: trinketId,
+                            name: trinketName,
+                            quantity: 1,
+                        }];
+                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Gift Wrapped Charm: ", gift_wrapped_charm_loot: items}); }
+
+                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                    }                    
+                }
+            }
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
