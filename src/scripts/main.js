@@ -990,13 +990,52 @@
                     }, window.origin);
                 }
             }
+            else if (css_class.search(/unstable_charm_trigger/) !== -1) {
+                const data = markup.render_data.text;
+                const trinketRegex = /item\.php\?item_type=(.*?)"/;
+                if (trinketRegex.test(data)) {
+                    const resultTrinket = data.match(trinketRegex)[1];
+                    if("inventory" in hunt_response && resultTrinket in hunt_response.inventory) {
+                        const {name: trinketName, item_id: trinketId} = hunt_response.inventory[resultTrinket];
+                        const convertible = {
+                            id: 1478, // Unstable Charm's item ID
+                            name: "Unstable Charm",
+                            quantity: 1,
+                        };
+                        const items = [{
+                            id: trinketId,
+                            name: trinketName,
+                            quantity: 1,
+                        }];
+                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
+
+                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                    }                    
+                }
+            }
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
-            else if (css_class.search(/boiling_cauldron_trap_bonus/) !== -1) {
+            else if (css_class.search(/boiling_cauldron_potion_bonus/) !== -1) {
+                const is_boon = (css_class.search(/boon_potion_bonus/) !== -1);
+                const is_gloom = (user.environment_name === "Gloomy Greenwood");
                 const data = markup.render_data.text;
+                let trap_name = "Boiling Cauldron Trap";
+                if (is_boon || is_gloom) {
+                    trap_name += " (";
+                    if (is_boon) {
+                        trap_name += "Boon";
+                        if (is_gloom) {
+                            trap_name += " ";
+                        }
+                    }
+                    if (is_gloom) {
+                        trap_name += "Gloom";
+                    }
+                    trap_name += ")";
+                }
                 const potionRegex = /item\.php\?item_type=(.*?)"/;
                 if (potionRegex.test(data)) {
                     const resultPotion = data.match(potionRegex)[1];
@@ -1004,8 +1043,8 @@
                         const {name: potionName, item_id: potionId} = hunt_response.inventory[resultPotion];
                         if (potionName && potionId) {
                             const convertible = {
-                                id: 3304, // Boiling Cauldron Trap
-                                name: "Boiling Cauldron Trap",
+                                id: 3304 + (is_boon ? 100000 : 0) + (is_gloom ? 90000 : 0), // Boon / Gloom logic
+                                name: trap_name,
                                 quantity: 1,
                             };
                             const items = [{
@@ -1020,6 +1059,9 @@
                     }
                 }
                 more_details['boiling_cauldron_trap_bonus'] = true;
+                if (is_boon) {
+                    more_details['gloomy_cauldron_boon'] = true;
+                }
                 if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
             }
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {

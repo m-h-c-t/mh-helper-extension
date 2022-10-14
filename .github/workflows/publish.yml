@@ -76,7 +76,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: release-${{ steps.create-tag.outputs.version-tag }}
-          path: ./src/*
+          path: ./dist/*
 
       - name: Zip it! zip it good!
         id: create-zip
@@ -114,4 +114,4 @@ jobs:
           publish: true
 
       - name: Upload new release to Firefox Webstore
-        run: npx -y web-ext-submit@7  --channel 'listed' --source-dir ./dist/ --verbose --id ${{ secrets.FIREFOX_WEBSTORE_ADDON_ID }} --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
+        run: npx -y web-ext-submit@7  --channel 'listed' --source-dir ./dist/ --verbose --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
