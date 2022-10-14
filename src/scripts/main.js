@@ -1853,6 +1853,9 @@
                     stage += " - Rush";
                 } else {
                     stage += " - No Rush";
+                    if (user.trinket_name === "Supply Schedule Charm") {
+                        stage += " + SS Charm";
+                    }
                 }
                 message.stage = stage;
             } else if (quest.current_phase === "boarding") {
@@ -1882,7 +1885,17 @@
                 }
                 message.stage = stage;
             } else if (quest.current_phase === "bridge_jump") {
-                message.stage = "3. Daredevil Canyon";
+                let stage = "3. Daredevil Canyon";
+                if (user.trinket_name === "Magmatic Crystal Charm") {
+                    message.stage += " - Magmatic Crystal";
+                } else if (user.trinket_name === "Black Powder Charm") {
+                    stage += " - Black Powder";
+                } else if (user.trinket_name === "Dusty Coal Charm") {
+                    stage += "  - Dusty Coal";
+                } else {
+                    stage += " - No Fuelers";
+                }
+                message.stage = stage;
             }
         }
     }
