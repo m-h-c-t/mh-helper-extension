@@ -1021,7 +1021,7 @@
                     if("inventory" in hunt_response && resultItem in hunt_response.inventory) {
                         const {name: rItemName, item_id: rItemID} = hunt_response.inventory[resultItem];
                         const convertible = {
-                            id: 2180, // Unstable Charm's item ID
+                            id: 2180, // Torch Charm's item ID
                             name: "Torch Charm",
                             quantity: 1,
                         };
@@ -1030,7 +1030,7 @@
                             name: rItemName,
                             quantity: 1,
                         }];
-                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Torch Charm: ", unstable_charm_loot: items}); }
+                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Torch Charm: ", torch_charm_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
                     }                    
