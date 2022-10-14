@@ -32,7 +32,7 @@ module.exports = {
         'no-unneeded-ternary': ['error'],
         'no-unused-vars': [
             'error',
-            { args: 'none' },
+            {args: 'none'},
         ],
         'no-var': ['warn'],
         'object-curly-spacing': ['error', 'never'],
