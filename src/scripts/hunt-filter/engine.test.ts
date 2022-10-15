@@ -96,6 +96,20 @@ describe('validateMessage', () => {
         expect(engine.validateMessage(pre, post)).toBe(false);
     });
 
+    it('passes if both stages are undefined', () => {
+        pre.stage = undefined;
+        post.stage = undefined;
+
+        expect(engine.validateMessage(pre, post)).toBe(true);
+    });
+
+    it('passes if stage is object', () => {
+        pre.stage = { rain: 'Rain 99', wind: 'Wind 99' };
+        post.stage = { rain: 'Rain 99', wind: 'Wind 99' };
+
+        expect(engine.validateMessage(pre, post)).toBe(true);
+    })
+
     it('exempts location and stage if realm ripper was caught', () => {
         pre.location!.name = "Forbidden Grove";
         pre.stage = "Open";

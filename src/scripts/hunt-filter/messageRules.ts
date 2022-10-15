@@ -33,6 +33,12 @@ export class IntakeMessageSameLocation extends RuleBase<IntakeMessage> implement
 export class IntakeMessageSameStage extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "stage";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
-        return (pre.stage != null || post.stage != null) && pre.stage === post.stage;
+        // Juggling check. Valid if both stages are undefined or null.
+        if (pre.stage == null && post.stage == null) {
+            return true;
+        }
+
+        // stage can be a object so just use stringify
+        return JSON.stringify(pre.stage) === JSON.stringify(post.stage);
     }
 }
