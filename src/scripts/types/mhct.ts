@@ -7,7 +7,7 @@ export interface IntakeMessage {
     total_power: number;
     total_luck: number;
     attraction_bonus: number;
-    stage?: any;
+    stage?: unknown;
     trap: ComponentEntry;
     base: ComponentEntry;
     cheese: ComponentEntry;

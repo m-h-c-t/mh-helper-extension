@@ -1,8 +1,12 @@
 import {IntakeRejectionEngine} from './engine';
 import {ApiResponse, User} from '../types/hg';
 import {IntakeMessage} from '../types/mhct';
+import {Logger} from '../util/logger';
+jest.mock('../util/logger')
 
-const engine = new IntakeRejectionEngine();
+// Mock logger won't actually call console.log
+const logger = new Logger();
+const engine = new IntakeRejectionEngine(logger);
 
 describe('validateResponse', () => {
     let pre: ApiResponse;
@@ -69,6 +73,7 @@ describe('validateMessage', () => {
 
     it('passes', () => {
         expect(engine.validateMessage(pre, post)).toBe(true);
+        logger.info("one");
     });
 
     it('rejects different locations', () => {

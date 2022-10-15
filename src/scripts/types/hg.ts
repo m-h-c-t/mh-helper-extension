@@ -1,6 +1,6 @@
 export interface ApiResponse {
     user: User;
-    page: {} | undefined;
+    page?: unknown;
     success: 0 | 1;
     active_turn?: boolean;
 }

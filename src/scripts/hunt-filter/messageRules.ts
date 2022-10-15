@@ -1,29 +1,28 @@
 import { IntakeMessage } from "../types/mhct";
-import { IFilteredRule } from "./engine";
+import { IFilteredRule, RuleBase } from "./interfaces";
 
-
-export class IntakeMessageSameCheese implements IFilteredRule<IntakeMessage> {
+export class IntakeMessageSameCheese extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "cheese";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.cheese.name === post.cheese.name;
     }
 }
 
-export class IntakeMessageSameWeapon implements IFilteredRule<IntakeMessage> {
+export class IntakeMessageSameWeapon extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "trap";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.trap.name === post.trap.name;
     }
 }
 
-export class IntakeMessageSameBase implements IFilteredRule<IntakeMessage> {
+export class IntakeMessageSameBase extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "base";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.base.name === post.base.name;
     }
 }
 
-export class IntakeMessageSameLocation implements IFilteredRule<IntakeMessage> {
+export class IntakeMessageSameLocation extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "location";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return (pre.location !== null && post.location !== null)
@@ -31,9 +30,9 @@ export class IntakeMessageSameLocation implements IFilteredRule<IntakeMessage> {
     }
 }
 
-export class IntakeMessageSameStage implements IFilteredRule<IntakeMessage> {
+export class IntakeMessageSameStage extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "stage";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
-        return (pre.stage || post.stage) && pre.stage === post.stage;
+        return (pre.stage != null || post.stage != null) && pre.stage === post.stage;
     }
 }

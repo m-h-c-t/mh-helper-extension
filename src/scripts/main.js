@@ -1,5 +1,6 @@
 /*jslint browser:true */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
+import {Logger, LogLevel} from "./util/logger";
 
 (function () {
     'use strict';
@@ -19,7 +20,8 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
     const mhhh_version = formatVersion($("#mhhh_version").val());
 
     let debug_logging = false;
-    const rejectionEngine = new IntakeRejectionEngine();
+    const logger = new Logger();
+    const rejectionEngine = new IntakeRejectionEngine(logger);
 
     // Listening for calls
     window.addEventListener('message', ev => {
@@ -293,6 +295,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
 
             // Locally cache the logging setting.
             debug_logging = !!event.data.settings.debug_logging;
+            logger.setLevel(debug_logging ? LogLevel.Debug : LogLevel.Info);
 
             if (callback && typeof(callback) === "function") {
                 window.removeEventListener("message", listenSettings);
@@ -651,7 +654,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
      * @param {Object <string, any>} post_response Parsed JSON representation of the response from calling activeturn.php
      */
     function recordHuntWithPrehuntUser(pre_response, post_response) {
-        if (debug_logging) {window.console.log({message: "MHCT: In recordHuntWithPrehuntUser pre and post:", pre_response, post_response});}
+        logger.debug("In recordHuntWithPrehuntUser pre and post:", pre_response, post_response);
 
         // General data flow
         // - Validate API response object
@@ -664,7 +667,6 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
         // the expected objects (success, active turn, needing a page object on pre)
         let validated = rejectionEngine.validateResponse(pre_response, post_response);
         if (!validated) {
-            if (debug_logging) { window.console.log({message: "MHCT: Pre and post response did not pass validation.", pre_response, post_response});}
             return;
         }
 
@@ -672,7 +674,6 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
         const user_post = post_response.user;
         validated = rejectionEngine.validateUser(user_pre, user_post);
         if (!validated) {
-            if (debug_logging) {window.console.log({message: "MHCT: Pre and post user did not pass validation.", user_pre, user_post});}
             return;
         }
 
@@ -730,7 +731,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
         if (debug_logging) {
             const differences = {};
             diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
-            window.console.log({message: "MHCT: ", differences});
+            logger.debug("User object diff", differences);
         }
 
         // Find maximum entry id from pre_response
@@ -742,11 +743,11 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
             max_old_entry_id = max_old_entry_id.map(x => Number(x.replace(/'/g, "")));
             max_old_entry_id = Math.max(...max_old_entry_id);
         }
-        if (debug_logging) {window.console.log(`MHCT: Pre (old) maximum entry id: ${max_old_entry_id}`);}
+        logger.debug(`Pre (old) maximum entry id: ${max_old_entry_id}`);
 
         const hunt = parseJournalEntries(post_response, max_old_entry_id);
         if (!hunt || Object.keys(hunt).length === 0) {
-            window.console.log("MHCT: Missing Info (trap check or friend hunt)(2)");
+            logger.info("Missing Info (trap check or friend hunt)(2)");
             return;
         }
 
@@ -761,7 +762,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
             // Obtain the main hunt information from the journal entry and user objects.
             const message = createMessageFromHunt(hunt, user, user_post);
             if (!message) {
-                window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
+                logger.info("Missing Info (will try better next hunt)(1)");
                 return;
             }
 
@@ -782,11 +783,11 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
             message_pre = createIntakeMessage(user_pre, user_post, hunt);
             message_post = createIntakeMessage(user_post, user_post, hunt);
         } catch (error) {
-            window.console.error({message: "MHCT: Something went wrong creating message", error});
+            logger.error("Something went wrong creating message", error);
         }
 
         if (message_pre === null || message_post === null) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
+            logger.log("Missing Info (will try better next hunt)(2)");
             return;
         }
 
@@ -796,7 +797,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
             return;
         }
 
-        if (debug_logging) {window.console.log({message:"MHCT: ", message_var:message_pre, user_pre, user_post, hunt});}
+        logger.debug("Recording hunt", {message_var:message_pre, user_pre, user_post, hunt});
         // Upload the hunt record.
         sendMessageToServer(db_url, message_pre);
     }
@@ -1036,7 +1037,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
-                    }                    
+                    }
                 }
             }
             else if (css_class.search(/gift_wrapped_charm_trigger/) !== -1) {
@@ -1059,7 +1060,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Gift Wrapped Charm: ", gift_wrapped_charm_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
-                    }                    
+                    }
                 }
             }
             else if (css_class.search(/torch_charm_event/) !== -1) {
@@ -1082,7 +1083,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Torch Charm: ", torch_charm_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
-                    }                    
+                    }
                 }
             }
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
