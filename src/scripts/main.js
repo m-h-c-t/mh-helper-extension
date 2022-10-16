@@ -200,7 +200,8 @@
             mhhh_flash_message_div.css('background', 'pink');
             mhhh_flash_message_div.css('border', '1px solid red');
         } else { // warning
-            mhhh_flash_message_div.css('background', '#ffd700');
+            mhhh_flash_message_div.css('background', 'gold');
+            mhhh_flash_message_div.css('border', '1px solid darkgoldenrod');```
         }
 
         mhhh_flash_message_div.fadeIn(() => {
