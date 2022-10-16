@@ -10,7 +10,7 @@
     <script defer type="text/javascript" src="scripts/popup.js"></script>
 </head>
 <body class="text-center">
-    <div id="horn" class="popup-link bg-warning">
+    <div id="horn" class="popup-link">
         Sound Horn: <span id="huntTimer">-:--</span>
     </div>
     <div class="container-fluid">
@@ -18,51 +18,62 @@
         <span id="version" class="text-muted" style="font-size:small;"></span>
         <table class="table text-center table-responsive table-hover table-bordered">
         <tbody>
-            <tr><td id="userhistory" class="popup-link">
+            <tr><td id="userhistory" class="popup-link" colspan="2">
                 Your Hunt History
             </td></tr>
-            <tr><td id="mhmh" class="popup-link">
+            <tr><td id="mhmh" class="popup-link" colspan="2">
                 MHCT Map Helper (auto)
             </td></tr>
-            <tr><td>
+            <tr><td colspan="2">
                 <a href="https://www.mhct.win/attractions.php" target="_blank" class="popup-link-out">Mouse Attraction Rates</a>
             </td></tr>
-            <tr><td>
+            <tr><td colspan="2">
                 <a href="https://www.mhct.win/loot.php" target="_blank" class="popup-link-out">Looter (Drop Rates)</a>
             </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/mapper.php" target="_blank" class="popup-link-out">Mapper (Map Contents)</a>
-            </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/reverse-mapper.php" target="_blank" class="popup-link-out">Reverse Mapper</a>
-            </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/converter.php" target="_blank" class="popup-link-out">Convertibles</a>
-            </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/rh-tracker.php" target="_blank" class="popup-link-out">Relic Hunter Tracker</a>
-            </td></tr>
-            <tr><td>
+            <tr>
+                <td>
+                    <a href="https://www.mhct.win/mapper.php" target="_blank" class="popup-link-out">Mapper (Map Contents)</a>
+                </td>
+                <td>
+                    <a href="https://www.mhct.win/reverse-mapper.php" target="_blank" class="popup-link-out">Reverse</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="https://www.mhct.win/converter.php" target="_blank" class="popup-link-out">Convertibles</a>
+                </td>
+                <td>
+                    <a href="https://www.mhct.win/reverse-converter.php" target="_blank" class="popup-link-out">Reverse</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="https://www.mhct.win/rh-tracker.php" target="_blank" class="popup-link-out">RH Tracker</a>
+                </td>
+                <td>
+                    <a href="https://www.mhct.win/tracker.php" target="_blank" class="popup-link-out">Stats</a>
+                </td>
+            </tr>
+            <tr><td colspan="2">
                 <a href="https://www.mhct.win/countdown.php" target="_blank" class="popup-link-out">Events Countdown</a>
             </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/tracker.php" target="_blank" class="popup-link-out">Stats</a>
-            </td></tr>
-            <tr><td>
-                <a href="https://www.mhct.win/faq.php" target="_blank" class="popup-link-out">F.A.Q.</a>
-            </td></tr>
-            <tr><td>
-                <a href="https://discord.gg/E4utmBD" target="_blank" class="popup-link-out">Feedback/Support</a>
-            </td></tr>
-            <tr><td id="options_button" class="popup-link">
+            <tr>
+                <td>
+                    <a href="https://discord.gg/E4utmBD" target="_blank" class="popup-link-out">Feedback/Support</a>
+                </td>
+                <td>
+                    <a href="https://www.mhct.win/faq.php" target="_blank" class="popup-link-out">F.A.Q.</a>
+                </td>
+            </tr>
+            <tr><td id="options_button" class="popup-link" colspan="2">
                 Options
             </td></tr>
-            <tr><td>
-                <a href="popup2.html" class="popup-link-out"><div class="pull-right">&gt;&gt;</div>Other Links</a>
+            <tr><td colspan="2">
+                <a href="popup2.html" class="popup-link-out"><div class="pull-right">&gt;&gt;</div>More Links</a>
             </td></tr>
         </tbody>
         </table>
-        <h4>Support us on <a href="https://www.patreon.com/mhct" target="_blank">Patreon</a>!</h4>
+        <h4>Support us <a href="https://www.mhct.win/donations" target="_blank">here</a>.</h4>
     </div>
     <div id="error_popup" class="alert alert-danger error_popup"></div>
 </body>

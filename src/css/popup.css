@@ -29,6 +29,15 @@
     100% { transform: rotate(0deg); }
 }
 
+#horn {
+    background-color: goldenrod;
+    color: white;
+    font-weight: bolder;
+    font-size: large;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
 .horn {
     width: 80px;
     animation-name: wiggle;
