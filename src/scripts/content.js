@@ -20,7 +20,7 @@ mhhh_flash_message_div.setAttribute(
     "top: 0;" +
     "background-color: white;" +
     "padding: 1em;" +
-    "font-size: larger;"
+    "font-size: larger;" +
     "width: 100%;" +
     "text-align: center;" +
     "box-shadow: 0px 1px 4px 0px black;" +
