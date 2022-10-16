@@ -12,6 +12,12 @@
     color: black;
     white-space: nowrap;
 }
+td {
+    background-color: white;
+}
+td:hover {
+    background-color: goldenrod;
+}
 
 .error_popup {
     display: none;
@@ -27,6 +33,15 @@
     33% { transform: rotate(-5deg); }
     66% { transform: rotate(5deg); }
     100% { transform: rotate(0deg); }
+}
+
+#horn {
+    background-color: goldenrod;
+    color: white;
+    font-weight: bolder;
+    font-size: large;
+    padding-top: 1em;
+    padding-bottom: 1em;
 }
 
 .horn {
