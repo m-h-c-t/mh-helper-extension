@@ -17,11 +17,15 @@ mhhh_flash_message_div.setAttribute(
     "display:none;" +
     "z-index:100;" +
     "position:fixed;" +
-    "top:20%;" +
+    "top: 0;" +
     "background-color: white;" +
-    "padding: 10px;" +
-    "border-radius: 5px;" +
-    "box-shadow: 0 0 10px 1px black;");
+    "padding: 1em;" +
+    "font-size: larger;" +
+    "width: 100%;" +
+    "text-align: center;" +
+    "box-shadow: 0px 1px 4px 0px black;" +
+    "opacity: 95%;" +
+    "font-weight: 600;");
 document.body.appendChild(mhhh_flash_message_div);
 
 // Inject main script
