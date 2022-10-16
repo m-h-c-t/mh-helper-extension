@@ -12,6 +12,12 @@
     color: black;
     white-space: nowrap;
 }
+td {
+    background-color: white;
+}
+td:hover {
+    background-color: goldenrod;
+}
 
 .error_popup {
     display: none;
