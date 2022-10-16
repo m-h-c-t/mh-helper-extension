@@ -197,7 +197,8 @@
             mhhh_flash_message_div.css('background', 'lightgreen');
             mhhh_flash_message_div.css('border', '1px solid green');
         } else if (type === 'error') {
-            mhhh_flash_message_div.css('background', '#ffc0cb');
+            mhhh_flash_message_div.css('background', 'pink');
+            mhhh_flash_message_div.css('border', '1px solid red');
         } else { // warning
             mhhh_flash_message_div.css('background', '#ffd700');
         }
