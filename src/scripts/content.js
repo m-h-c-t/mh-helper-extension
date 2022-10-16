@@ -19,7 +19,8 @@ mhhh_flash_message_div.setAttribute(
     "position:fixed;" +
     "top: 0;" +
     "background-color: white;" +
-    "padding: 2em;" +
+    "padding: 1em;" +
+    "font-size: larger;"
     "width: 100%;" +
     "text-align: center;" +
     "box-shadow: 0px 1px 4px 0px black;" +
