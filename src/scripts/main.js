@@ -39,16 +39,17 @@
 
     // Create hunter id hash using forge library
     // https://github.com/digitalbazaar/forge
-    let hunter_id_hash = 0;
+    let hunter_id_hash = '0';
     function createHunterIdHash() {
         if (typeof user.user_id === 'undefined') {
             alert('MHCT: Please make sure you are logged in into MH.');
             return;
         }
 
-        if (debug_logging) { console.log("hunter_id: " + user.user_id); }
+        if (debug_logging) { console.log("hunter_id: " + user.user_id.toString().trim()); }
+        // eslint-disable-next-line no-undef
         const md = forge.md.sha512.create();
-        md.update(user.user_id);
+        md.update(user.user_id.toString().trim());
         if (debug_logging) { console.log("hunter_id_hash: " + md.digest().toHex()); }
         hunter_id_hash = md.digest().toHex();
     }
