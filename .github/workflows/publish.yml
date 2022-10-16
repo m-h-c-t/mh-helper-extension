@@ -47,7 +47,7 @@ jobs:
       - name: Pull in latest Forge
       # https://github.com/digitalbazaar/forge
       # TODO: Make this using `npm run update forge`
-        run:
+        run: |
           mkdir -p ${{ github.workspace }}/dist/third_party/forge
           cd ${{ github.workspace }}/dist/third_party/forge
           curl -sSf -O -J https://cdn.jsdelivr.net/npm/node-forge@1/dist/forge.min.js
