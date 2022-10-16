@@ -23,6 +23,53 @@ import {Logger, LogLevel} from "./util/logger";
     const logger = new Logger();
     const rejectionEngine = new IntakeRejectionEngine(logger);
 
+    // Define Get settings function
+    function getSettings(callback) {
+        window.addEventListener("message", function listenSettings(event) {
+            if (event.data.mhct_settings_response !== 1) {
+                return;
+            }
+
+            // Locally cache the logging setting.
+            debug_logging = !!event.data.settings.debug_logging;
+            logger.setLevel(debug_logging ? LogLevel.Debug : LogLevel.Info);
+
+            if (callback && typeof(callback) === "function") {
+                window.removeEventListener("message", listenSettings);
+                callback(event.data.settings);
+            }
+        }, false);
+        window.postMessage({mhct_settings_request: 1}, "*");
+    }
+
+    // Create hunter id hash using forge library
+    // https://github.com/digitalbazaar/forge
+    let hunter_id_hash = '0';
+    function createHunterIdHash() {
+        if (typeof user.user_id === 'undefined') {
+            alert('MHCT: Please make sure you are logged in into MH.');
+            return;
+        }
+
+        if (debug_logging) { console.log("hunter_id: " + user.user_id.toString().trim()); }
+        // eslint-disable-next-line no-undef
+        const md = forge.md.sha512.create();
+        md.update(user.user_id.toString().trim());
+        if (debug_logging) { console.log("hunter_id_hash: " + md.digest().toHex()); }
+        hunter_id_hash = md.digest().toHex();
+    }
+
+    // Load settings
+    function initialLoad(settings) {
+        if (settings.debug_logging) {
+            debug_logging = true;
+            console.log("MHCT: Debug mode activated!");
+            console.log({message: "MHCT: initialLoad ran with settings", settings});
+        }
+        createHunterIdHash();
+    }
+    getSettings(settings => initialLoad(settings));
+
     // Listening for calls
     window.addEventListener('message', ev => {
         if (ev.data.mhct_message == null) {
@@ -34,7 +81,7 @@ import {Logger, LogLevel} from "./util/logger";
             return;
         }
         if (ev.data.mhct_message === 'userhistory') {
-            window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}`);
+            window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}&hunter_id=${hunter_id_hash}`);
             return;
         }
 
@@ -285,25 +332,6 @@ import {Logger, LogLevel} from "./util/logger";
             getSettings(settings => recordPrizePack(settings, xhr));
         }
     });
-
-    // Get settings
-    function getSettings(callback) {
-        window.addEventListener("message", function listenSettings(event) {
-            if (event.data.mhct_settings_response !== 1) {
-                return;
-            }
-
-            // Locally cache the logging setting.
-            debug_logging = !!event.data.settings.debug_logging;
-            logger.setLevel(debug_logging ? LogLevel.Debug : LogLevel.Info);
-
-            if (callback && typeof(callback) === "function") {
-                window.removeEventListener("message", listenSettings);
-                callback(event.data.settings);
-            }
-        }, false);
-        window.postMessage({mhct_settings_request: 1}, "*");
-    }
 
     /**
      * Record Crowns. The xhr response data also includes a `mouseData` hash keyed by each mouse's
@@ -896,6 +924,7 @@ import {Logger, LogLevel} from "./util/logger";
             if (!settings?.tracking_enabled) { return; }
             const basic_info = {
                 user_id: final_message.user_id,
+                hunter_id_hash,
                 entry_timestamp: final_message.entry_timestamp,
             };
 
@@ -904,6 +933,7 @@ import {Logger, LogLevel} from "./util/logger";
             $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
                 if (data) {
                     final_message.uuid = data;
+                    final_message.hunter_id_hash = hunter_id_hash;
                     sendAlready(url, final_message);
                 }
             });
@@ -2743,12 +2773,6 @@ import {Logger, LogLevel} from "./util/logger";
 
     // Finish configuring the extension behavior.
     getSettings(settings => {
-        if (settings.debug_logging) {
-            debug_logging = true;
-            console.log("MHCT: Debug mode activated!");
-            window.console.log({message: "MHCT: Initialized with settings", settings});
-        }
-
         if (settings.escape_button_close) {
             escapeButtonClose();
         }
