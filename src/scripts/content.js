@@ -24,26 +24,39 @@ mhhh_flash_message_div.setAttribute(
     "box-shadow: 0 0 10px 1px black;");
 document.body.appendChild(mhhh_flash_message_div);
 
+
 // Inject main script
-const s = document.createElement('script');
-s.src = chrome.runtime.getURL('scripts/main.js');
-(document.head || document.documentElement).appendChild(s);
-s.onload = () => {
-    // Display Tsitu's Loader
-    chrome.storage.sync.get({
-        tsitu_loader_on: false,
-        tsitu_loader_offset: 80,
-    }, items => {
-        if (items.tsitu_loader_on) {
-            // There must be a better way of doing this
-            window.postMessage({
-                "mhct_message": 'tsitu_loader',
-                "tsitu_loader_offset": items.tsitu_loader_offset,
-                "file_link": chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js'),
-            }, "*");
-        }
-    });
-    s.remove();
+function injectMainScript() {
+    const s = document.createElement('script');
+    s.src = chrome.runtime.getURL('scripts/main.js');
+    (document.head || document.documentElement).appendChild(s);
+    s.onload = () => {
+        // Display Tsitu's Loader
+        chrome.storage.sync.get({
+            tsitu_loader_on: false,
+            tsitu_loader_offset: 80,
+        }, items => {
+            if (items.tsitu_loader_on) {
+                // There must be a better way of doing this
+                window.postMessage({
+                    "mhct_message": 'tsitu_loader',
+                    "tsitu_loader_offset": items.tsitu_loader_offset,
+                    "file_link": chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js'),
+                }, "*");
+            }
+        });
+        s.remove();
+    };
+}
+
+// Inject forge (for hunter id hash)
+// https://github.com/digitalbazaar/forge (originally tested on version 1.3.1)
+const forgeElement = document.createElement('script');
+forgeElement.src = chrome.runtime.getURL('third_party/forge/forge.min.js');
+(document.head || document.documentElement).appendChild(forgeElement);
+forgeElement.onload = () => {
+    injectMainScript();
+    forgeElement.remove();
 };
 
 // Handles messages from popup or background.

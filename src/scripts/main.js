@@ -19,6 +19,51 @@
 
     let debug_logging = false;
 
+    // Define Get settings function
+    function getSettings(callback) {
+        window.addEventListener("message", function listenSettings(event) {
+            if (event.data.mhct_settings_response !== 1) {
+                return;
+            }
+
+            // Locally cache the logging setting.
+            debug_logging = !!event.data.settings.debug_logging;
+
+            if (callback && typeof(callback) === "function") {
+                window.removeEventListener("message", listenSettings);
+                callback(event.data.settings);
+            }
+        }, false);
+        window.postMessage({mhct_settings_request: 1}, "*");
+    }
+
+    // Create hunter id hash using forge library
+    // https://github.com/digitalbazaar/forge
+    let hunter_id_hash = 0;
+    function createHunterIdHash() {
+        if (typeof user.user_id === 'undefined') {
+            alert('MHCT: Please make sure you are logged in into MH.');
+            return;
+        }
+
+        if (debug_logging) { console.log("hunter_id: " + user.user_id); }
+        const md = forge.md.sha512.create();
+        md.update(user.user_id);
+        if (debug_logging) { console.log("hunter_id_hash: " + md.digest().toHex()); }
+        hunter_id_hash = md.digest().toHex();
+    }
+
+    // Load settings
+    function initialLoad(settings) {
+        if (settings.debug_logging) {
+            debug_logging = true;
+            console.log("MHCT: Debug mode activated!");
+            console.log({message: "MHCT: initialLoad ran with settings", settings});
+        }
+        createHunterIdHash();
+    }
+    getSettings(settings => initialLoad(settings));
+
     // Listening for calls
     window.addEventListener('message', ev => {
         if (ev.data.mhct_message == null) {
@@ -30,7 +75,7 @@
             return;
         }
         if (ev.data.mhct_message === 'userhistory') {
-            window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}`);
+            window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}&hunter_id=${hunter_id_hash}`);
             return;
         }
 
@@ -281,24 +326,6 @@
             getSettings(settings => recordPrizePack(settings, xhr));
         }
     });
-
-    // Get settings
-    function getSettings(callback) {
-        window.addEventListener("message", function listenSettings(event) {
-            if (event.data.mhct_settings_response !== 1) {
-                return;
-            }
-
-            // Locally cache the logging setting.
-            debug_logging = !!event.data.settings.debug_logging;
-
-            if (callback && typeof(callback) === "function") {
-                window.removeEventListener("message", listenSettings);
-                callback(event.data.settings);
-            }
-        }, false);
-        window.postMessage({mhct_settings_request: 1}, "*");
-    }
 
     /**
      * Record Crowns. The xhr response data also includes a `mouseData` hash keyed by each mouse's
@@ -869,6 +896,7 @@
             if (!settings?.tracking_enabled) { return; }
             const basic_info = {
                 user_id: final_message.user_id,
+                hunter_id_hash,
                 entry_timestamp: final_message.entry_timestamp,
             };
 
@@ -877,6 +905,7 @@
             $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
                 if (data) {
                     final_message.uuid = data;
+                    final_message.hunter_id_hash = hunter_id_hash;
                     sendAlready(url, final_message);
                 }
             });
@@ -1010,7 +1039,7 @@
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
-                    }                    
+                    }
                 }
             }
             else if (css_class.search(/gift_wrapped_charm_trigger/) !== -1) {
@@ -1033,7 +1062,7 @@
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Gift Wrapped Charm: ", gift_wrapped_charm_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
-                    }                    
+                    }
                 }
             }
             else if (css_class.search(/torch_charm_event/) !== -1) {
@@ -1056,7 +1085,7 @@
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Torch Charm: ", torch_charm_loot: items}); }
 
                         submitConvertible(convertible, items, hunt_response.user.user_id);
-                    }                    
+                    }
                 }
             }
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
@@ -2512,7 +2541,7 @@
             };
         }
     }
-    
+
     /**
      * Report active augmentations and floor number
      * @param {Object <string, any>} message The message to be sent.
@@ -2638,7 +2667,7 @@
     }
 
     /**
-     * 
+     *
      * @param {Object} item An object that looks like an item for convertibles. Has an id (or item_id), name, and quantity
      * @returns {Object} An item with an id, name, and quantity
      */
@@ -2716,12 +2745,6 @@
 
     // Finish configuring the extension behavior.
     getSettings(settings => {
-        if (settings.debug_logging) {
-            debug_logging = true;
-            console.log("MHCT: Debug mode activated!");
-            window.console.log({message: "MHCT: Initialized with settings", settings});
-        }
-
         if (settings.escape_button_close) {
             escapeButtonClose();
         }
