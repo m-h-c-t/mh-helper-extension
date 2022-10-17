@@ -1,12 +1,9 @@
 
 export enum LogLevel {
-    Trace,
     Debug,
     Info,
     Warn,
     Error,
-    Critical,
-    Off
 }
 
 export const DEFAULT_LOG_LEVEL: LogLevel = LogLevel.Info;
@@ -15,12 +12,10 @@ export interface ILogger {
     getLevel(): LogLevel;
     setLevel(level: LogLevel): void;
 
-    trace(message: string, ...args: any[]): void;
     debug(message: string, ...args: any[]): void;
     info(message: string, ...args: any[]): void;
     warn(message: string, ...args: any[]): void;
     error(message: string, ...args: any[]): void;
-    critical(message: string, ...args: any[]): void;
 }
 
 export class Logger implements ILogger {
@@ -29,7 +24,6 @@ export class Logger implements ILogger {
     public constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
         this.setLevel(logLevel);
     }
-
 
     public setLevel(level: LogLevel): void {
         if (this.level !== level) {
@@ -41,23 +35,20 @@ export class Logger implements ILogger {
         return this.level;
     }
 
-    public trace(message: string, ...args: any[]): void {
-        this.log(LogLevel.Trace, message, ...args);
-    }
     public debug(message: string, ...args: any[]): void {
         this.log(LogLevel.Debug, message, ...args);
     }
+
     public info(message: string, ...args: any[]): void {
         this.log(LogLevel.Info, message, ...args);
     }
+
     public warn(message: string, ...args: any[]): void {
         this.log(LogLevel.Warn, message, ...args);
     }
+
     public error(message: string, ...args: any[]): void {
         this.log(LogLevel.Error, message, ...args);
-    }
-    public critical(message: string, ...args: any[]): void {
-        this.log(LogLevel.Critical, message, ...args);
     }
 
     private log(level: LogLevel, message: string, ...args: any[]): void {
