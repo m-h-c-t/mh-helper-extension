@@ -17,7 +17,7 @@ abstract class MessageExemptionBase implements IMessageExemption {
  * a Realm Ripper and the user moved from FG -> AR. Give exemptions for
  * 'location' and 'stage'.
  */
-export class RealmRipperLocationExemption extends MessageExemptionBase {
+class RealmRipperLocationExemption extends MessageExemptionBase {
     readonly property = "location";
     getExemptions(pre: IntakeMessage, post: IntakeMessage): (keyof IntakeMessage)[] | null {
         if (pre.location?.name === "Forbidden Grove"
@@ -29,3 +29,7 @@ export class RealmRipperLocationExemption extends MessageExemptionBase {
         return null;
     }
 }
+
+export const MessageExemptions: IMessageExemption[] = [
+    new RealmRipperLocationExemption,
+]

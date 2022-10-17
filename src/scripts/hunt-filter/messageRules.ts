@@ -1,28 +1,28 @@
 import { IntakeMessage } from "../types/mhct";
 import { IFilteredRule, RuleBase } from "./interfaces";
 
-export class IntakeMessageSameCheese extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
+class IntakeMessageSameCheese extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "cheese";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.cheese.name === post.cheese.name;
     }
 }
 
-export class IntakeMessageSameWeapon extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
+class IntakeMessageSameWeapon extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "trap";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.trap.name === post.trap.name;
     }
 }
 
-export class IntakeMessageSameBase extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
+class IntakeMessageSameBase extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "base";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.base.name === post.base.name;
     }
 }
 
-export class IntakeMessageSameLocation extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
+class IntakeMessageSameLocation extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "location";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return (pre.location !== null && post.location !== null)
@@ -30,7 +30,7 @@ export class IntakeMessageSameLocation extends RuleBase<IntakeMessage> implement
     }
 }
 
-export class IntakeMessageSameStage extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
+class IntakeMessageSameStage extends RuleBase<IntakeMessage> implements IFilteredRule<IntakeMessage> {
     readonly property = "stage";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         // Juggling check. Valid if both stages are undefined or null.
@@ -42,3 +42,11 @@ export class IntakeMessageSameStage extends RuleBase<IntakeMessage> implements I
         return JSON.stringify(pre.stage) === JSON.stringify(post.stage);
     }
 }
+
+export const MessageRules: IFilteredRule<IntakeMessage>[] = [
+    new IntakeMessageSameCheese,
+    new IntakeMessageSameWeapon,
+    new IntakeMessageSameBase,
+    new IntakeMessageSameLocation,
+    new IntakeMessageSameStage,
+]

@@ -1,5 +1,5 @@
 import { ApiResponse } from "../types/hg";
-import { RuleBase } from "./interfaces";
+import { IRule, RuleBase } from "./interfaces";
 
 export class ApiResponseBothRequireSuccess extends RuleBase<ApiResponse> {
     isValid(pre: ApiResponse, post: ApiResponse): boolean {
@@ -18,3 +18,9 @@ export class ApiResponseActiveTurn extends RuleBase<ApiResponse> {
         return post.active_turn === true;
     }
 }
+
+export const ResponseRules: IRule<ApiResponse>[] = [
+    new ApiResponseBothRequireSuccess,
+    new ApiResponsePreNeedsPage,
+    new ApiResponseActiveTurn,
+]
