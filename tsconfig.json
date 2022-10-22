@@ -18,7 +18,10 @@
       "noImplicitAny": true,
       "strictNullChecks": true,
       "allowJs": true,
+      "paths": {
+        "@scripts/*":["src/scripts/*"]
+      }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]
 }

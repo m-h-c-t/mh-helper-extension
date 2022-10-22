@@ -1,8 +1,8 @@
-import {IntakeRejectionEngine} from './engine';
-import {ApiResponse, User} from '../types/hg';
-import {IntakeMessage} from '../types/mhct';
-import {Logger} from '../util/logger';
-jest.mock('../util/logger')
+import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
+import {ApiResponse, User} from '@scripts/types/hg';
+import {IntakeMessage} from '@scripts/types/mhct';
+import {Logger} from '@scripts/util/logger';
+jest.mock('@scripts/util/logger')
 
 // Mock logger won't actually call console.log
 const logger = new Logger();
