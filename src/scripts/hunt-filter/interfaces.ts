@@ -20,7 +20,7 @@ export interface IRule<K> {
 /**
  * Provides a rule for a specific property of T
  */
-export interface IFilteredRule<T> extends IRule<T> {
+export interface IPropertyRule<T> extends IRule<T> {
     readonly property: (keyof T);
 }
 

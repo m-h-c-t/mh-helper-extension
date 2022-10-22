@@ -1,7 +1,7 @@
 import { ApiResponse, User } from "../types/hg";
 import { IntakeMessage } from "../types/mhct";
 import { ILogger } from "../util/logger";
-import { IRule, IFilteredRule, IMessageExemption } from "./interfaces";
+import { IRule, IPropertyRule, IMessageExemption } from "./interfaces";
 import { ResponseRules } from "./responseRules";
 import { UserRules } from "./userRules";
 import { MessageRules } from "./messageRules";
@@ -15,7 +15,7 @@ export class IntakeRejectionEngine {
     private logger: ILogger;
     private responseRules: IRule<ApiResponse>[] = [];
     private userRules: IRule<User>[] = [];
-    private messageRules: IFilteredRule<IntakeMessage>[] = [];
+    private messageRules: IPropertyRule<IntakeMessage>[] = [];
     private messageExemptions: IMessageExemption[] = [];
 
     constructor(logger: ILogger) {
