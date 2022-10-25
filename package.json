@@ -50,7 +50,7 @@
     "url": "git+https://github.com/mh-community-tools/mh-helper-extension.git"
   },
   "devDependencies": {
-    "concurrently": "^7.4.0",
+    "concurrently": "^7.5.0",
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.25.0",
     "fork-ts-checker-webpack-plugin": "^7.2.13",
