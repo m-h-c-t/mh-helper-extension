@@ -37,21 +37,24 @@
         window.postMessage({mhct_settings_request: 1}, "*");
     }
 
-    // Create hunter id hash using forge library
-    // https://github.com/digitalbazaar/forge
+    // Create hunter id hash using Crypto Web API
+    // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
     let hunter_id_hash = '0';
-    function createHunterIdHash() {
+    async function createHunterIdHash() {
         if (typeof user.user_id === 'undefined') {
             alert('MHCT: Please make sure you are logged in into MH.');
             return;
         }
 
-        if (debug_logging) { console.log("hunter_id: " + user.user_id.toString().trim()); }
-        // eslint-disable-next-line no-undef
-        const md = forge.md.sha512.create();
-        md.update(user.user_id.toString().trim());
-        if (debug_logging) { console.log("hunter_id_hash: " + md.digest().toHex()); }
-        hunter_id_hash = md.digest().toHex();
+        const user_id = user.user_id.toString().trim();
+        if (debug_logging) { console.log("hunter_id: " + user_id); }
+
+        const msgUint8 = new TextEncoder().encode(user_id);
+        const hashBuffer = await crypto.subtle.digest('SHA-512', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        hunter_id_hash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+
+        if (debug_logging) { console.log("hunter_id_hash: " + hunter_id_hash); }
     }
 
     // Load settings

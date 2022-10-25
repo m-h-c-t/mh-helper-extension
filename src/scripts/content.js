@@ -53,15 +53,7 @@ function injectMainScript() {
     };
 }
 
-// Inject forge (for hunter id hash)
-// https://github.com/digitalbazaar/forge (originally tested on version 1.3.1)
-const forgeElement = document.createElement('script');
-forgeElement.src = chrome.runtime.getURL('third_party/forge/forge.min.js');
-(document.head || document.documentElement).appendChild(forgeElement);
-forgeElement.onload = () => {
-    injectMainScript();
-    forgeElement.remove();
-};
+injectMainScript();
 
 // Handles messages from popup or background.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
