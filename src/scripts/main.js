@@ -54,7 +54,8 @@
     // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
     async function createHunterIdHash() {
         if (typeof user.user_id === 'undefined') {
-            throw "User not logged in, can't create hunter id hash.";
+            // TODO: Fix bug and call this function on session.php to refresh hunter_id_hash
+            return;
         }
 
         const user_id = user.user_id.toString().trim();
