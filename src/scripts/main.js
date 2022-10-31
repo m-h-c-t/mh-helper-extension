@@ -54,7 +54,9 @@
     // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
     async function createHunterIdHash() {
         if (typeof user.user_id === 'undefined') {
-            // TODO: Fix bug and call this function on session.php to refresh hunter_id_hash
+            // No problem if user is not logged in yet.
+            // This function will be called on logins (ajaxSuccess on session.php)
+            if (debug_logging) { console.log("MHCT: User is not logged in yet."); }
             return;
         }
 
@@ -341,6 +343,8 @@
                 // Triggers on Birthday Items claim, room change click (+others, perhaps).
                 // Wed Jun 23 2021 22:00:00 GMT-0400 [King's Giveaway Key Vanishing date 15th])
                 getSettings(settings => recordPrizePack(settings, xhr));
+            } else if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
+                createHunterIdHash();
             }
         });
     }
