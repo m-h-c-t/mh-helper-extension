@@ -29,7 +29,7 @@ export class IntakeRejectionEngine {
         return this.responseRules.every(r => {
             const isValid = r.isValid(pre, post);
             if (!isValid) {
-                this.logger.debug(`Reponse object invalid due to rule: ${r.name}`);
+                this.logger.debug(`Api responses invalid: ${r.description}`);
             }
             return isValid;
         });
@@ -39,7 +39,7 @@ export class IntakeRejectionEngine {
         return this.userRules.every(r => {
             let isValid = r.isValid(pre, post);
             if (!isValid) {
-                this.logger.debug(`User object invalid due to rule: ${r.name}`);
+                this.logger.debug(`User objects invalid: ${r.description}`);
             }
             return isValid;
         });
@@ -57,7 +57,7 @@ export class IntakeRejectionEngine {
         for (const rule of this.messageRules) {
             const valid: boolean = rule.isValid(pre, post);
             if (!valid) {
-                this.logger.debug(`Message possibly invalid due to rule: ${rule.name}`);
+                this.logger.debug(`Message invalid: ${rule.description}`);
                 invalidProperties.add(rule.property);
             }
         }
@@ -80,7 +80,7 @@ export class IntakeRejectionEngine {
             // so that exemption provides [ "location", "stage" ]
             const exemptions = provider.getExemptions(pre, post);
             if (exemptions && exemptions.length > 0) {
-                this.logger.debug(`Generated exemptions from ${provider.name}`, { properties: exemptions });
+                this.logger.debug(`Got exemptions. Description: ${provider.description}`, { properties: exemptions });
                 exemptions.forEach(e => invalidProperties.delete(e));
             }
 

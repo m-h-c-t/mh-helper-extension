@@ -1,28 +1,32 @@
 import { IntakeMessage } from "../types/mhct";
-import { IPropertyRule, RuleBase } from "./interfaces";
+import { IPropertyRule } from "./interfaces";
 
-class IntakeMessageSameCheese extends RuleBase<IntakeMessage> implements IPropertyRule<IntakeMessage> {
+class IntakeMessageSameCheese implements IPropertyRule<IntakeMessage> {
+    readonly description = "Cheese should not change";
     readonly property = "cheese";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.cheese.name === post.cheese.name;
     }
 }
 
-class IntakeMessageSameWeapon extends RuleBase<IntakeMessage> implements IPropertyRule<IntakeMessage> {
+class IntakeMessageSameWeapon implements IPropertyRule<IntakeMessage> {
+    readonly description = "Trap should not change";
     readonly property = "trap";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.trap.name === post.trap.name;
     }
 }
 
-class IntakeMessageSameBase extends RuleBase<IntakeMessage> implements IPropertyRule<IntakeMessage> {
+class IntakeMessageSameBase implements IPropertyRule<IntakeMessage> {
+    readonly description = "Base should not change";
     readonly property = "base";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return pre.base.name === post.base.name;
     }
 }
 
-class IntakeMessageSameLocation extends RuleBase<IntakeMessage> implements IPropertyRule<IntakeMessage> {
+class IntakeMessageSameLocation implements IPropertyRule<IntakeMessage> {
+    readonly description = "Location should not change";
     readonly property = "location";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         return (pre.location !== null && post.location !== null)
@@ -30,7 +34,8 @@ class IntakeMessageSameLocation extends RuleBase<IntakeMessage> implements IProp
     }
 }
 
-class IntakeMessageSameStage extends RuleBase<IntakeMessage> implements IPropertyRule<IntakeMessage> {
+class IntakeMessageSameStage implements IPropertyRule<IntakeMessage> {
+    readonly description = "Stage should not change";
     readonly property = "stage";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
         // Juggling check. Valid if both stages are undefined or null.
