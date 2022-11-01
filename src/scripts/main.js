@@ -14,18 +14,17 @@
     let mhhh_version = 0;
     let hunter_id_hash = '0';
 
-    async function main(settings) {
+    async function main() {
         try {
             if (!window.jQuery) {
                 throw "Can't find jQuery.";
             }
 
-            mhhh_version = formatVersion($("#mhhh_version").val());
-
+            const settings = await getSettingsAsync();
             await initialLoad(settings);
             addWindowMessageListeners();
             addAjaxHandlers();
-            finishLoad(settings);
+            finalLoad(settings);
         } catch (error) {
             console.log("MHCT: Failed to initialize.", error);
         }
@@ -48,6 +47,12 @@
             }
         }, false);
         window.postMessage({mhct_settings_request: 1}, "*");
+    }
+
+    async function getSettingsAsync() {
+        return new Promise((resolve) => {
+            getSettings(data => resolve(data));
+        });
     }
 
     // Create hunter id hash using Crypto Web API
@@ -77,6 +82,8 @@
             console.log("MHCT: Debug mode activated!");
             console.log({message: "MHCT: initialLoad ran with settings", settings});
         }
+
+        mhhh_version = formatVersion($("#mhhh_version").val());
         await createHunterIdHash();
     }
 
@@ -2766,7 +2773,7 @@
     }
 
     // Finish configuring the extension behavior.
-    function finishLoad(settings) {
+    function finalLoad(settings) {
         if (settings.escape_button_close) {
             escapeButtonClose();
         }
@@ -2811,5 +2818,5 @@
         window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
     }
 
-    getSettings(async (settings) => await main(settings));
+    main();
 }());
