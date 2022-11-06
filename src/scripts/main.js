@@ -20,7 +20,6 @@
 
     if (mhhh_version == 0) {
         console.log("MHCT: Test version detected, pointing to server on localhost");
-        debug_logging = true;
         base_domain_url = "http://localhost";
     }
 
