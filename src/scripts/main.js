@@ -78,11 +78,12 @@
     async function initialLoad(settings) {
         mhhh_version = formatVersion($("#mhhh_version").val());
         if (mhhh_version == 0) {
+            console.log("MHCT: Test version detected, turning on debug mode and pointing to server on localhost");
             base_domain_url = 'http://localhost';
         }
         if (settings.debug_logging || mhhh_version == 0) {
             debug_logging = true;
-            console.log("MHCT: Debug mode activated!");
+            console.log("MHCT: Debug mode activated");
             console.log({message: "MHCT: initialLoad ran with settings", settings});
         }
 
