@@ -3,21 +3,26 @@
 (function () {
     'use strict';
 
-    const base_domain_url = "https://www.mhct.win";
+    if (!window.jQuery) {
+        console.log("MHCT: Can't find jQuery, exiting.");
+        return;
+    }
+
+    let base_domain_url = "https://www.mhct.win";
+    const mhhh_version = formatVersion($("#mhhh_version").val());
     const db_url = base_domain_url + "/intake.php";
     const map_intake_url = base_domain_url + "/map_intake.php";
     const convertible_intake_url = base_domain_url + "/convertible_intake.php";
     const map_helper_url = base_domain_url + "/maphelper.php";
     const rh_intake_url = base_domain_url + "/rh_intake.php";
 
-    if (!window.jQuery) {
-        console.log("MHCT: Can't find jQuery, exiting.");
-        return;
-    }
-
-    const mhhh_version = formatVersion($("#mhhh_version").val());
-
     let debug_logging = false;
+
+    if (mhhh_version == 0) {
+        console.log("MHCT: Test version detected, pointing to server on localhost");
+        debug_logging = true;
+        base_domain_url = "http://localhost";
+    }
 
     // Define Get settings function
     function getSettings(callback) {
