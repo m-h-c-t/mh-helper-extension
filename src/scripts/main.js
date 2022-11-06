@@ -19,8 +19,9 @@
     let debug_logging = false;
 
     if (mhhh_version == 0) {
-        console.log("MHCT: Test version detected, pointing to server on localhost");
+        console.log("MHCT: Test version detected, turning on debugging and pointing to server on localhost");
         base_domain_url = "http://localhost";
+        debug_logging = true;
     }
 
     // Define Get settings function
@@ -31,7 +32,7 @@
             }
 
             // Locally cache the logging setting.
-            debug_logging = !!event.data.settings.debug_logging;
+            debug_logging = !!event.data.settings.debug_logging || debug_logging;
 
             if (callback && typeof(callback) === "function") {
                 window.removeEventListener("message", listenSettings);
