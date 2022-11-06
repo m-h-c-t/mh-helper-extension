@@ -18,10 +18,10 @@ jobs:
       - name: Authorized by
         run: echo "${{ github.event.sender.login }}"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: '0'
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -73,7 +73,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: release-${{ steps.create-tag.outputs.version-tag }}
           path: ./dist/*

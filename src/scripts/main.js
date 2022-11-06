@@ -3,7 +3,7 @@
 (function () {
     'use strict';
 
-    const base_domain_url = "https://www.mhct.win";
+    let base_domain_url = "https://www.mhct.win";
     const db_url = base_domain_url + "/intake.php";
     const map_intake_url = base_domain_url + "/map_intake.php";
     const convertible_intake_url = base_domain_url + "/convertible_intake.php";
@@ -30,7 +30,6 @@
         }
     }
 
-
     // Define Get settings function
     function getSettings(callback) {
         window.addEventListener("message", function listenSettings(event) {
@@ -39,7 +38,7 @@
             }
 
             // Locally cache the logging setting.
-            debug_logging = !!event.data.settings.debug_logging;
+            debug_logging = !!event.data.settings.debug_logging || debug_logging;
 
             if (callback && typeof(callback) === "function") {
                 window.removeEventListener("message", listenSettings);
@@ -77,13 +76,16 @@
     }
 
     async function initialLoad(settings) {
-        if (settings.debug_logging) {
+        mhhh_version = formatVersion($("#mhhh_version").val());
+        if (mhhh_version == 0) {
+            base_domain_url = 'http://localhost';
+        }
+        if (settings.debug_logging || mhhh_version == 0) {
             debug_logging = true;
             console.log("MHCT: Debug mode activated!");
             console.log({message: "MHCT: initialLoad ran with settings", settings});
         }
 
-        mhhh_version = formatVersion($("#mhhh_version").val());
         await createHunterIdHash();
     }
 
