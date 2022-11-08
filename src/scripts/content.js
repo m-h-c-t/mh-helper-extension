@@ -156,7 +156,8 @@ window.addEventListener("message",
             // There must be a better way of doing this
             window.postMessage({
                 mhct_message: 'tsitu_loader',
-                tsitu_loader_offset: settings.tsitu_loader_offset,
+                // ensure offset is a string: https://github.com/tsitu/MH-Tools/blob/584b0182195d2fc35756dd34a74ee0573b845d1f/src/bookmarklet/bm-menu.js#L205
+                tsitu_loader_offset: `${settings.tsitu_loader_offset}`,
                 file_link: chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js'),
             }, "*");
         }
