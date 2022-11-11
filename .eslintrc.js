@@ -12,6 +12,7 @@ module.exports = {
     },
     parserOptions: {
         ecmaVersion: 12,
+        sourceType: 'module',
     },
     rules: {
         'array-bracket-newline': ['error', 'consistent'],
@@ -40,4 +41,15 @@ module.exports = {
         'prefer-const': ['error'],
         'semi': ['error', 'always'],
     },
+    overrides: [
+        {
+            files: [
+                '**/*.test.js',
+            ],
+            env: {
+                jest: true,
+            },
+            plugins: ['jest'],
+        },
+    ],
 };
