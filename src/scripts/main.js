@@ -2818,6 +2818,12 @@
         if (Number(mhhh_version) == 0) {
             tempversion = "TEST version";
         }
+        
+        // Tell content script we are done loading
+        window.postMessage({
+            mhct_finish_load: 1,
+        });
+        
         window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
     }
 

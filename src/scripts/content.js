@@ -35,20 +35,6 @@ function injectMainScript() {
     s.src = chrome.runtime.getURL('scripts/main.js');
     (document.head || document.documentElement).appendChild(s);
     s.onload = () => {
-        // Display Tsitu's Loader
-        chrome.storage.sync.get({
-            tsitu_loader_on: false,
-            tsitu_loader_offset: 80,
-        }, items => {
-            if (items.tsitu_loader_on) {
-                // There must be a better way of doing this
-                window.postMessage({
-                    "mhct_message": 'tsitu_loader',
-                    "tsitu_loader_offset": items.tsitu_loader_offset,
-                    "file_link": chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js'),
-                }, "*");
-            }
-        });
         s.remove();
     };
 }
@@ -62,14 +48,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         "mhmh",
         "ryonn",
         "horn",
-        "tsitu_loader",
     ].includes(request.mhct_link)) {
-        let file_link = '';
-        if (request.mhct_link == "tsitu_loader") {
-            file_link = chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js');
-        }
         // Forwards messages from popup to main script
-        window.postMessage({"mhct_message": request.mhct_link, "file_link": file_link}, "*");
+        window.postMessage({"mhct_message": request.mhct_link}, "*");
     } else if (request.mhct_link === "huntTimer") {
         // Check for a King's Reward, otherwise report the displayed time until next horn.
         let message = "Logged out";
@@ -86,12 +67,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(message);
     } else if (request.mhct_link === "show_horn_alert") {
         window.postMessage({"mhct_message": request.mhct_link}, "*");
+    } else if (request.mhct_link === "tsitu_loader") {
+        showTsituLoader(true);
     }
 });
 
 // Handle messages from embedded script (main.js)
 window.addEventListener("message",
     event => {
+        // Only accept messages from window with our embedded script
+        if (event.source != window){
+            return;
+        }
+
         // Lots of MessageEvents are sent, so only respond to ones we know about.
         const data = event.data;
         if (data.mhct_settings_request === 1) {
@@ -116,38 +104,63 @@ window.addEventListener("message",
                 submitted: wasSubmitted,
                 settings: data.settings,
             }, event.origin));
+        } else if (data.mhct_finish_load === 1) {
+            showTsituLoader();
         }
     },
     false
 );
 
-/**
- * Promise to get the extension's settings.
- * @returns {Promise <Object <string, any>>} The extension's settings
- */
-function getSettings() {
-    return new Promise((resolve) => {
-        chrome.storage.sync.get({
-            success_messages: true, // defaults
-            error_messages: true, // defaults
-            debug_logging: false, // defaults
-            icon_timer: true, // defaults
-            horn_sound: false, // defaults
-            custom_sound: '', // defaults
-            horn_volume: 100, // defaults
-            horn_alert: false, // defaults
-            horn_webalert: false, // defaults
-            horn_popalert: false, // defaults
-            tracking_enabled: true, // defaults
-            escape_button_close: false, // defaults
-        },
-        items => {
-            if (chrome.runtime.lastError) {
-                window.console.error(chrome.runtime.lastError.message);
-            }
-            resolve(items || {});
+    /**
+     * Promise to get the extension's settings.
+     * @returns {Promise <Object <string, any>>} The extension's settings
+     */
+    function getSettings() {
+        return new Promise((resolve) => {
+            chrome.storage.sync.get({
+                success_messages: true, // defaults
+                error_messages: true, // defaults
+                debug_logging: false, // defaults
+                icon_timer: true, // defaults
+                horn_sound: false, // defaults
+                custom_sound: '', // defaults
+                horn_volume: 100, // defaults
+                horn_alert: false, // defaults
+                horn_webalert: false, // defaults
+                horn_popalert: false, // defaults
+                tracking_enabled: true, // defaults
+                escape_button_close: false, // defaults
+            },
+            items => {
+                if (chrome.runtime.lastError) {
+                    window.console.error(chrome.runtime.lastError.message);
+                }
+                resolve(items || {});
+            });
         });
-    });
-}
+    }
+
+    /**
+     * Promise to show Tsitu's menu via the embedded script.
+     * @param {boolean} forceShow Bypass settings and always show
+     */
+    async function showTsituLoader(forceShow) {
+        const settings = await new Promise((resolve) => {
+            chrome.storage.sync.get({
+                tsitu_loader_on: false,
+                tsitu_loader_offset: 80,
+            }, data => resolve(data));
+        });
+
+        if (forceShow | settings.tsitu_loader_on) {
+            // There must be a better way of doing this
+            window.postMessage({
+                mhct_message: 'tsitu_loader',
+                // ensure offset is a string: https://github.com/tsitu/MH-Tools/blob/584b0182195d2fc35756dd34a74ee0573b845d1f/src/bookmarklet/bm-menu.js#L205
+                tsitu_loader_offset: `${settings.tsitu_loader_offset}`,
+                file_link: chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js'),
+            }, "*");
+        }
+    }
 
 }());
