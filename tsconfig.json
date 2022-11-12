@@ -4,7 +4,6 @@
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
-    "rootDir": "./src",
     "outDir": "dist/scripts",
     "strict": true,
     "sourceMap": true,
@@ -23,8 +22,5 @@
       "@scripts/*":["src/scripts/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ],
+  "include": ["src/**/*", "test/**/*"]
 }
