@@ -22,5 +22,5 @@
       "@scripts/*":["src/scripts/*"]
     }
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*", "tests/**/*"]
 }
