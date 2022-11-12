@@ -57,7 +57,7 @@ describe('ConsoleLogger', () => {
         expect(console.error).toHaveBeenCalled();
     });
 
-    it('prefixes messages with MHTC:', () => {
+    it('prefixes messages with MHCT:', () => {
         logger.info('snap!');
         expect(console.info).toHaveBeenLastCalledWith('MHCT: snap!');
     })
