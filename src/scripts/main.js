@@ -4,11 +4,7 @@
     'use strict';
 
     let base_domain_url = "https://www.mhct.win";
-    const db_url = base_domain_url + "/intake.php";
-    const map_intake_url = base_domain_url + "/map_intake.php";
-    const convertible_intake_url = base_domain_url + "/convertible_intake.php";
-    const map_helper_url = base_domain_url + "/maphelper.php";
-    const rh_intake_url = base_domain_url + "/rh_intake.php";
+    let db_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url;
 
     let debug_logging = false;
     let mhhh_version = 0;
@@ -86,6 +82,11 @@
             console.log("MHCT: Debug mode activated");
             console.log({message: "MHCT: initialLoad ran with settings", settings});
         }
+        db_url = base_domain_url + "/intake.php";
+        map_intake_url = base_domain_url + "/map_intake.php";
+        convertible_intake_url = base_domain_url + "/convertible_intake.php";
+        map_helper_url = base_domain_url + "/maphelper.php";
+        rh_intake_url = base_domain_url + "/rh_intake.php";
 
         await createHunterIdHash();
     }
@@ -2818,12 +2819,12 @@
         if (Number(mhhh_version) == 0) {
             tempversion = "TEST version";
         }
-        
+
         // Tell content script we are done loading
         window.postMessage({
             mhct_finish_load: 1,
         });
-        
+
         window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
     }
 
