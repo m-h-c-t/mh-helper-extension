@@ -1,11 +1,11 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {ApiResponse, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {Logger} from '@scripts/util/logger';
+import {ConsoleLogger} from '@scripts/util/logger';
 jest.mock('@scripts/util/logger')
 
 // Mock logger won't actually call console.log
-const logger = new Logger();
+const logger = new ConsoleLogger();
 const engine = new IntakeRejectionEngine(logger);
 
 describe('validateResponse', () => {
