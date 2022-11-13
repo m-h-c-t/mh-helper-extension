@@ -1,6 +1,6 @@
 /*jslint browser:true */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
-import {Logger, LogLevel} from "./util/logger";
+import {ConsoleLogger, LogLevel} from "./util/logger";
 
 (function () {
     'use strict';
@@ -12,7 +12,7 @@ import {Logger, LogLevel} from "./util/logger";
     const map_helper_url = base_domain_url + "/maphelper.php";
     const rh_intake_url = base_domain_url + "/rh_intake.php";
 
-    const logger = new Logger();
+    const logger = new ConsoleLogger();
     const rejectionEngine = new IntakeRejectionEngine(logger);
     let debug_logging = false;
     let mhhh_version = 0;
@@ -2845,12 +2845,12 @@ import {Logger, LogLevel} from "./util/logger";
         if (Number(mhhh_version) == 0) {
             tempversion = "TEST version";
         }
-        
+
         // Tell content script we are done loading
         window.postMessage({
             mhct_finish_load: 1,
         });
-        
+
         window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
     }
 
