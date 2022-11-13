@@ -31,7 +31,6 @@
     "web_accessible_resources": [
         "scripts/main.js",
         "third_party/tsitu/*",
-        "third_party/forge/*",
         "images/icon128.png"
     ],
 

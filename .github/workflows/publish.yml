@@ -18,10 +18,10 @@ jobs:
       - name: Authorized by
         run: echo "${{ github.event.sender.login }}"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: '0'
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -43,14 +43,6 @@ jobs:
           curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-powers.min.js
           curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-setup-fields.min.js
           curl ${{ env.curl_opts }} ${{ env.tsitu_cdn }}/bm-setup-items.min.js
-
-      - name: Pull in latest Forge
-      # https://github.com/digitalbazaar/forge
-      # TODO: Make this using `npm run update forge`
-        run: |
-          mkdir -p ${{ github.workspace }}/dist/third_party/forge
-          cd ${{ github.workspace }}/dist/third_party/forge
-          curl -sSf -O -J https://cdn.jsdelivr.net/npm/node-forge@1/dist/forge.min.js
 
       - name: Auto-versioning
         if: ${{ github.event.inputs.NEW_CUSTOM_VERSION == '' }}
@@ -81,7 +73,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: release-${{ steps.create-tag.outputs.version-tag }}
           path: ./dist/*

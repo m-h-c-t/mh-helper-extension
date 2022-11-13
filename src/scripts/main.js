@@ -5,23 +5,34 @@ import {Logger, LogLevel} from "./util/logger";
 (function () {
     'use strict';
 
-    const base_domain_url = "https://www.mhct.win";
+    let base_domain_url = "https://www.mhct.win";
     const db_url = base_domain_url + "/intake.php";
     const map_intake_url = base_domain_url + "/map_intake.php";
     const convertible_intake_url = base_domain_url + "/convertible_intake.php";
     const map_helper_url = base_domain_url + "/maphelper.php";
     const rh_intake_url = base_domain_url + "/rh_intake.php";
 
-    if (!window.jQuery) {
-        console.log("MHCT: Can't find jQuery, exiting.");
-        return;
-    }
-
-    const mhhh_version = formatVersion($("#mhhh_version").val());
-
-    let debug_logging = false;
     const logger = new Logger();
     const rejectionEngine = new IntakeRejectionEngine(logger);
+    let debug_logging = false;
+    let mhhh_version = 0;
+    let hunter_id_hash = '0';
+
+    async function main() {
+        try {
+            if (!window.jQuery) {
+                throw "Can't find jQuery.";
+            }
+
+            const settings = await getSettingsAsync();
+            await initialLoad(settings);
+            addWindowMessageListeners();
+            addAjaxHandlers();
+            finalLoad(settings);
+        } catch (error) {
+            console.log("MHCT: Failed to initialize.", error);
+        }
+    }
 
     // Define Get settings function
     function getSettings(callback) {
@@ -31,7 +42,7 @@ import {Logger, LogLevel} from "./util/logger";
             }
 
             // Locally cache the logging setting.
-            debug_logging = !!event.data.settings.debug_logging;
+            debug_logging = !!event.data.settings.debug_logging || debug_logging;
             logger.setLevel(debug_logging ? LogLevel.Debug : LogLevel.Info);
 
             if (callback && typeof(callback) === "function") {
@@ -42,10 +53,15 @@ import {Logger, LogLevel} from "./util/logger";
         window.postMessage({mhct_settings_request: 1}, "*");
     }
 
-    // Create hunter id hash using forge library
-    // https://github.com/digitalbazaar/forge
-    let hunter_id_hash = '0';
-    function createHunterIdHash() {
+    async function getSettingsAsync() {
+        return new Promise((resolve) => {
+            getSettings(data => resolve(data));
+        });
+    }
+
+    // Create hunter id hash using Crypto Web API
+    // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+    async function createHunterIdHash() {
         if (typeof user.user_id === 'undefined') {
             // No problem if user is not logged in yet.
             // This function will be called on logins (ajaxSuccess on session.php)
@@ -53,90 +69,99 @@ import {Logger, LogLevel} from "./util/logger";
             return;
         }
 
-        if (debug_logging) { console.log("hunter_id: " + user.user_id.toString().trim()); }
-        // eslint-disable-next-line no-undef
-        const md = forge.md.sha512.create();
-        md.update(user.user_id.toString().trim());
-        if (debug_logging) { console.log("hunter_id_hash: " + md.digest().toHex()); }
-        hunter_id_hash = md.digest().toHex();
+        const user_id = user.user_id.toString().trim();
+        if (debug_logging) { console.log("hunter_id: " + user_id); }
+
+        const msgUint8 = new TextEncoder().encode(user_id);
+        const hashBuffer = await crypto.subtle.digest('SHA-512', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        hunter_id_hash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+
+        if (debug_logging) { console.log("hunter_id_hash: " + hunter_id_hash); }
     }
 
-    // Load settings
-    function initialLoad(settings) {
-        if (settings.debug_logging) {
+    async function initialLoad(settings) {
+        mhhh_version = formatVersion($("#mhhh_version").val());
+        if (mhhh_version == 0) {
+            console.log("MHCT: Test version detected, turning on debug mode and pointing to server on localhost");
+            base_domain_url = 'http://localhost';
+        }
+        if (settings.debug_logging || mhhh_version == 0) {
             debug_logging = true;
-            console.log("MHCT: Debug mode activated!");
+            console.log("MHCT: Debug mode activated");
             console.log({message: "MHCT: initialLoad ran with settings", settings});
         }
-        createHunterIdHash();
+
+        await createHunterIdHash();
     }
-    getSettings(settings => initialLoad(settings));
 
     // Listening for calls
-    window.addEventListener('message', ev => {
-        if (ev.data.mhct_message == null) {
-            return;
-        }
+    function addWindowMessageListeners() {
+        window.addEventListener('message', ev => {
+            if (ev.data.mhct_message == null) {
+                return;
+            }
 
-        if (typeof user.user_id === 'undefined') {
-            alert('MHCT: Please make sure you are logged in into MH.');
-            return;
-        }
-        if (ev.data.mhct_message === 'userhistory') {
-            window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}&hunter_id=${hunter_id_hash}`);
-            return;
-        }
+            if (typeof user.user_id === 'undefined') {
+                alert('MHCT: Please make sure you are logged in into MH.');
+                return;
+            }
+            if (ev.data.mhct_message === 'userhistory') {
+                window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}&hunter_id=${hunter_id_hash}`);
+                return;
+            }
 
-        if (ev.data.mhct_message === 'mhmh'
-            || ev.data.mhct_message === 'ryonn') {
-            openMapMiceSolver(ev.data.mhct_message);
-            return;
-        }
+            if (ev.data.mhct_message === 'mhmh'
+                || ev.data.mhct_message === 'ryonn') {
+                openMapMiceSolver(ev.data.mhct_message);
+                return;
+            }
 
-        if (ev.data.mhct_message === 'horn') {
-            sound_horn();
-            return;
-        }
-
-        if ('tsitu_loader' === ev.data.mhct_message) {
-            window.tsitu_loader_offset = ev.data.tsitu_loader_offset;
-            openBookmarklet(ev.data.file_link);
-            return;
-        }
-
-        if (ev.data.mhct_message === 'show_horn_alert') {
-            const sound_the_horn = confirm("Horn is Ready! Sound it?");
-            if (sound_the_horn) {
+            if (ev.data.mhct_message === 'horn') {
                 sound_horn();
+                return;
             }
-            return;
-        }
 
-        // Crown submission results in either the boolean `false`, or the total submitted crowns.
-        if (ev.data.mhct_message === 'crownSubmissionStatus') {
-            const counts = ev.data.submitted;
-            if (counts) {
-                displayFlashMessage(ev.data.settings, "success",
-                    `Submitted ${counts} crowns for ${$('span[class*="titleBar-name"]').text()}.`);
-            } else if (counts != null) {
-                displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
-            } else if (debug_logging) {
-                window.console.log('MHCT: Skipped submission (already sent).');
+            if ('tsitu_loader' === ev.data.mhct_message) {
+                window.tsitu_loader_offset = ev.data.tsitu_loader_offset;
+                openBookmarklet(ev.data.file_link);
+                return;
             }
-            return;
-        }
 
-        // Golem submission results in either the boolean `false`, or the number of submitted golems.
-        if (ev.data.mhct_message === 'golemSubmissionStatus') {
-            const count = ev.data.submitted;
-            if (count) {
-                displayFlashMessage(ev.data.settings, 'success', 'Snow Golem data submitted successfully');
-            } else {
-                displayFlashMessage(ev.data.settings, 'error', 'Snow Golem data submission failed, sorry!');
+            if (ev.data.mhct_message === 'show_horn_alert') {
+                const sound_the_horn = confirm("Horn is Ready! Sound it?");
+                if (sound_the_horn) {
+                    sound_horn();
+                }
+                return;
             }
-        }
 
-    }, false);
+            // Crown submission results in either the boolean `false`, or the total submitted crowns.
+            if (ev.data.mhct_message === 'crownSubmissionStatus') {
+                const counts = ev.data.submitted;
+                if (counts) {
+                    displayFlashMessage(ev.data.settings, "success",
+                        `Submitted ${counts} crowns for ${$('span[class*="titleBar-name"]').text()}.`);
+                } else if (counts != null) {
+                    displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
+                } else if (debug_logging) {
+                    window.console.log('MHCT: Skipped submission (already sent).');
+                }
+                return;
+            }
+
+            // Golem submission results in either the boolean `false`, or the number of submitted golems.
+            if (ev.data.mhct_message === 'golemSubmissionStatus') {
+                const count = ev.data.submitted;
+                if (count) {
+                    displayFlashMessage(ev.data.settings, 'success', 'Snow Golem data submitted successfully');
+                } else {
+                    displayFlashMessage(ev.data.settings, 'error', 'Snow Golem data submission failed, sorry!');
+                }
+            }
+
+        }, false);
+    }
 
     function sound_horn() {
         if ($("#huntTimer").text() !== "Ready!") {
@@ -308,34 +333,36 @@ import {Logger, LogLevel} from "./util/logger";
     }
 
     // Listening routers
-    $(document).ajaxSend(getUserBeforeHunting);
-    $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
-        const url = ajaxOptions.url;
-        if (url.includes("mousehuntgame.com/managers/ajax/users/treasuremap.php")) {
-            recordMap(xhr);
-        } else if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
-            recordConvertible(xhr);
-        } else if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
-            if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
-                getSettings(settings => recordCrowns(settings, xhr, url));
+    function addAjaxHandlers() {
+        $(document).ajaxSend(getUserBeforeHunting);
+        $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
+            const url = ajaxOptions.url;
+            if (url.includes("mousehuntgame.com/managers/ajax/users/treasuremap.php")) {
+                recordMap(xhr);
+            } else if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
+                recordConvertible(xhr);
+            } else if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
+                if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
+                    getSettings(settings => recordCrowns(settings, xhr, url));
+                }
+            } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
+                // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
+                // (GMT): Friday, January 31, 2022 12:00:00 AM [GWH 2021 placeholder end date])
+                if (Date.now() < 1643605200000) {
+                    getSettings(settings => recordGWH2021Golems(settings, xhr));
+                }
+            } else if (url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php")) {
+                // Triggers on Birthday Items claim, room change click (+others, perhaps).
+                getSettings(settings => recordSnackPack(settings, xhr));
+            } else if (url.includes("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")) {
+                // Triggers on Birthday Items claim, room change click (+others, perhaps).
+                // Wed Jun 23 2021 22:00:00 GMT-0400 [King's Giveaway Key Vanishing date 15th])
+                getSettings(settings => recordPrizePack(settings, xhr));
+            } else if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
+                createHunterIdHash();
             }
-        } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
-            // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-            // (GMT): Friday, January 31, 2022 12:00:00 AM [GWH 2021 placeholder end date])
-            if (Date.now() < 1643605200000) {
-                getSettings(settings => recordGWH2021Golems(settings, xhr));
-            }
-        } else if (url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php")) {
-            // Triggers on Birthday Items claim, room change click (+others, perhaps).
-            getSettings(settings => recordSnackPack(settings, xhr));
-        } else if (url.includes("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")) {
-            // Triggers on Birthday Items claim, room change click (+others, perhaps).
-            // Wed Jun 23 2021 22:00:00 GMT-0400 [King's Giveaway Key Vanishing date 15th])
-            getSettings(settings => recordPrizePack(settings, xhr));
-        } else if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
-            createHunterIdHash();
-        }
-    });
+        });
+    }
 
     /**
      * Record Crowns. The xhr response data also includes a `mouseData` hash keyed by each mouse's
@@ -2776,7 +2803,7 @@ import {Logger, LogLevel} from "./util/logger";
     }
 
     // Finish configuring the extension behavior.
-    getSettings(settings => {
+    function finalLoad(settings) {
         if (settings.escape_button_close) {
             escapeButtonClose();
         }
@@ -2818,6 +2845,14 @@ import {Logger, LogLevel} from "./util/logger";
         if (Number(mhhh_version) == 0) {
             tempversion = "TEST version";
         }
+        
+        // Tell content script we are done loading
+        window.postMessage({
+            mhct_finish_load: 1,
+        });
+        
         window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
-    });
+    }
+
+    main();
 }());

@@ -8,22 +8,21 @@ export enum LogLevel {
 
 export const DEFAULT_LOG_LEVEL: LogLevel = LogLevel.Info;
 
-export interface ILogger {
-    getLevel(): LogLevel;
-    setLevel(level: LogLevel): void;
+export abstract class LoggerService {
+    abstract getLevel(): LogLevel;
+    abstract setLevel(level: LogLevel): void;
 
-    debug(message: string, ...args: any[]): void;
-    info(message: string, ...args: any[]): void;
-    warn(message: string, ...args: any[]): void;
-    error(message: string, ...args: any[]): void;
+    abstract debug(message?: string, ...args: any[]): void;
+    abstract info(message?: string, ...args: any[]): void;
+    abstract warn(message?: string, ...args: any[]): void;
+    abstract error(message?: string, ...args: any[]): void;
 }
 
-export class Logger implements ILogger {
-    private level: LogLevel = DEFAULT_LOG_LEVEL;
+export class ConsoleLogger implements LoggerService {
 
-    public constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
-        this.setLevel(logLevel);
-    }
+    public constructor(
+        private level: LogLevel = DEFAULT_LOG_LEVEL
+    ) {}
 
     public setLevel(level: LogLevel): void {
         if (this.level !== level) {
@@ -35,35 +34,43 @@ export class Logger implements ILogger {
         return this.level;
     }
 
-    public debug(message: string, ...args: any[]): void {
+    public debug(message?: string, ...args: any[]): void {
         this.log(LogLevel.Debug, message, ...args);
     }
 
-    public info(message: string, ...args: any[]): void {
+    public info(message?: string, ...args: any[]): void {
         this.log(LogLevel.Info, message, ...args);
     }
 
-    public warn(message: string, ...args: any[]): void {
+    public warn(message?: string, ...args: any[]): void {
         this.log(LogLevel.Warn, message, ...args);
     }
 
-    public error(message: string, ...args: any[]): void {
+    public error(message?: string, ...args: any[]): void {
         this.log(LogLevel.Error, message, ...args);
     }
 
-    private log(level: LogLevel, message: string, ...args: any[]): void {
+    private log(level: LogLevel, message?: string, ...args: any[]): void {
+        if (this.level > level) {
+            return;
+        }
+
+        const prefixedMessage =  `MHCT: ${message}`;
         switch (level) {
+            case LogLevel.Debug:
+                console.debug(prefixedMessage, ...args);
+                break;
             case LogLevel.Info:
-                console.log(`MHCT: ${message}`, ...args);
+                console.info(prefixedMessage, ...args);
                 break;
             case LogLevel.Warn:
-                console.warn(`MHCT: ${message}`, ...args);
+                console.warn(prefixedMessage, ...args);
                 break;
             case LogLevel.Error:
-                console.error(`MHCT: ${message}`, ...args);
+                console.error(prefixedMessage, ...args);
                 break;
             default:
-                console.log(`MHCT: ${message}`, ...args);
+                console.log(prefixedMessage, ...args);
                 break;
         }
     }

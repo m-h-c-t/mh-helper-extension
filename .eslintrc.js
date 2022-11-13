@@ -41,4 +41,15 @@ module.exports = {
         'prefer-const': ['error'],
         'semi': ['error', 'always'],
     },
+    overrides: [
+        {
+            files: [
+                'tests/**/*.{test,spec}.js',
+            ],
+            env: {
+                jest: true,
+            },
+            plugins: ['jest'],
+        },
+    ],
 };
