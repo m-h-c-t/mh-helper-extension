@@ -19,7 +19,12 @@
             const settings = await getSettingsAsync();
             await initialLoad(settings);
             addWindowMessageListeners();
-            addAjaxHandlers();
+            if (settings?.tracking_enabled) {
+                console.log("MHCT: Tracking is enabled in settings.");
+                addAjaxHandlers();
+            } else {
+                console.log("MHCT: Tracking is disabled in settings.");
+            }
             finalLoad(settings);
         } catch (error) {
             console.log("MHCT: Failed to initialize.", error);
