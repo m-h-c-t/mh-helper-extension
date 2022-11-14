@@ -4,11 +4,7 @@
     'use strict';
 
     let base_domain_url = "https://www.mhct.win";
-    const db_url = base_domain_url + "/intake.php";
-    const map_intake_url = base_domain_url + "/map_intake.php";
-    const convertible_intake_url = base_domain_url + "/convertible_intake.php";
-    const map_helper_url = base_domain_url + "/maphelper.php";
-    const rh_intake_url = base_domain_url + "/rh_intake.php";
+    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url;
 
     let debug_logging = false;
     let mhhh_version = 0;
@@ -86,6 +82,11 @@
             console.log("MHCT: Debug mode activated");
             console.log({message: "MHCT: initialLoad ran with settings", settings});
         }
+        main_intake_url = base_domain_url + "/intake.php";
+        map_intake_url = base_domain_url + "/map_intake.php";
+        convertible_intake_url = base_domain_url + "/convertible_intake.php";
+        map_helper_url = base_domain_url + "/maphelper.php";
+        rh_intake_url = base_domain_url + "/rh_intake.php";
 
         await createHunterIdHash();
     }
@@ -97,12 +98,8 @@
                 return;
             }
 
-            if (typeof user.user_id === 'undefined') {
-                alert('MHCT: Please make sure you are logged in into MH.');
-                return;
-            }
             if (ev.data.mhct_message === 'userhistory') {
-                window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}&hunter_id=${hunter_id_hash}`);
+                window.open(`${base_domain_url}/searchByUser.php?hunter_id=${hunter_id_hash}`);
                 return;
             }
 
@@ -449,7 +446,6 @@
                 const {title, body} = messageData.content;
                 const locationName = /from (?:the )?(.+)!/.exec(title)[1].trim();
                 const payload = {
-                    uid: messageData.stream_publish_data.params.user_id.toString(),
                     timestamp: new Date(`${messageDate}Z`).getTime(),
                     location: locationName,
                     loot: [],
@@ -491,8 +487,8 @@
      * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      */
     function recordSnackPack(settings, xhr) {
-        const {vending_machine_purchase: purchase, user} = xhr.responseJSON ?? {};
-        if (!purchase.type || !user?.user_id) {
+        const {vending_machine_purchase: purchase} = xhr.responseJSON ?? {};
+        if (!purchase.type) {
             if (debug_logging) window.console.log('MHCT: Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
@@ -615,7 +611,7 @@
             });
         }
         if (debug_logging) window.console.log({message:"MHCT: ", convertible, items, settings});
-        submitConvertible(convertible, items, user.user_id);
+        submitConvertible(convertible, items);
     }
 
     /**
@@ -627,7 +623,7 @@
         if (
             !xhr.responseJSON || !xhr.responseJSON.kings_giveaway_result ||
             !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity ||
-            xhr.responseJSON.kings_giveaway_result.slot !== "bonus" || !xhr.responseJSON.user.user_id
+            xhr.responseJSON.kings_giveaway_result.slot !== "bonus"
         ) {
             if (debug_logging) window.console.log('MHCT: Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
             window.postMessage({
@@ -667,7 +663,7 @@
         });
 
         if (debug_logging) window.console.log({messsage: "MHCT: Prizepack: ", convertible: convertible, items: items, settings: settings});
-        submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
+        submitConvertible(convertible, items);
     }
 
     // Record map mice
@@ -677,7 +673,6 @@
         if (resp.treasure_map_inventory?.relic_hunter_hint) {
             sendMessageToServer(rh_intake_url, {
                 hint: resp.treasure_map_inventory.relic_hunter_hint,
-                user_id: resp.user.user_id,
                 entry_timestamp: entry_timestamp,
             });
         }
@@ -693,11 +688,8 @@
                 .replace(/rare /i, '')
                 .replace(/common /i, '')
                 .replace(/Ardouous/i, 'Arduous'),
-            user_id: resp.user.user_id,
             entry_timestamp: entry_timestamp,
         };
-
-        map.extension_version = mhhh_version;
 
         // Send to database
         sendMessageToServer(map_intake_url, map);
@@ -831,7 +823,7 @@
         addLoot(message, hunt, post_response.inventory);
         if (debug_logging) {window.console.log({message:"MHCT: ", message_var:message, user_pre, user_post, hunt});}
         // Upload the hunt record.
-        sendMessageToServer(db_url, message);
+        sendMessageToServer(main_intake_url, message);
     }
 
     // Add bonus journal entry stuff to the hunt_details
@@ -892,7 +884,7 @@
             return;
         }
 
-        submitConvertible(convertible, items, response.user.user_id);
+        submitConvertible(convertible, items);
     }
 
     /**
@@ -906,15 +898,12 @@
      * Helper function to submit opened items.
      * @param {HgItem} convertible The item that was opened.
      * @param {HgItem[]} items An array of items that were obtained by opening the convertible
-     * @param {string} user_id the user associated with the submission
      */
-    function submitConvertible(convertible, items, user_id) {
+    function submitConvertible(convertible, items) {
         const record = {
             convertible: getItem(convertible),
             items: items.map(getItem),
-            extension_version: mhhh_version,
             asset_package_hash: Date.now(),
-            user_id,
             entry_timestamp: Math.round(Date.now() / 1000),
         };
 
@@ -927,9 +916,9 @@
         getSettings(settings => {
             if (!settings?.tracking_enabled) { return; }
             const basic_info = {
-                user_id: final_message.user_id,
                 hunter_id_hash,
                 entry_timestamp: final_message.entry_timestamp,
+                extension_version: mhhh_version,
             };
 
 
@@ -938,6 +927,7 @@
                 if (data) {
                     final_message.uuid = data;
                     final_message.hunter_id_hash = hunter_id_hash;
+                    final_message.extension_version = mhhh_version;
                     sendAlready(url, final_message);
                 }
             });
@@ -983,15 +973,13 @@
             // Handle a Relic Hunter attraction.
             if (css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
                 const rh_message = {
-                    extension_version: mhhh_version,
-                    user_id: hunt_response.user.user_id,
                     rh_environment: markup.render_data.environment,
                     entry_timestamp: markup.render_data.entry_timestamp,
                 };
                 // If this occurred after the daily reset, submit it. (Trap checks & friend hunts
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
-                    sendMessageToServer(db_url, rh_message);
+                    sendMessageToServer(main_intake_url, rh_message);
                     if (debug_logging) {window.console.log(`MHCT: Found the Relic Hunter in ${rh_message.rh_environment}`);}
                 }
             }
@@ -1039,7 +1027,7 @@
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
                         if (debug_logging) { window.console.log({message:"MHCT: ", desert_heater_loot: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 } else {
                     window.postMessage({
@@ -1070,7 +1058,7 @@
                         }];
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 }
             }
@@ -1093,7 +1081,7 @@
                         }];
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Gift Wrapped Charm: ", gift_wrapped_charm_loot: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 }
             }
@@ -1116,7 +1104,7 @@
                         }];
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Torch Charm: ", torch_charm_loot: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 }
             }
@@ -1161,7 +1149,7 @@
                             }];
                             if (debug_logging) { window.console.log({message: "MHCT: ", boiling_cauldron_trap: items}); }
 
-                            submitConvertible(convertible, items, hunt_response.user.user_id);
+                            submitConvertible(convertible, items);
                         }
                     }
                 }
@@ -1198,7 +1186,7 @@
                         const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
                         if (debug_logging) { window.console.log({message: "MHCT: ", gilded_charm: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 }
             }
@@ -1234,16 +1222,8 @@
      * @returns {Object <string, any> | null} The message object, or `null` if an error occurred.
      */
     function createMessageFromHunt(journal, user, user_post) {
-        const message = {
-            extension_version: mhhh_version,
-        };
+        const message = {};
         const debug_logs = [];
-
-        // Hunter ID.
-        message.user_id = parseInt(user.user_id, 10);
-        if (isNaN(message.user_id)) {
-            throw new Error(`MHCT: Unexpected user id value ${user.user_id}`);
-        }
 
         // Entry ID
         message.entry_id = journal.render_data.entry_id;
@@ -2818,12 +2798,12 @@
         if (Number(mhhh_version) == 0) {
             tempversion = "TEST version";
         }
-        
+
         // Tell content script we are done loading
         window.postMessage({
             mhct_finish_load: 1,
         });
-        
+
         window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
     }
 
