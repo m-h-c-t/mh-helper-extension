@@ -50,7 +50,7 @@
     "url": "git+https://github.com/mh-community-tools/mh-helper-extension.git"
   },
   "devDependencies": {
-    "@types/jest": "^29.2.2",
+    "@types/jest": "^29.2.3",
     "concurrently": "^7.5.0",
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.27.0",
