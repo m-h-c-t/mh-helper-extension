@@ -2105,7 +2105,7 @@
      */
     function addQuesoGeyserStage(message, user, user_post, hunt) {
         const state = user.quests.QuestQuesoGeyser.state;
-        if (state === "collecting") {
+        if (state === "collecting" || state === "claim") {
             message.stage = "Cork Collecting";
         } else if (state === "corked") {
             message.stage = "Pressure Building";
