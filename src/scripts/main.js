@@ -166,7 +166,10 @@
             return;
         }
 
-        horn.click();
+        const hornButton = document.querySelector('.huntersHornView__horn');
+        if (hornButton) {
+            hornButton.click();
+        }
     }
 
     function openBookmarklet(url) {
