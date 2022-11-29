@@ -161,14 +161,14 @@
     }
 
     function sound_horn() {
-        const horn = document.querySelector('.huntersHornView__timerState--type-ready');
-        if (!(horn && horn.textContent === 'Ready' )) {
-            return;
-        }
+        const horn = document.querySelector('.huntersHornView__horn');
+        if (horn) {
+            const clickEvent = new MouseEvent("mousedown", {
+                bubbles: true, // Bubble up the dom.
+                cancelable: true,
+            });
 
-        const hornButton = document.querySelector('.huntersHornView__horn');
-        if (hornButton) {
-            hornButton.click();
+            horn.dispatchEvent(clickEvent);
         }
     }
 
