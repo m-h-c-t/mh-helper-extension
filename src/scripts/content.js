@@ -56,24 +56,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let message = "Logged out";
         const krHudElement = document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0];
         const krPageElement = document.getElementsByClassName('mousehuntPage-puzzle-form-state hasPuzzle')[0];
-        const hunt_timer = document.querySelector(".huntersHornView__timerState");
+        const hunt_timer = document.querySelector(".huntersHornView__countdown");
+        const is_ready = document.querySelector('.huntersHornView__timerState--type-ready');
 
         // KR can prompt a puzzle without the HUD changing. If either are displaying, a pending KR needs to be claimed
         if (krHudElement && window.getComputedStyle(krHudElement).display === 'block' ||
             krPageElement && window.getComputedStyle(krPageElement).display === 'block') {
             message = "King's Reward";
-        } else if (hunt_timer) {
-            // Get first visible child of the hunt timer.
-            const hunt_timer_child = hunt_timer && hunt_timer.children[0];
-            if (hunt_timer_child && hunt_timer.children[0].style.display !== "none") {
-                message = hunt_timer.children[0].innerText;
-            } else {
-                const is_ready = document.querySelector('.huntersHornView__timerState--type-ready');
-                if (is_ready && is_ready.textContent === "Ready") {
-                    message = is_ready.textContent;
-                }
-            }
+        } else if (hunt_timer && window.getComputedStyle(hunt_timer).display === 'block') {
+            message = hunt_timer.innerText;
+        } else if (is_ready && window.getComputedStyle(is_ready).display === 'block') {
+            message = "Ready";
         }
+
         sendResponse(message);
     } else if (request.mhct_link === "show_horn_alert") {
         window.postMessage({"mhct_message": request.mhct_link}, "*");
