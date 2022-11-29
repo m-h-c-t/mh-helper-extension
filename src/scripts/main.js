@@ -161,15 +161,12 @@
     }
 
     function sound_horn() {
-        if ($("#huntTimer").text() !== "Ready!") {
+        const horn = document.querySelector('.huntersHornView__timerState--type-ready');
+        if (!(horn && horn.textContent === 'Ready' )) {
             return;
         }
 
-        if ($(".mousehuntHud-huntersHorn").length) { // FreshCoat™ Layout
-            $(".mousehuntHud-huntersHorn").click();
-        } else if ($(".hornbutton a").length) { // Old Layout
-            $(".hornbutton a").click();
-        }
+        horn.click();
     }
 
     function openBookmarklet(url) {

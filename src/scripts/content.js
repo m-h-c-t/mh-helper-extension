@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let message = "Logged out";
         const krHudElement = document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0];
         const krPageElement = document.getElementsByClassName('mousehuntPage-puzzle-form-state hasPuzzle')[0];
-        const hunt_timer = document.querySelector(".huntersHornView__timer");
+        const hunt_timer = document.querySelector(".huntersHornView__timerState");
 
         // KR can prompt a puzzle without the HUD changing. If either are displaying, a pending KR needs to be claimed
         if (krHudElement && window.getComputedStyle(krHudElement).display === 'block' ||
@@ -67,6 +67,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             const hunt_timer_child = hunt_timer && hunt_timer.children[0];
             if (hunt_timer_child && hunt_timer.children[0].style.display !== "none") {
                 message = hunt_timer.children[0].innerText;
+            } else {
+                const is_ready = document.querySelector('.huntersHornView__timerState--type-ready');
+                if (is_ready && is_ready.textContent === "Ready") {
+                    message = is_ready.textContent;
+                }
             }
         }
         sendResponse(message);
