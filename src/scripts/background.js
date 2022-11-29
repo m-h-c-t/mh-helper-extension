@@ -97,7 +97,7 @@ function icon_timer_updateBadge(tab_id, settings) {
             console.log(logInfo);
             chrome.browserAction.setBadgeText({text: ''});
             notification_done = true;
-        } else if (response === "Ready!") {
+        } else if (response === "Ready") {
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#9b7617'});
                 chrome.browserAction.setBadgeText({text: '🎺'});
