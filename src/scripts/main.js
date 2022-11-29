@@ -169,6 +169,16 @@
             });
 
             horn.dispatchEvent(clickEvent);
+
+            // Wait for the animation to finish.
+            setTimeout(() => {
+                const clickEvent = new MouseEvent("mouseup", {
+                    bubbles: true, // Bubble up the dom.
+                    cancelable: true,
+                });
+                horn.dispatchEvent(clickEvent);
+            }
+            , 250);
         }
     }
 
