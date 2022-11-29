@@ -56,16 +56,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let message = "Logged out";
 
         const krPageElement = document.querySelector('.huntersHornView__messageText');
-        const hunt_timer = document.querySelector(".huntersHornView__countdown");
-        const is_ready = document.querySelector('.huntersHornView__timerState--type-ready');
+        const horn_element = document.querySelector('.huntersHornView__horn');
 
         // KR can prompt a puzzle without the HUD changing. If either are displaying, a pending KR needs to be claimed
         if ( krPageElement && window.getComputedStyle(krPageElement).display === 'block' && krPageElement.innerText.includes('King\'s Reward') ) {
             message = "King's Reward";
-        } else if (hunt_timer && window.getComputedStyle(hunt_timer).display === 'block') {
-            message = hunt_timer.innerText;
-        } else if (is_ready && window.getComputedStyle(is_ready).display === 'block') {
+        } else if (horn_element.classList.contains('huntersHornView__horn--ready')) {
             message = "Ready";
+        } else {
+            const hunt_timer = document.querySelector(".huntersHornView__countdown");
+            if (hunt_timer) {
+                message = hunt_timer.innerText;
+            }
         }
 
         sendResponse(message);
