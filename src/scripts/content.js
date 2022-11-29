@@ -55,7 +55,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Check for a King's Reward, otherwise report the displayed time until next horn.
         let message = "Logged out";
         const krHudElement = document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0];
-        const krPageElement = document.getElementsByClassName('mousehuntPage-puzzle-form-state hasPuzzle')[0];
+        const krPageElement = document.querySelector('.huntersHornView__messageActionText');
+
         const hunt_timer = document.querySelector(".huntersHornView__countdown");
         const is_ready = document.querySelector('.huntersHornView__timerState--type-ready');
 
