@@ -161,14 +161,24 @@
     }
 
     function sound_horn() {
-        if ($("#huntTimer").text() !== "Ready!") {
-            return;
-        }
+        const horn = document.querySelector('.huntersHornView__horn');
+        if (horn) {
+            const clickEvent = new MouseEvent("mousedown", {
+                bubbles: true, // Bubble up the dom.
+                cancelable: true,
+            });
 
-        if ($(".mousehuntHud-huntersHorn").length) { // FreshCoat™ Layout
-            $(".mousehuntHud-huntersHorn").click();
-        } else if ($(".hornbutton a").length) { // Old Layout
-            $(".hornbutton a").click();
+            horn.dispatchEvent(clickEvent);
+
+            // Wait for the animation to finish.
+            setTimeout(() => {
+                const clickEvent = new MouseEvent("mouseup", {
+                    bubbles: true, // Bubble up the dom.
+                    cancelable: true,
+                });
+                horn.dispatchEvent(clickEvent);
+            }
+            , 250);
         }
     }
 

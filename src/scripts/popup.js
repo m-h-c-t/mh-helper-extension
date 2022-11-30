@@ -79,7 +79,7 @@ function updateHuntTimerField(tab, huntTimerField) {
             displayErrorPopup(chrome.runtime.lastError.message);
         }
         if (huntTimerField) {
-            if (response === "Ready!") {
+            if (response === "Ready") {
                 huntTimerField.innerHTML = '<img src="images/horn.png" class="horn">';
             } else {
                 huntTimerField.textContent = response;
