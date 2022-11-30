@@ -470,8 +470,9 @@
             }));
         }
         if (payload.loot.length) {
-            if (debug_logging) window.console.log({message: 'MHCT: GWH Golem:', payload});
-            window.postMessage({mhct_golem_submit: 1, payload, settings}, window.origin);
+            const golems = [payload];
+            if (debug_logging) window.console.log({message: 'MHCT: GWH Golem:', golems});
+            window.postMessage({mhct_golem_submit: 1, golems, settings}, window.origin);
         }
     }
 
