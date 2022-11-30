@@ -354,9 +354,9 @@
                 }
             } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
                 // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-                // (GMT): Friday, January 31, 2022 12:00:00 AM [GWH 2021 placeholder end date])
-                if (Date.now() < 1643605200000) {
-                    getSettings(settings => recordGWH2021Golems(settings, xhr));
+                // (GMT): Sat Jan 21 2023 05:00:00 GMT+0000)
+                if (Date.now() < 1674277200000) {
+                    getSettings(settings => recordGWHGolems(settings, xhr));
                 }
             } else if (url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php")) {
                 // Triggers on Birthday Items claim, room change click (+others, perhaps).
@@ -438,13 +438,13 @@
     }
 
     /**
-     * Record GWH 2021 golem submissions
+     * Record GWH 2022 golem submissions
      * @param {Object <string, any>} settings The user's extension settings.
      * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      */
-    function recordGWH2021Golems(settings, xhr) {
-        const {messages} = xhr.responseJSON?.messageData?.message_model ?? {};
-        if (!messages) {
+    function recordGWHGolems(settings, xhr) {
+        const {message} = xhr.responseJSON ?? {}; // assuming sample in https://pastebin.com/YnZiPFhc is top level
+        if (!message || !message.environment?.name) {
             if (debug_logging) window.console.log('MHCT: Skipped GWH golem submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
@@ -455,44 +455,23 @@
             return;
         }
 
-        const golems = messages
-            .filter(({messageData}) => messageData.content && messageData.content.title.includes('Snow Golem reward'))
-            .map(({messageData, messageDate}) => {
-                const {title, body} = messageData.content;
-                const locationName = /from (?:the )?(.+)!/.exec(title)[1].trim();
-                const payload = {
-                    timestamp: new Date(`${messageDate}Z`).getTime(),
-                    location: locationName,
-                    loot: [],
-                };
-                // In case the timestamping failed.
-                if (Number.isNaN(payload.timestamp) || Math.abs(Date.now() - payload.timestamp) > 10000) {
-                    payload.timestamp = Date.now();
-                }
-
-                // Use an in-memory DOM tree to obtain the items, slots, & quantities.
-                const doc = new DOMParser().parseFromString(body, 'text/html');
-                const gwh_prefix = '.winterHunt2021-claimRewardPopup';
-
-                // Get only the item boxes which actually have an item (i.e. ignore locked slots).
-                const lootDivs = Array.from(doc.querySelectorAll(`${gwh_prefix}-content ${gwh_prefix}-item`))
-                    .map((itemDiv) => [`${gwh_prefix}-item-rarity`, '.quantity', `${gwh_prefix}-item-name`]
-                        .map((sel) => itemDiv.querySelector(sel)))
-                    .filter(([rarityEl, qtyEl, itemEl]) => rarityEl && qtyEl && itemEl);
-
-                // Update the location data with the rarity-item-quantity information.
-                lootDivs.forEach(([rarityEl, qtyEl, itemEl]) => {
-                    const rarity = rarityEl.textContent === 'Magical Hat' ? 'Hat'
-                        : rarityEl.textContent.charAt(0).toUpperCase() + rarityEl.textContent.slice(1);
-                    const quantity = parseInt(qtyEl.textContent.replace(/,/g, '').trim(), 10); // Remove commas from e.g. 10,000 gold
-                    const name = itemEl.textContent.includes('SUPER|brie') ? 'SUPER|brie+' : itemEl.textContent.trim();
-                    payload.loot.push({name, quantity, rarity});
-                });
-                return payload;
-            });
-        if (golems.length) {
-            if (debug_logging) window.console.log({message: 'MHCT: GWH Golem:', golems});
-            window.postMessage({mhct_golem_submit: 1, golems, settings}, window.origin);
+        const payload = {
+            timestamp: Date.now(),
+            location: message.environment.name,
+            loot: [],
+        };
+        if ('items' in message) {
+            const types = Object.keys(message.items);
+            types.forEach(type => message.items[type].forEach(item => {
+                const name = item.name;
+                const quantity = item.quantity;
+                const rarity = type;
+                payload.loot.push({name, quantity, rarity});
+            }));
+        }
+        if (payload.loot.length) {
+            if (debug_logging) window.console.log({message: 'MHCT: GWH Golem:', payload});
+            window.postMessage({mhct_golem_submit: 1, payload, settings}, window.origin);
         }
     }
 
