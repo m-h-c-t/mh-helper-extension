@@ -25,9 +25,12 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
     }
 
     public async execute(responseJSON: any): Promise<void> {
-        const golemData: GolemResponse = responseJSON?.golem_loot // 99.99% probability that this needs to be changed;
-        if (golemData !== null && golemData.environment.name) {
+        // Because response is of 'any' type, union the possibility of
+        // undefined since we don't know where the data will be located in the response structure
+        const golemData: GolemResponse | undefined = responseJSON?.golem_loot // 99.99% probability that this needs to be changed;
+        if (!golemData) {
             this.logger.warn("Skipped GWH golem submission due to unhandled XHR structure.", responseJSON);
+            return;
         }
 
         const payload: GolemPayload = {
@@ -58,24 +61,24 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             }, window.origin)
         }
     }
-    
+
     /**
      * Promise to submit the given golem(s) loot for external storage
-     * @param golems 
+     * @param golems
      * @returns True if submitted successfully, otherwise false.
      */
     public async submitGolems(golems: GolemPayload[]) {
         if (!golems || !Array.isArray(golems) || !golems.length) {
             return false;
         }
-        
+
         const endpoint = "https://script.google.com/macros/s/AKfycbzQjEgLA5W7ZUVKydZ_l_Cm8419bI8e0Vs2y3vW2S_RwlF-6_I/exec";
         const options: RequestInit = {
             mode: 'cors',
             method: 'POST',
             credentials: 'omit',
         };
-        
+
         let allOk = true;
         for (const golem of golems) {
             const payload = new FormData();
@@ -87,7 +90,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
                 if (!resp.ok) this.logger.error('Error submitting golem', {golem});
             } catch (error) {
                 allOk = false;
-                window.console.error('Fetch/Network Error', {error});
+                this.logger.error('Golem Fetch/Network Error', {error});
             }
         }
         return allOk ? golems.length : false;

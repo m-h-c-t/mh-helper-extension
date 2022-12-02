@@ -33,27 +33,36 @@ describe("GWHGolemAjaxHandler", () => {
   });
 
   describe('execute', () => {
-      it('calls submitGolems with expected data', () => {
-            Date.now = jest.fn(() => 12345);
-            handler.submitGolems = jest.fn();
+    it('does not call submitGolems with unhandled json', () => {
+        handler.submitGolems = jest.fn();
 
-            handler.execute(generateTestResponse(testData.harborPreviewData));
+        handler.execute({});
 
-            const expectedPayload: GolemPayload[] = [
-                {
-                    location: "Harbour",
-                    timestamp: 12345,
-                    loot: [
-                        {
-                            name: "Brie Cheese",
-                            quantity: 20,
-                            rarity: "area",
-                        },
-                    ],
-                },
-            ];
-            expect(handler.submitGolems).toHaveBeenCalledWith(expectedPayload);
-        });
+        expect(logger.warn).toHaveBeenCalledWith("Skipped GWH golem submission due to unhandled XHR structure.", {});
+        expect(handler.submitGolems).not.toHaveBeenCalled();
+    });
+
+    it('calls submitGolems with expected data', () => {
+        Date.now = jest.fn(() => 12345);
+        handler.submitGolems = jest.fn();
+
+        handler.execute(generateTestResponse(testData.harborPreviewData));
+
+        const expectedPayload: GolemPayload[] = [
+            {
+                location: "Harbour",
+                timestamp: 12345,
+                loot: [
+                    {
+                        name: "Brie Cheese",
+                        quantity: 20,
+                        rarity: "area",
+                    },
+                ],
+            },
+        ];
+        expect(handler.submitGolems).toHaveBeenCalledWith(expectedPayload);
+});
     });
 });
 
