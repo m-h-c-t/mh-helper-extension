@@ -1,5 +1,5 @@
 import { GWHGolemAjaxHandler } from "@scripts/ajax-handlers/golem";
-import { GolemPayload } from "@scripts/ajax-handlers/golem.types";
+import { GolemPayload, GolemResponse } from "@scripts/ajax-handlers/golem.types";
 
 jest.mock("@scripts/util/logger");
 import { ConsoleLogger } from "@scripts/util/logger";
@@ -68,7 +68,7 @@ describe("GWHGolemAjaxHandler", () => {
 
 // B/c we don't know where the golem field is located, tests can use this to generate data
 // and it can be changed to update all tests at once
-function generateTestResponse(golemJSON: any): any {
+function generateTestResponse(golemJSON: GolemResponse): any {
     // act like typical MH response
     return {
         // user: {}
