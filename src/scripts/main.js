@@ -157,14 +157,12 @@ import {GWHGolemAjaxHandler} from './ajax-handlers/golem';
 
             // Golem submission results in either the boolean `false`, or the number of submitted golems.
             if (ev.data.mhct_message === 'golemSubmissionStatus') {
-                getSettings(settings => {
                     const count = ev.data.submitted;
                     if (count) {
-                        displayFlashMessage(settings, 'success', 'Snow Golem data submitted successfully');
+                    showFlashMessage('success', 'Snow Golem data submitted successfully');
                     } else {
-                        displayFlashMessage(settings, 'error', 'Snow Golem data submission failed, sorry!');
+                    showFlashMessage('error', 'Snow Golem data submission failed, sorry!');
                     }
-                });
             }
 
         }, false);
