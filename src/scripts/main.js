@@ -1,7 +1,7 @@
 /*jslint browser:true */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
-import {GWHGolemAjaxHandler} from './modules/ajax-handlers/golem';
+import * as successHandlers from './modules/ajax-handlers';
 import {HornHud} from './util/HornHud';
 import * as stagers from './modules/stages';
 
@@ -18,7 +18,8 @@ import * as stagers from './modules/stages';
     const logger = new ConsoleLogger();
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const ajaxSuccessHandlers = [
-        new GWHGolemAjaxHandler(logger, showFlashMessage),
+        new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
+        new successHandlers.SBFactoryAjaxHandler(logger, submitConvertible),
     ];
 
     async function main() {
@@ -342,9 +343,6 @@ import * as stagers from './modules/stages';
                 if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
                     getSettings(settings => recordCrowns(settings, xhr, url));
                 }
-            } else if (url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php")) {
-                // Triggers on Birthday Items claim, room change click (+others, perhaps).
-                getSettings(settings => recordSnackPack(settings, xhr));
             } else if (url.includes("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")) {
                 // Triggers on Birthday Items claim, room change click (+others, perhaps).
                 // Wed Jun 23 2021 22:00:00 GMT-0400 [King's Giveaway Key Vanishing date 15th])
@@ -425,139 +423,6 @@ import * as stagers from './modules/stages';
             "crowns": payload,
             "settings": settings,
         }, window.origin);
-    }
-
-    /**
-     * Record Birthday 2021 snack pack submissions as convertibles in MHCT
-     * @param {Object <string, any>} settings The user's extension settings.
-     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
-     */
-    function recordSnackPack(settings, xhr) {
-        const {vending_machine_purchase: purchase} = xhr.responseJSON ?? {};
-        if (!purchase.type) {
-            if (debug_logging) window.console.log('MHCT: Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
-            window.postMessage({
-                "mhct_log_request": 1,
-                "is_error": true,
-                "bday_2021_submit_xhr_response": xhr.responseJSON,
-                "reason": "Unable to parse bday 2021 response",
-            }, window.origin);
-            return;
-        }
-
-        // Convert pack code names to made-up internal identifiers
-        const packs = {
-            larry_starter_mix_snack_pack:	130001,
-            tribal_crunch_snack_pack:	130002,
-            wild_west_ranch_rings_snack_pack:	130003,
-            sandy_bert_bites_snack_pack:	130004,
-            hollow_heights_party_pack_snack_pack:	130005,
-            riftios_snack_pack:	130006,
-        };
-        const convertible = {};
-        if (purchase.type in packs) {
-            convertible["name"] = purchase.type;
-            convertible["id"] = packs[purchase.type];
-            convertible["quantity"] = purchase.quantity;
-        }
-        const cheeses = {
-            'Gauntlet Cheese Tier 7': 92,
-            'Rumble Cheese': 110,
-            'Runny Cheese': 907,
-            'Onyx Gorgonzola': 106,
-            'Gauntlet Cheese Tier 5': 90,
-            'Gauntlet Cheese Tier 6': 91,
-            'Magical Rancid Radioactive Blue Cheese': 2369,
-            'Gauntlet Cheese Tier 4': 89,
-            'Maki Cheese': 103,
-            'Gauntlet Cheese Tier 8': 93,
-            'Runic Cheese': 111,
-            'Brie Cheese': 80,
-            'Cherry Cheese': 343,
-            'Crimson Cheese': 2700,
-            'Abominable Asiago Cheese': 2470,
-            'Limelight Cheese': 101,
-            'Ancient Cheese': 79,
-            'Wicked Gnarly Cheese': 121,
-            'Susheese Cheese': 115,
-            'Glutter Cheese': 96,
-            'Grilled Cheese': 1529,
-            'Combat Cheese': 82,
-            'Radioactive Blue Cheese': 108,
-            'Rancid Radioactive Blue Cheese': 1340,
-            'Gauntlet Cheese Tier 3': 88,
-            'Gauntlet Cheese Tier 2': 87,
-            'Chedd-Ore Cheese': 2471,
-            'Gnarled Cheese': 97,
-            'Vanilla Stilton Cheese': 118,
-            'Inferno Havarti Cheese': 100,
-            'Galleon Gouda': 1814,
-            'Vengeful Vanilla Stilton Cheese': 119,
-            'Shell Cheese': 112,
-            'Gumbo Cheese': 99,
-            'Crunchy Cheese': 84,
-            'Sweet Havarti Cheese': 116,
-            'Spicy Havarti Cheese': 113,
-            'Pungent Havarti Cheese': 107,
-            'Magical Havarti Cheese': 102,
-            'Crunchy Havarti Cheese': 85,
-            'Creamy Havarti Cheese': 83,
-            'Mild Queso': 2629,
-            'Moon Cheese': 105,
-            'Wildfire Queso': 2630,
-            'Medium Queso': 2628,
-            'Hot Queso': 2627,
-            "Flamin' Queso": 2626,
-            'Crescent Cheese': 2226,
-            'Dewthief Camembert': 1007,
-            'Lunaria Camembert': 1010,
-            'Graveblossom Camembert': 1009,
-            'Duskshade Camembert': 1008,
-            'Plumepearl Herbs': 996,
-            'Lunaria Petal': 991,
-            'Graveblossom Petal': 990,
-            'Duskshade Petal': 977,
-            'Dreamfluff Herbs': 976,
-            'Dewthief Petal': 975,
-            'Windy Cheese': 2442,
-            'Rainy Cheese': 2441,
-            'Mineral Cheese': 1734,
-            'Glowing Gruyere Cheese': 1733,
-            'Gemstone Cheese': 1732,
-            'Cloud Cheesecake': 3089,
-            'Sky Pirate Swiss Cheese': 3090,
-            'Dragonvine Cheese': 2440,
-            'Diamond Cheese': 1731,
-            'Rift Rumble Cheese': 2101,
-            'Polluted Parmesan Cheese': 1550,
-            'Gauntlet String Cheese': 2906,
-            'Runic String Cheese': 2344,
-            'Resonator Cheese': 1425,
-            'Lactrodectus Lancashire Cheese': 1646,
-            'Master Fusion Cheese': 2099,
-            'Maki String Cheese': 2080,
-            'Magical String Cheese': 1426,
-            'Ancient String Cheese': 2343,
-            'Riftiago Cheese': 1428,
-            'Terre Ricotta Cheese': 1551,
-            'Rift Susheese': 2102,
-            'Rift Glutter Cheese': 2097,
-            'Rift Combat Cheese': 2096,
-            'Null Onyx Gorgonzola': 2100,
-            'Extra Rich Cloud Cheesecake': 3274,
-        };
-        const items = [];
-        if ("items" in purchase) {
-            purchase.items.forEach(item => {
-                items.push({
-                    id: cheeses[item.name],
-                    name: item.name,
-                    quantity: item.quantity,
-                });
-            });
-        }
-        if (debug_logging) window.console.log({message:"MHCT: ", convertible, items, settings});
-        submitConvertible(convertible, items);
     }
 
     /**
