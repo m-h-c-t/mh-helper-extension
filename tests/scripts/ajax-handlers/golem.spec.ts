@@ -5,64 +5,65 @@ jest.mock("@scripts/util/logger");
 import { ConsoleLogger } from "@scripts/util/logger";
 
 const logger = new ConsoleLogger();
-const handler = new GWHGolemAjaxHandler(logger);
+const showFlashMessage = jest.fn();
+const handler = new GWHGolemAjaxHandler(logger, showFlashMessage);
 
 const gwhURL = "mousehuntgame.com/managers/ajax/events/winter_hunt.php";
 
 describe("GWHGolemAjaxHandler", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('match', () => {
-    it('is false when url is ignored', () => {
-        expect(handler.match("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")).toBe(false);
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    it('is false when GWH is done', () => {
-        // return the day after our filter
-        Date.now = jest.fn(() => new Date("2023-01-22T05:00:00Z").getTime());
+    describe('match', () => {
+        it('is false when url is ignored', () => {
+            expect(handler.match("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")).toBe(false);
+        });
 
-        expect(handler.match(gwhURL)).toBe(false);
+        it('is false when GWH is done', () => {
+            // return the day after our filter
+            Date.now = jest.fn(() => new Date("2023-01-22T05:00:00Z").getTime());
+
+            expect(handler.match(gwhURL)).toBe(false);
+        });
+
+        it('is true on match during event', () => {
+            Date.now = jest.fn(() => new Date("2022-12-07T05:00:00Z").getTime());
+            expect(handler.match(gwhURL)).toBe(true);
+        });
     });
 
-    it('is true on match during event', () => {
-        Date.now = jest.fn(() => new Date("2022-12-07T05:00:00Z").getTime());
-        expect(handler.match(gwhURL)).toBe(true);
-    });
-  });
+    describe('execute', () => {
+        it('does not call submitGolems with unhandled json', () => {
+            handler.submitGolems = jest.fn();
 
-  describe('execute', () => {
-    it('does not call submitGolems with unhandled json', () => {
-        handler.submitGolems = jest.fn();
+            handler.execute({});
 
-        handler.execute({});
+            expect(logger.warn).toHaveBeenCalledWith("Skipped GWH golem submission due to unhandled XHR structure.", {});
+            expect(handler.submitGolems).not.toHaveBeenCalled();
+        });
 
-        expect(logger.warn).toHaveBeenCalledWith("Skipped GWH golem submission due to unhandled XHR structure.", {});
-        expect(handler.submitGolems).not.toHaveBeenCalled();
-    });
+        it('calls submitGolems with expected data', () => {
+            Date.now = jest.fn(() => 12345);
+            handler.submitGolems = jest.fn();
 
-    it('calls submitGolems with expected data', () => {
-        Date.now = jest.fn(() => 12345);
-        handler.submitGolems = jest.fn();
+            handler.execute(generateTestResponse(testData.harborPreviewData));
 
-        handler.execute(generateTestResponse(testData.harborPreviewData));
-
-        const expectedPayload: GolemPayload[] = [
-            {
-                location: "Harbour",
-                timestamp: 12345,
-                loot: [
-                    {
-                        name: "Brie Cheese",
-                        quantity: 20,
-                        rarity: "area",
-                    },
-                ],
-            },
-        ];
-        expect(handler.submitGolems).toHaveBeenCalledWith(expectedPayload);
-});
+            const expectedPayload: GolemPayload[] = [
+                {
+                    location: "Harbour",
+                    timestamp: 12345,
+                    loot: [
+                        {
+                            name: "Brie Cheese",
+                            quantity: 20,
+                            rarity: "area",
+                        },
+                    ],
+                },
+            ];
+            expect(handler.submitGolems).toHaveBeenCalledWith(expectedPayload);
+        });
     });
 });
 

@@ -6,18 +6,20 @@ const rarities = ["area", "hat", "scarf"] as const;
 
 export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
 
-    constructor(protected logger: LoggerService) {
+    constructor(
+        private logger: LoggerService,
+        private showFlashMessage: (type: "error" | "warning" | "success", message: string) => void
+    ) {
         super();
     }
 
     public match(url: string): boolean {
+        // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
         if (!url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
             return false;
         }
 
-        // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-        // (GMT): Sat Jan 21 2023 05:00:00 GMT+0000)
-        if (Date.now() > 1674277200000) {
+        if (Date.now() > new Date("2023-01-21T05:00:00").getTime()) {
             return false;
         }
 
@@ -54,11 +56,11 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             this.logger.debug("GWH Golem: {golem}", payload)
             const success = await this.submitGolems([payload])
 
-            // Tell main.js to display a banner (potential refactor this to a service later)
-            window.postMessage({
-                mhct_message: 'golemSubmissionStatus',
-                submitted: success
-            }, window.origin)
+            if (success) {
+                this.showFlashMessage('success', 'Snow Golem data submitted successfully');
+            } else {
+                this.showFlashMessage('error', 'Snow Golem data submission failed, sorry!');
+            }
         }
     }
 

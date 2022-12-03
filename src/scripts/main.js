@@ -14,7 +14,7 @@ import {GWHGolemAjaxHandler} from './ajax-handlers/golem';
 
     const logger = new ConsoleLogger();
     const ajaxSuccessHandlers = [
-        new GWHGolemAjaxHandler(logger),
+        new GWHGolemAjaxHandler(logger, showFlashMessage),
     ];
 
     async function main() {
@@ -153,16 +153,6 @@ import {GWHGolemAjaxHandler} from './ajax-handlers/golem';
                     window.console.log('MHCT: Skipped submission (already sent).');
                 }
                 return;
-            }
-
-            // Golem submission results in either the boolean `false`, or the number of submitted golems.
-            if (ev.data.mhct_message === 'golemSubmissionStatus') {
-                    const count = ev.data.submitted;
-                    if (count) {
-                    showFlashMessage('success', 'Snow Golem data submitted successfully');
-                    } else {
-                    showFlashMessage('error', 'Snow Golem data submission failed, sorry!');
-                    }
             }
 
         }, false);
