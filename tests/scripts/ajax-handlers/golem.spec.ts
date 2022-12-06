@@ -8,7 +8,7 @@ const logger = new ConsoleLogger();
 const showFlashMessage = jest.fn();
 const handler = new GWHGolemAjaxHandler(logger, showFlashMessage);
 
-const gwhURL = "mousehuntgame.com/managers/ajax/events/winter_hunt.php";
+const gwhURL = "mousehuntgame.com/managers/ajax/events/winter_hunt_region.php";
 
 describe("GWHGolemAjaxHandler", () => {
     beforeEach(() => {

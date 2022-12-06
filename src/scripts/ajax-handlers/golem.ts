@@ -15,7 +15,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
 
     public match(url: string): boolean {
         // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-        if (!url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
+        if (!url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt_region.php")) {
             return false;
         }
 
