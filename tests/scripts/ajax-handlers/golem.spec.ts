@@ -74,7 +74,7 @@ function generateTestResponse(golemJSON: GolemResponse): any {
     return {
         // user: {}
         // messageData: { }
-        golem_loot: golemJSON
+        golem_rewards: golemJSON
     }
 }
 
