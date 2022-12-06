@@ -50,6 +50,14 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             loot: []
         };
 
+        // HACK: app script as of now needs at least 1 common item to pass validation
+        payload.loot.push({
+            name: 'Fake Item',
+            quantity: 0,
+            // @ts-ignore suppress that rarity is not one of allowed
+            rarity: 'Common',
+        });
+
         for (const rarity of rarities) {
             const golemItems = golemData.items[rarity];
             for (const golemItem of golemItems) {
