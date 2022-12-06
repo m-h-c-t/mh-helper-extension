@@ -14,7 +14,6 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
     }
 
     public match(url: string): boolean {
-        // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
         if (!url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt_region.php")) {
             return false;
         }
@@ -27,15 +26,27 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
     }
 
     public async execute(responseJSON: any): Promise<void> {
+        // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
         const golemData: GolemResponse | undefined = responseJSON?.golem_rewards
         if (!golemData) {
-            this.logger.warn("Skipped GWH golem submission due to unhandled XHR structure.", responseJSON);
+            this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", responseJSON);
+            return;
+        }
+
+        // CBS added this field to the preview at our requests
+        // but golem_loot reponse doesn't have it. If it does make it back uncomment
+        // next line and remove the one after.
+        //const location = golemData.environment.name,
+        const location = this.getLocationFromJournalMarkup(responseJSON.journal_markup);
+
+        if (location == null) {
+            this.logger.warn("Skipped GWH golem submission due to empty location.", responseJSON);
             return;
         }
 
         const payload: GolemPayload = {
             timestamp: Date.now(),
-            location: golemData.environment.name,
+            location: location,
             loot: []
         };
 
@@ -85,8 +96,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             payload.set('golemString', JSON.stringify(golem));
             payload.set('schemaVersion', '2');
             try {
-                //const resp = await fetch(endpoint, {...options, body: payload});
-                const resp = {ok: true};
+                const resp = await fetch(endpoint, {...options, body: payload});
                 allOk = allOk && resp.ok;
                 if (!resp.ok) this.logger.error('Error submitting golem', {golem});
             } catch (error) {
@@ -95,5 +105,29 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             }
         }
         return allOk ? golems.length : false;
+    }
+
+    /**
+     * Extract the claimed golem location from HG response.
+     * @param journalMarkup The journal_markup field from the winter_hunt_area.php response when claiming a golem
+     */
+    private getLocationFromJournalMarkup(journalMarkup: any): string | null {
+        const journal = journalMarkup as [
+            {
+                render_data?: {
+                    text?: string
+                }
+            }
+        ]
+
+        const golemLocationRegex = /My golem returned from (?:the )?(.+) with/
+        for (const journalEntry of journal) {
+            const result = golemLocationRegex.exec(journalEntry?.render_data?.text ?? "");
+            if (result) {
+                return result[1];
+            }
+        }
+
+        return null;
     }
 }

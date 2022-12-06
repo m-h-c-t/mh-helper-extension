@@ -14,9 +14,9 @@
     //     is_capped: boolean;
     //     cutoff_date: string
     // };
-    environment: {
-        name: string;
-    }
+    // environment: {
+    //     name: string;
+    // }
     // golem: {
     //     level: number;
     // };
