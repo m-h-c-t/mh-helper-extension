@@ -97,7 +97,7 @@ function icon_timer_updateBadge(tab_id, settings) {
             console.log(logInfo);
             chrome.browserAction.setBadgeText({text: ''});
             notification_done = true;
-        } else if (response === "Ready!") {
+        } else if (response === "Ready") {
             if (settings.icon_timer) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#9b7617'});
                 chrome.browserAction.setBadgeText({text: '🎺'});
@@ -187,11 +187,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         submitCrowns(msg.crowns).then(sendResponse);
         return true;
     }
-
-    if (msg.mhct_golem_submit === 1) {
-        submitGolems(msg.golems).then(sendResponse);
-        return true;
-    }
     // TODO: Handle other extension messages.
 });
 
@@ -236,42 +231,4 @@ async function submitCrowns(crowns) {
     }
     setTimeout(() => window.sessionStorage.removeItem(crowns.user), 300 * 1000);
     return crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond;
-}
-
-/**
- * Promise to submit the given golem(s) loot for external storage
- * @param { {
- *   uid: string,
- *   timestamp: number
- *   location: string,
- *   loot: { name: string, quantity: number, rarity: string }[],
- * }[] } golems
- */
-async function submitGolems(golems) {
-    if (!golems || !Array.isArray(golems) || !golems.length) {
-        return false;
-    }
-
-    const endpoint = "https://script.google.com/macros/s/AKfycbzQjEgLA5W7ZUVKydZ_l_Cm8419bI8e0Vs2y3vW2S_RwlF-6_I/exec";
-    const options = {
-        mode: 'cors',
-        method: 'POST',
-        credentials: 'omit',
-    };
-
-    let allOk = true;
-    for (const golem of golems) {
-        const payload = new FormData();
-        payload.set('golemString', JSON.stringify(golem));
-        payload.set('schemaVersion', '2');
-        try {
-            const resp = await fetch(endpoint, {...options, body: payload});
-            allOk = allOk && resp.ok;
-            if (!resp.ok) window.console.error('Error submitting golem', {golem});
-        } catch (error) {
-            allOk = false;
-            window.console.error('Fetch/Network Error', {error});
-        }
-    }
-    return allOk ? golems.length : false;
 }

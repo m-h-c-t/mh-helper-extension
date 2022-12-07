@@ -1,22 +1,24 @@
 /*jslint browser:true */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
-import {ConsoleLogger, LogLevel} from "./util/logger";
+import {ConsoleLogger, LogLevel} from './util/logger';
+import {GWHGolemAjaxHandler} from './ajax-handlers/golem';
+import {HornHud} from './util/HornHud';
 
 (function () {
     'use strict';
 
     let base_domain_url = "https://www.mhct.win";
-    const db_url = base_domain_url + "/intake.php";
-    const map_intake_url = base_domain_url + "/map_intake.php";
-    const convertible_intake_url = base_domain_url + "/convertible_intake.php";
-    const map_helper_url = base_domain_url + "/maphelper.php";
-    const rh_intake_url = base_domain_url + "/rh_intake.php";
+    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url;
 
-    const logger = new ConsoleLogger();
-    const rejectionEngine = new IntakeRejectionEngine(logger);
     let debug_logging = false;
     let mhhh_version = 0;
     let hunter_id_hash = '0';
+
+    const logger = new ConsoleLogger();
+    const rejectionEngine = new IntakeRejectionEngine(logger);
+    const ajaxSuccessHandlers = [
+        new GWHGolemAjaxHandler(logger, showFlashMessage),
+    ];
 
     async function main() {
         try {
@@ -27,7 +29,12 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
             const settings = await getSettingsAsync();
             await initialLoad(settings);
             addWindowMessageListeners();
-            addAjaxHandlers();
+            if (settings?.tracking_enabled) {
+                console.log("MHCT: Tracking is enabled in settings.");
+                addAjaxHandlers();
+            } else {
+                console.log("MHCT: Tracking is disabled in settings.");
+            }
             finalLoad(settings);
         } catch (error) {
             console.log("MHCT: Failed to initialize.", error);
@@ -91,6 +98,11 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
             console.log("MHCT: Debug mode activated");
             console.log({message: "MHCT: initialLoad ran with settings", settings});
         }
+        main_intake_url = base_domain_url + "/intake.php";
+        map_intake_url = base_domain_url + "/map_intake.php";
+        convertible_intake_url = base_domain_url + "/convertible_intake.php";
+        map_helper_url = base_domain_url + "/maphelper.php";
+        rh_intake_url = base_domain_url + "/rh_intake.php";
 
         await createHunterIdHash();
     }
@@ -102,12 +114,8 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                 return;
             }
 
-            if (typeof user.user_id === 'undefined') {
-                alert('MHCT: Please make sure you are logged in into MH.');
-                return;
-            }
             if (ev.data.mhct_message === 'userhistory') {
-                window.open(`${base_domain_url}/searchByUser.php?user=${user.user_id}&hunter_id=${hunter_id_hash}`);
+                window.open(`${base_domain_url}/searchByUser.php?hunter_id=${hunter_id_hash}`);
                 return;
             }
 
@@ -129,6 +137,12 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
             }
 
             if (ev.data.mhct_message === 'show_horn_alert') {
+                // Since this is delayed by a few seconds from background script
+                // Check that user didn't beat us
+                if (!HornHud.isHornReady()) {
+                    return;
+                }
+
                 const sound_the_horn = confirm("Horn is Ready! Sound it?");
                 if (sound_the_horn) {
                     sound_horn();
@@ -150,29 +164,11 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                 return;
             }
 
-            // Golem submission results in either the boolean `false`, or the number of submitted golems.
-            if (ev.data.mhct_message === 'golemSubmissionStatus') {
-                const count = ev.data.submitted;
-                if (count) {
-                    displayFlashMessage(ev.data.settings, 'success', 'Snow Golem data submitted successfully');
-                } else {
-                    displayFlashMessage(ev.data.settings, 'error', 'Snow Golem data submission failed, sorry!');
-                }
-            }
-
         }, false);
     }
 
     function sound_horn() {
-        if ($("#huntTimer").text() !== "Ready!") {
-            return;
-        }
-
-        if ($(".mousehuntHud-huntersHorn").length) { // FreshCoat™ Layout
-            $(".mousehuntHud-huntersHorn").click();
-        } else if ($(".hornbutton a").length) { // Old Layout
-            $(".hornbutton a").click();
-        }
+        HornHud.soundHorn();
     }
 
     function openBookmarklet(url) {
@@ -345,12 +341,6 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                 if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
                     getSettings(settings => recordCrowns(settings, xhr, url));
                 }
-            } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
-                // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-                // (GMT): Friday, January 31, 2022 12:00:00 AM [GWH 2021 placeholder end date])
-                if (Date.now() < 1643605200000) {
-                    getSettings(settings => recordGWH2021Golems(settings, xhr));
-                }
             } else if (url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php")) {
                 // Triggers on Birthday Items claim, room change click (+others, perhaps).
                 getSettings(settings => recordSnackPack(settings, xhr));
@@ -360,6 +350,12 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                 getSettings(settings => recordPrizePack(settings, xhr));
             } else if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
                 createHunterIdHash();
+            }
+
+            for (const handler of ajaxSuccessHandlers) {
+                if (handler.match(url)) {
+                    handler.execute(xhr.responseJSON);
+                }
             }
         });
     }
@@ -431,73 +427,13 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
     }
 
     /**
-     * Record GWH 2021 golem submissions
-     * @param {Object <string, any>} settings The user's extension settings.
-     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
-     */
-    function recordGWH2021Golems(settings, xhr) {
-        const {messages} = xhr.responseJSON?.messageData?.message_model ?? {};
-        if (!messages) {
-            if (debug_logging) window.console.log('MHCT: Skipped GWH golem submission due to unhandled XHR structure');
-            window.postMessage({
-                "mhct_log_request": 1,
-                "is_error": true,
-                "gwh_golem_submit_xhr_response": xhr.responseJSON,
-                "reason": "Unable to parse GWH response",
-            }, window.origin);
-            return;
-        }
-
-        const golems = messages
-            .filter(({messageData}) => messageData.content && messageData.content.title.includes('Snow Golem reward'))
-            .map(({messageData, messageDate}) => {
-                const {title, body} = messageData.content;
-                const locationName = /from (?:the )?(.+)!/.exec(title)[1].trim();
-                const payload = {
-                    uid: messageData.stream_publish_data.params.user_id.toString(),
-                    timestamp: new Date(`${messageDate}Z`).getTime(),
-                    location: locationName,
-                    loot: [],
-                };
-                // In case the timestamping failed.
-                if (Number.isNaN(payload.timestamp) || Math.abs(Date.now() - payload.timestamp) > 10000) {
-                    payload.timestamp = Date.now();
-                }
-
-                // Use an in-memory DOM tree to obtain the items, slots, & quantities.
-                const doc = new DOMParser().parseFromString(body, 'text/html');
-                const gwh_prefix = '.winterHunt2021-claimRewardPopup';
-
-                // Get only the item boxes which actually have an item (i.e. ignore locked slots).
-                const lootDivs = Array.from(doc.querySelectorAll(`${gwh_prefix}-content ${gwh_prefix}-item`))
-                    .map((itemDiv) => [`${gwh_prefix}-item-rarity`, '.quantity', `${gwh_prefix}-item-name`]
-                        .map((sel) => itemDiv.querySelector(sel)))
-                    .filter(([rarityEl, qtyEl, itemEl]) => rarityEl && qtyEl && itemEl);
-
-                // Update the location data with the rarity-item-quantity information.
-                lootDivs.forEach(([rarityEl, qtyEl, itemEl]) => {
-                    const rarity = rarityEl.textContent === 'Magical Hat' ? 'Hat'
-                        : rarityEl.textContent.charAt(0).toUpperCase() + rarityEl.textContent.slice(1);
-                    const quantity = parseInt(qtyEl.textContent.replace(/,/g, '').trim(), 10); // Remove commas from e.g. 10,000 gold
-                    const name = itemEl.textContent.includes('SUPER|brie') ? 'SUPER|brie+' : itemEl.textContent.trim();
-                    payload.loot.push({name, quantity, rarity});
-                });
-                return payload;
-            });
-        if (golems.length) {
-            if (debug_logging) window.console.log({message: 'MHCT: GWH Golem:', golems});
-            window.postMessage({mhct_golem_submit: 1, golems, settings}, window.origin);
-        }
-    }
-
-    /**
      * Record Birthday 2021 snack pack submissions as convertibles in MHCT
      * @param {Object <string, any>} settings The user's extension settings.
      * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      */
     function recordSnackPack(settings, xhr) {
-        const {vending_machine_purchase: purchase, user} = xhr.responseJSON ?? {};
-        if (!purchase.type || !user?.user_id) {
+        const {vending_machine_purchase: purchase} = xhr.responseJSON ?? {};
+        if (!purchase.type) {
             if (debug_logging) window.console.log('MHCT: Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
@@ -620,7 +556,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
             });
         }
         if (debug_logging) window.console.log({message:"MHCT: ", convertible, items, settings});
-        submitConvertible(convertible, items, user.user_id);
+        submitConvertible(convertible, items);
     }
 
     /**
@@ -632,7 +568,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
         if (
             !xhr.responseJSON || !xhr.responseJSON.kings_giveaway_result ||
             !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity ||
-            xhr.responseJSON.kings_giveaway_result.slot !== "bonus" || !xhr.responseJSON.user.user_id
+            xhr.responseJSON.kings_giveaway_result.slot !== "bonus"
         ) {
             if (debug_logging) window.console.log('MHCT: Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
             window.postMessage({
@@ -672,7 +608,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
         });
 
         if (debug_logging) window.console.log({messsage: "MHCT: Prizepack: ", convertible: convertible, items: items, settings: settings});
-        submitConvertible(convertible, items, xhr.responseJSON.user.user_id);
+        submitConvertible(convertible, items);
     }
 
     // Record map mice
@@ -682,7 +618,6 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
         if (resp.treasure_map_inventory?.relic_hunter_hint) {
             sendMessageToServer(rh_intake_url, {
                 hint: resp.treasure_map_inventory.relic_hunter_hint,
-                user_id: resp.user.user_id,
                 entry_timestamp: entry_timestamp,
             });
         }
@@ -698,11 +633,8 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                 .replace(/rare /i, '')
                 .replace(/common /i, '')
                 .replace(/Ardouous/i, 'Arduous'),
-            user_id: resp.user.user_id,
             entry_timestamp: entry_timestamp,
         };
-
-        map.extension_version = mhhh_version;
 
         // Send to database
         sendMessageToServer(map_intake_url, map);
@@ -858,7 +790,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
 
         logger.debug("Recording hunt", {message_var:message_pre, user_pre, user_post, hunt});
         // Upload the hunt record.
-        sendMessageToServer(db_url, message_pre);
+        sendMessageToServer(main_intake_url, message_pre);
     }
 
     // Add bonus journal entry stuff to the hunt_details
@@ -919,7 +851,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
             return;
         }
 
-        submitConvertible(convertible, items, response.user.user_id);
+        submitConvertible(convertible, items);
     }
 
     /**
@@ -933,15 +865,12 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
      * Helper function to submit opened items.
      * @param {HgItem} convertible The item that was opened.
      * @param {HgItem[]} items An array of items that were obtained by opening the convertible
-     * @param {string} user_id the user associated with the submission
      */
-    function submitConvertible(convertible, items, user_id) {
+    function submitConvertible(convertible, items) {
         const record = {
             convertible: getItem(convertible),
             items: items.map(getItem),
-            extension_version: mhhh_version,
             asset_package_hash: Date.now(),
-            user_id,
             entry_timestamp: Math.round(Date.now() / 1000),
         };
 
@@ -954,9 +883,9 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
         getSettings(settings => {
             if (!settings?.tracking_enabled) { return; }
             const basic_info = {
-                user_id: final_message.user_id,
                 hunter_id_hash,
                 entry_timestamp: final_message.entry_timestamp,
+                extension_version: mhhh_version,
             };
 
 
@@ -965,6 +894,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                 if (data) {
                     final_message.uuid = data;
                     final_message.hunter_id_hash = hunter_id_hash;
+                    final_message.extension_version = mhhh_version;
                     sendAlready(url, final_message);
                 }
             });
@@ -1010,15 +940,13 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
             // Handle a Relic Hunter attraction.
             if (css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
                 const rh_message = {
-                    extension_version: mhhh_version,
-                    user_id: hunt_response.user.user_id,
                     rh_environment: markup.render_data.environment,
                     entry_timestamp: markup.render_data.entry_timestamp,
                 };
                 // If this occurred after the daily reset, submit it. (Trap checks & friend hunts
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
-                    sendMessageToServer(db_url, rh_message);
+                    sendMessageToServer(main_intake_url, rh_message);
                     if (debug_logging) {window.console.log(`MHCT: Found the Relic Hunter in ${rh_message.rh_environment}`);}
                 }
             }
@@ -1066,7 +994,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
                         if (debug_logging) { window.console.log({message:"MHCT: ", desert_heater_loot: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 } else {
                     window.postMessage({
@@ -1097,7 +1025,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                         }];
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 }
             }
@@ -1120,7 +1048,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                         }];
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Gift Wrapped Charm: ", gift_wrapped_charm_loot: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 }
             }
@@ -1143,7 +1071,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                         }];
                         if (debug_logging) { window.console.log({message:"MHCT: Submitting Torch Charm: ", torch_charm_loot: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 }
             }
@@ -1188,7 +1116,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                             }];
                             if (debug_logging) { window.console.log({message: "MHCT: ", boiling_cauldron_trap: items}); }
 
-                            submitConvertible(convertible, items, hunt_response.user.user_id);
+                            submitConvertible(convertible, items);
                         }
                     }
                 }
@@ -1225,7 +1153,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
                         const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
                         if (debug_logging) { window.console.log({message: "MHCT: ", gilded_charm: items}); }
 
-                        submitConvertible(convertible, items, hunt_response.user.user_id);
+                        submitConvertible(convertible, items);
                     }
                 }
             }
@@ -1261,16 +1189,8 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
      * @returns {Object <string, any> | null} The message object, or `null` if an error occurred.
      */
     function createMessageFromHunt(journal, user, user_post) {
-        const message = {
-            extension_version: mhhh_version,
-        };
+        const message = {};
         const debug_logs = [];
-
-        // Hunter ID.
-        message.user_id = parseInt(user.user_id, 10);
-        if (isNaN(message.user_id)) {
-            throw new Error(`MHCT: Unexpected user id value ${user.user_id}`);
-        }
 
         // Entry ID
         message.entry_id = journal.render_data.entry_id;
@@ -2147,7 +2067,7 @@ import {ConsoleLogger, LogLevel} from "./util/logger";
      */
     function addQuesoGeyserStage(message, user, user_post, hunt) {
         const state = user.quests.QuestQuesoGeyser.state;
-        if (state === "collecting") {
+        if (state === "collecting" || state === "claim") {
             message.stage = "Cork Collecting";
         } else if (state === "corked") {
             message.stage = "Pressure Building";

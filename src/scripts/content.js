@@ -1,3 +1,5 @@
+import {HornHud} from './util/HornHud';
+
 (function () {
 if (document.body == null) {
     return;
@@ -54,15 +56,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.mhct_link === "huntTimer") {
         // Check for a King's Reward, otherwise report the displayed time until next horn.
         let message = "Logged out";
-        const krHudElement = document.getElementsByClassName('mousehuntHud-huntersHorn-response')[0];
         const krPageElement = document.getElementsByClassName('mousehuntPage-puzzle-form-state hasPuzzle')[0];
-        const hunt_timer = document.getElementById('huntTimer');
         // KR can prompt a puzzle without the HUD changing. If either are displaying, a pending KR needs to be claimed
-        if (krHudElement && window.getComputedStyle(krHudElement).display === 'block' ||
+        if (HornHud.isPuzzleActive() ||
             krPageElement && window.getComputedStyle(krPageElement).display === 'block') {
             message = "King's Reward";
-        } else if (hunt_timer) {
-            message = hunt_timer.textContent;
+        } else {
+            const timerText = HornHud.getTimerText();
+            if (timerText) {
+                message = timerText;
+            }
         }
         sendResponse(message);
     } else if (request.mhct_link === "show_horn_alert") {
@@ -97,13 +100,6 @@ window.addEventListener("message",
             }, event.origin));
         } else if (data.mhct_log_request === 1) {
             chrome.runtime.sendMessage({"log": data});
-        } else if (data.mhct_golem_submit === 1) {
-            data.origin = event.origin;
-            chrome.runtime.sendMessage(data, (wasSubmitted) => event.source.postMessage({
-                mhct_message: 'golemSubmissionStatus',
-                submitted: wasSubmitted,
-                settings: data.settings,
-            }, event.origin));
         } else if (data.mhct_finish_load === 1) {
             showTsituLoader();
         }
