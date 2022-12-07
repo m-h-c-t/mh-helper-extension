@@ -1,4 +1,6 @@
 /*jslint browser:true */
+import {ConsoleLogger, LogLevel} from './util/logger';
+import {GWHGolemAjaxHandler} from './ajax-handlers/golem';
 import {HornHud} from './util/HornHud';
 
 (function () {
@@ -10,6 +12,11 @@ import {HornHud} from './util/HornHud';
     let debug_logging = false;
     let mhhh_version = 0;
     let hunter_id_hash = '0';
+
+    const logger = new ConsoleLogger();
+    const ajaxSuccessHandlers = [
+        new GWHGolemAjaxHandler(logger, showFlashMessage),
+    ];
 
     async function main() {
         try {
@@ -41,6 +48,7 @@ import {HornHud} from './util/HornHud';
 
             // Locally cache the logging setting.
             debug_logging = !!event.data.settings.debug_logging || debug_logging;
+            logger.setLevel(debug_logging ? LogLevel.Debug : LogLevel.Info);
 
             if (callback && typeof(callback) === "function") {
                 window.removeEventListener("message", listenSettings);
@@ -152,16 +160,6 @@ import {HornHud} from './util/HornHud';
                     window.console.log('MHCT: Skipped submission (already sent).');
                 }
                 return;
-            }
-
-            // Golem submission results in either the boolean `false`, or the number of submitted golems.
-            if (ev.data.mhct_message === 'golemSubmissionStatus') {
-                const count = ev.data.submitted;
-                if (count) {
-                    displayFlashMessage(ev.data.settings, 'success', 'Snow Golem data submitted successfully');
-                } else {
-                    displayFlashMessage(ev.data.settings, 'error', 'Snow Golem data submission failed, sorry!');
-                }
             }
 
         }, false);
@@ -341,12 +339,6 @@ import {HornHud} from './util/HornHud';
                 if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
                     getSettings(settings => recordCrowns(settings, xhr, url));
                 }
-            } else if (url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt.php")) {
-                // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-                // (GMT): Friday, January 31, 2022 12:00:00 AM [GWH 2021 placeholder end date])
-                if (Date.now() < 1643605200000) {
-                    getSettings(settings => recordGWH2021Golems(settings, xhr));
-                }
             } else if (url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php")) {
                 // Triggers on Birthday Items claim, room change click (+others, perhaps).
                 getSettings(settings => recordSnackPack(settings, xhr));
@@ -356,6 +348,12 @@ import {HornHud} from './util/HornHud';
                 getSettings(settings => recordPrizePack(settings, xhr));
             } else if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
                 createHunterIdHash();
+            }
+
+            for (const handler of ajaxSuccessHandlers) {
+                if (handler.match(url)) {
+                    handler.execute(xhr.responseJSON);
+                }
             }
         });
     }
@@ -424,65 +422,6 @@ import {HornHud} from './util/HornHud';
             "crowns": payload,
             "settings": settings,
         }, window.origin);
-    }
-
-    /**
-     * Record GWH 2021 golem submissions
-     * @param {Object <string, any>} settings The user's extension settings.
-     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
-     */
-    function recordGWH2021Golems(settings, xhr) {
-        const {messages} = xhr.responseJSON?.messageData?.message_model ?? {};
-        if (!messages) {
-            if (debug_logging) window.console.log('MHCT: Skipped GWH golem submission due to unhandled XHR structure');
-            window.postMessage({
-                "mhct_log_request": 1,
-                "is_error": true,
-                "gwh_golem_submit_xhr_response": xhr.responseJSON,
-                "reason": "Unable to parse GWH response",
-            }, window.origin);
-            return;
-        }
-
-        const golems = messages
-            .filter(({messageData}) => messageData.content && messageData.content.title.includes('Snow Golem reward'))
-            .map(({messageData, messageDate}) => {
-                const {title, body} = messageData.content;
-                const locationName = /from (?:the )?(.+)!/.exec(title)[1].trim();
-                const payload = {
-                    timestamp: new Date(`${messageDate}Z`).getTime(),
-                    location: locationName,
-                    loot: [],
-                };
-                // In case the timestamping failed.
-                if (Number.isNaN(payload.timestamp) || Math.abs(Date.now() - payload.timestamp) > 10000) {
-                    payload.timestamp = Date.now();
-                }
-
-                // Use an in-memory DOM tree to obtain the items, slots, & quantities.
-                const doc = new DOMParser().parseFromString(body, 'text/html');
-                const gwh_prefix = '.winterHunt2021-claimRewardPopup';
-
-                // Get only the item boxes which actually have an item (i.e. ignore locked slots).
-                const lootDivs = Array.from(doc.querySelectorAll(`${gwh_prefix}-content ${gwh_prefix}-item`))
-                    .map((itemDiv) => [`${gwh_prefix}-item-rarity`, '.quantity', `${gwh_prefix}-item-name`]
-                        .map((sel) => itemDiv.querySelector(sel)))
-                    .filter(([rarityEl, qtyEl, itemEl]) => rarityEl && qtyEl && itemEl);
-
-                // Update the location data with the rarity-item-quantity information.
-                lootDivs.forEach(([rarityEl, qtyEl, itemEl]) => {
-                    const rarity = rarityEl.textContent === 'Magical Hat' ? 'Hat'
-                        : rarityEl.textContent.charAt(0).toUpperCase() + rarityEl.textContent.slice(1);
-                    const quantity = parseInt(qtyEl.textContent.replace(/,/g, '').trim(), 10); // Remove commas from e.g. 10,000 gold
-                    const name = itemEl.textContent.includes('SUPER|brie') ? 'SUPER|brie+' : itemEl.textContent.trim();
-                    payload.loot.push({name, quantity, rarity});
-                });
-                return payload;
-            });
-        if (golems.length) {
-            if (debug_logging) window.console.log({message: 'MHCT: GWH Golem:', golems});
-            window.postMessage({mhct_golem_submit: 1, golems, settings}, window.origin);
-        }
     }
 
     /**
