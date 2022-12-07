@@ -1,4 +1,5 @@
 /*jslint browser:true */
+import {HornHud} from './util/HornHud';
 
 (function () {
     'use strict';
@@ -126,6 +127,12 @@
             }
 
             if (ev.data.mhct_message === 'show_horn_alert') {
+                // Since this is delayed by a few seconds from background script
+                // Check that user didn't beat us
+                if (!HornHud.isHornReady()) {
+                    return;
+                }
+
                 const sound_the_horn = confirm("Horn is Ready! Sound it?");
                 if (sound_the_horn) {
                     sound_horn();
@@ -161,25 +168,7 @@
     }
 
     function sound_horn() {
-        const horn = document.querySelector('.huntersHornView__horn');
-        if (horn) {
-            const clickEvent = new MouseEvent("mousedown", {
-                bubbles: true, // Bubble up the dom.
-                cancelable: true,
-            });
-
-            horn.dispatchEvent(clickEvent);
-
-            // Wait for the animation to finish.
-            setTimeout(() => {
-                const clickEvent = new MouseEvent("mouseup", {
-                    bubbles: true, // Bubble up the dom.
-                    cancelable: true,
-                });
-                horn.dispatchEvent(clickEvent);
-            }
-            , 250);
-        }
+        HornHud.soundHorn();
     }
 
     function openBookmarklet(url) {
