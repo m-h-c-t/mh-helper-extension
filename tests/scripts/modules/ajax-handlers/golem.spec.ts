@@ -1,5 +1,5 @@
-import { GWHGolemAjaxHandler } from '@scripts/ajax-handlers/golem';
-import { GolemPayload, GolemResponse } from '@scripts/ajax-handlers/golem.types';
+import { GWHGolemAjaxHandler } from '@scripts/modules/ajax-handlers/golem';
+import { GolemPayload, GolemResponse } from '@scripts/modules/ajax-handlers/golem.types';
 
 jest.mock('@scripts/util/logger');
 import { ConsoleLogger } from '@scripts/util/logger';

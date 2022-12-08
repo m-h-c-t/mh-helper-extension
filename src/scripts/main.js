@@ -1,6 +1,6 @@
 /*jslint browser:true */
 import {ConsoleLogger, LogLevel} from './util/logger';
-import {GWHGolemAjaxHandler} from './ajax-handlers/golem';
+import {GWHGolemAjaxHandler} from './modules/ajax-handlers/golem';
 import {HornHud} from './util/HornHud';
 
 (function () {

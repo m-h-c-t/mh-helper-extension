@@ -1,4 +1,4 @@
-import { LoggerService } from "../util/logger";
+import { LoggerService } from "@scripts/util/logger";
 import { AjaxSuccessHandler } from "./ajaxSuccessHandler";
 import { GolemPayload, GolemResponse } from "./golem.types";
 
