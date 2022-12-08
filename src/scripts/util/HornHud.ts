@@ -35,11 +35,11 @@ export class HornHud {
     /**
      * Sound the horn by simulating a mouse events on the horn DOM
      */
-    public static soundHorn() {
+    public static async soundHorn() {
         if (!this.isHornReady() || this.isHornSounding()) {
             return;
         }
-        
+
         // Body event via 'h'
         // document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'h' }));
 
@@ -52,8 +52,9 @@ export class HornHud {
         // It must be done this way now. The 'click' event is specificly set to do nothing on the horn.
         // app.js defines that the 'mousedown' starts animation followed by 'mouseup' to end animation
         // and to take an active turn
-        hornDOM.dispatchEvent(new MouseEvent('mousedown'));
-        hornDOM.dispatchEvent(new MouseEvent('mouseup'));
+        hornDOM.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        await new Promise(r => setTimeout(r, 250));
+        hornDOM.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
 
         return;
     }
