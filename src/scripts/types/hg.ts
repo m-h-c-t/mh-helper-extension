@@ -1,3 +1,4 @@
+import * as quests from './quests';
 
 export interface HgResponse {
     user: User;
@@ -42,6 +43,7 @@ export interface Quests {
     QuestFortRox?: any
     QuestHarbour?: any
     QuestIceberg?: any
+    QuestIceFortress?: quests.QuestIceFortress;
     QuestLabyrinth?: any
     QuestLivingGarden?: any
     QuestLostCity?: any
