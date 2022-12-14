@@ -2,6 +2,7 @@
 import {ConsoleLogger, LogLevel} from './util/logger';
 import {GWHGolemAjaxHandler} from './modules/ajax-handlers/golem';
 import {HornHud} from './util/HornHud';
+import * as stagers from './modules/stages';
 
 (function () {
     'use strict';
@@ -1336,6 +1337,10 @@ import {HornHud} from './util/HornHud';
         "Whisker Woods Rift": addWhiskerWoodsRiftStage,
         "Zokor": addZokorStage,
     };
+
+    for (const stager of stagers.stageModules) {
+        location_stage_lookup[stager.environment] = stager.addStage;
+    }
 
     /**
      * Use `quests` or `viewing_atts` data to assign appropriate location-specific stage information.
