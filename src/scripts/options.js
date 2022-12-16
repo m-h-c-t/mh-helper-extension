@@ -16,6 +16,7 @@ const mhhhOptions = [
     {name: 'tsitu_loader_offset',        p: 'value',   default: 80},
     {name: 'tsitu_loader_offset_output', p: 'value'},
     {name: 'escape_button_close',        p: 'checked', default: false},
+    {name: 'dark_mode',                  p: 'checked', default: false},
 ];
 
 // Click "Save" -> store the extension's settings in chrome.storage.
