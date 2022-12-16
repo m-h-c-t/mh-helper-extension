@@ -49,6 +49,8 @@ module.exports = {
                 },
             ],
         }),
+
+        // CSS Files for Dark Mode by PotatoSalad
         new SaveRemoteFilePlugin([
             {
                 url: 'https://raw.githubusercontent.com/MHCommunity/mh-dark-mode/main/css/giftbox.css',
@@ -123,6 +125,55 @@ module.exports = {
             {
                 url: 'https://raw.githubusercontent.com/MHCommunity/mh-dark-mode/main/css/camp/journal.css',
                 filepath: 'third_party/potatosalad/css/camp/journal.css',
+                hash: false,
+            },
+        ]),
+
+        // JS Files for Autoloader by Tsitu
+        new SaveRemoteFilePlugin([
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-analyzer.min.js',
+                filepath: 'third_party/tsitu/bm-analyzer.min.js',
+                hash: false,
+            },
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-crafting.min.js',
+                filepath: 'third_party/tsitu/bm-crafting.min.js',
+                hash: false,
+            },
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-cre.min.js',
+                filepath: 'third_party/tsitu/bm-cre.min.js',
+                hash: false,
+            },
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-crown.min.js',
+                filepath: 'third_party/tsitu/bm-crown.min.js',
+                hash: false,
+            },
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-map.min.js',
+                filepath: 'third_party/tsitu/bm-map.min.js',
+                hash: false,
+            },
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-menu.min.js',
+                filepath: 'third_party/tsitu/bm-menu.min.js',
+                hash: false,
+            },
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-powers.min.js',
+                filepath: 'third_party/tsitu/bm-powers.min.js',
+                hash: false,
+            },
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-setup-fields.min.js',
+                filepath: 'third_party/tsitu/bm-setup-fields.min.js',
+                hash: false,
+            },
+            {
+                url: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-setup-items.min.js',
+                filepath: 'third_party/tsitu/bm-setup-items.min.js',
                 hash: false,
             },
         ]),
