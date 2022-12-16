@@ -42,16 +42,11 @@ async function showDarkMode() {
         link_tag.setAttribute('rel', 'stylesheet');
         link_tag.setAttribute('type', 'text/css');
         link_tag.setAttribute('href', chrome.runtime.getURL(filepath));
-        // document.getElementsByTagName("head")[0].appendChild(link_tag);
         (document.head || document.documentElement).appendChild(link_tag);
-        // link_tag.onload = () => {
-        //     link_tag.remove();
-        // };
     }
 
     if (settings.dark_mode) {
         // There must be a better way of doing this
-        // chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js')
 
         const css_files = [
             "third_party/potatosalad/css/main.css",
