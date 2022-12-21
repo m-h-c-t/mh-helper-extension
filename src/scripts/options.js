@@ -76,3 +76,14 @@ document.querySelector("#play_sound").addEventListener('click', () => {
     mySound.volume = document.getElementById('horn_volume').value / 100;
     mySound.play();
 });
+
+//Click dark mode toggle
+document.querySelector('#dark_mode').addEventListener('click', () => {
+    evaluateOptionsPageDarkMode();
+});
+
+//load dark mode
+const evaluateOptionsPageDarkMode = () => {
+    if (document.querySelector('#dark_mode').checked === true) document.querySelector('body.options')?.classList.add('dark-mode');
+    else document.querySelector('body.options')?.classList.remove('dark-mode');
+}; evaluateOptionsPageDarkMode();
