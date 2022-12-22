@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
     chrome.storage.sync.get(defaultOptions, items => {
         mhhhOptions.forEach(prop => document.getElementById(prop.name)[prop.p] = items[prop.name]);
+        evaluateOptionsPageDarkMode();
         // Display the numeric values of the range-input sliders.
         document.getElementById('horn_volume_output').value = items.horn_volume;
         document.getElementById('tsitu_loader_offset_output').value = items.tsitu_loader_offset;
@@ -76,3 +77,16 @@ document.querySelector("#play_sound").addEventListener('click', () => {
     mySound.volume = document.getElementById('horn_volume').value / 100;
     mySound.play();
 });
+
+//Click dark mode toggle
+document.querySelector('#dark_mode').addEventListener('click', () => {
+    evaluateOptionsPageDarkMode();
+});
+
+//load dark mode
+const evaluateOptionsPageDarkMode = () => {
+    const bodyEl = document.querySelector('body.options');
+
+    if (document.querySelector('#dark_mode').checked === true) bodyEl?.classList.add('dark-mode');
+    else bodyEl?.classList.remove('dark-mode');
+};
