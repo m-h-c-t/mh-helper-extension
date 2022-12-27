@@ -54,13 +54,6 @@ describe('GWHGolemAjaxHandler', () => {
                     location: 'Prologue Pond',
                     timestamp: 12345,
                     loot: [
-                        // HACK: we need this one fake item for now b/c google script does some basic verification
-                        {
-                            name: 'Fake Item',
-                            quantity: 0,
-                            // @ts-ignore
-                            rarity: 'Common'
-                        },
                         {
                             name: 'Super Spore Charm',
                             quantity: 4,
