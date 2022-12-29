@@ -1,5 +1,5 @@
 import { GWHGolemAjaxHandler } from '@scripts/ajax-handlers/golem';
-import { GolemPayload, GolemResponse } from '@scripts/ajax-handlers/golem.types';
+import type { GolemPayload } from '@scripts/ajax-handlers/golem.types';
 
 jest.mock('@scripts/util/logger');
 import { ConsoleLogger } from '@scripts/util/logger';
@@ -47,10 +47,11 @@ describe('GWHGolemAjaxHandler', () => {
             Date.now = jest.fn(() => 12345);
             handler.submitGolems = jest.fn();
 
-            handler.execute(testReponses.prologuePondResponse);
+            handler.execute(testResponses.prologuePondResponse);
 
             const expectedPayload: GolemPayload[] = [
                 {
+                    uid: '987654321',
                     location: 'Prologue Pond',
                     timestamp: 12345,
                     loot: [
@@ -82,9 +83,13 @@ describe('GWHGolemAjaxHandler', () => {
     });
 });
 
-const testReponses = {
+const testResponses = {
     // responses are the minimum that are required for the test to pass
     prologuePondResponse: {
+        user: {
+            user_id: 'not this',
+            sn_user_id: 987654321,
+        },
         golem_rewards: {
             items: {
                 area: [

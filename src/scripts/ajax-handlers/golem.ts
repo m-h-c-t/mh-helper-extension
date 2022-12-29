@@ -32,19 +32,20 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", responseJSON);
             return;
         }
+        const uid = responseJSON.user.sn_user_id.toString();
+        if (!uid) {
+            this.logger.warn("Skipped GWH golem submission due to missing user attribution.", responseJSON);
+            return;
+        }
 
-        // CBS added this field to the preview at our requests
-        // but golem_loot reponse doesn't have it. If it does make it back uncomment
-        // next line and remove the one after.
-        //const location = golemData.environment.name,
         const location = this.getLocationFromJournalMarkup(responseJSON.journal_markup);
-
         if (location == null) {
             this.logger.warn("Skipped GWH golem submission due to empty location.", responseJSON);
             return;
         }
 
         const payload: GolemPayload = {
+            uid,
             timestamp: Date.now(),
             location: location,
             loot: []

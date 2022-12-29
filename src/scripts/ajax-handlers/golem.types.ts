@@ -1,5 +1,5 @@
 /**
- * Golem Reponse from HG, previewed by CBS
+ * Golem Response from HG, previewed by CBS
  */
  export interface GolemResponse {
     items: Record<Rarity, GolemItem[]>
@@ -36,6 +36,7 @@ export type Rarity = "area" | "hat" | "scarf";
  * The data that will be recorded externally
  */
 export interface GolemPayload {
+    uid: string,
     timestamp: number;
     location: string;
     loot: (GolemItem & {
