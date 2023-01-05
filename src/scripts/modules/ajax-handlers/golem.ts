@@ -32,31 +32,24 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", responseJSON);
             return;
         }
+        const uid = responseJSON.user.sn_user_id.toString();
+        if (!uid) {
+            this.logger.warn("Skipped GWH golem submission due to missing user attribution.", responseJSON);
+            return;
+        }
 
-        // CBS added this field to the preview at our requests
-        // but golem_loot reponse doesn't have it. If it does make it back uncomment
-        // next line and remove the one after.
-        //const location = golemData.environment.name,
         const location = this.getLocationFromJournalMarkup(responseJSON.journal_markup);
-
         if (location == null) {
             this.logger.warn("Skipped GWH golem submission due to empty location.", responseJSON);
             return;
         }
 
         const payload: GolemPayload = {
+            uid,
             timestamp: Date.now(),
             location: location,
             loot: []
         };
-
-        // HACK: app script as of now needs at least 1 common item to pass validation
-        payload.loot.push({
-            name: 'Fake Item',
-            quantity: 0,
-            // @ts-ignore suppress that rarity is not one of allowed
-            rarity: 'Common',
-        });
 
         for (const rarity of rarities) {
             const golemItems = golemData.items[rarity];
@@ -84,10 +77,10 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
     /**
      * Promise to submit the given golem(s) loot for external storage
      * @param golems
-     * @returns True if submitted successfully, otherwise false.
+     * @returns The number of submitted golems, otherwise false.
      */
-    public async submitGolems(golems: GolemPayload[]) {
-        if (!golems || !Array.isArray(golems) || !golems.length) {
+    public async submitGolems(golems: GolemPayload[]): Promise<number|false> {
+        if (!Array.isArray(golems) || !golems.length) {
             return false;
         }
 
@@ -102,7 +95,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
         for (const golem of golems) {
             const payload = new FormData();
             payload.set('golemString', JSON.stringify(golem));
-            payload.set('schemaVersion', '2');
+            payload.set('schemaVersion', '3');
             try {
                 const resp = await fetch(endpoint, {...options, body: payload});
                 allOk = allOk && resp.ok;

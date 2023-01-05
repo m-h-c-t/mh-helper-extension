@@ -30,6 +30,46 @@ mhhh_flash_message_div.setAttribute(
     "font-weight: 600;");
 document.body.appendChild(mhhh_flash_message_div);
 
+async function showDarkMode() {
+    const settings = await new Promise((resolve) => {
+        chrome.storage.sync.get({
+            dark_mode: false,
+        }, data => resolve(data));
+    });
+
+    function includeCSSfile(filepath) {
+        const link_tag = document.createElement('link');
+        link_tag.setAttribute('rel', 'stylesheet');
+        link_tag.setAttribute('type', 'text/css');
+        link_tag.setAttribute('href', chrome.runtime.getURL(filepath));
+        (document.head || document.documentElement).appendChild(link_tag);
+    }
+
+    if (settings.dark_mode) {
+        // There must be a better way of doing this
+
+        const css_files = [
+            "third_party/potatosalad/css/main.css",
+            "third_party/potatosalad/css/messagebox.css",
+            "third_party/potatosalad/css/giftbox.css",
+            "third_party/potatosalad/css/trap.css",
+            "third_party/potatosalad/css/inbox.css",
+            "third_party/potatosalad/css/team.css",
+            "third_party/potatosalad/css/marketplace.css",
+            "third_party/potatosalad/css/profile.css",
+            "third_party/potatosalad/css/shop.css",
+            "third_party/potatosalad/css/scoreboard.css",
+            "third_party/potatosalad/css/inventory.css",
+            "third_party/potatosalad/css/treasuremap.css",
+            "third_party/potatosalad/css/camp/camp.css",
+            "third_party/potatosalad/css/camp/journal.css",
+            "third_party/potatosalad/css/camp/hud.css",
+        ];
+        css_files.forEach(filepath => includeCSSfile(filepath));
+        window.console.log("MHCT: Dark Theme loaded. Welcome to the Dark Side!");
+    }
+}
+showDarkMode();
 
 // Inject main script
 function injectMainScript() {
@@ -114,18 +154,20 @@ window.addEventListener("message",
     function getSettings() {
         return new Promise((resolve) => {
             chrome.storage.sync.get({
-                success_messages: true, // defaults
-                error_messages: true, // defaults
-                debug_logging: false, // defaults
-                icon_timer: true, // defaults
-                horn_sound: false, // defaults
-                custom_sound: '', // defaults
-                horn_volume: 100, // defaults
-                horn_alert: false, // defaults
-                horn_webalert: false, // defaults
-                horn_popalert: false, // defaults
-                tracking_enabled: true, // defaults
-                escape_button_close: false, // defaults
+                // DEFAULTS
+                success_messages: true,
+                error_messages: true,
+                debug_logging: false,
+                icon_timer: true,
+                horn_sound: false,
+                custom_sound: '',
+                horn_volume: 100,
+                horn_alert: false,
+                horn_webalert: false,
+                horn_popalert: false,
+                tracking_enabled: true,
+                escape_button_close: false,
+                dark_mode: false,
             },
             items => {
                 if (chrome.runtime.lastError) {
