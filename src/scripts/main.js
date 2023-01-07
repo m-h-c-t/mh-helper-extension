@@ -1051,6 +1051,29 @@ import {HornHud} from './util/HornHud';
                     }
                 }
             }
+            else if (css_class.search(/queso_cannonstorm_base_trigger/) !== -1) {
+                const data = markup.render_data.text;
+                const qcbprocRegex = /to smithereens, revealing 1 <a class="" title="" href="/;
+                if (qcbprocRegex.test(data)) {
+                    const resultItem = data.match(qcbprocRegex)[1];
+                    if("inventory" in hunt_response && resultItem in hunt_response.inventory) {
+                        const {name: rItemName, item_id: rItemID} = hunt_response.inventory[resultItem];
+                        const convertible = {
+                            id: 3526, // Queso Cannonstorm Base's item ID
+                            name: "Queso Cannonstorm Base",
+                            quantity: 1,
+                        };
+                        const items = [{
+                            id: rItemID,
+                            name: rItemName,
+                            quantity: 1,
+                        }];
+                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Queso Cannonstorm Base: ", queso_cannonstorm_base_loot: items}); }
+
+                        submitConvertible(convertible, items);
+                    }
+                }
+            }            
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
