@@ -1053,9 +1053,11 @@ import {HornHud} from './util/HornHud';
             }
             else if (css_class.search(/queso_cannonstorm_base_trigger/) !== -1) {
                 const data = markup.render_data.text;
-                const qcbprocRegex = /to smithereens, revealing 1 <a class="" title="" href="/;
-                if (qcbprocRegex.test(data)) {
-                    const resultItem = data.match(qcbprocRegex)[1];
+                const qcbprocRegex = /item\.php\?item_type=(.*?)"/g;
+                const matchResults = [...data.matchAll(qcbprocRegex)];
+                if (matchResults.length == 4){
+                    // Get third match, then first capturing group
+                    const resultItem = matchResults[2][1];
                     if("inventory" in hunt_response && resultItem in hunt_response.inventory) {
                         const {name: rItemName, item_id: rItemID} = hunt_response.inventory[resultItem];
                         const convertible = {
@@ -1068,7 +1070,7 @@ import {HornHud} from './util/HornHud';
                             name: rItemName,
                             quantity: 1,
                         }];
-                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Queso Cannonstorm Base: ", queso_cannonstorm_base_loot: items}); }
+                        logger.debug("Submitting Queso Cannonstorm Base: ", {queso_cannonstorm_base_loot: items});
 
                         submitConvertible(convertible, items);
                     }
