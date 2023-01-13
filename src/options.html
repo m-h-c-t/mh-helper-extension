@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>MHCT Helper Options</title>
     <meta charset="utf-8">
@@ -9,8 +10,22 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/options.css">
 </head>
-<body class="text-center">
+
+<body class="options text-center">
     <div class="container well">
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-body text-left">
+                    <label class="full_width">
+                        Tracking Enabled
+                        <div class="switch pull-right">
+                            <input type="checkbox" id="tracking_enabled" class="pull-right" checked>
+                            <span class="slider round"></span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="panel panel-default">
                 <div class="panel-body text-left">
@@ -37,8 +52,8 @@
                     <label class="full_width">
                         Display icon timer
                         <div class="switch pull-right">
-	                        <input type="checkbox" id="icon_timer" class="pull-right" checked>
-	                        <span class="slider round"></span>
+                            <input type="checkbox" id="icon_timer" class="pull-right" checked>
+                            <span class="slider round"></span>
                         </div>
                     </label>
                 </div>
@@ -50,12 +65,12 @@
                     <label class="full_width">
                         Play sound when Horn is ready
                         <div class="switch pull-right">
-	                        <input type="checkbox" id="horn_sound" class="pull-right">
-	                        <span class="slider round"></span>
+                            <input type="checkbox" id="horn_sound" class="pull-right">
+                            <span class="slider round"></span>
                         </div>
                     </label>
                     <label class="full_width">
-                        Custom sound (default=none)<br/>
+                        Custom sound (default=none)<br />
                         <button id="play_sound" class="pull-right">▶️</button>
                         <input type="text" id="custom_sound" placeholder="http://example.com/my.mp3">
                     </label>
@@ -64,7 +79,8 @@
                         <div class="pull-right">
                             <output for="horn_volume" id="horn_volume_output" class="range_output"></output>%
                         </div>
-                        <input type="range" min="0" max="100" value="100" id="horn_volume" step="1" class="pull-right input_range">
+                        <input type="range" min="0" max="100" value="100" id="horn_volume" step="1"
+                            class="pull-right input_range">
                     </label>
                 </div>
             </div>
@@ -75,35 +91,22 @@
                     <label class="full_width">
                         Desktop Notification when horn is ready
                         <div class="switch pull-right">
-	                        <input type="checkbox" id="horn_alert" class="pull-right">
-	                        <span class="slider round"></span>
+                            <input type="checkbox" id="horn_alert" class="pull-right">
+                            <span class="slider round"></span>
                         </div>
                     </label>
                     <label class="full_width">
                         Webpage Notification when horn is ready
                         <div class="switch pull-right">
-	                        <input type="checkbox" id="horn_webalert" class="pull-right">
-	                        <span class="slider round"></span>
+                            <input type="checkbox" id="horn_webalert" class="pull-right">
+                            <span class="slider round"></span>
                         </div>
                     </label>
                     <label class="full_width">
-                        Popup Notification when horn is ready
+                        Popup Notification when horn is ready (by Haoala)
                         <div class="switch pull-right">
-	                        <input type="checkbox" id="horn_popalert" class="pull-right">
-	                        <span class="slider round"></span>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Tracking Enabled
-                        <div class="switch pull-right">
-	                        <input type="checkbox" id="tracking_enabled" class="pull-right" checked>
-	                        <span class="slider round"></span>
+                            <input type="checkbox" id="horn_popalert" class="pull-right">
+                            <span class="slider round"></span>
                         </div>
                     </label>
                 </div>
@@ -115,29 +118,18 @@
                     <label class="full_width">
                         Show Tsitu's Loader
                         <div class="switch pull-right">
-	                        <input type="checkbox" id="tsitu_loader_on" class="pull-right">
-	                        <span class="slider round"></span>
+                            <input type="checkbox" id="tsitu_loader_on" class="pull-right">
+                            <span class="slider round"></span>
                         </div>
                     </label>
                     <label class="full_width">
                         Tsitu's Loader distance from the left
                         <div class="pull-right">
-                            <output for="tsitu_loader_offset" id="tsitu_loader_offset_output" class="range_output"></output>%
+                            <output for="tsitu_loader_offset" id="tsitu_loader_offset_output"
+                                class="range_output"></output>%
                         </div>
-                        <input type="range" min="0" max="100" value="100" id="tsitu_loader_offset" step="1" class="input_range">
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Show Debug-level Logs
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="debug_logging" class="pull-right">
-                            <span class="slider round"></span>
-                        </div>
+                        <input type="range" min="0" max="100" value="100" id="tsitu_loader_offset" step="1"
+                            class="input_range">
                     </label>
                 </div>
             </div>
@@ -155,9 +147,36 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-body text-left">
+                    <label class="full_width">
+                        Dark Mode (by PotatoSalad)
+                        <div class="switch pull-right">
+                            <input type="checkbox" id="dark_mode" class="pull-right" checked>
+                            <span class="slider round"></span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-body text-left">
+                    <label class="full_width">
+                        Show Debug-level Logs
+                        <div class="switch pull-right">
+                            <input type="checkbox" id="debug_logging" class="pull-right">
+                            <span class="slider round"></span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
 
     <button class="btn btn-primary" id="save">Save</button>
     <script type="text/javascript" src="scripts/options.js"></script>
 </body>
+
 </html>

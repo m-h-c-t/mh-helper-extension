@@ -25,16 +25,18 @@ setInterval(() => check_settings(icon_timer_find_open_mh_tab), 1000);
  */
 function check_settings(callback) {
     chrome.storage.sync.get({
-        success_messages: true, // defaults
-        error_messages: true, // defaults
-        icon_timer: true, // defaults
-        horn_sound: false, // defaults
-        custom_sound: '', // defaults
-        horn_volume: 100, // defaults
-        horn_alert: false, // defaults
-        horn_webalert: false, // defaults
-        horn_popalert: false, //defaults
-        tracking_enabled: true, // defaults
+        // DEFAULTS
+        success_messages: true,
+        error_messages: true,
+        icon_timer: true,
+        horn_sound: false,
+        custom_sound: '',
+        horn_volume: 100,
+        horn_alert: false,
+        horn_webalert: false,
+        horn_popalert: false,
+        tracking_enabled: true,
+        dark_mode: false,
     },
     settings => callback(settings));
 }
