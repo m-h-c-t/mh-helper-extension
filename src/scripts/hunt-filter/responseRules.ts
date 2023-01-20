@@ -1,29 +1,29 @@
-import { ApiResponse } from "../types/hg";
+import { HgResponse } from "../types/hg";
 import { IRule } from "./interfaces";
 
-export class ApiResponseBothRequireSuccess implements IRule<ApiResponse> {
+export class HgResponseBothRequireSuccess implements IRule<HgResponse> {
     readonly description = "Both responses should have a 'success' of 1";
-    isValid(pre: ApiResponse, post: ApiResponse): boolean {
+    isValid(pre: HgResponse, post: HgResponse): boolean {
         return pre.success === 1 && post.success === 1;
     }
 }
 
-export class ApiResponsePreNeedsPage implements IRule<ApiResponse> {
+export class HgResponsePreNeedsPage implements IRule<HgResponse> {
     readonly description = "Pre-response should have a 'page' field";
-    isValid(pre: ApiResponse, post: ApiResponse): boolean {
+    isValid(pre: HgResponse, post: HgResponse): boolean {
         return pre.page !== undefined && pre.page !== null;
     }
 }
 
-export class ApiResponseActiveTurn implements IRule<ApiResponse> {
+export class HgResponseActiveTurn implements IRule<HgResponse> {
     readonly description = "Post-response should have true 'active_turn'";
-    isValid(pre: ApiResponse, post: ApiResponse): boolean {
+    isValid(pre: HgResponse, post: HgResponse): boolean {
         return post.active_turn === true;
     }
 }
 
-export const ResponseRules: IRule<ApiResponse>[] = [
-    new ApiResponseBothRequireSuccess,
-    new ApiResponsePreNeedsPage,
-    new ApiResponseActiveTurn,
+export const ResponseRules: IRule<HgResponse>[] = [
+    new HgResponseBothRequireSuccess,
+    new HgResponsePreNeedsPage,
+    new HgResponseActiveTurn,
 ]

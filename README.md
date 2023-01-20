@@ -43,3 +43,4 @@ Please keep the version in `src/manifest.json` at 0.0.0 to avoid getting banned.
 
 ### Credits
 Special thanks to all who have contributed with advice, bug reports, or code! See [this page](https://mhct.win/contributors.php) for all the people who helped so far.
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/R6R3H0L26)

@@ -1,4 +1,4 @@
-import { ApiResponse, User } from "../types/hg";
+import { HgResponse, User } from "../types/hg";
 import { IntakeMessage } from "../types/mhct";
 import { LoggerService } from "../util/logger";
 import { IRule, IPropertyRule, IMessageExemption } from "./interfaces";
@@ -13,7 +13,7 @@ import { MessageExemptions } from "./messageExemptions";
  */
 export class IntakeRejectionEngine {
     private logger: LoggerService;
-    private responseRules: IRule<ApiResponse>[] = [];
+    private responseRules: IRule<HgResponse>[] = [];
     private userRules: IRule<User>[] = [];
     private messageRules: IPropertyRule<IntakeMessage>[] = [];
     private messageExemptions: IMessageExemption[] = [];
@@ -25,7 +25,7 @@ export class IntakeRejectionEngine {
         this.initMessageRules();
     };
 
-    public validateResponse(pre: ApiResponse, post: ApiResponse): boolean {
+    public validateResponse(pre: HgResponse, post: HgResponse): boolean {
         return this.responseRules.every(r => {
             const isValid = r.isValid(pre, post);
             if (!isValid) {
@@ -71,7 +71,7 @@ export class IntakeRejectionEngine {
         const exemption_providers = this.messageExemptions.filter(e => invalidProperties.has(e.property));
         this.logger.debug(`Got ${exemption_providers.length} exemption providers for these invalid properties:`, ...invalidProperties.values());
 
-        // Do we need to filter them furthur? 
+        // Do we need to filter them furthur?
         // Exception object could give specific key and value to filter on.
         // Didn't pre-optimize but could be worth if there are many, many exemptions and they are slow (doubtful)
         for (const provider of exemption_providers) {
@@ -94,7 +94,7 @@ export class IntakeRejectionEngine {
             properties: { ...invalidProperties.values() },
             messages: { pre, post }
         })
-        
+
         return false;
     }
 

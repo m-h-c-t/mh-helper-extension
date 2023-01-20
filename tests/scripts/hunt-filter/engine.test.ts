@@ -1,5 +1,5 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {ApiResponse, User} from '@scripts/types/hg';
+import {HgResponse, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {ConsoleLogger} from '@scripts/util/logger';
 jest.mock('@scripts/util/logger')
@@ -9,8 +9,8 @@ const logger = new ConsoleLogger();
 const engine = new IntakeRejectionEngine(logger);
 
 describe('validateResponse', () => {
-    let pre: ApiResponse;
-    let post: ApiResponse;
+    let pre: HgResponse;
+    let post: HgResponse;
 
     beforeEach(() => {
         pre = getValidPreResponse();
@@ -20,12 +20,12 @@ describe('validateResponse', () => {
     it('passes with good responses', () => {
         expect(engine.validateResponse(pre, post)).toBe(true);
     });
-    
+
     it('rejects when pre is unsuccessful', () => {
         pre.success = 0;
         expect(engine.validateResponse(pre, post)).toBe(false);
     });
-    
+
     it('rejects when post is unsuccessful', () => {
         post.success = 0;
         expect(engine.validateResponse(pre, post)).toBe(false);
@@ -119,7 +119,7 @@ describe('validateMessage', () => {
     })
 });
 
-function getValidPreResponse(): ApiResponse {
+function getValidPreResponse(): HgResponse {
     return {
         user: null!, // User is not validated here so we dont need it
         page: {},
@@ -127,7 +127,7 @@ function getValidPreResponse(): ApiResponse {
     }
 }
 
-function getValidPostResponse(): ApiResponse {
+function getValidPostResponse(): HgResponse {
     const post = getValidPreResponse();
     post.active_turn = true;
     return post;

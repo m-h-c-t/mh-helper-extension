@@ -1,4 +1,6 @@
-export interface ApiResponse {
+import type { TableOfContentsQuest } from '@scripts/types/quests';
+
+export interface HgResponse {
     user: User;
     page?: unknown;
     success: 0 | 1;
@@ -31,8 +33,8 @@ export interface User {
     viewing_atts: ViewingAttributes;
 }
 
-// TODO: Define needed interfaces for quests
-interface Quests {
+// TODO: Define needed interfaces for quests in /types/quests/<QuestName>.ts
+export interface Quests {
     QuestAncientCity?: any
     QuestBalacksCove?: any
     QuestClawShotCity?: any
@@ -60,13 +62,10 @@ interface Quests {
     QuestWinterHunt2021?: any
 }
 
-type EnvironmentAttributes = any;
+export interface EnvironmentAttributes {
 
-type ViewingAttributes = any;
+}
 
-interface TableOfContentsQuest {
-    is_writing: boolean,
-    current_book: {
-        volume: number
-    }
+export interface ViewingAttributes {
+
 }
