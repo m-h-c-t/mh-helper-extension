@@ -1,3 +1,4 @@
+import type { TableOfContentsQuest } from '@scripts/types/quests';
 
 export interface HgResponse {
     user: User;
@@ -56,8 +57,9 @@ export interface Quests {
     QuestSandDunes?: any
     QuestSunkenCity?: any
     QuestSuperBrieFactory?: any
-    QuestTableOfContents?: any
+    QuestTableOfContents?: TableOfContentsQuest
     QuestTrainStation?: any
+    QuestWinterHunt2021?: any
 }
 
 export interface EnvironmentAttributes {
