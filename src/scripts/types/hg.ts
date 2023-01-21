@@ -1,4 +1,4 @@
-import * as quests from './quests';
+import * as quests from '@scripts/types/quests';
 
 export interface HgResponse {
     user: User;
@@ -58,8 +58,9 @@ export interface Quests {
     QuestSandDunes?: any
     QuestSunkenCity?: any
     QuestSuperBrieFactory?: any
-    QuestTableOfContents?: any
+    QuestTableOfContents?: quests.QuestTableOfContents
     QuestTrainStation?: any
+    QuestWinterHunt2021?: any
 }
 
 export interface EnvironmentAttributes {

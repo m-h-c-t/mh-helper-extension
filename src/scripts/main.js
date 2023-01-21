@@ -1,4 +1,5 @@
 /*jslint browser:true */
+import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
 import {GWHGolemAjaxHandler} from './modules/ajax-handlers/golem';
 import {HornHud} from './util/HornHud';
@@ -15,6 +16,7 @@ import * as stagers from './modules/stages';
     let hunter_id_hash = '0';
 
     const logger = new ConsoleLogger();
+    const rejectionEngine = new IntakeRejectionEngine(logger);
     const ajaxSuccessHandlers = [
         new GWHGolemAjaxHandler(logger, showFlashMessage),
     ];
@@ -644,15 +646,28 @@ import * as stagers from './modules/stages';
      * @param {Object <string, any>} post_response Parsed JSON representation of the response from calling activeturn.php
      */
     function recordHuntWithPrehuntUser(pre_response, post_response) {
-        if (debug_logging) {window.console.log({message: "MHCT: In recordHuntWithPrehuntUser pre and post:", pre_response, post_response});}
-        // Require some difference between the user and response.user objects. If there is
-        // no difference, then no hunt occurred to separate them (i.e. a KR popped, or a friend hunt occurred).
-        const required_differences = [
-            "num_active_turns",
-            "next_activeturn_seconds",
-        ];
+        logger.debug("In recordHuntWithPrehuntUser pre and post:", pre_response, post_response);
+
+        // General data flow
+        // - Validate API response object
+        // - Validate User object
+        // - Parse journal
+        // - Create pre + post messages from validated responses
+        // - Validate pre + post message differences (rules then allowed exemptions)
+
+        // This will throw out any hunts where the page.php or activeturn.php calls fail to return
+        // the expected objects (success, active turn, needing a page object on pre)
+        let validated = rejectionEngine.validateResponse(pre_response, post_response);
+        if (!validated) {
+            return;
+        }
+
         const user_pre = pre_response.user;
         const user_post = post_response.user;
+        validated = rejectionEngine.validateUser(user_pre, user_post);
+        if (!validated) {
+            return;
+        }
 
         /**
          * Store the difference between generic primitives and certain objects in `result`
@@ -708,7 +723,7 @@ import * as stagers from './modules/stages';
         if (debug_logging) {
             const differences = {};
             diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
-            window.console.log({message: "MHCT: ", differences});
+            logger.debug("User object diff", differences);
         }
 
         // Find maximum entry id from pre_response
@@ -720,54 +735,63 @@ import * as stagers from './modules/stages';
             max_old_entry_id = max_old_entry_id.map(x => Number(x.replace(/'/g, "")));
             max_old_entry_id = Math.max(...max_old_entry_id);
         }
-        if (debug_logging) {window.console.log(`MHCT: Pre (old) maximum entry id: ${max_old_entry_id}`);}
+        logger.debug(`Pre (old) maximum entry id: ${max_old_entry_id}`);
 
         const hunt = parseJournalEntries(post_response, max_old_entry_id);
-        // DB submissions only occur if the call was successful (i.e. it did something) and was an active hunt
-        if (!post_response.success || !post_response.active_turn) {
-            window.console.log("MHCT: Missing Info (trap check or friend hunt)(1)");
-            return;
-        } else if (!hunt || Object.keys(hunt).length === 0) {
-            window.console.log("MHCT: Missing Info (trap check or friend hunt)(2)");
+        if (!hunt || Object.keys(hunt).length === 0) {
+            logger.info("Missing Info (trap check or friend hunt)(2)");
             return;
         }
 
-        if (!required_differences.every(key => user_pre[key] != user_post[key])
-                || user_post.num_active_turns - user_pre.num_active_turns !== 1) {
-            window.console.log("MHCT: Required pre/post hunt differences not observed.");
+        /**
+         *
+         * @param {Object<string, any>} user A the main user object (pre or post) used to populate the message
+         * @param {Object<string, any>} user_post The post-hunt user object
+         * @param {Object <string, any>} hunt Journal entry corresponding with the hunt
+         * @returns
+         */
+        function createIntakeMessage(user, user_post, hunt) {
+            // Obtain the main hunt information from the journal entry and user objects.
+            const message = createMessageFromHunt(hunt, user, user_post);
+            if (!message) {
+                logger.info("Missing Info (will try better next hunt)(1)");
+                return;
+            }
+
+            // Perform validations and stage corrections.
+            fixLGLocations(message, user, user_post, hunt);
+
+            addStage(message, user, user_post, hunt);
+            addHuntDetails(message, user, user_post, hunt);
+            addLoot(message, hunt, post_response.inventory);
+
+            return message;
+        }
+
+        let message_pre;
+        let message_post;
+        try {
+            // Create two intake messages. One based on pre-response. The other based on post-response.
+            message_pre = createIntakeMessage(user_pre, user_post, hunt);
+            message_post = createIntakeMessage(user_post, user_post, hunt);
+        } catch (error) {
+            logger.error("Something went wrong creating message", error);
+        }
+
+        if (message_pre === null || message_post === null) {
+            logger.log("Missing Info (will try better next hunt)(2)");
             return;
         }
 
-        // Obtain the main hunt information from the journal entry and user objects.
-        const message = createMessageFromHunt(hunt, user_pre, user_post);
-        if (!message || !message.location || !message.location.name || !message.trap.name || !message.base.name || !message.cheese.name) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(1)");
+        // Validate the differences between the two intake messages
+        validated = rejectionEngine.validateMessage(message_pre, message_post);
+        if (!validated) {
             return;
         }
 
-        // Perform validations and stage corrections.
-        fixLGLocations(message, user_pre, user_post, hunt);
-
-        // Adding stage and disabling transitions
-        const temp_message_post = JSON.parse(JSON.stringify(message));
-        addStage(message, user_pre, user_post, hunt); // with pre
-        addStage(temp_message_post, user_post, user_post, hunt); // with post
-        // If pre stage != post stage, disregard the hunt
-        if ((message.stage || temp_message_post.stage) && message.stage != temp_message_post.stage) {
-            if (debug_logging) {window.console.log(`MHCT: Ignoring transition from stage ${message.stage} to ${temp_message_post.stage}`);}
-            return;
-        }
-
-        addHuntDetails(message, user_pre, user_post, hunt);
-        if (!message.location || !message.location.name || !message.cheese || !message.cheese.name) {
-            window.console.log("MHCT: Missing Info (will try better next hunt)(2)");
-            return;
-        }
-
-        addLoot(message, hunt, post_response.inventory);
-        if (debug_logging) {window.console.log({message:"MHCT: ", message_var:message, user_pre, user_post, hunt});}
+        logger.debug("Recording hunt", {message_var:message_pre, user_pre, user_post, hunt});
         // Upload the hunt record.
-        sendMessageToServer(main_intake_url, message);
+        sendMessageToServer(main_intake_url, message_pre);
     }
 
     // Add bonus journal entry stuff to the hunt_details
@@ -902,9 +926,9 @@ import * as stagers from './modules/stages';
         if (!journal_entries) { return null; }
 
         // Filter out stale entries
-        if (debug_logging) {window.console.log({message: `MHCT: Before filterting there's ${journal_entries.length} journal entries.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
+        if (debug_logging) {window.console.log({message: `MHCT: Before filtering there's ${journal_entries.length} journal entries.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
         journal_entries = journal_entries.filter(x => Number(x.render_data.entry_id) > Number(max_old_entry_id));
-        if (debug_logging) {window.console.log({message: `MHCT: After filterting there's ${journal_entries.length} journal entries left.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
+        if (debug_logging) {window.console.log({message: `MHCT: After filtering there's ${journal_entries.length} journal entries left.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
 
         // Cancel everything if there's trap check somewhere
         if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1) !== -1) {

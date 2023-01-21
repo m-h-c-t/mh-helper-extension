@@ -1,5 +1,5 @@
 import { IStager } from './stages';
-import { QuestIceFortress } from '@scripts/types/quests/questIceFortress';
+import { QuestIceFortress } from '@scripts/types/quests/iceFortress';
 import { User } from '@scripts/types/hg';
 
 export class IceFortressStager implements IStager {
