@@ -1,4 +1,4 @@
-import { User } from '@scripts/types/hg';
+import { type User } from '@scripts/types/hg';
 
 /**
  * An object that can add a stage for an environment (location).

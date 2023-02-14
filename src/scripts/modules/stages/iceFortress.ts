@@ -1,6 +1,6 @@
-import { IStager } from './stages';
-import { QuestIceFortress } from '@scripts/types/quests/iceFortress';
-import { User } from '@scripts/types/hg';
+import { type IStager } from './stages.types';
+import { type QuestIceFortress } from '@scripts/types/quests/iceFortress';
+import { type User } from '@scripts/types/hg';
 
 export class IceFortressStager implements IStager {
     readonly environment: string = 'Ice Fortress';

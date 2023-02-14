@@ -1,4 +1,4 @@
-import { IStager } from './stages';
+import { type IStager } from './stages.types';
 import { IceFortressStager } from './iceFortress';
 
 const stageModules: IStager[]  = [

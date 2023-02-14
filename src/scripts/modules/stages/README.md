@@ -7,8 +7,8 @@ Need to add a new stage for a location?
    Or use this template
 
     ```typescript
-    import { User } from '@scripts/types/hg';
-    import { IStager } from './stages';
+    import { type User } from '@scripts/types/hg';
+    import { type IStager } from './stages.types';
 
     export class <Location>Stager implements IStager {
         readonly environment: string = '<Location>';
