@@ -1,4 +1,4 @@
-export interface TableOfContentsQuest {
+export interface QuestTableOfContents {
     is_writing: boolean,
     current_book: {
         volume: number
