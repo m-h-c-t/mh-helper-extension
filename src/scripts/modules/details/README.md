@@ -1,4 +1,4 @@
-# Stages
+# Details
 
 Need to add a new details for to a hunt response?
 
