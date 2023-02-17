@@ -3,6 +3,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
 import {GWHGolemAjaxHandler} from './modules/ajax-handlers/golem';
 import {HornHud} from './util/HornHud';
+import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
 
 (function () {
@@ -2207,6 +2208,10 @@ import * as stagers from './modules/stages';
         "Zugzwang's Tower": calcZugzwangsTowerHuntDetails,
     };
 
+    for (const detailer of detailers.environmentDetailerModules) {
+        location_huntdetails_lookup[detailer.environment] = detailer.addDetails;
+    }
+
     /**
      * Determine additional detailed parameters that are otherwise only visible to db exports and custom views.
      * These details may eventually be migrated to help inform location-specific stages.
@@ -2227,6 +2232,7 @@ import * as stagers from './modules/stages';
             calcLNYHuntDetails,
             calcLuckyCatchHuntDetails,
             calcPillageHuntDetails,
+            ...detailers.globalDetailerModules,
         ].map((details_func) => details_func(message, user, user_post, hunt))
             .filter(details => details);
 
