@@ -3,6 +3,7 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
 import {GWHGolemAjaxHandler} from './modules/ajax-handlers/golem';
 import {HornHud} from './util/HornHud';
+import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
 
 (function () {
@@ -11,7 +12,6 @@ import * as stagers from './modules/stages';
     let base_domain_url = "https://www.mhct.win";
     let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url;
 
-    let debug_logging = false;
     let mhhh_version = 0;
     let hunter_id_hash = '0';
 
@@ -31,14 +31,14 @@ import * as stagers from './modules/stages';
             await initialLoad(settings);
             addWindowMessageListeners();
             if (settings?.tracking_enabled) {
-                console.log("MHCT: Tracking is enabled in settings.");
+                logger.info("Tracking is enabled in settings.");
                 addAjaxHandlers();
             } else {
-                console.log("MHCT: Tracking is disabled in settings.");
+                logger.info("Tracking is disabled in settings.");
             }
             finalLoad(settings);
         } catch (error) {
-            console.log("MHCT: Failed to initialize.", error);
+            logger.error("Failed to initialize.", error);
         }
     }
 
@@ -48,14 +48,13 @@ import * as stagers from './modules/stages';
             if (event.data.mhct_settings_response !== 1) {
                 return;
             }
+            const settings = event.data.settings;
 
-            // Locally cache the logging setting.
-            debug_logging = !!event.data.settings.debug_logging || debug_logging;
-            logger.setLevel(debug_logging ? LogLevel.Debug : LogLevel.Info);
+            logger.setLevel(settings.debug_logging ? LogLevel.Debug : LogLevel.Info);
 
             if (callback && typeof(callback) === "function") {
                 window.removeEventListener("message", listenSettings);
-                callback(event.data.settings);
+                callback(settings);
             }
         }, false);
         window.postMessage({mhct_settings_request: 1}, "*");
@@ -73,31 +72,32 @@ import * as stagers from './modules/stages';
         if (typeof user.user_id === 'undefined') {
             // No problem if user is not logged in yet.
             // This function will be called on logins (ajaxSuccess on session.php)
-            if (debug_logging) { console.log("MHCT: User is not logged in yet."); }
+            logger.debug("User is not logged in yet.");
             return;
         }
 
         const user_id = user.user_id.toString().trim();
-        if (debug_logging) { console.log("hunter_id: " + user_id); }
-
         const msgUint8 = new TextEncoder().encode(user_id);
         const hashBuffer = await crypto.subtle.digest('SHA-512', msgUint8);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         hunter_id_hash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
-        if (debug_logging) { console.log("hunter_id_hash: " + hunter_id_hash); }
+        logger.debug("createHunterIdHash:", {
+            hunter_id: user_id,
+            hunter_id_hash,
+        });
     }
 
     async function initialLoad(settings) {
         mhhh_version = formatVersion($("#mhhh_version").val());
         if (mhhh_version == 0) {
-            console.log("MHCT: Test version detected, turning on debug mode and pointing to server on localhost");
+            logger.info("Test version detected, turning on debug mode and pointing to server on localhost");
             base_domain_url = 'http://localhost';
         }
         if (settings.debug_logging || mhhh_version == 0) {
-            debug_logging = true;
-            console.log("MHCT: Debug mode activated");
-            console.log({message: "MHCT: initialLoad ran with settings", settings});
+            logger.setLevel(LogLevel.Debug);
+            logger.debug("Debug mode activated");
+            logger.debug("initialLoad ran with settings", {settings});
         }
         main_intake_url = base_domain_url + "/intake.php";
         map_intake_url = base_domain_url + "/map_intake.php";
@@ -159,8 +159,8 @@ import * as stagers from './modules/stages';
                         `Submitted ${counts} crowns for ${$('span[class*="titleBar-name"]').text()}.`);
                 } else if (counts != null) {
                     displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
-                } else if (debug_logging) {
-                    window.console.log('MHCT: Skipped submission (already sent).');
+                } else {
+                    logger.debug('Skipped submission (already sent).');
                 }
                 return;
             }
@@ -295,7 +295,7 @@ import * as stagers from './modules/stages';
         if (event.type !== "ajaxSend" || !ajaxOptions.url.includes("ajax/turns/activeturn.php"))
             return;
         const create_hunt_XHR = ajaxOptions.xhr;
-        if (debug_logging) {window.console.time("MHCT: Overall 'Hunt Requested' Timing");}
+        const huntRequestTimeStart = performance.now();
         // Override the XMLHttpRequest that will be used with our own.
         ajaxOptions.xhr = function () {
             // Create the original XMLHttpRequest, whose `send()` will sound the horn.
@@ -316,9 +316,9 @@ import * as stagers from './modules/stages';
                     },
                     dataType: "json",
                 }).done(userRqResponse => {
-                    if (debug_logging) {window.console.log({message: "MHCT: Got user object, invoking huntSend", userRqResponse});}
+                    logger.debug("Got user object, invoking huntSend", {userRqResponse});
                     hunt_xhr.addEventListener("loadend", () => {
-                        if (debug_logging) {window.console.timeEnd("MHCT: Overall 'Hunt Requested' Timing");}
+                        logger.debug("Overall 'Hunt Requested' Timing %i (ms)", performance.now() - huntRequestTimeStart);
                         // Call record hunt with the pre-hunt and hunt (post) user objects.
                         recordHuntWithPrehuntUser(userRqResponse, JSON.parse(hunt_xhr.responseText));
                     }, false);
@@ -371,7 +371,7 @@ import * as stagers from './modules/stages';
     function recordCrowns(settings, xhr, url) {
         const mouseCrowns = xhr.responseJSON?.page?.tabs?.kings_crowns?.subtabs?.[0]?.mouse_crowns;
         if (!mouseCrowns) {
-            if (debug_logging) window.console.log('MHCT: Skipped crown submission due to unhandled XHR structure');
+            logger.debug('Skipped crown submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
                 "is_error": true,
@@ -416,7 +416,7 @@ import * as stagers from './modules/stages';
                 payload[type] = group.count;
             }
         });
-        if (debug_logging) {window.console.log({message: "MHCT: Crowns payload: ", payload});}
+        logger.debug("MHCT: Crowns payload: ", payload);
 
         // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
         // submission by submitting from the content script.
@@ -435,7 +435,7 @@ import * as stagers from './modules/stages';
     function recordSnackPack(settings, xhr) {
         const {vending_machine_purchase: purchase} = xhr.responseJSON ?? {};
         if (!purchase.type) {
-            if (debug_logging) window.console.log('MHCT: Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
+            logger.debug('Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
             window.postMessage({
                 "mhct_log_request": 1,
                 "is_error": true,
@@ -556,7 +556,7 @@ import * as stagers from './modules/stages';
                 });
             });
         }
-        if (debug_logging) window.console.log({message:"MHCT: ", convertible, items, settings});
+        logger.debug("recordSnackPack", {convertible, items, settings});
         submitConvertible(convertible, items);
     }
 
@@ -571,7 +571,7 @@ import * as stagers from './modules/stages';
             !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity ||
             xhr.responseJSON.kings_giveaway_result.slot !== "bonus"
         ) {
-            if (debug_logging) window.console.log('MHCT: Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
+            logger.debug('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
             window.postMessage({
                 "mhct_log_request": 1,
                 "is_error": true,
@@ -608,7 +608,7 @@ import * as stagers from './modules/stages';
             items.push(i);
         });
 
-        if (debug_logging) window.console.log({messsage: "MHCT: Prizepack: ", convertible: convertible, items: items, settings: settings});
+        logger.debug("Prizepack: ", {convertible, items, settings});
         submitConvertible(convertible, items);
     }
 
@@ -720,7 +720,7 @@ import * as stagers from './modules/stages';
                     result[key] = {in: "post", val: obj_post[key]};
                 });
         }
-        if (debug_logging) {
+        if (logger.getLevel() === LogLevel.Debug) {
             const differences = {};
             diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
             logger.debug("User object diff", differences);
@@ -818,7 +818,7 @@ import * as stagers from './modules/stages';
         }
 
         if (!convertible) {
-            window.console.log("MHCT: Couldn't find any item");
+            logger.warn("Couldn't find any items from opened convertible");
             return;
         }
 
@@ -876,7 +876,7 @@ import * as stagers from './modules/stages';
         };
 
         // Send to database
-        if (debug_logging) {window.console.log({message: "MHCT: submitting convertible", record:record});}
+        logger.debug("submitting convertible", {record});
         sendMessageToServer(convertible_intake_url, record);
     }
 
@@ -926,13 +926,13 @@ import * as stagers from './modules/stages';
         if (!journal_entries) { return null; }
 
         // Filter out stale entries
-        if (debug_logging) {window.console.log({message: `MHCT: Before filtering there's ${journal_entries.length} journal entries.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
+        logger.debug(`Before filtering there's ${journal_entries.length} journal entries.`, {journal_entries, max_old_entry_id});
         journal_entries = journal_entries.filter(x => Number(x.render_data.entry_id) > Number(max_old_entry_id));
-        if (debug_logging) {window.console.log({message: `MHCT: After filtering there's ${journal_entries.length} journal entries left.`, journal_entries:journal_entries, max_old_entry_id:max_old_entry_id});}
+        logger.debug(`After filtering there's ${journal_entries.length} journal entries left.`, {journal_entries, max_old_entry_id});
 
         // Cancel everything if there's trap check somewhere
         if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1) !== -1) {
-            window.console.log("MHCT: Found trap check too close to hunt. Aborting.");
+            logger.info("Found trap check too close to hunt. Aborting.");
             return null;
         }
 
@@ -948,12 +948,12 @@ import * as stagers from './modules/stages';
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
                     sendMessageToServer(main_intake_url, rh_message);
-                    if (debug_logging) {window.console.log(`MHCT: Found the Relic Hunter in ${rh_message.rh_environment}`);}
+                    logger.debug(`Found the Relic Hunter in ${rh_message.rh_environment}`);
                 }
             }
             else if (css_class.search(/prizemouse/) !== -1) {
                 // Handle a prize mouse attraction.
-                if (debug_logging) {
+                if (logger.getLevel() === LogLevel.Debug) {
                     window.postMessage({
                         "mhct_log_request": 1,
                         "prize mouse journal": markup,
@@ -993,7 +993,7 @@ import * as stagers from './modules/stages';
                             quantity: 1,
                         };
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
-                        if (debug_logging) { window.console.log({message:"MHCT: ", desert_heater_loot: items}); }
+                        logger.debug("Desert Heater Base proc", {desert_heater_loot: items});
 
                         submitConvertible(convertible, items);
                     }
@@ -1024,7 +1024,7 @@ import * as stagers from './modules/stages';
                             name: trinketName,
                             quantity: 1,
                         }];
-                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Unstable Charm: ", unstable_charm_loot: items}); }
+                        logger.debug("Submitting Unstable Charm: ", {unstable_charm_loot: items});
 
                         submitConvertible(convertible, items);
                     }
@@ -1047,7 +1047,7 @@ import * as stagers from './modules/stages';
                             name: trinketName,
                             quantity: 1,
                         }];
-                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Gift Wrapped Charm: ", gift_wrapped_charm_loot: items}); }
+                        logger.debug("Submitting Gift Wrapped Charm: ", {gift_wrapped_charm_loot: items});
 
                         submitConvertible(convertible, items);
                     }
@@ -1070,7 +1070,7 @@ import * as stagers from './modules/stages';
                             name: rItemName,
                             quantity: 1,
                         }];
-                        if (debug_logging) { window.console.log({message:"MHCT: Submitting Torch Charm: ", torch_charm_loot: items}); }
+                        logger.debug("Submitting Torch Charm: ", {torch_charm_loot: items});
 
                         submitConvertible(convertible, items);
                     }
@@ -1100,11 +1100,11 @@ import * as stagers from './modules/stages';
                         submitConvertible(convertible, items);
                     }
                 }
-            }            
+            }
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
                 more_details['alchemists_cookbook_base_bonus'] = true;
-                if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
+                logger.debug("Adding Cookbook Base Bonus to details", {procs: more_details});
             }
             else if (css_class.search(/boiling_cauldron_potion_bonus/) !== -1) {
                 const is_boon = (css_class.search(/boon_potion_bonus/) !== -1);
@@ -1140,7 +1140,7 @@ import * as stagers from './modules/stages';
                                 name: potionName,
                                 quantity: 1,
                             }];
-                            if (debug_logging) { window.console.log({message: "MHCT: ", boiling_cauldron_trap: items}); }
+                            logger.debug("Boiling Cauldron Trap proc", {boiling_cauldron_trap: items});
 
                             submitConvertible(convertible, items);
                         }
@@ -1150,7 +1150,7 @@ import * as stagers from './modules/stages';
                 if (is_boon) {
                     more_details['gloomy_cauldron_boon'] = true;
                 }
-                if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
+                logger.debug("Boiling Cauldron Trap details", {procs: more_details});
             }
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {
                 // Handle a potential Gilded Charm proc.
@@ -1177,7 +1177,7 @@ import * as stagers from './modules/stages';
                             quantity: 1,
                         };
                         const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
-                        if (debug_logging) { window.console.log({message: "MHCT: ", gilded_charm: items}); }
+                        logger.debug("Guilded Charm proc", {gilded_charm: items});
 
                         submitConvertible(convertible, items);
                     }
@@ -1186,14 +1186,14 @@ import * as stagers from './modules/stages';
             else if (css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
                 more_details['pirate_sleigh_trigger'] = true;
-                if (debug_logging) {window.console.log({message: "MHCT: ", procs: more_details});}
+                logger.debug("Pirate Sleigh proc", {procs: more_details});
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
                 more_details['hunt_count']++;
-                if (debug_logging) {window.console.log({message: "MHCT: Got a hunt record ", procs: more_details});}
+                logger.debug("Got a hunt record ", {procs: more_details});
                 if (css_class.includes('active')) {
                     journal = markup;
-                    if (debug_logging) {window.console.log({message: "MHCT: Found the active hunt", journal});}
+                    logger.debug("Found the active hunt", {journal});
                 }
             }
             else if (css_class.search(/linked|passive|misc/) !== -1) {
@@ -1308,9 +1308,7 @@ import * as stagers from './modules/stages';
                 .replace(/ mouse$/i, '');  // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
 
-        if (debug_logging) {
-            debug_logs.forEach(log_message => window.console.log(`MHCT: ${log_message}`));
-        }
+        debug_logs.forEach(log_message => logger.debug(log_message));
 
         return message;
     }
@@ -1344,8 +1342,8 @@ import * as stagers from './modules/stages';
             "Lost City", "Cursed City",
             "Sand Dunes", "Sand Crypts",
         ].includes(message.location.name)) {
-            if (debug_logging) {window.console.warn({record: message, user, user_post, hunt});}
-            throw new Error(`MHCT: Unexpected location id ${message.location.id} for LG-area location`);
+            console.warn("Unexpected LG-area location", {record: message, user, user_post, hunt});
+            throw new Error(`Unexpected location id ${message.location.id} for LG-area location`);
         }
     }
 
@@ -1455,8 +1453,8 @@ import * as stagers from './modules/stages';
         } else if (quest.map_active) {
             message.stage = "Using poster";
         } else {
-            if (debug_logging) {window.console.warn({record: message, pre: quest, post: user_post.quests.QuestClawShotCity});}
-            throw new Error("MHCT: Unexpected Claw Shot City quest state");
+            logger.debug("Unexpected Claw Shot City quest state", {record: message, pre: quest, post: user_post.quests.QuestClawShotCity});
+            throw new Error("Unexpected Claw Shot City quest state");
         }
     }
 
@@ -1543,7 +1541,7 @@ import * as stagers from './modules/stages';
             rage.lagoon = 'DL 50';
         }
         if (!rage.clearing || !rage.tree || !rage.lagoon) {
-            if (debug_logging) {window.console.warn({message: "Skipping unexpected WWR quest state", user, user_post, hunt});}
+            logger.debug("Skipping unexpected WWR quest state", {user, user_post, hunt});
             message.location = null;
         } else {
             message.stage = rage;
@@ -1602,7 +1600,7 @@ import * as stagers from './modules/stages';
             }
             message.stage += " Tide";
         } else {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side tide change", user, user_post, hunt});}
+            logger.debug("Skipping hunt during server-side tide change", {user, user_post, hunt});
             message.location = null;
         }
     }
@@ -1629,12 +1627,12 @@ import * as stagers from './modules/stages';
                     message.stage = "Winter";
                     break;
                 default:
-                    if (debug_logging) {window.console.log({message: "MHCT: Assumed spring", season, user, user_post});}
+                    logger.debug("Assumed spring", {season, user, user_post});
                     message.stage = "Spring";
                     break;
             }
         } else {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side season change", user, user_post, hunt});}
+            logger.debug("Skipping hunt during server-side season change", {user, user_post, hunt});
             message.location = null;
         }
     }
@@ -1697,7 +1695,7 @@ import * as stagers from './modules/stages';
         })[quest.current_phase]);
 
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Iceberg stage", pre: quest, post: user_post.quests.QuestIceberg, hunt});}
+            logger.debug("Skipping unknown Iceberg stage", {pre_quest: quest, post_quest: user_post.quests.QuestIceberg, hunt});
             message.location = null;
         }
     }
@@ -1795,7 +1793,7 @@ import * as stagers from './modules/stages';
         }
 
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Zokor district", user, user_post, hunt});}
+            logger.debug("Skipping unknown Zokor district", {user, user_post, hunt});
             message.location = null;
         }
     }
@@ -1827,7 +1825,7 @@ import * as stagers from './modules/stages';
         }
 
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Furoma Rift droid state", user, user_post, hunt});}
+            logger.debug("Skipping unknown Furoma Rift droid state", {user, user_post, hunt});
             message.location = null;
         }
     }
@@ -1883,7 +1881,7 @@ import * as stagers from './modules/stages';
             }
         }
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side pollution change", user, user_post, hunt});}
+            logger.debug("Skipping hunt during server-side pollution change", {user, user_post, hunt});
             message.location = null;
         }
     }
@@ -1904,7 +1902,7 @@ import * as stagers from './modules/stages';
             "tier_3": "Mist 19-20",
         })[quest.mist_tier]);
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Burroughs Rift mist state", user, user_post, hunt});}
+            logger.debug("Skipping unknown Burroughs Rift mist state", {user, user_post, hunt});
             message.location = null;
         }
     }
@@ -1924,7 +1922,7 @@ import * as stagers from './modules/stages';
         const changed_state = (quest.on_train !== final_quest.on_train
                 || quest.current_phase !== final_quest.current_phase);
         if (changed_state) {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side train stage change", user, user_post, hunt});}
+            logger.debug("Skipping hunt during server-side train stage change", {user, user_post, hunt});
             message.location = null;
         } else {
             // Pre- & post-hunt user object agree on train & phase statuses.
@@ -1949,7 +1947,7 @@ import * as stagers from './modules/stages';
                     const area = quest.minigame.trouble_area;
                     const final_area = final_quest.minigame.trouble_area;
                     if (area !== final_area) {
-                        if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side trouble area change", user, user_post, hunt});}
+                        logger.debug("Skipping hunt during server-side trouble area change", {user, user_post, hunt});
                         message.location = null;
                     } else {
                         const charm_id = message.charm.id;
@@ -2024,7 +2022,7 @@ import * as stagers from './modules/stages';
         }
 
         if (!message.stage) {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Fort Rox stage", pre: quest, post: user_post.quests.QuestFortRox});}
+            logger.debug("Skipping unknown Fort Rox stage", {pre_quest: quest, post_quest: user_post.quests.QuestFortRox});
             message.location = null;
         }
     }
@@ -2043,7 +2041,7 @@ import * as stagers from './modules/stages';
     function addForbiddenGroveStage(message, user, user_post, hunt) {
         const was_open = user.quests.QuestForbiddenGrove.grove.is_open;
         if (was_open != user_post.quests.QuestForbiddenGrove.grove.is_open) {
-            if (debug_logging) {window.console.log({message: "MHCT: Skipping hunt during server-side door change", user, user_post, hunt});}
+            logger.debug("Skipping hunt during server-side door change", {user, user_post, hunt});
             message.location = null;
         } else {
             message.stage = (was_open) ? "Open" : "Closed";
@@ -2144,7 +2142,7 @@ import * as stagers from './modules/stages';
                 message.stage = "Outside";
                 break;
             default:
-                if (debug_logging) {window.console.log({message: "MHCT: Skipping unknown Valour Rift stage", pre: attrs, post: user_post.environment_atts || user_post.enviroment_atts});}
+                logger.debug("Skipping unknown Valour Rift stage", {pre_environment_atts: attrs, post: user_post.environment_atts || user_post.enviroment_atts});
                 message.location = null;
                 break;
         }
@@ -2210,6 +2208,10 @@ import * as stagers from './modules/stages';
         "Zugzwang's Tower": calcZugzwangsTowerHuntDetails,
     };
 
+    for (const detailer of detailers.environmentDetailerModules) {
+        location_huntdetails_lookup[detailer.environment] = detailer.addDetails;
+    }
+
     /**
      * Determine additional detailed parameters that are otherwise only visible to db exports and custom views.
      * These details may eventually be migrated to help inform location-specific stages.
@@ -2230,6 +2232,7 @@ import * as stagers from './modules/stages';
             calcLNYHuntDetails,
             calcLuckyCatchHuntDetails,
             calcPillageHuntDetails,
+            ...detailers.globalDetailerModules,
         ].map((details_func) => details_func(message, user, user_post, hunt))
             .filter(details => details);
 
@@ -2442,7 +2445,7 @@ import * as stagers from './modules/stages';
             fw.num_warden = parseInt(attrs.mice.desert_elite_gaurd.quantity, 10);
             fw.boss_invincible = !!fw.num_warden;
         } else {
-            if (debug_logging) {window.console.warn({record: message, user, user_post, hunt});}
+            logger.debug("Skipping due to unknown FW wave", {record: message, user, user_post, hunt});
             throw new Error(`Unknown FW Wave "${attrs.wave}"`);
         }
 
@@ -2658,7 +2661,7 @@ import * as stagers from './modules/stages';
             const plural_name = $($.parseHTML(item_text)).filter("a").text();
 
             if (!Object.prototype.hasOwnProperty.call(inventory, item_name)) {
-                if (debug_logging) window.console.log(`MHCT: Looted "${item_name}", but it is not in user inventory`);
+                logger.debug(`Looted "${item_name}", but it is not in user inventory`);
                 return null;
             }
             const loot_object = {
@@ -2669,7 +2672,7 @@ import * as stagers from './modules/stages';
                 plural_name: item_amount > 1 ? plural_name : '',
             };
 
-            if (debug_logging) { window.console.log({message: "MHCT: Loot object", loot_object}); }
+            logger.debug("Loot object", {loot_object});
 
             return loot_object;
         }).filter(loot => loot);
@@ -2770,9 +2773,7 @@ import * as stagers from './modules/stages';
 
                 $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
                     .fail(err => {
-                        if (settings.debug_logging) {
-                            window.console.log({message: `MHCT: Crown query failed for snuid=${profile_snuid}`, err});
-                        }
+                        logger.debug(`Crown query failed for snuid=${profile_snuid}`, err);
                     });
             }
         };
@@ -2791,9 +2792,9 @@ import * as stagers from './modules/stages';
         URLDiffCheck(); // Initial call on page load
         $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
 
-        let tempversion = "version " + mhhh_version;
+        let versionInfo = "version " + mhhh_version;
         if (Number(mhhh_version) == 0) {
-            tempversion = "TEST version";
+            versionInfo = "TEST version";
         }
 
         // Tell content script we are done loading
@@ -2801,7 +2802,7 @@ import * as stagers from './modules/stages';
             mhct_finish_load: 1,
         });
 
-        window.console.log("MHCT: " + tempversion + " loaded! Good luck!");
+        logger.info(`${versionInfo} loaded! Good luck!`);
     }
 
     main();
