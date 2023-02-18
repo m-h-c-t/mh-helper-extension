@@ -1,5 +1,6 @@
-import { type IDetailer, type IEnvironmentDetailer } from './details.types';
+import type { IDetailer, IEnvironmentDetailer } from './details.types';
 import { IceFortressDetailer } from './environments/iceFortress';
+import { SpringEggHuntDetailer } from './global/springEggHunt';
 
 // Detailer for specific location
 const environmentDetailerModules: IEnvironmentDetailer[]  = [
@@ -8,6 +9,7 @@ const environmentDetailerModules: IEnvironmentDetailer[]  = [
 
 // Detailers that don't match on location (LNY, Halloween)
 const globalDetailerModules: IDetailer[] = [
+    new SpringEggHuntDetailer(),
 ];
 
 export { environmentDetailerModules, globalDetailerModules }
