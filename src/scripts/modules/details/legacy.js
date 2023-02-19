@@ -1,19 +1,4 @@
 /**
- * Track whether a catch was designated "lucky" or not.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcLuckyCatchHuntDetails(message, user, user_post, {render_data}) {
-    if (message.caught) {
-        return {
-            is_lucky_catch: render_data.css_class.includes("luckycatchsuccess"),
-        };
-    }
-}
-
-/**
  * Track whether a FTC resulted in a pillage, and if so, the damage dealt.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
