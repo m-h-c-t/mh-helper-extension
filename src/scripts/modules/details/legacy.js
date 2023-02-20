@@ -1,23 +1,4 @@
 /**
- * Track whether a FTC resulted in a pillage, and if so, the damage dealt.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcPillageHuntDetails(message, user, user_post, {render_data}) {
-    if (message.attracted && !message.caught && render_data.css_class.includes('catchfailuredamage')) {
-        const match = render_data.text.match(/Additionally, .+ ([\d,]+) .*(gold|bait|points)/);
-        if (match && match.length === 3) {
-            return {
-                pillage_amount: parseInt(match[1].replace(/,/g,''), 10),
-                pillage_type: match[2],
-            };
-        }
-    }
-}
-
-/**
  * Track additional state for the Bristle Woods Rift
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
