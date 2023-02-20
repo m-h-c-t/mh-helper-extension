@@ -5,6 +5,7 @@ export interface HgResponse {
     page?: unknown;
     success: 0 | 1;
     active_turn?: boolean;
+    journal_markup?: JournalMarkup[];
 }
 
 export interface User {
@@ -69,4 +70,22 @@ export interface EnvironmentAttributes {
 
 export interface ViewingAttributes {
 
+}
+
+export interface JournalMarkup {
+    render_data: RenderData;
+    //publish_data: PublishData;
+    //wall_actions: WallActions;
+}
+
+export interface RenderData {
+    //image: Image | [];
+    entry_id: number;
+    mouse_type: string;
+    css_class: string;
+    entry_date: string;
+    environment: string;
+    //social_link_data: SocialLinkData;
+    entry_timestamp: number;
+    text: string;
 }
