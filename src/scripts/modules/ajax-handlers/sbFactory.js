@@ -50,6 +50,7 @@ class SBFactoryAjaxHandler extends AjaxSuccessHandler {
             sandy_bert_bites_snack_pack:	130004,
             hollow_heights_party_pack_snack_pack:	130005,
             riftios_snack_pack:	130006,
+            story_seeds_snack_pack: 130007,
         };
         const convertible = {};
         if (purchase.type in packs) {
