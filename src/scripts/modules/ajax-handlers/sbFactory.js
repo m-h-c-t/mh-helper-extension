@@ -30,15 +30,14 @@ class SBFactoryAjaxHandler extends AjaxSuccessHandler {
     }
 
     /**
-     * Record Birthday 2021 snack pack submissions as convertibles in MHCT
-     * @param {Object <string, any>} settings The user's extension settings.
-     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
+     * Record Birthday snack pack submissions as convertibles in MHCT
+     * @param {import("@scripts/types/hg").HgResponse} responseJSON HitGrab ajax response from vending machine.
      */
     recordSnackPack(responseJSON) {
         const {vending_machine_purchase: purchase} = responseJSON ?? {};
         if (!purchase?.type) {
-            this.logger.debug('Skipped Bday 2021 snack pack submission due to unhandled XHR structure');
-            this.logger.warn({message: 'Unable to parse bday 2021 response', responseJSON});
+            this.logger.debug('Skipped Bday snack pack submission due to unhandled XHR structure');
+            this.logger.warn('Unable to parse bday response', {responseJSON});
             return;
         }
 
@@ -143,6 +142,13 @@ class SBFactoryAjaxHandler extends AjaxSuccessHandler {
             'Rift Combat Cheese': 2096,
             'Null Onyx Gorgonzola': 2100,
             'Extra Rich Cloud Cheesecake': 3274,
+            'Mythical Mulch': 3451,
+            'Grubbeen Cheese': 3460,
+            'Clamembert Cheese': 3457,
+            'Stormy Clamembert Cheese': 3462,
+            'First Draft Derby Cheese': 3459,
+            'Second Draft Derby Cheese': 3461,
+            'Final Draft Derby Cheese': 3458,
         };
         const items = [];
         if ("items" in purchase) {
