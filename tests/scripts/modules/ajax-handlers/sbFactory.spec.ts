@@ -5,7 +5,7 @@ jest.mock('@scripts/util/logger');
 import { ConsoleLogger } from '@scripts/util/logger';
 
 const logger = new ConsoleLogger();
-const submitConvertibleCallback = jest.fn();// as jest.MockedFunction<(convertible: HgItem, items: HgItem[])>
+const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>
 const handler = new SBFactoryAjaxHandler(logger, submitConvertibleCallback);
 
 const sbfactory_url = "mousehuntgame.com/managers/ajax/events/birthday_factory.php";
