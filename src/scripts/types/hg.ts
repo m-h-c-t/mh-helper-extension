@@ -58,7 +58,7 @@ export interface Quests {
     QuestRiftWhiskerWoods?: any
     QuestSandDunes?: any
     QuestSunkenCity?: any
-    QuestSuperBrieFactory?: any
+    QuestSuperBrieFactory?: quests.QuestSuperBrieFactory
     QuestTableOfContents?: quests.QuestTableOfContents
     QuestTrainStation?: any
     QuestWinterHunt2021?: any
