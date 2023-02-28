@@ -34,3 +34,15 @@ interface Loot {
     lucky: boolean;
     plural_name: string;
 }
+
+/**
+ * An object opened (convertible) or recieved (convertible contents)
+ */
+export interface HgItem {
+    /** HitGrab's ID for the id */
+    id: number
+    /** HitGrab's display name for the item */
+    name: string;
+    /** The number of items opened or recieved */
+    quantity: number;
+}
