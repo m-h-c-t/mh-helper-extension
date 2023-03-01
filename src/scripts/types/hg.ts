@@ -5,6 +5,7 @@ export interface HgResponse {
     page?: unknown;
     success: 0 | 1;
     active_turn?: boolean;
+    journal_markup?: JournalMarkup[];
     inventory?: Record<string, InventoryItem>  | []
 }
 
@@ -59,6 +60,7 @@ export interface Quests {
     QuestSandDunes?: any
     QuestSunkenCity?: any
     QuestSuperBrieFactory?: quests.QuestSuperBrieFactory
+    QuestSpringHunt?: quests.QuestSpringHunt
     QuestTableOfContents?: quests.QuestTableOfContents
     QuestTrainStation?: any
     QuestWinterHunt2021?: any
@@ -72,9 +74,24 @@ export interface ViewingAttributes {
 
 }
 
-/**
- *
- */
+export interface JournalMarkup {
+    render_data: RenderData;
+    //publish_data: PublishData;
+    //wall_actions: WallActions;
+}
+
+export interface RenderData {
+    //image: Image | [];
+    entry_id: number;
+    mouse_type: string;
+    css_class: string;
+    entry_date: string;
+    environment: string;
+    //social_link_data: SocialLinkData;
+    entry_timestamp: number;
+    text: string;
+}
+
 export interface InventoryItem {
     /** HitGrab's internal number id of item */
     item_id: number;
@@ -91,3 +108,4 @@ export interface InventoryItem {
 // export type Classification = "weapon" | "base" | "bait" | "trinket" |
 //     "skin" | "crafting_item" | "stat" | "potion" | "quest" |
 //     "convertible" | "collectible" | "message_item" | "torn_page"
+
