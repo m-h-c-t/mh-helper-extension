@@ -1,4 +1,4 @@
-import { IceFortressStager } from '@scripts/modules/stages/iceFortress'
+import { IceFortressStager } from '@scripts/modules/stages/environments/iceFortress'
 import { User } from '@scripts/types/hg';
 
 describe('IceFortressStager', () => {
