@@ -1,4 +1,4 @@
-import { type IStager } from './stages.types';
+import { type IStager } from '../stages.types';
 import { type QuestIceFortress } from '@scripts/types/quests/iceFortress';
 import { type User } from '@scripts/types/hg';
 

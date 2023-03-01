@@ -6,6 +6,7 @@ export interface HgResponse {
     success: 0 | 1;
     active_turn?: boolean;
     journal_markup?: JournalMarkup[];
+    inventory?: Record<string, InventoryItem>  | []
 }
 
 export interface User {
@@ -58,7 +59,7 @@ export interface Quests {
     QuestRiftWhiskerWoods?: any
     QuestSandDunes?: any
     QuestSunkenCity?: any
-    QuestSuperBrieFactory?: any
+    QuestSuperBrieFactory?: quests.QuestSuperBrieFactory
     QuestSpringHunt?: quests.QuestSpringHunt
     QuestTableOfContents?: quests.QuestTableOfContents
     QuestTrainStation?: any
@@ -90,3 +91,21 @@ export interface RenderData {
     entry_timestamp: number;
     text: string;
 }
+
+export interface InventoryItem {
+    /** HitGrab's internal number id of item */
+    item_id: number;
+    /** Friendly display name of item */
+    name: string;
+    /** Unique snake_case identifying name of item */
+    type: string;
+    /** Item category: bait, crafting, stat, etc... */
+    // classification: Classification;
+    /** Total amount of item in user inventory */
+    quantity: number;
+}
+
+// export type Classification = "weapon" | "base" | "bait" | "trinket" |
+//     "skin" | "crafting_item" | "stat" | "potion" | "quest" |
+//     "convertible" | "collectible" | "message_item" | "torn_page"
+

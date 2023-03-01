@@ -117,6 +117,14 @@ describe('validateMessage', () => {
         post.location!.name = "Acolyte Realm";
         expect(engine.validateMessage(pre, post)).toBe(true);
     })
+
+    it('exempts stage if vincent was caught', () => {
+        pre.stage = "Boss";
+        pre.mouse = "Vincent, The Magnificent";
+        post.stage = "Any Room";
+
+        expect(engine.validateMessage(pre, post)).toBe(true);
+    })
 });
 
 function getValidPreResponse(): HgResponse {

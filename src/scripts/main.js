@@ -1237,7 +1237,6 @@ import * as stagers from './modules/stages';
         "Moussu Picchu": addMoussuPicchuStage,
         "Muridae Market": addMuridaeMarketStage,
         "Queso Geyser": addQuesoGeyserStage,
-        "SUPER|brie+ Factory": addSBFactoryStage,
         "Sand Dunes": addSandDunesStage,
         "Seasonal Garden": addSeasonalGardenStage,
         "Slushy Shoreline": addSlushyShorelineStage,
@@ -1927,29 +1926,6 @@ import * as stagers from './modules/stages';
         }
     }
 
-    /**
-     * Separate boss-stage hunts from other hunts in rooms.
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     */
-    function addSBFactoryStage(message, user, user_post, hunt) {
-        const factory = user.quests.QuestSuperBrieFactory.factory_atts;
-        if (message.mouse === "Vincent, The Magnificent" || factory.boss_warning) {
-            message.stage = "Boss";
-        } else {
-            message.stage = (({
-                "pumping_room":           "Pump Room",
-                "mixing_room":            "Mixing Room",
-                "break_room":             "Break Room",
-                "quality_assurance_room": "QA Room",
-            })[factory.current_room]);
-            if (!message.stage || !/Coggy Colby/.test(user.bait_name) ) {
-                message.stage = "Any Room";
-            }
-        }
-    }
 
     /**
      * Report the state of corks and eruptions
