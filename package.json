@@ -55,7 +55,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.35.0",
     "fork-ts-checker-webpack-plugin": "^7.3.0",
-    "jest": "^29.4.1",
+    "jest": "^29.4.3",
     "jest-environment-jsdom": "^29.4.3",
     "save-remote-file-webpack-plugin": "^1.1.0",
     "ts-jest": "^29.0.5",
