@@ -5,7 +5,7 @@ import { IRule, IPropertyRule, IMessageExemption } from "./interfaces";
 import { ResponseRules } from "./responseRules";
 import { UserRules } from "./userRules";
 import { MessageRules } from "./messageRules";
-import { MessageExemptions } from "./messageExemptions";
+import { MessageExemptions } from "./exemptions";
 
 /**
  * Uses pluggable rule to validate data before a hunt can be
