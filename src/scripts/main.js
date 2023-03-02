@@ -1223,7 +1223,6 @@ import * as stagers from './modules/stages';
         "Frozen Vacant Lot": addFestiveCometStage,
         "Fiery Warpath": addFieryWarpathStage,
         "Floating Islands": addFloatingIslandsStage,
-        "Forbidden Grove": addForbiddenGroveStage,
         "Foreword Farm": addForewordFarmStage,
         "Fort Rox": addFortRoxStage,
         "Furoma Rift": addFuromaRiftStage,
@@ -1888,27 +1887,6 @@ import * as stagers from './modules/stages';
         if (!message.stage) {
             logger.debug("Skipping unknown Fort Rox stage", {pre_quest: quest, post_quest: user_post.quests.QuestFortRox});
             message.location = null;
-        }
-    }
-
-    /**
-     * Report the state of the door to the Realm. The user may be auto-traveled by this hunt, either
-     * due to the use of a Ripper charm while the door is open, or because the door is closed at the time
-     * of the hunt itself. If the door closes between the time HG computes the prehunt user object and when
-     * HG receives the hunt request, we should reject logging the hunt.
-     * MAYBE: Realm Ripper charm? ID = 2345, name = "chamber_cleaver_trinket"
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     */
-    function addForbiddenGroveStage(message, user, user_post, hunt) {
-        const was_open = user.quests.QuestForbiddenGrove.grove.is_open;
-        if (was_open != user_post.quests.QuestForbiddenGrove.grove.is_open) {
-            logger.debug("Skipping hunt during server-side door change", {user, user_post, hunt});
-            message.location = null;
-        } else {
-            message.stage = (was_open) ? "Open" : "Closed";
         }
     }
 

@@ -36,7 +36,13 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
      */
     recordSnackPack(responseJSON: HgResponseWithVendingMachine) {
         const purchase = responseJSON.vending_machine_purchase;
-        if (purchase?.type == null) {
+
+        if (!purchase) {
+            this.logger.debug('Skipped snack pack submission as this isn\'t a vending purchase');
+            return;
+        }
+
+        if (purchase.type == null) {
             this.logger.debug('Skipped Bday snack pack submission due to unhandled XHR structure');
             this.logger.warn('Unable to parse bday response', {responseJSON});
             return;

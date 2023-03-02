@@ -26,12 +26,20 @@ describe("SBFactoryAjaxHandler", () => {
     });
 
     describe("execute", () => {
-        it('warns if response is unexpected', async () => {
-            // vending_machine_reponse missing here,
-            // but add some other data to verify that it will print out entire response
-            await handler.execute({ user_id: 4 });
+        it('logs if birthday response is not purchase', async () => {
+            await handler.execute({});
 
-            expect(logger.warn).toBeCalledWith('Unable to parse bday response', { responseJSON: { user_id: 4 } });
+            expect(logger.debug).toBeCalledWith('Skipped snack pack submission as this isn\'t a vending purchase');
+            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+        });
+
+        it('warns if response is unexpected', async () => {
+            // vending_machine_reponse.type missing here,
+            // but add some other data to verify that it will print out entire response
+            const response = { user_id: 4, vending_machine_purchase: {} }
+            await handler.execute(response);
+
+            expect(logger.warn).toBeCalledWith('Unable to parse bday response', { responseJSON: response});
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
