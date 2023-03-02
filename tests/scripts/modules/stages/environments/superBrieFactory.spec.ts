@@ -33,18 +33,6 @@ describe("SuperBrieFactoryStager", () => {
     });
 
     describe("boss", () => {
-        it("is Boss stage when pre mouse is Vincent", () => {
-            const stager = new SuperBrieFactoryStager();
-            const message = {
-                mouse: "Vincent, The Magnificent",
-            } as IntakeMessage;
-            const preUser = changeFactoryQuest(defaultUser, defaultQuest);
-
-            stager.addStage(message, preUser, defaultUser, defaultJournal);
-
-            expect(message.stage).toBe("Boss");
-        });
-
         it("is Boss stage when there is boss_warning", () => {
             const stager = new SuperBrieFactoryStager();
             const message = {} as IntakeMessage;

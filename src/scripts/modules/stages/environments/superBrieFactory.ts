@@ -19,7 +19,7 @@ export class SuperBrieFactoryStager implements IStager {
             throw new Error('User is in SB+ factory but quest wasn\'t found.');
         }
 
-        if (message.mouse === "Vincent, The Magnificent" || quest.factory_atts.boss_warning === true) {
+        if (quest.factory_atts.boss_warning === true) {
             message.stage = "Boss";
         } else {
             message.stage = this.roomTypeToStage[quest.factory_atts.current_room];

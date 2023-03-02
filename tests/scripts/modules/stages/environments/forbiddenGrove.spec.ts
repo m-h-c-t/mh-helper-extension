@@ -79,7 +79,7 @@ describe("ForbiddenGroveStager", () => {
             assert("Closed");
         });
 
-        it("pre closed and moved to AR in post", () => {
+        it("is Closed when pre closed and moved to AR in post", () => {
             defaultPre.quests.QuestForbiddenGrove!.grove.is_open = false;
             delete defaultPost.quests.QuestForbiddenGrove;
 
