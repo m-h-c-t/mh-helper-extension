@@ -9,7 +9,6 @@ export class ForbiddenGroveStager implements IStager {
      * due to the use of a Ripper charm while the door is open, or because the door is closed at the time
      * of the hunt itself. If the door closes between the time HG computes the prehunt user object and when
      * HG receives the hunt request, we should reject logging the hunt.
-     * MAYBE: Realm Ripper charm? ID = 2345, name = "chamber_cleaver_trinket"
      */
     addStage(message: any, userPre: User, userPost: User, journal: any): void {
         const preQuest = userPre.quests.QuestForbiddenGrove;
@@ -25,9 +24,13 @@ export class ForbiddenGroveStager implements IStager {
         }
 
         const was_open = preQuest.grove.is_open;
-        // Check if user was auto-traveled to AR (i.e FG quest will be null on post).
-        // If they were, we can say door was closed for hunt. Otherwise discard.
-        if ((postQuest != null) && was_open != postQuest.grove.is_open) {
+        // Check if user was auto-traveled to AR (i.e FG quest will be undefined on post).
+        // If they were, we can say door was closed for hunt.
+        if (postQuest == null) {
+            message.stage = "Closed"
+            return;
+        // Otherwise discard if doors dont match
+        } else if (was_open != postQuest.grove.is_open) {
             throw new Error('Skipping hunt during server side door change');
         }
 
