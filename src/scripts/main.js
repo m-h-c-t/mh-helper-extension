@@ -1248,8 +1248,10 @@ import * as stagers from './modules/stages';
         "Zokor": addZokorStage,
     };
 
+    /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */
+    const location_stager_lookup = {};
     for (const stager of stagers.stageModules) {
-        location_stage_lookup[stager.environment] = stager.addStage;
+        location_stager_lookup[stager.environment] = stager;
     }
 
     /**
@@ -1260,9 +1262,16 @@ import * as stagers from './modules/stages';
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
      */
     function addStage(message, user, user_post, hunt) {
+        // legacy staging funcs
         const stage_func = location_stage_lookup[user.environment_name];
         if (stage_func) {
             stage_func(message, user, user_post, hunt);
+        }
+
+        // IStagers
+        const stager = location_stager_lookup[user.environment_name];
+        if (stager) {
+            stager.addStage(message, user, user_post, hunt);
         }
     }
 
@@ -2027,8 +2036,10 @@ import * as stagers from './modules/stages';
         "Zugzwang's Tower": calcZugzwangsTowerHuntDetails,
     };
 
+    /** @type { Object<string, import("./modules/details/details.types").IEnvironmentDetailer> } */
+    const location_detailer_lookup = {};
     for (const detailer of detailers.environmentDetailerModules) {
-        location_huntdetails_lookup[detailer.environment] = detailer.addDetails;
+        location_detailer_lookup[detailer.environment] = detailer;
     }
 
     /**
@@ -2042,7 +2053,12 @@ import * as stagers from './modules/stages';
     function addHuntDetails(message, user, user_post, hunt) {
         // First, get any location-specific details:
         const details_func = location_huntdetails_lookup[user.environment_name];
-        const locationHuntDetails = details_func ? details_func(message, user, user_post, hunt) : undefined;
+        let locationHuntDetails = details_func ? details_func(message, user, user_post, hunt) : undefined;
+
+        const detailer = location_detailer_lookup[user.environment_name];
+        if (detailer) {
+            locationHuntDetails = detailer.addDetails(message, user, user_post, hunt);
+        }
 
         // Then, get any global hunt details (such as from ongoing events, auras, etc).
         const globalHuntDetails = [
@@ -2050,9 +2066,12 @@ import * as stagers from './modules/stages';
             calcLNYHuntDetails,
             calcLuckyCatchHuntDetails,
             calcPillageHuntDetails,
-            ...detailers.globalDetailerModules,
         ].map((details_func) => details_func(message, user, user_post, hunt))
             .filter(details => details);
+
+        globalHuntDetails.push(...detailers.globalDetailerModules
+            .map(detailer => detailer.addDetails(message, user, user_post, hunt))
+            .filter(details => details));
 
         const otherJournalDetails = calcMoreDetails(hunt); // This is probably not needed and can use hunt.more_details below
 
