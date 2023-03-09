@@ -27,6 +27,7 @@ mhhh_flash_message_div.setAttribute(
     "text-align: center;" +
     "box-shadow: 0px 1px 4px 0px black;" +
     "opacity: 95%;" +
+    "pointer-events: none;" +
     "font-weight: 600;");
 document.body.appendChild(mhhh_flash_message_div);
 
