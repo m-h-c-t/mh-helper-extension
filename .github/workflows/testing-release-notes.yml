@@ -12,4 +12,5 @@ jobs:
         with:
           name: "jacks test release draft"
           draft: true
+          tag: "jacks-test"
           generateReleaseNotes: true
