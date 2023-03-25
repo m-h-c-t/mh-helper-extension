@@ -25,3 +25,15 @@ jobs:
 
       - name: Display notes
         run: echo "Release Notes ${{steps.github_release.outputs.changelog}}"
+      
+      - name: Outputs failed
+        run: echo "Outputs failed? ${{steps.github_release.outputs.failed}}"
+      
+      - name: Changed files
+        run: echo "Changed files ${{steps.github_release.outputs.changed_files}}
+      
+      - name: Pull requests
+        run: echo "Pull Requests ${{steps.github_release.outputs.pull_requests}}
+        
+      - name: Commits
+        run: echo "Commits ${{steps.github_release.outputs.commits}}
