@@ -30,10 +30,10 @@ jobs:
         run: echo "Outputs failed? ${{steps.github_release.outputs.failed}}"
       
       - name: Changed files
-        run: echo "Changed files ${{steps.github_release.outputs.changed_files}}
+        run: echo "Changed files ${{steps.github_release.outputs.changed_files}}"
       
       - name: Pull requests
-        run: echo "Pull Requests ${{steps.github_release.outputs.pull_requests}}
+        run: echo "Pull Requests ${{steps.github_release.outputs.pull_requests}}"
         
       - name: Commits
-        run: echo "Commits ${{steps.github_release.outputs.commits}}
+        run: echo "Commits ${{steps.github_release.outputs.commits}}"
