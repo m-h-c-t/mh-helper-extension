@@ -8,32 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build Changelog
-        id: github_release
-        uses: mikepenz/release-changelog-builder-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#       - name: Create release notes
-#         id: create_release_notes
-#         uses: mikepenz/release-changelog-builder-action@v3
-#         with:
-#           commitMode: true
-#           failOnError: true
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Display notes
-        run: echo "Release Notes ${{steps.github_release.outputs.changelog}}"
-      
-      - name: Outputs failed
-        run: echo "Outputs failed? ${{steps.github_release.outputs.failed}}"
-      
-      - name: Changed files
-        run: echo "Changed files ${{steps.github_release.outputs.changed_files}}"
-      
-      - name: Pull requests
-        run: echo "Pull Requests ${{steps.github_release.outputs.pull_requests}}"
-        
-      - name: Commits
-        run: echo "Commits ${{steps.github_release.outputs.commits}}"
+      - uses: ncipollo/release-action@v1
+        with:
+          name: "jacks test release draft"
+          draft: true
+          generateReleaseNotes: true
