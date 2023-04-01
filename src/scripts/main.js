@@ -1210,7 +1210,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Labyrinth": stagingFuncs.addLabyrinthStage,
         "Living Garden": stagingFuncs.addGardenStage,
         "Lost City": stagingFuncs.addLostCityStage,
-        "Mousoleum": stagingFuncs.addMousoleumStage,
         "Moussu Picchu": stagingFuncs.addMoussuPicchuStage,
         "Muridae Market": stagingFuncs.addMuridaeMarketStage,
         "Queso Geyser": stagingFuncs.addQuesoGeyserStage,
