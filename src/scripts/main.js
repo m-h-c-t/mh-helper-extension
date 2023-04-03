@@ -1179,7 +1179,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Cursed City": stagingFuncs.addLostCityStage,
         "Festive Comet": stagingFuncs.addFestiveCometStage,
         "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,
-        "Fiery Warpath": stagingFuncs.addFieryWarpathStage,
         "Foreword Farm": stagingFuncs.addForewordFarmStage,
         "Fort Rox": stagingFuncs.addFortRoxStage,
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
