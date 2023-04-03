@@ -26,33 +26,7 @@ export function addHarbourStage(message, user, user_post, hunt) {
     }
 }
 
-/**
- * Separate hunts with certain mice available from those without.
- * @param {import("@scripts/types/mhct").IntakeMessage} message The message to be sent.
- * @param {import("@scripts/types/hg").User} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {import("@scripts/types/hg").User} user_post The user state object, after the hunt.
- * @param {unknown} hunt The journal entry corresponding to the active hunt.
- */
-export function addClawShotCityStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestClawShotCity;
-    /**
- * !map_active && !has_wanted_poster => Bounty Hunter can be attracted
- * !map_active && has_wanted_poster => Bounty Hunter is not attracted
- * map_active && !has_wanted_poster => On a Wanted Poster
- */
-
-    if (!quest.map_active && !quest.has_wanted_poster) {
-        message.stage = "No poster";
-    } else if (!quest.map_active && quest.has_wanted_poster) {
-        message.stage = "Has poster";
-    } else if (quest.map_active) {
-        message.stage = "Using poster";
-    } else {
-        throw new Error("Unexpected Claw Shot City quest state");
-    }
-}
-
-/**
+/*
  * Set the stage based on decoration and boss status.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
