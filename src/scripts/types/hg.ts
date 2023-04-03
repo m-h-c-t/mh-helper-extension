@@ -50,7 +50,7 @@ export interface Quests {
     QuestHalloweenBoilingCauldron?: quests.QuestHalloweenBoilingCauldron
     QuestIceberg?: quests.QuestIceberg;
     QuestIceFortress?: quests.QuestIceFortress;
-    QuestLabyrinth?: unknown
+    QuestLabyrinth?: quests.QuestLabyrinth
     QuestLivingGarden?: unknown
     QuestLostCity?: unknown
     QuestMousoleum?: quests.QuestMousoleum

@@ -1186,7 +1186,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
         "Iceberg": stagingFuncs.addIcebergStage,
-        "Labyrinth": stagingFuncs.addLabyrinthStage,
         "Living Garden": stagingFuncs.addGardenStage,
         "Lost City": stagingFuncs.addLostCityStage,
         "Muridae Market": stagingFuncs.addMuridaeMarketStage,
