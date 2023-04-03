@@ -29,36 +29,6 @@ export function addFestiveCometStage(message, user, user_post, hunt) {
 }
 
 /**
- * Read the viewing attributes to determine the season. Reject hunts where the season changed.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addSeasonalGardenStage(message, user, user_post, hunt) {
-    const season = user.viewing_atts.season;
-    const final_season = user_post.viewing_atts.season;
-    if (season && final_season && season === final_season) {
-        switch (season) {
-            case "sr":
-                message.stage = "Summer";
-                break;
-            case "fl":
-                message.stage = "Fall";
-                break;
-            case "wr":
-                message.stage = "Winter";
-                break;
-            default:
-                message.stage = "Spring";
-                break;
-        }
-    } else {
-        message.location = null;
-    }
-}
-
-/**
  * Report the zone and depth, if any.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
