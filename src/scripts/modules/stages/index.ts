@@ -3,6 +3,7 @@ import {BountifulBeanstalkStager} from './environments/bountifulBeanstalk';
 import {ForbiddenGroveStager} from './environments/forbiddenGrove';
 import {FungalCavernStager} from './environments/fungalCavern';
 import {IceFortressStager} from './environments/iceFortress';
+import {MoussuPicchuStager} from './environments/moussuPicchu';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 
 const stageModules: IStager[]  = [
@@ -10,6 +11,7 @@ const stageModules: IStager[]  = [
     new ForbiddenGroveStager(),
     new FungalCavernStager(),
     new IceFortressStager(),
+    new MoussuPicchuStager(),
     new SuperBrieFactoryStager(),
 ];
 

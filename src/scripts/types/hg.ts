@@ -52,7 +52,7 @@ export interface Quests {
     QuestLivingGarden?: unknown
     QuestLostCity?: unknown
     QuestMousoleum?: unknown
-    QuestMoussuPicchu?: unknown
+    QuestMoussuPicchu?: quests.QuestMoussuPicchu
     QuestPollutionOutbreak?: unknown
     QuestQuesoGeyser?: unknown
     QuestRelicHunter?: unknown

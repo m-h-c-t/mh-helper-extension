@@ -1,13 +1,19 @@
-import {addMoussuPicchuStage} from "@scripts/modules/stages/legacy";
+import {MoussuPicchuStager} from "@scripts/modules/stages/environments/moussuPicchu";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 describe('MoussuPicchuStager', () => {
     const ElementLevels = ['low', 'medium', 'high', 'max'];
 
+    it('should be for the "Moussu Picchu" environment', () => {
+        const stager = new MoussuPicchuStager();
+        expect(stager.environment).toBe('Moussu Picchu');
+    });
+
     describe.each(ElementLevels)('%p rain level', (rainLevel) => {
         describe.each(ElementLevels)('%p wind level', (windLevel) => {
             it(`should set stage wind and rain levels to ${rainLevel} and ${windLevel}`, () => {
+                const stager = new MoussuPicchuStager();
 
                 const message = {} as IntakeMessage;
                 const preUser = {quests: {QuestMoussuPicchu: {
@@ -18,7 +24,7 @@ describe('MoussuPicchuStager', () => {
                 }}} as User;
                 const postUser = {} as User;
                 const journal = {};
-                addMoussuPicchuStage(message, preUser, postUser, journal);
+                stager.addStage(message, preUser, postUser, journal);
 
                 const expected = {
                     rain: `Rain ${rainLevel}`,
@@ -27,5 +33,16 @@ describe('MoussuPicchuStager', () => {
                 expect(message.stage).toStrictEqual(expected);
             });
         });
+    });
+
+    it.each([undefined, null])('should throw when QuestMoussuPicchu is %p', (quest) => {
+        const stager = new MoussuPicchuStager();
+
+        const message = {} as IntakeMessage;
+        const preUser = {quests: {QuestMoussuPicchu: quest}} as User;
+        const postUser = {} as User;
+        const journal = {};
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestMoussuPicchu is undefined');
     });
 });
