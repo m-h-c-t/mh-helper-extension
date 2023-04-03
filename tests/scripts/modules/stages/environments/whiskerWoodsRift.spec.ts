@@ -1,11 +1,17 @@
-import {addWhiskerWoodsRiftStage} from "@scripts/modules/stages/legacy";
+import {WhiskerWoodsRiftStager} from "@scripts/modules/stages/environments/whiskerWoodsRift";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 describe('Whisker Woods Rift stages', () => {
     const interestingRagePoints = [0, 24, 25, 49, 50];
 
+    it('should be for the "Whisker Woods Rift" environment', () => {
+        const stager = new WhiskerWoodsRiftStager();
+        expect(stager.environment).toBe('Whisker Woods Rift');
+    });
+
     it.each(interestingRagePoints)('should set rage to appropriate level', (rage) => {
+        const stager = new WhiskerWoodsRiftStager();
         const message = {} as IntakeMessage;
         const preUser = {quests: {QuestRiftWhiskerWoods:{zones: {
             clearing: {level: rage},
@@ -14,7 +20,7 @@ describe('Whisker Woods Rift stages', () => {
         }}}} as User;
         const postUser = {} as User;
         const journal = {};
-        addWhiskerWoodsRiftStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         const range = getRageRange(rage);
         const expected = {
@@ -25,7 +31,8 @@ describe('Whisker Woods Rift stages', () => {
         expect(message.stage).toStrictEqual(expected);
     });
 
-    it.each([-1, 51])('should set location to "null" for invalid rage levels', (rage) => {
+    it.each([-1, 51])('should throw for invalid rage levels', (rage) => {
+        const stager = new WhiskerWoodsRiftStager();
         const message = {location: {name: 'Whisker Woods Rift'}} as IntakeMessage;
         const preUser = {quests: {QuestRiftWhiskerWoods:{zones: {
             clearing: {level: rage},
@@ -34,9 +41,20 @@ describe('Whisker Woods Rift stages', () => {
         }}}} as User;
         const postUser = {} as User;
         const journal = {};
-        addWhiskerWoodsRiftStage(message, preUser, postUser, journal);
 
-        expect(message.location).toBe(null);
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Unexpected WWR quest state');
+    });
+
+    it.each([undefined, null])('should throw when QuestRiftWhiskerWoods is %p', (state) => {
+        const stager = new WhiskerWoodsRiftStager();
+        const message = {location: {name: 'Whisker Woods Rift'}} as IntakeMessage;
+        const preUser = {quests: {QuestRiftWhiskerWoods: state}} as User;
+        const postUser = {} as User;
+        const journal = {};
+
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestRiftWhiskerWoods is undefined');
     });
 });
 

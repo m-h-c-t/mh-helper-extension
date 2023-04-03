@@ -19,4 +19,5 @@ export * from '@scripts/types/quests/sandDunes';
 export * from '@scripts/types/quests/superBrieFactory';
 export * from '@scripts/types/quests/tableOfContents';
 export * from '@scripts/types/quests/springHunt';
+export * from '@scripts/types/quests/whiskerWoodsRift';
 export * from '@scripts/types/quests/zokor';

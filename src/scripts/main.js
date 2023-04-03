@@ -1186,7 +1186,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Table of Contents": stagingFuncs.addTableOfContentsStage,
         "Toxic Spill": stagingFuncs.addToxicSpillStage,
         "Valour Rift": stagingFuncs.addValourRiftStage,
-        "Whisker Woods Rift": stagingFuncs.addWhiskerWoodsRiftStage,
     };
 
     /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */
