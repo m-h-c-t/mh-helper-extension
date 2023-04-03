@@ -1,8 +1,13 @@
-import {addBalacksCoveStage} from "@scripts/modules/stages/legacy";
+import {BalacksCoveStager} from "@scripts/modules/stages/environments/balacksCove";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 describe('Balack\'s Cove stages', () => {
+
+    it('should be for the "Balack\'s Cove" environment', () => {
+        const stager = new BalacksCoveStager();
+        expect(stager.environment).toBe('Balack\'s Cove');
+    });
 
     it.each`
         tide | expected
@@ -10,6 +15,8 @@ describe('Balack\'s Cove stages', () => {
         ${'med'}  | ${'Medium'}
         ${'high'} | ${'High'}
     `('should set stage to High, Medium, or Low', ({tide, expected}) => {
+        const stager = new BalacksCoveStager();
+
         const message = {} as IntakeMessage;
         const preUser = {quests: {QuestBalacksCove: {tide: {
             level: tide,
@@ -19,12 +26,14 @@ describe('Balack\'s Cove stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addBalacksCoveStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe(`${expected} Tide`);
     });
 
     it('should reject imminent tide changes', () => {
+        const stager = new BalacksCoveStager();
+
         const message = {} as IntakeMessage;
         const preUser = {quests: {QuestBalacksCove: {tide: {
             level: 'high',
@@ -34,8 +43,19 @@ describe('Balack\'s Cove stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addBalacksCoveStage(message, preUser, postUser, journal);
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Skipping hunt due to imminent tide change');
+    });
 
-        expect(message.location).toBe(null);
+    it.each([undefined, null])('should throw when quest is %p', (quest) => {
+        const stager = new BalacksCoveStager();
+
+        const message = {} as IntakeMessage;
+        const preUser = {quests: {QuestBalacksCove: quest}} as User;
+        const postUser = {} as User;
+        const journal = {};
+
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestBalacksCove is undefined');
     });
 });

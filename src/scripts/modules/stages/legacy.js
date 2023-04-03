@@ -103,32 +103,6 @@ export function addFieryWarpathStage(message, user, user_post, hunt) {
 }
 
 /**
- * Set the stage based on the tide. Reject hunts near tide intensity changes.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addBalacksCoveStage(message, user, user_post, hunt) {
-    const tide = user.quests.QuestBalacksCove.tide.level;
-    const direction = user.quests.QuestBalacksCove.tide.direction;
-    const progress = user.quests.QuestBalacksCove.tide.percent;
-    const imminent_state_change = (progress >= 99
-        // Certain transitions do not change the tide intensity, and are OK to track.
-        && !(tide === "low" && direction === "in")
-        && !(tide === "high" && direction === "out"));
-    if (!imminent_state_change && tide) {
-        message.stage = tide.charAt(0).toUpperCase() + tide.substr(1);
-        if (message.stage === "Med") {
-            message.stage = "Medium";
-        }
-        message.stage += " Tide";
-    } else {
-        message.location = null;
-    }
-}
-
-/**
  * Read the viewing attributes to determine the season. Reject hunts where the season changed.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
