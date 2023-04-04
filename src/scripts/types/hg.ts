@@ -65,7 +65,7 @@ export interface Quests {
     QuestRiftValour?: quests.QuestRiftValour
     QuestSandDunes?: quests.QuestSandDunes
     QuestSchoolOfSorcery?: quests.QuestSchoolOfSorcery
-    QuestSunkenCity?: unknown
+    QuestSunkenCity?: quests.QuestSunkenCity
     QuestSuperBrieFactory?: quests.QuestSuperBrieFactory
     QuestSpringHunt?: quests.QuestSpringHunt
     QuestTableOfContents?: quests.QuestTableOfContents

@@ -1183,7 +1183,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Festive Comet": stagingFuncs.addFestiveCometStage,
         "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
-        "Sunken City": stagingFuncs.addSunkenCityStage,
     };
 
     /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */

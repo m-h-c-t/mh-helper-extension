@@ -1,9 +1,15 @@
-import {addSunkenCityStage} from "@scripts/modules/stages/legacy";
+import {SunkenCityStager} from "@scripts/modules/stages/environments/sunkenCity";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 describe('Sunken City stages', () => {
+    it('should be for the "Sunken City" environment', () => {
+        const stager = new SunkenCityStager();
+        expect(stager.environment).toBe('Sunken City');
+    });
+
     it('should set stage to "Docked" if user is not diving', () => {
+        const stager = new SunkenCityStager();
         const message = {} as IntakeMessage;
         const preUser = {quests: {QuestSunkenCity: {
             is_diving: false,
@@ -11,7 +17,7 @@ describe('Sunken City stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addSunkenCityStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe('Docked');
     });
@@ -29,6 +35,7 @@ describe('Sunken City stages', () => {
         ${25000}  | ${'25km+'}
         ${100000} | ${'25km+'}
     `('should append "$expected" to zone name when depth is $distance', ({distance, expected}) => {
+        const stager = new SunkenCityStager();
         const message = {} as IntakeMessage;
         const preUser = {quests: {QuestSunkenCity: {
             is_diving: true,
@@ -38,8 +45,19 @@ describe('Sunken City stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addSunkenCityStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe(`Test Zone ${expected}`);
+    });
+
+    it.each([undefined, null])('should throw when QuestSunken city is %p', (state) => {
+        const stager = new SunkenCityStager();
+        const message = {} as IntakeMessage;
+        const preUser = {quests: {QuestSunkenCity: state}} as User;
+        const postUser = {} as User;
+        const journal = {};
+
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestSunkenCity is undefined');
     });
 });
