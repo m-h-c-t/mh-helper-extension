@@ -8,6 +8,7 @@ import {CursedCityStager} from './environments/cursedCity';
 import {FieryWarpathStager} from './environments/fieryWarpath';
 import {FloatingIslandsStager} from './environments/floatingIslands';
 import {ForbiddenGroveStager} from './environments/forbiddenGrove';
+import {ForewordFarmStager} from './environments/forewardFarm';
 import {FortRoxStager} from './environments/fortRox';
 import {FungalCavernStager} from './environments/fungalCavern';
 import {HarbourStager} from './environments/harbour';
@@ -38,6 +39,7 @@ const stageModules: IStager[]  = [
     new FieryWarpathStager(),
     new FloatingIslandsStager(),
     new ForbiddenGroveStager(),
+    new ForewordFarmStager(),
     new FortRoxStager(),
     new FungalCavernStager(),
     new HarbourStager(),

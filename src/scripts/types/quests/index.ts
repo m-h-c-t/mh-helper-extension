@@ -5,6 +5,7 @@ export * from '@scripts/types/quests/burroughsRift';
 export * from '@scripts/types/quests/clawShotCity';
 export * from '@scripts/types/quests/floatingIslands';
 export * from '@scripts/types/quests/forbiddenGrove';
+export * from '@scripts/types/quests/forewordFarm';
 export * from '@scripts/types/quests/fortRox';
 export * from '@scripts/types/quests/halloween';
 export * from '@scripts/types/quests/harbour';
