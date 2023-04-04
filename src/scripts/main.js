@@ -1174,7 +1174,6 @@ import * as detailingFuncs from './modules/details/legacy';
 
     /** @type {Object <string, Function>} */
     const location_stage_lookup = {
-        "Burroughs Rift": stagingFuncs.addBurroughsRiftStage,
         "Festive Comet": stagingFuncs.addFestiveCometStage,
         "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,
         "Foreword Farm": stagingFuncs.addForewordFarmStage,

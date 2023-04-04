@@ -247,26 +247,6 @@ export function addToxicSpillStage(message, user, user_post, hunt) {
 }
 
 /**
- * Report the misting state
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addBurroughsRiftStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestRiftBurroughs;
-    message.stage = (({
-        "tier_0": "Mist 0",
-        "tier_1": "Mist 1-5",
-        "tier_2": "Mist 6-18",
-        "tier_3": "Mist 19-20",
-    })[quest.mist_tier]);
-    if (!message.stage) {
-        message.location = null;
-    }
-}
-
-/**
  * Report on the unique minigames in each sub-location. Reject hunts for which the train
  * moved / updated / departed, as the hunt stage is ambiguous.
  * @param {Object <string, any>} message The message to be sent.

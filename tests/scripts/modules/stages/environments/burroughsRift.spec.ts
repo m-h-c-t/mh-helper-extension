@@ -1,17 +1,31 @@
-import {addBurroughsRiftStage} from "@scripts/modules/stages/legacy";
+import {BurroughsRiftStager} from "@scripts/modules/stages/environments/burroughsRift";
+import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 describe('Burroughs Rift stages', () => {
+    let stager: IStager;
     let message: IntakeMessage;
     let preUser: User;
     let postUser: User;
     const journal = {};
 
     beforeEach(() => {
+        stager = new BurroughsRiftStager();
         message = {} as IntakeMessage;
         preUser = {} as User;
         postUser = {} as User;
+    });
+
+    it('should be for the Burroughs Rift environment', () => {
+        expect(stager.environment).toBe('Burroughs Rift');
+    });
+
+    it('should throw when QuestRiftBurroughs is undefined', () => {
+        preUser.quests = {};
+
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestRiftBurroughs is undefined');
     });
 
     it.each`
@@ -26,21 +40,18 @@ describe('Burroughs Rift stages', () => {
             mist_tier: level,
         }};
 
-        addBurroughsRiftStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe(expected);
     });
 
-    it('should set location to null when mist level is unknown', () => {
+    it('should throw when mist level is unknown', () => {
         message.location = {id: 0, name: ''};
         preUser.quests = {QuestRiftBurroughs: {
             mist_tier: 'tier_42',
         }};
 
-        expect(message.location).not.toBeNull();
-
-        addBurroughsRiftStage(message, preUser, postUser, journal);
-
-        expect(message.location).toBeNull();
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Skipping unknown Burroughs Rift mist state');
     });
 });
