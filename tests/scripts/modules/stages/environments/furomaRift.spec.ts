@@ -1,8 +1,19 @@
-import {addFuromaRiftStage} from "@scripts/modules/stages/legacy";
+import {FuromaRiftStager} from "@scripts/modules/stages/environments/furomaRift";
+import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 describe('Furoma Rift stages', () => {
+    let stager: IStager;
+
+    beforeEach(() => {
+        stager = new FuromaRiftStager();
+    });
+
+    it('should be for the Furoma Rift environment', () => {
+        expect(stager.environment).toBe('Furoma Rift');
+    });
+
     it('should set stage to Outside when view state has trainingGrounds', () => {
         const message = {} as IntakeMessage;
         const preUser = {quests: {QuestRiftFuroma: {
@@ -11,7 +22,7 @@ describe('Furoma Rift stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addFuromaRiftStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe('Outside');
     });
@@ -39,12 +50,12 @@ describe('Furoma Rift stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addFuromaRiftStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe(expected);
     });
 
-    it('should set location to null when droid charge level is unknown', () => {
+    it('should should throw when droid charge level is unknown', () => {
         const message = {location: {}} as IntakeMessage;
         const preUser = {quests: {QuestRiftFuroma: {
             view_state: 'pagoda',
@@ -55,10 +66,17 @@ describe('Furoma Rift stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        expect(message.location).not.toBeNull();
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Skipping unknown Furoma Rift droid state');
+    });
 
-        addFuromaRiftStage(message, preUser, postUser, journal);
+    it.each([undefined, null])('should throw when QuestRiftFuroma is %p', (quest) => {
+        const message = {location: {}} as IntakeMessage;
+        const preUser = {quests: {QuestRiftFuroma: quest}} as User;
+        const postUser = {} as User;
+        const journal = {};
 
-        expect(message.location).toBeNull();
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestRiftFuroma is undefined');
     });
 });
