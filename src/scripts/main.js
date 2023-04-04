@@ -1193,7 +1193,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Queso Geyser": stagingFuncs.addQuesoGeyserStage,
         "Sand Dunes": stagingFuncs.addSandDunesStage,
         "Seasonal Garden": stagingFuncs.addSeasonalGardenStage,
-        "Slushy Shoreline": stagingFuncs.addSlushyShorelineStage,
         "Sunken City": stagingFuncs.addSunkenCityStage,
         "Table of Contents": stagingFuncs.addTableOfContentsStage,
         "Toxic Spill": stagingFuncs.addToxicSpillStage,
