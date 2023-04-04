@@ -2,6 +2,7 @@ import {type IStager} from './stages.types';
 import {BalacksCoveStager} from './environments/balacksCove';
 import {BountifulBeanstalkStager} from './environments/bountifulBeanstalk';
 import {ClawShotCityStager} from './environments/clawShotCity';
+import {CursedCityStager} from './environments/cursedCity';
 import {FieryWarpathStager} from './environments/fieryWarpath';
 import {FloatingIslandsStager} from './environments/floatingIslands';
 import {ForbiddenGroveStager} from './environments/forbiddenGrove';
@@ -10,6 +11,7 @@ import {HarbourStager} from './environments/harbour';
 import {IceFortressStager} from './environments/iceFortress';
 import {LabyrinthStager} from './environments/labyrinth';
 import {LivingGardenStager} from './environments/livingGarden';
+import {LostCityStager} from './environments/lostCity';
 import {MoussuPicchuStager} from './environments/moussuPicchu';
 import {MousoleumStager} from './environments/mousoleum';
 import {MuridaeMarketStager} from './environments/muridaeMarket';
@@ -22,6 +24,7 @@ const stageModules: IStager[]  = [
     new BalacksCoveStager(),
     new BountifulBeanstalkStager(),
     new ClawShotCityStager(),
+    new CursedCityStager(),
     new FieryWarpathStager(),
     new FloatingIslandsStager(),
     new ForbiddenGroveStager(),
@@ -30,6 +33,7 @@ const stageModules: IStager[]  = [
     new IceFortressStager(),
     new LabyrinthStager(),
     new LivingGardenStager(),
+    new LostCityStager(),
     new MoussuPicchuStager(),
     new MousoleumStager(),
     new MuridaeMarketStager(),

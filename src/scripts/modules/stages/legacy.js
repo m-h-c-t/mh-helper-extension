@@ -106,18 +106,6 @@ export function addSeasonalGardenStage(message, user, user_post, hunt) {
 }
 
 /**
- * Indicate whether or not the Cursed / Corrupt mouse is present
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addLostCityStage(message, user, user_post, hunt) {
-// TODO: Partially cursed, for Cursed City?
-    message.stage = (user.quests.QuestLostCity.minigame.is_cursed) ? "Cursed" : "Not Cursed";
-}
-
-/**
  * Report the current distance / obstacle.
  * TODO: Stage / hunt details for first & second icewing hunting?
  * @param {import("@scripts/types/mhct").IntakeMessage} message The message to be sent.
