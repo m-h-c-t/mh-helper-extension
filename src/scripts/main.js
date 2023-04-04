@@ -1187,7 +1187,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Iceberg": stagingFuncs.addIcebergStage,
         "Living Garden": stagingFuncs.addGardenStage,
         "Lost City": stagingFuncs.addLostCityStage,
-        "Muridae Market": stagingFuncs.addMuridaeMarketStage,
         "Queso Geyser": stagingFuncs.addQuesoGeyserStage,
         "Sand Dunes": stagingFuncs.addSandDunesStage,
         "Seasonal Garden": stagingFuncs.addSeasonalGardenStage,
