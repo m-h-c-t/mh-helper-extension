@@ -10,6 +10,7 @@ import {IceFortressStager} from './environments/iceFortress';
 import {LabyrinthStager} from './environments/labyrinth';
 import {MoussuPicchuStager} from './environments/moussuPicchu';
 import {MousoleumStager} from './environments/mousoleum';
+import {SandDunesStager} from './environments/sandDunes';
 import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 
@@ -25,6 +26,7 @@ const stageModules: IStager[]  = [
     new LabyrinthStager(),
     new MoussuPicchuStager(),
     new MousoleumStager(),
+    new SandDunesStager(),
     new SlushyShorelineStager(),
     new SuperBrieFactoryStager(),
 ];
