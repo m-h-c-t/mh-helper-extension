@@ -21,6 +21,7 @@ import {QuesoGeyserStager} from './environments/quesoGeyser';
 import {SandDunesStager} from './environments/sandDunes';
 import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
+import {TableOfContentsStager} from './environments/tableOfContents';
 import {TwistedGardenStager} from './environments/twistedGarden';
 import {ZokorStager} from './environments/zokor';
 
@@ -47,6 +48,7 @@ const stageModules: IStager[]  = [
     new SandDunesStager(),
     new SlushyShorelineStager(),
     new SuperBrieFactoryStager(),
+    new TableOfContentsStager(),
     new TwistedGardenStager(),
     new ZokorStager(),
 ];

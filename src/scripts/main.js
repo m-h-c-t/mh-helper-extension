@@ -1183,7 +1183,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Iceberg": stagingFuncs.addIcebergStage,
         "Seasonal Garden": stagingFuncs.addSeasonalGardenStage,
         "Sunken City": stagingFuncs.addSunkenCityStage,
-        "Table of Contents": stagingFuncs.addTableOfContentsStage,
         "Toxic Spill": stagingFuncs.addToxicSpillStage,
         "Valour Rift": stagingFuncs.addValourRiftStage,
         "Whisker Woods Rift": stagingFuncs.addWhiskerWoodsRiftStage,

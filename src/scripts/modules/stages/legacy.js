@@ -192,28 +192,6 @@ export function addFuromaRiftStage(message, user, user_post, hunt) {
 }
 
 /**
- * Set the Table of Contents Stage
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addTableOfContentsStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestTableOfContents;
-    if (quest) {
-        if (quest.is_writing) {
-            if (quest.current_book.volume > 0) {
-                message.stage = 'Encyclopedia';
-            } else {
-                message.stage = 'Pre-Encyclopedia';
-            }
-        } else {
-            message.stage = 'Not Writing';
-        }
-    }
-}
-
-/**
  *
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
