@@ -384,24 +384,6 @@ export function addFortRoxStage(message, user, user_post, hunt) {
 }
 
 /**
- * Report the state of corks and eruptions
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addQuesoGeyserStage(message, user, user_post, hunt) {
-    const state = user.quests.QuestQuesoGeyser.state;
-    if (state === "collecting" || state === "claim") {
-        message.stage = "Cork Collecting";
-    } else if (state === "corked") {
-        message.stage = "Pressure Building";
-    } else if (state === "eruption") {
-    // Tiny/Small/Medium/Large/Epic Eruption
-        message.stage = user.quests.QuestQuesoGeyser.state_name;
-    }
-}
-
 /**
  * Report tower stage: Outside, Eclipse, Floors 1-7, 9-15, 17-23, 25-31+, Umbra
  * @param {Object <string, any>} message The message to be sent.

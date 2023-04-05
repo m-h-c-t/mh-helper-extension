@@ -13,6 +13,7 @@ export * from '@scripts/types/quests/livingGarden';
 export * from '@scripts/types/quests/lostCity';
 export * from '@scripts/types/quests/mousoleum';
 export * from '@scripts/types/quests/moussuPicchu';
+export * from '@scripts/types/quests/quesoGeyser';
 export * from '@scripts/types/quests/sandDunes';
 export * from '@scripts/types/quests/superBrieFactory';
 export * from '@scripts/types/quests/tableOfContents';

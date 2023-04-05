@@ -16,6 +16,7 @@ import {LostCityStager} from './environments/lostCity';
 import {MoussuPicchuStager} from './environments/moussuPicchu';
 import {MousoleumStager} from './environments/mousoleum';
 import {MuridaeMarketStager} from './environments/muridaeMarket';
+import {QuesoGeyserStager} from './environments/quesoGeyser';
 import {SandDunesStager} from './environments/sandDunes';
 import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
@@ -40,6 +41,7 @@ const stageModules: IStager[]  = [
     new MoussuPicchuStager(),
     new MousoleumStager(),
     new MuridaeMarketStager(),
+    new QuesoGeyserStager(),
     new SandDunesStager(),
     new SlushyShorelineStager(),
     new SuperBrieFactoryStager(),
