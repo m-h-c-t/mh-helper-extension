@@ -1,7 +1,8 @@
-import {addFloatingIslandsStage} from "@scripts/modules/stages/legacy";
-import {FloatingIslandsUser} from "@scripts/types/environments";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
+import {IStager} from "@scripts/modules/stages/stages.types";
+import {FloatingIslandHuntingSiteAtts} from "@scripts/types/quests/floatingIslands";
+import {FloatingIslandsStager} from "@scripts/modules/stages/environments/floatingIslands";
 
 // Common Nomenclature
 // LAI = Low Altitude Island
@@ -50,24 +51,31 @@ Pirates are the final special case. Equipping Sky Pirate Swiss will change the s
 */
 
 describe('Floating Islands stages', () => {
+    let stager: IStager;
     let message: IntakeMessage;
-    let preUser: FloatingIslandsUser;
+    let preUser: User;
     let postUser: User;
     const journal = {};
 
     beforeEach(() => {
+        stager = new FloatingIslandsStager();
         message = {} as IntakeMessage;
         preUser = {
+            quests: {},
+        } as User;
+        postUser = {} as User;
 
-        } as FloatingIslandsUser;
-        postUser = {} as FloatingIslandsUser;
+    });
 
+    it('should throw when QuestFloatingIslands is undefined', () => {
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestFloatingIslands is undefined');
     });
 
     describe('Enemy Encounters', () => {
         it('should set stage to island name by default', () => {
             setHuntingSiteAtts({});
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Test Island');
         });
@@ -77,7 +85,7 @@ describe('Floating Islands stages', () => {
                 is_enemy_encounter: true,
                 is_low_tier_island: true,
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Warden');
         });
@@ -87,7 +95,7 @@ describe('Floating Islands stages', () => {
                 is_enemy_encounter: true,
                 is_high_tier_island: true,
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Test Island Paragon');
         });
@@ -97,7 +105,7 @@ describe('Floating Islands stages', () => {
                 is_enemy_encounter: true,
                 is_vault_island: true,
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Empress');
         });
@@ -106,7 +114,7 @@ describe('Floating Islands stages', () => {
             setHuntingSiteAtts({
                 is_enemy_encounter: true,
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Test Island Enemy Encounter');
         });
@@ -121,7 +129,7 @@ describe('Floating Islands stages', () => {
             setHuntingSiteAtts({
                 is_vault_island: false,
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Island No Pirates');
         });
@@ -130,7 +138,7 @@ describe('Floating Islands stages', () => {
             setHuntingSiteAtts({
                 is_vault_island: true,
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Vault No Pirates');
         });
@@ -139,7 +147,7 @@ describe('Floating Islands stages', () => {
             setHuntingSiteAtts({
                 activated_island_mod_types: ['ore_bonus', 'sky_pirates', 'sky_pirates'],
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Island Pirates x2');
         });
@@ -151,7 +159,7 @@ describe('Floating Islands stages', () => {
             setHuntingSiteAtts({
                 activated_island_mod_types: ['loot_cache'],
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Test Island');
         });
@@ -161,7 +169,7 @@ describe('Floating Islands stages', () => {
             setHuntingSiteAtts({
                 activated_island_mod_types: ['loot_cache', 'loot_cache'],
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Test Island - Loot x2');
         });
@@ -173,7 +181,7 @@ describe('Floating Islands stages', () => {
             setHuntingSiteAtts({
                 is_vault_island: true,
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Test Island');
         });
@@ -183,7 +191,7 @@ describe('Floating Islands stages', () => {
                 is_vault_island: true,
                 activated_island_mod_types: ['ore_gem_bonus', 'ore_gem_bonus', 'charm_bonus', 'charm_bonus'],
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Test Island');
         });
@@ -203,19 +211,21 @@ describe('Floating Islands stages', () => {
                     },
                 ],
             });
-            addFloatingIslandsStage(message, preUser, postUser, journal);
+            stager.addStage(message, preUser, postUser, journal);
 
             expect(message.stage).toBe('Test Island 3x Ore and Gem Deposit');
         });
     });
 
-    function setHuntingSiteAtts(attributes: Partial<HuntingSiteAtts>) {
-        preUser.enviroment_atts = {
-            hunting_site_atts: Object.assign({}, getDefaultEnvironmentAtts(), attributes),
+    function setHuntingSiteAtts(attributes: Partial<FloatingIslandHuntingSiteAtts>) {
+        preUser.quests = {
+            QuestFloatingIslands: {
+                hunting_site_atts: Object.assign({}, getDefaultEnvironmentAtts(), attributes),
+            },
         };
     }
 
-    function getDefaultEnvironmentAtts(): HuntingSiteAtts {
+    function getDefaultEnvironmentAtts(): FloatingIslandHuntingSiteAtts {
         return {
             island_name: 'Test Island',
             is_enemy_encounter: null,
@@ -226,41 +236,4 @@ describe('Floating Islands stages', () => {
             island_mod_panels: [],
         };
     }
-
-    interface HuntingSiteAtts {
-        island_name: string;
-        is_enemy_encounter: boolean | null;
-        is_low_tier_island: boolean | null;
-        is_high_tier_island: boolean | null;
-        is_vault_island: boolean | null;
-        activated_island_mod_types: IslandModType[];
-        island_mod_panels: IslandModPanel[];
-    }
-
-    interface IslandModPanel {
-        type: IslandModType;
-        name: string;
-    }
-
-    const IslandModTypes = [
-        'empty',
-        'empty_sky',
-        'gem_bonus',
-        'ore_bonus',
-        'sky_cheese',
-        'sky_pirates',
-        'loot_cache',
-        'wind_shrine',
-        'rain_shrine',
-        'frost_shrine',
-        'fog_shrine',
-        'paragon_cache_a',
-        'paragon_cache_d',
-        'paragon_cache_c',
-        'paragon_cache_b',
-        'ore_gem_bonus',
-        'cloudstone_bonus',
-        'charm_bonus',
-    ] as const;
-    type IslandModType = typeof IslandModTypes[number];
 });

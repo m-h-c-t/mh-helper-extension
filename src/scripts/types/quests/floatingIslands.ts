@@ -1,17 +1,5 @@
-import type {HgUser} from "../hg";
-
-export type FloatingIslandsUser = HgUser & FloatingIslandAtts
-
-export interface FloatingIslandAtts {
-    environment_name: 'Floating Islands',
-    quests: {
-        QuestFloatingIslands: unknown,
-    },
-    enviroment_atts: FloatingIslandEnvironmentAtts,
-}
-
-export interface FloatingIslandEnvironmentAtts {
-    hunting_site_atts: FloatingIslandHuntingSiteAtts,
+export interface QuestFloatingIslands {
+    hunting_site_atts: FloatingIslandHuntingSiteAtts
 }
 
 export interface FloatingIslandHuntingSiteAtts {
@@ -29,7 +17,7 @@ interface IslandModPanel {
     name: string;
 }
 
-const IslandModTypes = [
+export const IslandModTypes = [
     'empty',
     'empty_sky',
     'gem_bonus',
@@ -49,4 +37,4 @@ const IslandModTypes = [
     'cloudstone_bonus',
     'charm_bonus',
 ] as const;
-type IslandModType = typeof IslandModTypes[number];
+export type IslandModType = typeof IslandModTypes[number];

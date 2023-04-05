@@ -1,5 +1,4 @@
 import * as quests from '@scripts/types/quests';
-import * as envs from '@scripts/types/environments';
 
 export interface HgResponse {
     user: User;
@@ -11,8 +10,7 @@ export interface HgResponse {
 }
 
 export type User =
-    | HgUser
-    | envs.FloatingIslandsUser;
+    | HgUser;
 
 export type HgUser = {
     user_id: number;
@@ -47,6 +45,7 @@ export interface Quests {
     QuestBalacksCove?: unknown
     QuestBountifulBeanstalk?: quests.QuestBountifulBeanstalk
     QuestClawShotCity?: quests.QuestClawShotCity
+    QuestFloatingIslands?: quests.QuestFloatingIslands
     QuestForbiddenGrove?: quests.QuestForbiddenGrove
     QuestForewordFarm?: unknown
     QuestFortRox?: unknown
