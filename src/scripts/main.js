@@ -1178,7 +1178,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Festive Comet": stagingFuncs.addFestiveCometStage,
         "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,
         "Foreword Farm": stagingFuncs.addForewordFarmStage,
-        "Fort Rox": stagingFuncs.addFortRoxStage,
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
         "Iceberg": stagingFuncs.addIcebergStage,

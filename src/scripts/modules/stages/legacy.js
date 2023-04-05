@@ -354,36 +354,6 @@ export function addForewordFarmStage(message, user, user_post, hunt) {
 }
 
 /**
- * Report the progress through the night
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addFortRoxStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestFortRox;
-    if (quest.is_lair) {
-        message.stage = "Heart of the Meteor";
-    } else if (quest.is_dawn) {
-        message.stage = "Dawn";
-    } else if (quest.is_day) {
-        message.stage = "Day";
-    } else if (quest.is_night) {
-        message.stage = (({
-            "stage_one":   "Twilight",
-            "stage_two":   "Midnight",
-            "stage_three": "Pitch",
-            "stage_four":  "Utter Darkness",
-            "stage_five":  "First Light",
-        })[quest.current_stage]);
-    }
-
-    if (!message.stage) {
-        message.location = null;
-    }
-}
-
-/**
  * Report the state of corks and eruptions
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
