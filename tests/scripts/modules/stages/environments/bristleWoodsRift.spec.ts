@@ -1,8 +1,11 @@
-import {addBristleWoodsRiftStage} from "@scripts/modules/stages/legacy";
+import {BristleWoodsRiftStager} from "@scripts/modules/stages/environments/bristleWoodsRift";
+import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
+import {QuestRiftBristleWoods} from "@scripts/types/quests";
 
 describe('Bristle Woods Rift stages', () => {
+    let stager: IStager;
     let message: IntakeMessage;
     let preUser: User;
     let postUser: User;
@@ -26,6 +29,7 @@ describe('Bristle Woods Rift stages', () => {
     ];
 
     beforeEach(() => {
+        stager = new BristleWoodsRiftStager();
         message = {} as IntakeMessage;
         preUser = {quests: {
             QuestRiftBristleWoods: getDefaultQuest(),
@@ -35,18 +39,29 @@ describe('Bristle Woods Rift stages', () => {
         }} as User;
     });
 
-    it.each(ChamberNames)('should set stage name to chamber name', (chamberName) => {
-        preUser.quests.QuestRiftBristleWoods.chamber_name = chamberName;
+    it('should be for the Bristle Woods Rift environment', () => {
+        expect(stager.environment).toBe('Bristle Woods Rift');
+    });
 
-        addBristleWoodsRiftStage(message, preUser, postUser, journal);
+    it('should throw when QuestRiftBristleWoods is undefined', () => {
+        preUser.quests.QuestRiftBristleWoods = undefined;
+
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestRiftBristleWoods is undefined');
+    });
+
+    it.each(ChamberNames)('should set stage name to chamber name', (chamberName) => {
+        preUser.quests.QuestRiftBristleWoods!.chamber_name = chamberName;
+
+        stager.addStage(message, preUser, postUser, journal);
 
         const expected = chamberName === "Rift Acolyte Tower" ? "Entrance" : chamberName;
         expect(message.stage).toBe(expected);
     });
 
-    function getDefaultQuest() {
+    function getDefaultQuest(): QuestRiftBristleWoods {
         return {
-            chamber_name: null,
+            chamber_name: '',
         };
     }
 });
