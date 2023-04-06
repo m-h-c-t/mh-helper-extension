@@ -74,7 +74,7 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
                 const inventoryItem = Object.values(inventoryWithExtraMap).find(i => i.name == item.name);
                 if (inventoryItem == null) {
                     this.logger.debug('Egg content item missing from inventory', {inventoryWithExtraMap, item});
-                    throw new Error(`Egg content item ${item.name} wasn\'t found in inventory response.`);
+                    throw new Error(`Egg content item ${item.name} wasn't found in inventory response.`);
                 }
 
                 items.push({
