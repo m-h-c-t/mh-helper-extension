@@ -1,6 +1,6 @@
-import type { IStager } from '../stages.types';
-import type { User } from '@scripts/types/hg';
-import type { RoomType } from '@scripts/types/quests';
+import type {IStager} from '../stages.types';
+import type {User} from '@scripts/types/hg';
+import type {RoomType} from '@scripts/types/quests';
 
 export class SuperBrieFactoryStager implements IStager {
     readonly environment: string = 'SUPER|brie+ Factory';
@@ -10,7 +10,7 @@ export class SuperBrieFactoryStager implements IStager {
         "mixing_room":            "Mixing Room",
         "break_room":             "Break Room",
         "quality_assurance_room": "QA Room",
-    }
+    };
 
     addStage(message: any, userPre: User, userPost: User, journal: any): void {
         const quest = userPre.quests.QuestSuperBrieFactory;

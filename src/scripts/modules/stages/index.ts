@@ -1,7 +1,7 @@
-import { type IStager } from './stages.types';
-import { ForbiddenGroveStager } from './environments/forbiddenGrove';
-import { IceFortressStager } from './environments/iceFortress';
-import { SuperBrieFactoryStager } from './environments/superBrieFactory';
+import {type IStager} from './stages.types';
+import {ForbiddenGroveStager} from './environments/forbiddenGrove';
+import {IceFortressStager} from './environments/iceFortress';
+import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 
 const stageModules: IStager[]  = [
     new ForbiddenGroveStager(),
@@ -9,4 +9,4 @@ const stageModules: IStager[]  = [
     new SuperBrieFactoryStager(),
 ];
 
-export { stageModules }
+export {stageModules};

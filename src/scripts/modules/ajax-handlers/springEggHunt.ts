@@ -1,7 +1,7 @@
-import type { HgResponse } from "@scripts/types/hg";
-import type { HgItem } from "@scripts/types/mhct";
-import type { LoggerService } from "@scripts/util/logger";
-import { AjaxSuccessHandler } from "./ajaxSuccessHandler";
+import type {HgResponse} from "@scripts/types/hg";
+import type {HgItem} from "@scripts/types/mhct";
+import type {LoggerService} from "@scripts/util/logger";
+import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 
 export class SEHAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -58,12 +58,12 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
         const convertible: HgItem = {
             id: inventory[purchase.type].item_id,
             name: inventory[purchase.type].name,
-            quantity: purchase.quantity_opened
+            quantity: purchase.quantity_opened,
         };
 
         const inventoryWithExtraMap: Record<string, {name: string, item_id: number}> = {
-            gold_stat_item: { name: 'Gold', item_id: 431 },
-            point_stat_item: { name: 'Points', item_id: 644 },
+            gold_stat_item: {name: 'Gold', item_id: 431},
+            point_stat_item: {name: 'Points', item_id: 644},
         };
         // Using the extra inventory map from here due to limited info created above (ie gold_stat_item is not a full InventoryItem)
         Object.assign(inventoryWithExtraMap, inventory);
@@ -71,7 +71,7 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
         const items: HgItem[] = [];
         try {
             purchase.items.forEach(item => {
-                var inventoryItem = Object.values(inventoryWithExtraMap).find(i => i.name == item.name);
+                const inventoryItem = Object.values(inventoryWithExtraMap).find(i => i.name == item.name);
                 if (inventoryItem == null) {
                     this.logger.debug('Egg content item missing from inventory', {inventoryWithExtraMap, item});
                     throw new Error(`Egg content item ${item.name} wasn\'t found in inventory response.`);

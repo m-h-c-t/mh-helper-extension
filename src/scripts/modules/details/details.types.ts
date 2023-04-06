@@ -1,4 +1,4 @@
-import type { JournalMarkup, User } from "@scripts/types/hg";
+import type {JournalMarkup, User} from "@scripts/types/hg";
 
 /**
  * An object that can add hunt details.

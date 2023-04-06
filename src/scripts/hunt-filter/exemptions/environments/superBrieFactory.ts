@@ -1,5 +1,5 @@
-import type { IMessageExemption } from "@scripts/hunt-filter/interfaces";
-import type { IntakeMessage } from "@scripts/types/mhct";
+import type {IMessageExemption} from "@scripts/hunt-filter/interfaces";
+import type {IntakeMessage} from "@scripts/types/mhct";
 
 /**
  * Provides an exemption on the 'stage' difference. Iff the mouse was
@@ -14,7 +14,7 @@ class VincentStageExemption implements IMessageExemption {
         "Mixing Room",
         "Break Room",
         "QA Room",
-        "Any Room"
+        "Any Room",
     ];
 
     getExemptions(
@@ -34,5 +34,5 @@ class VincentStageExemption implements IMessageExemption {
 }
 
 export const superBrieFactoryExemptions = [
-    new VincentStageExemption()
+    new VincentStageExemption(),
 ];

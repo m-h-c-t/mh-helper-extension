@@ -1,11 +1,11 @@
-import { SEHAjaxHandler } from "@scripts/modules/ajax-handlers";
-import { HgItem } from "@scripts/types/mhct";
+import {SEHAjaxHandler} from "@scripts/modules/ajax-handlers";
+import {HgItem} from "@scripts/types/mhct";
 
 jest.mock('@scripts/util/logger');
-import { ConsoleLogger } from '@scripts/util/logger';
+import {ConsoleLogger} from '@scripts/util/logger';
 
 const logger = new ConsoleLogger();
-const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>
+const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>;
 const handler = new SEHAjaxHandler(logger, submitConvertibleCallback);
 
 const sbfactory_url = "mousehuntgame.com/managers/ajax/events/spring_hunt.php";
@@ -36,10 +36,10 @@ describe("SEHAjaxHandler", () => {
         it('warns if response is unexpected', async () => {
             // vending_machine_reponse.type missing here,
             // but add some other data to verify that it will print out entire response
-            const response = { user_id: 4, egg_contents: {} }
+            const response = {user_id: 4, egg_contents: {}};
             await handler.execute(response);
 
-            expect(logger.warn).toBeCalledWith('Unable to parse SEH response', { responseJSON: response});
+            expect(logger.warn).toBeCalledWith('Unable to parse SEH response', {responseJSON: response});
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
@@ -50,32 +50,32 @@ describe("SEHAjaxHandler", () => {
             const expectedConvertible = {
                 id: 3407,
                 name: 'The Richest Egg',
-                quantity: 1
+                quantity: 1,
             };
 
             const expectedItems = [
                 {
                     id: 431,
                     name: 'Gold',
-                    quantity: 6103
+                    quantity: 6103,
                 },
                 {
                     id: 3274,
                     name: 'Extra Rich Cloud Cheesecake',
-                    quantity: 10
+                    quantity: 10,
                 },
                 {
                     id: 3077,
                     name: 'Cyclone Stone',
-                    quantity: 2
+                    quantity: 2,
                 },
             ];
 
             expect(submitConvertibleCallback).toBeCalledWith(
                 expectedConvertible,
                 expectedItems
-            )
-        })
+            );
+        });
 
         it('submits expected response two', async () => {
 
@@ -84,32 +84,32 @@ describe("SEHAjaxHandler", () => {
             const expectedConvertible = {
                 id: 3214,
                 name: 'Loot Cache Egg',
-                quantity: 2
+                quantity: 2,
             };
 
             const expectedItems = [
                 {
                     id: 3073,
                     name: 'Sky Glass',
-                    quantity: 4
+                    quantity: 4,
                 },
                 {
                     id: 3047,
                     name: 'Cloud Curd',
-                    quantity: 8
+                    quantity: 8,
                 },
                 {
                     id: 3074,
                     name: 'Sky Ore',
-                    quantity: 4
+                    quantity: 4,
                 },
             ];
 
             expect(submitConvertibleCallback).toBeCalledWith(
                 expectedConvertible,
                 expectedItems
-            )
-        })
+            );
+        });
 
         it('submits expected response three', async () => {
 
@@ -118,24 +118,24 @@ describe("SEHAjaxHandler", () => {
             const expectedConvertible = {
                 id: 3555,
                 name: 'Architeuthulhu Egg',
-                quantity: 1
+                quantity: 1,
             };
 
             const expectedItems = [
                 {
                     id: 3450,
                     name: 'Inspiration Ink',
-                    quantity: 50
+                    quantity: 50,
                 },
             ];
 
             expect(submitConvertibleCallback).toBeCalledWith(
                 expectedConvertible,
                 expectedItems
-            )
-        })
+            );
+        });
     });
-})
+});
 
 // Data is minimum required for the execute to pass
 const testResponses = {
@@ -149,19 +149,19 @@ const testResponses = {
                 {
                     "type": "gold_stat_item",
                     "name": "Gold",
-                    "quantity": 6103
+                    "quantity": 6103,
                 },
                 {
                     "type": "extra_rich_sky_cheese",
                     "name": "Extra Rich Cloud Cheesecake",
-                    "quantity": 10
+                    "quantity": 10,
                 },
                 {
                     "type": "sky_scrambler_stat_item",
                     "name": "Cyclone Stone",
-                    "quantity": 2
-                }
-            ]
+                    "quantity": 2,
+                },
+            ],
         },
         "inventory": {
             "richest_egg_convertible": {
@@ -178,8 +178,8 @@ const testResponses = {
                 "item_id": 3077,
                 "name": "Cyclone Stone",
                 "type": "sky_scrambler_stat_item",
-            }
-        }
+            },
+        },
     },
 
     // 2 Loot Cache Eggs
@@ -192,19 +192,19 @@ const testResponses = {
                 {
                     "type": "floating_islands_cloud_gem_stat_item",
                     "name": "Sky Glass",
-                    "quantity": 4
+                    "quantity": 4,
                 },
                 {
                     "type": "cloud_curd_crafting_item",
                     "name": "Cloud Curd",
-                    "quantity": 8
+                    "quantity": 8,
                 },
                 {
                     "type": "floating_islands_sky_ore_stat_item",
                     "name": "Sky Ore",
-                    "quantity": 4
-                }
-            ]
+                    "quantity": 4,
+                },
+            ],
         },
         "inventory": {
             "loot_cache_egg_convertible": {
@@ -227,8 +227,8 @@ const testResponses = {
                 "item_id": 3074,
                 "name": "Sky Ore",
                 "type": "floating_islands_sky_ore_stat_item",
-            }
-        }
+            },
+        },
     },
     // 1 Architeuthulhu Egg
     // 50 Inspiration Ink
@@ -240,9 +240,9 @@ const testResponses = {
                 {
                     "type": "inspiration_ink_stat_item",
                     "name": "Inspiration Ink",
-                    "quantity": 50
-                }
-            ]
+                    "quantity": 50,
+                },
+            ],
         },
         "inventory": {
             "architeuthulhu_egg_convertible": {
@@ -254,7 +254,7 @@ const testResponses = {
                 "item_id": 3450,
                 "name": "Inspiration Ink",
                 "type": "inspiration_ink_stat_item",
-            }
-        }
-    }
-}
+            },
+        },
+    },
+};

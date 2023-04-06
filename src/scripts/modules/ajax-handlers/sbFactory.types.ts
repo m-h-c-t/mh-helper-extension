@@ -1,4 +1,4 @@
-import type { HgResponse } from "@scripts/types/hg";
+import type {HgResponse} from "@scripts/types/hg";
 
 export interface HgResponseWithVendingMachine extends HgResponse {
     vending_machine_purchase?: VendingMachinePurchase

@@ -1,5 +1,5 @@
-import { IntakeMessage } from "../types/mhct";
-import { IPropertyRule } from "./interfaces";
+import {IntakeMessage} from "../types/mhct";
+import {IPropertyRule} from "./interfaces";
 
 class IntakeMessageSameCheese implements IPropertyRule<IntakeMessage> {
     readonly description = "Cheese should not change";
@@ -54,4 +54,4 @@ export const MessageRules: IPropertyRule<IntakeMessage>[] = [
     new IntakeMessageSameBase,
     new IntakeMessageSameLocation,
     new IntakeMessageSameStage,
-]
+];
