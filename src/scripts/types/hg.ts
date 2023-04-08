@@ -45,7 +45,7 @@ export interface Quests {
     QuestForbiddenGrove?: quests.QuestForbiddenGrove
     QuestForewordFarm?: unknown
     QuestFortRox?: unknown
-    QuestHarbour?: unknown
+    QuestHarbour?: quests.QuestHarbour
     QuestIceberg?: quests.QuestIceberg;
     QuestIceFortress?: quests.QuestIceFortress;
     QuestLabyrinth?: unknown
