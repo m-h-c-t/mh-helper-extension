@@ -42,3 +42,4 @@ _ReSharper*/
 /src/third_party/*
 mh-helper-extension.code-workspace
 dist/
+coverage
