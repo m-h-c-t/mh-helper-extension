@@ -19,6 +19,7 @@ import * as stagers from './modules/stages';
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const ajaxSuccessHandlers = [
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
+        new successHandlers.SEHAjaxHandler(logger, submitConvertible),
         new successHandlers.SBFactoryAjaxHandler(logger, submitConvertible),
     ];
 
