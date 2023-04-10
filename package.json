@@ -41,7 +41,7 @@
     "build:watch": "webpack --config webpack/webpack.dev.js --watch",
     "dev": "npm run build:dev && concurrently \"npm run web-run\" \"npm run build:watch\"",
     "dev:firefox": "npm run build:dev && concurrently \"npm run web-run:firefox\" \"npm run build:watch\"",
-    "lint": "eslint src",
+    "lint": "eslint .",
     "test": "jest"
   },
   "private": true,
@@ -51,6 +51,8 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
     "concurrently": "^8.0.1",
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.37.0",
