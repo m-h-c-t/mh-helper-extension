@@ -141,7 +141,7 @@ import * as stagers from './modules/stages';
             if (ev.data.mhct_message === 'show_horn_alert') {
                 // Since this is delayed by a few seconds from background script
                 // Check that user didn't beat us
-                if (!HornHud.isHornReady()) {
+                if (!HornHud.canSoundHorn()) {
                     return;
                 }
 
