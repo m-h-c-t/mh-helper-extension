@@ -44,7 +44,7 @@ export function addWhiskerWoodsRiftStage(message, user, user_post, hunt) {
     const rage = {};
     if (0 <= clearing && clearing <= 24) {
         rage.clearing = 'CC 0-24';
-    } else if (clearing <= 49) {
+    } else if (25 <= clearing && clearing <= 49) {
         rage.clearing = 'CC 25-49';
     } else if (clearing === 50) {
         rage.clearing = 'CC 50';
@@ -52,7 +52,7 @@ export function addWhiskerWoodsRiftStage(message, user, user_post, hunt) {
 
     if (0 <= tree && tree <= 24) {
         rage.tree = 'GGT 0-24';
-    } else if (tree <= 49) {
+    } else if (25 <= tree && tree <= 49) {
         rage.tree = 'GGT 25-49';
     } else if (tree === 50) {
         rage.tree = 'GGT 50';
@@ -60,7 +60,7 @@ export function addWhiskerWoodsRiftStage(message, user, user_post, hunt) {
 
     if (0 <= lagoon && lagoon <= 24) {
         rage.lagoon = 'DL 0-24';
-    } else if (lagoon <= 49) {
+    } else if (25 <= lagoon && lagoon <= 49) {
         rage.lagoon = 'DL 25-49';
     } else if (lagoon === 50) {
         rage.lagoon = 'DL 50';
