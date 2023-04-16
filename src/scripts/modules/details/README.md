@@ -15,7 +15,7 @@ First decide whether you need to add details for a specific location, an `IEnvir
     import { type IDetailer } from '../details.types';
 
     export class <GlobalEvent>Detailer implements IDetailer {
-        addDetails(message: any, userPre: User, userPost: User, journal: any): {} | undefined {
+        addDetails(message: any, userPre: User, userPost: User, journal: any): Record<PropertyKey, unknown> | undefined {
 
         }
     }
@@ -30,7 +30,7 @@ First decide whether you need to add details for a specific location, an `IEnvir
     export class <Location>Detailer implements IEnvironmentDetailer {
         readonly environment: string = '<Location>';
 
-        addDetails(message: any, userPre: User, userPost: User, journal: any): {} | undefined {
+        addDetails(message: any, userPre: User, userPost: User, journal: any): Record<PropertyKey, unknown> | undefined {
 
         }
     }

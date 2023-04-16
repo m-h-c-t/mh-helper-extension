@@ -42,7 +42,10 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npx eslint src
+    - name: Install
+      run: npm ci
+    - name: Lint
+      run: npm run lint
 
   test:
     name: Build and test

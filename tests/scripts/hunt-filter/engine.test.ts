@@ -2,7 +2,7 @@ import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {HgResponse, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {ConsoleLogger} from '@scripts/util/logger';
-jest.mock('@scripts/util/logger')
+jest.mock('@scripts/util/logger');
 
 // Mock logger won't actually call console.log
 const logger = new ConsoleLogger();
@@ -104,11 +104,11 @@ describe('validateMessage', () => {
     });
 
     it('passes if stage is object', () => {
-        pre.stage = { rain: 'Rain 99', wind: 'Wind 99' };
-        post.stage = { rain: 'Rain 99', wind: 'Wind 99' };
+        pre.stage = {rain: 'Rain 99', wind: 'Wind 99'};
+        post.stage = {rain: 'Rain 99', wind: 'Wind 99'};
 
         expect(engine.validateMessage(pre, post)).toBe(true);
-    })
+    });
 
     it('exempts location and stage if realm ripper was caught', () => {
         pre.location!.name = "Forbidden Grove";
@@ -116,7 +116,7 @@ describe('validateMessage', () => {
         pre.mouse = "Realm Ripper";
         post.location!.name = "Acolyte Realm";
         expect(engine.validateMessage(pre, post)).toBe(true);
-    })
+    });
 
     it('exempts stage if vincent was caught', () => {
         pre.stage = "Boss";
@@ -124,15 +124,15 @@ describe('validateMessage', () => {
         post.stage = "Any Room";
 
         expect(engine.validateMessage(pre, post)).toBe(true);
-    })
+    });
 });
 
 function getValidPreResponse(): HgResponse {
     return {
         user: null!, // User is not validated here so we dont need it
         page: {},
-        success: 1
-    }
+        success: 1,
+    };
 }
 
 function getValidPostResponse(): HgResponse {
@@ -165,8 +165,8 @@ function getDefaultUser(): User {
         // force these to null
         quests: null!,
         enviroment_atts: null!,
-        viewing_atts: null!
-    }
+        viewing_atts: null!,
+    };
 }
 
 function getDefaultIntakeMessage(): IntakeMessage {
@@ -176,7 +176,7 @@ function getDefaultIntakeMessage(): IntakeMessage {
         entry_id: 0,
         location: {
             id: 0,
-            name: 'Fake Location'
+            name: 'Fake Location',
         },
         shield: false,
         total_power: 0,
@@ -197,11 +197,11 @@ function getDefaultIntakeMessage(): IntakeMessage {
         },
         charm: {
             id: 0,
-            name: 'Fake Charm'
+            name: 'Fake Charm',
         },
         caught: 0,
         attracted: 0,
         mouse: '',
-        loot: []
+        loot: [],
     };
 }

@@ -1,5 +1,5 @@
-import type { JournalMarkup, User } from '@scripts/types/hg';
-import type { IDetailer } from '../details.types';
+import type {JournalMarkup, User} from '@scripts/types/hg';
+import type {IDetailer} from '../details.types';
 
 export class SpringEggHuntDetailer implements IDetailer {
     /**

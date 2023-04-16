@@ -1,11 +1,11 @@
-import { HgResponse, User } from "../types/hg";
-import { IntakeMessage } from "../types/mhct";
-import { LoggerService } from "../util/logger";
-import { IRule, IPropertyRule, IMessageExemption } from "./interfaces";
-import { ResponseRules } from "./responseRules";
-import { UserRules } from "./userRules";
-import { MessageRules } from "./messageRules";
-import { MessageExemptions } from "./exemptions";
+import {HgResponse, User} from "../types/hg";
+import {IntakeMessage} from "../types/mhct";
+import {LoggerService} from "../util/logger";
+import {IRule, IPropertyRule, IMessageExemption} from "./interfaces";
+import {ResponseRules} from "./responseRules";
+import {UserRules} from "./userRules";
+import {MessageRules} from "./messageRules";
+import {MessageExemptions} from "./exemptions";
 
 /**
  * Uses pluggable rule to validate data before a hunt can be
@@ -23,7 +23,7 @@ export class IntakeRejectionEngine {
         this.initResponseRules();
         this.initUserRules();
         this.initMessageRules();
-    };
+    }
 
     public validateResponse(pre: HgResponse, post: HgResponse): boolean {
         return this.responseRules.every(r => {
@@ -37,7 +37,7 @@ export class IntakeRejectionEngine {
 
     public validateUser(pre: User, post: User): boolean {
         return this.userRules.every(r => {
-            let isValid = r.isValid(pre, post);
+            const isValid = r.isValid(pre, post);
             if (!isValid) {
                 this.logger.debug(`User objects invalid: ${r.description}`);
             }
@@ -80,7 +80,7 @@ export class IntakeRejectionEngine {
             // so that exemption provides [ "location", "stage" ]
             const exemptions = provider.getExemptions(pre, post);
             if (exemptions && exemptions.length > 0) {
-                this.logger.debug(`Got exemptions. Description: ${provider.description}`, { properties: exemptions });
+                this.logger.debug(`Got exemptions. Description: ${provider.description}`, {properties: exemptions});
                 exemptions.forEach(e => invalidProperties.delete(e));
             }
 
@@ -91,9 +91,9 @@ export class IntakeRejectionEngine {
         }
 
         this.logger.debug(`Message object invalid`, {
-            properties: { ...invalidProperties.values() },
-            messages: { pre, post }
-        })
+            properties: {...invalidProperties.values()},
+            messages: {pre, post},
+        });
 
         return false;
     }
@@ -108,6 +108,6 @@ export class IntakeRejectionEngine {
 
     private initMessageRules() {
         this.messageRules = MessageRules;
-        this.messageExemptions = MessageExemptions
+        this.messageExemptions = MessageExemptions;
     }
 }

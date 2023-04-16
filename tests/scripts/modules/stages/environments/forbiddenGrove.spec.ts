@@ -1,5 +1,5 @@
-import { ForbiddenGroveStager } from "@scripts/modules/stages/environments/forbiddenGrove";
-import { User } from "@scripts/types/hg";
+import {ForbiddenGroveStager} from "@scripts/modules/stages/environments/forbiddenGrove";
+import {User} from "@scripts/types/hg";
 
 describe("ForbiddenGroveStager", () => {
     const stager = new ForbiddenGroveStager();

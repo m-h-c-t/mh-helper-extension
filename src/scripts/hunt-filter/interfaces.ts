@@ -1,4 +1,4 @@
-import { IntakeMessage } from "../types/mhct";
+import {IntakeMessage} from "../types/mhct";
 
 /**
  * Describes a way to validate a pre and post object
