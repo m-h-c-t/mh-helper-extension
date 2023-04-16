@@ -11,7 +11,7 @@ export class HornHud {
      */
     public static getTimerText(): 'Ready' | string | null {
         // The ready text is held in a different node
-        if (this.isHornReady()) {
+        if (this.canSoundHorn()) {
             return 'Ready';
         }
 
@@ -19,10 +19,10 @@ export class HornHud {
     }
 
     /**
-     * Check if the horn can be sounded
+     * Check if the horn can be sounded if it's ready and not currently animated
      */
-    public static isHornReady() {
-        return this.getTimerDOM()?.classList.contains('ready') ?? false;
+    public static canSoundHorn() {
+        return this.isHornReady() && !this.isHornSounding();
     }
 
     /**
@@ -36,7 +36,7 @@ export class HornHud {
      * Sound the horn by simulating a mouse events on the horn DOM
      */
     public static async soundHorn() {
-        if (!this.isHornReady() || this.isHornSounding()) {
+        if (!this.canSoundHorn()) {
             return;
         }
 
@@ -86,6 +86,13 @@ export class HornHud {
 
     private static getTimerDOM() {
         return this.getHornContainer()?.querySelector<HTMLElement>('.huntersHornView__timer') ?? null;
+    }
+
+    /**
+     * Check if the horn is in the ready state
+     */
+    private static isHornReady() {
+        return this.getTimerDOM()?.classList.contains('ready') ?? false;
     }
 
     /**
