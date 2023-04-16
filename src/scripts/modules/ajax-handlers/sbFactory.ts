@@ -1,7 +1,7 @@
-import type { HgItem } from "@scripts/types/mhct";
-import type { LoggerService } from "@scripts/util/logger";
-import { AjaxSuccessHandler } from "./ajaxSuccessHandler";
-import type { HgResponseWithVendingMachine, VendingMachinePurchaseType } from "./sbFactory.types";
+import type {HgItem} from "@scripts/types/mhct";
+import type {LoggerService} from "@scripts/util/logger";
+import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
+import type {HgResponseWithVendingMachine, VendingMachinePurchaseType} from "./sbFactory.types";
 
 export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -60,14 +60,14 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
         };
 
         if (!(purchase.type in packs)) {
-            this.logger.warn('Unsupported snack pack type', { vending_machine_purchase: purchase });
+            this.logger.warn('Unsupported snack pack type', {vending_machine_purchase: purchase});
             return;
         }
 
         const convertible: HgItem = {
             id: packs[purchase.type],
             name: purchase.type,
-            quantity: purchase.quantity
+            quantity: purchase.quantity,
         };
 
         if (responseJSON.inventory == null || Array.isArray(responseJSON.inventory)) {
@@ -81,10 +81,10 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
 
         try {
             purchase.items.forEach(item => {
-                var inventoryItem = Object.values(inventory).find(i => i.name == item.name);
+                const inventoryItem = Object.values(inventory).find(i => i.name == item.name);
                 if (inventoryItem == null) {
                     this.logger.debug('Snack pack item missing from inventory', {inventory, item});
-                    throw new Error(`Snack pack item ${item.name} wasn\'t found in inventory response.`);
+                    throw new Error(`Snack pack item ${item.name} wasn't found in inventory response.`);
                 }
 
                 items.push({

@@ -66,10 +66,14 @@ export interface Quests {
     QuestWinterHunt2021?: any
 }
 
+// TODO: Remove this when interface gets a member
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface EnvironmentAttributes {
 
 }
 
+// TODO: Remove this when interface gets a member
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ViewingAttributes {
 
 }

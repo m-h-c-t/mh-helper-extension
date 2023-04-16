@@ -1,5 +1,5 @@
-import { HgResponse } from "../types/hg";
-import { IRule } from "./interfaces";
+import {HgResponse} from "../types/hg";
+import {IRule} from "./interfaces";
 
 export class HgResponseBothRequireSuccess implements IRule<HgResponse> {
     readonly description = "Both responses should have a 'success' of 1";
@@ -26,4 +26,4 @@ export const ResponseRules: IRule<HgResponse>[] = [
     new HgResponseBothRequireSuccess,
     new HgResponsePreNeedsPage,
     new HgResponseActiveTurn,
-]
+];

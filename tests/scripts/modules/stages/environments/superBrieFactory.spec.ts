@@ -1,7 +1,7 @@
-import { SuperBrieFactoryStager } from "@scripts/modules/stages/environments/superBrieFactory";
-import type { User } from "@scripts/types/hg";
-import type { IntakeMessage } from "@scripts/types/mhct";
-import type { QuestSuperBrieFactory } from "@scripts/types/quests";
+import {SuperBrieFactoryStager} from "@scripts/modules/stages/environments/superBrieFactory";
+import type {User} from "@scripts/types/hg";
+import type {IntakeMessage} from "@scripts/types/mhct";
+import type {QuestSuperBrieFactory} from "@scripts/types/quests";
 
 describe("SuperBrieFactoryStager", () => {
     const defaultJournal = {};
@@ -9,7 +9,7 @@ describe("SuperBrieFactoryStager", () => {
         factory_atts: {
             current_room: "pumping_room",
             boss_warning: null,
-        }
+        },
     };
     const defaultUser = {
         quests: {
@@ -40,7 +40,7 @@ describe("SuperBrieFactoryStager", () => {
                 ...defaultUser,
                 quests: {
                     QuestSuperBrieFactory: {
-                        factory_atts: { boss_warning: true },
+                        factory_atts: {boss_warning: true},
                     },
                 },
             } as User;
@@ -53,11 +53,11 @@ describe("SuperBrieFactoryStager", () => {
 
     describe('rooms', () => {
         it.each([
-            { room: "pumping_room",           expected: "Pump Room" },
-            { room: "mixing_room",            expected: "Mixing Room" },
-            { room: "break_room",             expected: "Break Room" },
-            { room: "quality_assurance_room", expected: "QA Room" },
-          ])('sets room with Coggy Colby', ({room, expected}) => {
+            {room: "pumping_room",           expected: "Pump Room"},
+            {room: "mixing_room",            expected: "Mixing Room"},
+            {room: "break_room",             expected: "Break Room"},
+            {room: "quality_assurance_room", expected: "QA Room"},
+        ])('sets room with Coggy Colby', ({room, expected}) => {
 
             const stager = new SuperBrieFactoryStager();
             const message = {} as IntakeMessage;
@@ -66,7 +66,7 @@ describe("SuperBrieFactoryStager", () => {
                 bait_name: 'Coggy Colby Cheese',
                 quests: {
                     QuestSuperBrieFactory: {
-                        factory_atts: { current_room: room },
+                        factory_atts: {current_room: room},
                     },
                 },
             } as User;
@@ -83,14 +83,14 @@ describe("SuperBrieFactoryStager", () => {
                 bait_name: 'Gouda Cheese',
                 quests: {
                     QuestSuperBrieFactory: {
-                        factory_atts: { current_room: 'pumping_room' },
+                        factory_atts: {current_room: 'pumping_room'},
                     },
                 },
             } as User;
 
             stager.addStage(message, preUser, defaultUser, defaultJournal);
             expect(message.stage).toBe('Any Room');
-        })
+        });
     });
 
     describe('other rooms', () => {
@@ -101,15 +101,15 @@ describe("SuperBrieFactoryStager", () => {
                 ...defaultUser,
                 quests: {
                     QuestSuperBrieFactory: {
-                        factory_atts: { current_room: 'secret_room' }
-                    }
-                }
+                        factory_atts: {current_room: 'secret_room'},
+                    },
+                },
             } as unknown as User;
 
-            stager.addStage(message, user, defaultUser, defaultJournal)
+            stager.addStage(message, user, defaultUser, defaultJournal);
 
             expect(message.stage).toBe('Any Room');
-        })
+        });
     });
 
     function changeFactoryQuest(user: User, quest: QuestSuperBrieFactory): User {

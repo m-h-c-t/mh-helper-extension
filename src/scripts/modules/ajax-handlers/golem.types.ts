@@ -1,7 +1,7 @@
 /**
  * Golem Response from HG, previewed by CBS
  */
- export interface GolemResponse {
+export interface GolemResponse {
     items: Record<Rarity, GolemItem[]>
     //bonus_items: [];
     // num_upgrade_items: number;

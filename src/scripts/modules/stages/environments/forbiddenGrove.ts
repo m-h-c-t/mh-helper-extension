@@ -1,5 +1,5 @@
-import type { User } from '@scripts/types/hg';
-import type { IStager } from '../stages.types';
+import type {User} from '@scripts/types/hg';
+import type {IStager} from '../stages.types';
 
 export class ForbiddenGroveStager implements IStager {
     readonly environment: string = 'Forbidden Grove';
@@ -15,11 +15,11 @@ export class ForbiddenGroveStager implements IStager {
         const postQuest = userPost.quests.QuestForbiddenGrove;
 
         if (preQuest == null) {
-            throw new Error('User is missing Forbidden Grove quest')
+            throw new Error('User is missing Forbidden Grove quest');
         }
 
         if (userPre.trinket_name === "Realm Ripper Charm") {
-            message.stage = "Realm Ripper Charm"
+            message.stage = "Realm Ripper Charm";
             return;
         }
 
@@ -27,7 +27,7 @@ export class ForbiddenGroveStager implements IStager {
         // Check if user was auto-traveled to AR (i.e FG quest will be undefined on post).
         // If they were, we can say door was closed for hunt.
         if (postQuest == null) {
-            message.stage = "Closed"
+            message.stage = "Closed";
             return;
         // Otherwise discard if doors dont match
         } else if (was_open != postQuest.grove.is_open) {

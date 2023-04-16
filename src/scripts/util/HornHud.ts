@@ -29,7 +29,7 @@ export class HornHud {
      * Check if there is a reward puzzle message active
      */
     public static isPuzzleActive() {
-        return this.getMessageTitle() === 'You have a King\'s Reward!'
+        return this.getMessageTitle() === 'You have a King\'s Reward!';
     }
 
     /**
@@ -52,15 +52,15 @@ export class HornHud {
         // It must be done this way now. The 'click' event is specificly set to do nothing on the horn.
         // app.js defines that the 'mousedown' starts animation followed by 'mouseup' to end animation
         // and to take an active turn
-        hornDOM.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        hornDOM.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
         await new Promise(r => setTimeout(r, 250));
-        hornDOM.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        hornDOM.dispatchEvent(new MouseEvent('mouseup', {bubbles: true}));
 
         return;
     }
 
     private static getHornContainer() {
-        return document.querySelector<HTMLElement>('.huntersHornView')
+        return document.querySelector<HTMLElement>('.huntersHornView');
     }
 
     private static getHornDOM() {

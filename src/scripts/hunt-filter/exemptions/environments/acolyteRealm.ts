@@ -1,5 +1,5 @@
-import type { IMessageExemption } from "@scripts/hunt-filter/interfaces";
-import type { IntakeMessage } from "@scripts/types/mhct";
+import type {IMessageExemption} from "@scripts/hunt-filter/interfaces";
+import type {IntakeMessage} from "@scripts/types/mhct";
 
 /**
  * Provides an exemption on the 'location' difference. Iff the mouse was
@@ -26,5 +26,5 @@ class RealmRipperLocationExemption implements IMessageExemption {
 }
 
 export const acolyteRealmExemptions = [
-    new RealmRipperLocationExemption()
+    new RealmRipperLocationExemption(),
 ];

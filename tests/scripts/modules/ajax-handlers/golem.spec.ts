@@ -1,8 +1,8 @@
-import { GWHGolemAjaxHandler } from '@scripts/modules/ajax-handlers/golem';
-import type { GolemPayload } from '@scripts/modules/ajax-handlers/golem.types';
+import {GWHGolemAjaxHandler} from '@scripts/modules/ajax-handlers/golem';
+import type {GolemPayload} from '@scripts/modules/ajax-handlers/golem.types';
 
 jest.mock('@scripts/util/logger');
-import { ConsoleLogger } from '@scripts/util/logger';
+import {ConsoleLogger} from '@scripts/util/logger';
 
 const logger = new ConsoleLogger();
 const showFlashMessage = jest.fn();

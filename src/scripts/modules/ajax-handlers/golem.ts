@@ -1,6 +1,6 @@
-import { LoggerService } from "@scripts/util/logger";
-import { AjaxSuccessHandler } from "./ajaxSuccessHandler";
-import { GolemPayload, GolemResponse } from "./golem.types";
+import {LoggerService} from "@scripts/util/logger";
+import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
+import {GolemPayload, GolemResponse} from "./golem.types";
 
 const rarities = ["area", "hat", "scarf"] as const;
 
@@ -27,7 +27,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
 
     public async execute(responseJSON: any): Promise<void> {
         // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-        const golemData: GolemResponse | undefined = responseJSON?.golem_rewards
+        const golemData: GolemResponse | undefined = responseJSON?.golem_rewards;
         if (!golemData) {
             this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", responseJSON);
             return;
@@ -48,7 +48,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             uid,
             timestamp: Date.now(),
             location: location,
-            loot: []
+            loot: [],
         };
 
         for (const rarity of rarities) {
@@ -57,14 +57,14 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
                 payload.loot.push({
                     name: golemItem.name,
                     quantity: golemItem.quantity,
-                    rarity
+                    rarity,
                 });
             }
         }
 
         if (payload.loot.length > 0) {
-            this.logger.debug("GWH Golem: {golem}", payload)
-            const success = await this.submitGolems([payload])
+            this.logger.debug("GWH Golem: {golem}", payload);
+            const success = await this.submitGolems([payload]);
 
             if (success) {
                 this.showFlashMessage('success', 'Snow Golem data submitted successfully');
@@ -119,9 +119,9 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
                     text?: string
                 }
             }
-        ]
+        ];
 
-        const golemLocationRegex = /My golem returned from (?:the )?(.+) with/
+        const golemLocationRegex = /My golem returned from (?:the )?(.+) with/;
         for (const journalEntry of journal) {
             const result = golemLocationRegex.exec(journalEntry?.render_data?.text ?? "");
             if (result) {
