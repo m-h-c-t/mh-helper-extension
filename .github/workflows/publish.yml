@@ -67,21 +67,12 @@ jobs:
           echo "::set-output name=artifact-name::release-${{ steps.create-tag.outputs.version-tag }}.zip"
           echo "::set-output name=artifact-path::build/release-${{ steps.create-tag.outputs.version-tag }}.zip"
 
-      - name: Create release notes
-        id: create_release_notes
-        uses: mikepenz/release-changelog-builder-action@v1
-        with:
-          commitMode: true
-          failOnError: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: ncipollo/release-action@v1
         with:
           name: ${{ steps.create-tag.outputs.version-tag }}
           tag: ${{ steps.create-tag.outputs.version-tag }}
           artifacts: ${{ steps.create-zip.outputs.artifact-path }}
-          body: ${{ steps.create_release_notes.outputs.changelog }}
+          generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload new release zip to Chrome Webstore

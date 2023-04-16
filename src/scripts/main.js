@@ -19,6 +19,7 @@ import * as stagers from './modules/stages';
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const ajaxSuccessHandlers = [
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
+        new successHandlers.SEHAjaxHandler(logger, submitConvertible),
         new successHandlers.SBFactoryAjaxHandler(logger, submitConvertible),
     ];
 
@@ -281,7 +282,7 @@ import * as stagers from './modules/stages';
         }
 
         mhhh_flash_message_div.fadeIn(() => {
-            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 2500 + 1000 * (type !== "success"));
+            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500 + 2000 * (type !== "success"));
         });
     }
 
