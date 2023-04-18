@@ -39,9 +39,9 @@ if (!fs.existsSync(dark_mode_path_prefix + 'camp')) {
     fs.mkdirSync(dark_mode_path_prefix + 'camp', {recursive: true});
 }
 
-dark_mode_files.forEach((one_file) => {
-    download(dark_mode_url_prefix + one_file.url, dark_mode_path_prefix + one_file.filepath, () => {
-        console.log('Downloaded ' + dark_mode_path_prefix + one_file.filepath);
+dark_mode_files.forEach((filename) => {
+    download(dark_mode_url_prefix + filename, dark_mode_path_prefix + filename, () => {
+        console.log('Downloaded ' + dark_mode_path_prefix + filename);
     });
 });
 
@@ -64,8 +64,8 @@ if (!fs.existsSync(tsitu_path_prefix)) {
     fs.mkdirSync(tsitu_path_prefix, {recursive: true});
 }
 
-tsitus_files.forEach((one_file) => {
-    download(tsitu_url_prefix + one_file.url, tsitu_path_prefix + one_file.filepath, () => {
-        console.log('Downloaded ' + tsitu_path_prefix + one_file.filepath);
+tsitus_files.forEach((filename) => {
+    download(tsitu_url_prefix + filename, tsitu_path_prefix + filename, () => {
+        console.log('Downloaded ' + tsitu_path_prefix + filename);
     });
 });
