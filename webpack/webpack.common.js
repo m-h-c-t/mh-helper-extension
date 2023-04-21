@@ -1,6 +1,7 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const RemoteDownloadFileWebpackPlugin = require('./RemoteDownloadFileWebpackPlugin.js');
 
 const srcScripts = path.resolve(__dirname, '../src/scripts/');
 const outpath = path.resolve(__dirname, '../dist/');
@@ -48,5 +49,43 @@ module.exports = {
                 },
             ],
         }),
+        new RemoteDownloadFileWebpackPlugin([
+            {
+                urlPrefix:'https://raw.githubusercontent.com/MHCommunity/mh-dark-mode/main/css/',
+                pathPrefix: 'third_party/potatosalad/css/',
+                files: [
+                    'giftbox.css',
+                    'inbox.css',
+                    'inventory.css',
+                    'main.css',
+                    'marketplace.css',
+                    'messagebox.css',
+                    'profile.css',
+                    'scoreboard.css',
+                    'shop.css',
+                    'team.css',
+                    'trap.css',
+                    'treasuremap.css',
+                    'camp/camp.css',
+                    'camp/hud.css',
+                    'camp/journal.css',
+                ],
+            },
+            {
+                urlPrefix: 'https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/',
+                pathPrefix: 'third_party/tsitu/',
+                files: [
+                    'bm-analyzer.min.js',
+                    'bm-crafting.min.js',
+                    'bm-cre.min.js',
+                    'bm-crown.min.js',
+                    'bm-map.min.js',
+                    'bm-menu.min.js',
+                    'bm-powers.min.js',
+                    'bm-setup-fields.min.js',
+                    'bm-setup-items.min.js',
+                ],
+            },
+        ])
     ],
 };
