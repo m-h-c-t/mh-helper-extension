@@ -27,6 +27,10 @@
     {
       "name": "tsitu",
       "url": "https://github.com/tsitu/"
+    },
+    {
+      "name": "hymccord",
+      "url": "https://github.com/hymccord/"
     }
   ],
   "bugs": {
@@ -57,9 +61,9 @@
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.38.0",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
+    "got-cjs": "^12.5.4",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
-    "save-remote-file-webpack-plugin": "^1.1.0",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.2",
     "typescript": "^5.0.4",
