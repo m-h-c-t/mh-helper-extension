@@ -1,16 +1,11 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
+import {NormalFloorStages, FloorStage, UmbraFloorStages} from '@scripts/hunt-filter/exemptions/environments/valourRift';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {LoggerService} from '@scripts/util/logger';
 import {getDefaultIntakeMessage} from '../../common';
 
 
 describe('Valour Rift', () => {
-    const NormalFloors = ['Floors 1-7', 'Floors 9-15', 'Floors 17-23', 'Floors 25-31+'] as const;
-    const UmbraFloors = ['UU Floors 1-7', 'UU Floors 9-15', 'UU Floors 17-23', 'UU Floors 25-31+'] as const;
-    type NormalFloor = typeof NormalFloors[number];
-    type UmbraFloor = typeof UmbraFloors[number];
-    type FloorStage = NormalFloor | UmbraFloor;
-
     let logger: LoggerService;
     let target: IntakeRejectionEngine;
 
@@ -30,36 +25,36 @@ describe('Valour Rift', () => {
             postMessage = {...getDefaultIntakeMessage(), ...getValourRiftLocation()};
         });
 
-        it.each(NormalFloors)('should reject "Shade of the Eclipse" hunts on transition to normal floor', (postStage: FloorStage) => {
+        it.each(NormalFloorStages)('should accept Shade of the Eclipse hunts on transition to normal floor', (postStage: FloorStage) => {
             preMessage.mouse = postMessage.mouse = 'Shade of the Eclipse';
             preMessage.stage = 'Eclipse';
             postMessage.stage = postStage;
             const valid = target.validateMessage(preMessage, postMessage);
-            expect(valid).toBe(false);
+            expect(valid).toBe(true);
         });
 
-        it('should reject "Shade of the Eclipse" hunts on transition to outside', () => {
+        it('should accept Shade of the Eclipse hunts on transition to outside', () => {
             preMessage.mouse = postMessage.mouse = 'Shade of the Eclipse';
             preMessage.stage = 'Eclipse';
             postMessage.stage = 'Outside';
             const valid = target.validateMessage(preMessage, postMessage);
-            expect(valid).toBe(false);
+            expect(valid).toBe(true);
         });
 
-        it.each(UmbraFloors)('should reject "The Total Eclipse" hunts on transition to umbra floor', (postStage: FloorStage) => {
+        it.each(UmbraFloorStages)('should accept The Total Eclipse hunts on transition to umbra floor', (postStage: FloorStage) => {
             preMessage.mouse = postMessage.mouse = 'The Total Eclipse';
             preMessage.stage = 'UU Eclipse';
             postMessage.stage = postStage;
             const valid = target.validateMessage(preMessage, postMessage);
-            expect(valid).toBe(false);
+            expect(valid).toBe(true);
         });
 
-        it('should reject "The Total Eclipse" hunts on transition to outside', () => {
+        it('should accept The Total Eclipse hunts on transition to outside', () => {
             preMessage.mouse = postMessage.mouse = 'The Total Eclipse';
             preMessage.stage = 'UU Eclipse';
             postMessage.stage = 'Outside';
             const valid = target.validateMessage(preMessage, postMessage);
-            expect(valid).toBe(false);
+            expect(valid).toBe(true);
         });
     });
 
