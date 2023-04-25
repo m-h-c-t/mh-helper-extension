@@ -51,16 +51,7 @@ export class IntakeRejectionEngine {
             return false;
         }
 
-        // Run rules. Build set of currently invalid properties
-        // { "location", "stage" }
-        const invalidProperties = new Set<(keyof IntakeMessage)>();
-        for (const rule of this.messageRules) {
-            const valid: boolean = rule.isValid(pre, post);
-            if (!valid) {
-                this.logger.debug(`Message invalid: ${rule.description}`);
-                invalidProperties.add(rule.property);
-            }
-        }
+        const invalidProperties = this.getInvalidIntakeMessageProperties(pre, post);
 
         // Don't have to run exemption rules if there are no violations
         if (invalidProperties.size === 0) {
@@ -96,6 +87,25 @@ export class IntakeRejectionEngine {
         });
 
         return false;
+    }
+
+    /**
+     * Runs the IntakeMessage rules to build a set of currently invalid properties
+     * @param pre
+     * @param post
+     * @returns {Set<(keyof IntakeMessage)>} A set of strings representing keys of invalid IntakeMessage properties
+     */
+    public getInvalidIntakeMessageProperties(pre: IntakeMessage, post: IntakeMessage): Set<(keyof IntakeMessage)> {
+        const invalidProperties = new Set<(keyof IntakeMessage)>();
+        for (const rule of this.messageRules) {
+            const valid: boolean = rule.isValid(pre, post);
+            if (!valid) {
+                this.logger.debug(`Message invalid: ${rule.description}`);
+                invalidProperties.add(rule.property);
+            }
+        }
+
+        return invalidProperties;
     }
 
     private initResponseRules() {

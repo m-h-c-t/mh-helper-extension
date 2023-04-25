@@ -10,7 +10,7 @@ import * as stagers from './modules/stages';
     'use strict';
 
     let base_domain_url = "https://www.mhct.win";
-    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url;
+    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url, rejection_intake_url;
 
     let mhhh_version = 0;
     let hunter_id_hash = '0';
@@ -106,6 +106,7 @@ import * as stagers from './modules/stages';
         convertible_intake_url = base_domain_url + "/convertible_intake.php";
         map_helper_url = base_domain_url + "/maphelper.php";
         rh_intake_url = base_domain_url + "/rh_intake.php";
+        rejection_intake_url = base_domain_url + "/rejection_intake.php";
 
         await createHunterIdHash();
     }
@@ -652,6 +653,13 @@ import * as stagers from './modules/stages';
         // Validate the differences between the two intake messages
         validated = rejectionEngine.validateMessage(message_pre, message_post);
         if (!validated) {
+            // collect limited info for stage and location rejections
+            const invalidProperties = rejectionEngine.getInvalidIntakeMessageProperties(message_pre, message_post);
+            if (invalidProperties.has('stage') || invalidProperties.has('location')) {
+                const rejection_message = createRejectionMessage(message_pre, message_post);
+                sendMessageToServer(rejection_intake_url, rejection_message);
+            }
+
             return;
         }
 
@@ -1177,6 +1185,27 @@ import * as stagers from './modules/stages';
         debug_logs.forEach(log_message => logger.debug(log_message));
 
         return message;
+    }
+
+    /**
+     * Creates rejection event info containing information about location, stage, and mouse
+     * @param {import('@scripts/types/mhct').IntakeMessage} pre
+     * @param {import('@scripts/types/mhct').IntakeMessage} post
+     */
+    function createRejectionMessage(pre, post) {
+        return {
+            pre: createEventObject(pre),
+            post: createEventObject(post),
+        };
+
+        /** @param {import('@scripts/types/mhct').IntakeMessage} message */
+        function createEventObject(message) {
+            return {
+                location: message.location.name,
+                stage: message.stage,
+                mouse: message.mouse,
+            };
+        }
     }
 
     /**
