@@ -1,6 +1,7 @@
 /*jslint browser:true */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
+import {getUnixTimestamp} from "./util/time";
 import * as successHandlers from './modules/ajax-handlers';
 import {HornHud} from './util/HornHud';
 import * as detailers from './modules/details';
@@ -482,11 +483,9 @@ import * as stagers from './modules/stages';
     // Record map mice
     function recordMap(xhr) {
         const resp = xhr.responseJSON;
-        const entry_timestamp = Math.round(Date.now() / 1000);
         if (resp.treasure_map_inventory?.relic_hunter_hint) {
             sendMessageToServer(rh_intake_url, {
                 hint: resp.treasure_map_inventory.relic_hunter_hint,
-                entry_timestamp: entry_timestamp,
             });
         }
 
@@ -501,7 +500,6 @@ import * as stagers from './modules/stages';
                 .replace(/rare /i, '')
                 .replace(/common /i, '')
                 .replace(/Ardouous/i, 'Arduous'),
-            entry_timestamp: entry_timestamp,
         };
 
         // Send to database
@@ -746,7 +744,6 @@ import * as stagers from './modules/stages';
             convertible: getItem(convertible),
             items: items.map(getItem),
             asset_package_hash: Date.now(),
-            entry_timestamp: Math.round(Date.now() / 1000),
         };
 
         // Send to database
@@ -755,6 +752,10 @@ import * as stagers from './modules/stages';
     }
 
     function sendMessageToServer(url, final_message) {
+        if (final_message.entry_timestamp == null) {
+            final_message.entry_timestamp = getUnixTimestamp();
+        }
+
         getSettings(settings => {
             if (!settings?.tracking_enabled) { return; }
             const basic_info = {
