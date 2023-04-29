@@ -68,5 +68,13 @@ module.exports = {
             },
             plugins: ['jest'],
         },
+        {
+            files: [
+                '**/*.{test,spec}.ts',
+            ],
+            rules: {
+                '@typescript-eslint/no-non-null-assertion': 'off',
+            },
+        },
     ],
 };
