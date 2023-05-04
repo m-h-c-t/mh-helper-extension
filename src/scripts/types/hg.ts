@@ -39,6 +39,7 @@ export interface User {
 export interface Quests {
     QuestAncientCity?: any
     QuestBalacksCove?: any
+    QuestBountifulBeanstalk?: quests.QuestBountifulBeanstalk
     QuestClawShotCity?: any
     QuestForbiddenGrove?: quests.QuestForbiddenGrove
     QuestForewordFarm?: any

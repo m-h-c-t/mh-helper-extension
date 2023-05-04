@@ -1,3 +1,4 @@
+export * from '@scripts/types/quests/bountifulBeanstalk';
 export * from '@scripts/types/quests/forbiddenGrove';
 export * from '@scripts/types/quests/iceFortress';
 export * from '@scripts/types/quests/superBrieFactory';
