@@ -53,6 +53,7 @@ export interface Quests {
     QuestMoussuPicchu?: any
     QuestPollutionOutbreak?: any
     QuestQuesoGeyser?: any
+    QuestRelicHunter?: any
     QuestRiftBristleWoods?: any
     QuestRiftBurroughs?: any
     QuestRiftFuroma?: any
@@ -66,17 +67,9 @@ export interface Quests {
     QuestWinterHunt2021?: any
 }
 
-// TODO: Remove this when interface gets a member
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface EnvironmentAttributes {
+export type EnvironmentAttributes = unknown;
 
-}
-
-// TODO: Remove this when interface gets a member
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ViewingAttributes {
-
-}
+export type ViewingAttributes = unknown;
 
 export interface JournalMarkup {
     render_data: RenderData;
