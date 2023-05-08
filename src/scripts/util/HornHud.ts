@@ -78,7 +78,7 @@ export class HornHud {
     private static getMessageTitle() {
         // Should only return title if the message is actively displaying to user
         if (this.isMessageActive()) {
-            return this.getMessageDOM()?.querySelector<HTMLElement>('.huntersHornView__messageTitle')?.textContent ?? null;
+            return this.getMessageDOM()?.querySelector<HTMLElement>('.huntersHornMessageView__title')?.textContent ?? null;
         }
 
         return null;
