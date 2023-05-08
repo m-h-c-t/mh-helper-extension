@@ -1,4 +1,5 @@
 import * as quests from '@scripts/types/quests';
+import * as envs from '@scripts/types/environments';
 
 export interface HgResponse {
     user: User;
@@ -9,7 +10,11 @@ export interface HgResponse {
     inventory?: Record<string, InventoryItem>  | []
 }
 
-export interface User {
+export type User =
+    | HgUser
+    | envs.FloatingIslandsUser;
+
+export type HgUser = {
     user_id: number;
     sn_user_id: number;
     unique_hash: string;
@@ -31,7 +36,7 @@ export interface User {
     environment_name: string;
     environment_id: number;
     quests: Quests;
-    enviroment_atts: EnvironmentAttributes;
+    enviroment_atts?: EnvironmentAttributes;
     environment_atts?: EnvironmentAttributes;
     viewing_atts: ViewingAttributes;
 }
