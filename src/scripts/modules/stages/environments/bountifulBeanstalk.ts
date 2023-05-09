@@ -12,5 +12,24 @@ export class BountifulBeanstalkStager implements IStager {
             throw new Error('QuestBountifulBeanstalk is undefined');
         }
 
+        if (quest.in_castle) {
+            const castle = quest.castle;
+
+            // Good Test Name Floor => Good Test Name
+            const floor = castle.current_floor.name
+                .replace(/\sFloor$/, '');
+
+            message.stage = floor;
+
+            if (castle.is_boss_encounter) {
+                message.stage += " Giant";
+            }
+        } else {
+            message.stage = "Beanstalk";
+
+            if (quest.beanstalk.is_boss_encounter) {
+                message.stage += " Boss";
+            }
+        }
     }
 }
