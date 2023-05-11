@@ -6,11 +6,15 @@ on:
     branches:
       - main
     paths:
-      - src/**
+      - '*'
+      - '!*.md'
+      - '!*.txt'
+      - .github/workflows/**
   pull_request:
     paths:
-      - src/**
-      - tests/**
+      - '*'
+      - '!*.md'
+      - '!*.txt'
       - .github/workflows/**
 
 jobs:
@@ -42,8 +46,11 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
     - name: Install
       run: npm ci
+
     - name: Lint
       run: npm run lint
 
@@ -57,13 +64,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
     - name: Install dependencies
       run: npm ci
+
     - name: Build package
       run: npm run build
+
     - name: Run tests
       env:
         CI: true
