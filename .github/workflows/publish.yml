@@ -4,7 +4,7 @@ on:
     inputs:
       NEW_CUSTOM_VERSION:
         description: |
-          (OPTIONAL) >>> LEAVE EMPTY BY DEFAULT <<< It will default to today's date in the format 'yy.mm.dd'.
+          (OPTIONAL) >>> LEAVE EMPTY BY DEFAULT <<< It will default to today's date in the format 'y.m.d'.
           For Major.Minor.Custom version number (NO LEADING ZEROS) e.g. 1.1.1.
         required: false
 
@@ -37,7 +37,7 @@ jobs:
               exit 1
             fi
           else
-            # Need to keep separate DATE var b/c $(date -d) can't parse yy.mm.dd
+            # Need to keep separate DATE var b/c $(date -d) can't parse y.m.d
             DATE=$(date)
             EXT_VERSION=$(date -d "$DATE" +%y.%-m.%-d);
 
