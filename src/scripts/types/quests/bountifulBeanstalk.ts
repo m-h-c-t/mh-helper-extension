@@ -16,5 +16,8 @@ export type CastleAttributes = {
         current_floor: {
             name: string;
         };
+        current_room: {
+            name: string;
+        }
     };
 };

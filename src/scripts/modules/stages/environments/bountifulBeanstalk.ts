@@ -16,14 +16,19 @@ export class BountifulBeanstalkStager implements IStager {
             const castle = quest.castle;
 
             // Good Test Name Floor => Good Test Name
-            const floor = castle.current_floor.name
+            let floor = castle.current_floor.name
                 .replace(/\sFloor$/, '');
 
-            message.stage = floor;
+            // Extreme Mystery Room -> Mystery
+            const room = castle.current_room.name
+                .replace(/^\w+\s/, '')
+                .replace(/\s(Bean )?Room$/, '');
 
             if (castle.is_boss_encounter) {
-                message.stage += " Giant";
+                floor += " Giant";
             }
+
+            message.stage = `${floor} - ${room}`;
         } else {
             message.stage = "Beanstalk";
 

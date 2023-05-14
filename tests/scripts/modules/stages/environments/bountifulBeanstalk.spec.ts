@@ -49,12 +49,12 @@ describe('Bountiful Beanstalk stages', () => {
     });
 
     it.each`
-        floorName               | expected
-        ${'Dungeon Floor'}      | ${'Dungeon'}
-        ${'Ballroom Floor'}     | ${'Ballroom'}
-        ${'Great Hall Floor'}   | ${'Great Hall'}
-    `('should set stage to $expected when castle floor name is $floorName', ({floorName, expected}) => {
-        preUser.quests.QuestBountifulBeanstalk = createCastleAttributes(floorName);
+        floorName               | roomName                              | expected
+        ${'Dungeon Floor'}      | ${'Standard Mystery Room'}            | ${'Dungeon - Mystery'}
+        ${'Ballroom Floor'}     | ${'Extreme Magic Bean Room'}          | ${'Ballroom - Magic'}
+        ${'Great Hall Floor'}   | ${'Ultimate Royal Ruby Bean Room'}    | ${'Great Hall - Royal Ruby'}
+    `('should set stage to $expected when castle floor name is $floorName and in $roomName room', ({floorName, roomName, expected}) => {
+        preUser.quests.QuestBountifulBeanstalk = createCastleAttributes({floor: floorName, room: roomName});
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -62,13 +62,16 @@ describe('Bountiful Beanstalk stages', () => {
     });
 
     it('should append Giant to stage under boss encounter', () => {
-        const floor = 'Fee Fi Fo Fum Floor';
+        const castle = {
+            floor: 'Fee Fi Fo Fum Floor',
+            room: 'Standard English Man Room',
+        };
         const isBossEncounter = true;
-        preUser.quests.QuestBountifulBeanstalk = createCastleAttributes(floor, isBossEncounter);
+        preUser.quests.QuestBountifulBeanstalk = createCastleAttributes(castle, isBossEncounter);
 
         stager.addStage(message, preUser, postUser, journal);
 
-        expect(message.stage).toBe('Fee Fi Fo Fum Giant');
+        expect(message.stage).toBe('Fee Fi Fo Fum Giant - English Man');
     });
 
     function getDefaultQuest(): QuestBountifulBeanstalk {
