@@ -19,7 +19,8 @@
     "strictNullChecks": true,
     "allowJs": true,
     "paths": {
-      "@scripts/*":["./src/scripts/*"]
+      "@scripts/*":["./src/scripts/*"],
+      "@tests/*": ["./tests/*"]
     }
   },
   "include": ["src/**/*", "tests/**/*"]

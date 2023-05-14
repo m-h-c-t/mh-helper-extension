@@ -74,38 +74,42 @@ describe('Bountiful Beanstalk stages', () => {
         expect(message.stage).toBe('Fee Fi Fo Fum Giant - English Man');
     });
 
-    function getDefaultQuest(): QuestBountifulBeanstalk {
-        return createBeanstalkAttributes();
-    }
-
-    /**
-     *
-     * @param isBossEncounter
-     * @returns Object with quest attributes when on the beanstalk
-     */
-    function createBeanstalkAttributes(isBossEncounter = false): BeanstalkAttributes {
-        return {
-            in_castle: false,
-            beanstalk: {
-                is_boss_encounter: isBossEncounter,
-            },
-        };
-    }
-
-    /**
-     *
-     * @param isBossEncounter
-     * @returns Object with quest attributes when in the castle
-     */
-    function createCastleAttributes(floorName: string, isBossEncounter = false): CastleAttributes {
-        return {
-            in_castle: true,
-            castle: {
-                is_boss_encounter: isBossEncounter,
-                current_floor: {
-                    name: floorName,
-                },
-            },
-        };
-    }
 });
+
+export function getDefaultQuest(): QuestBountifulBeanstalk {
+    return createBeanstalkAttributes();
+}
+
+/**
+ *
+ * @param isBossEncounter
+ * @returns Object with quest attributes when on the beanstalk
+ */
+export function createBeanstalkAttributes(isBossEncounter = false): BeanstalkAttributes {
+    return {
+        in_castle: false,
+        beanstalk: {
+            is_boss_encounter: isBossEncounter,
+        },
+    };
+}
+
+/**
+ *
+ * @param isBossEncounter
+ * @returns Object with quest attributes when in the castle
+ */
+export function createCastleAttributes(castle: {floor: string, room: string}, isBossEncounter = false): CastleAttributes {
+    return {
+        in_castle: true,
+        castle: {
+            is_boss_encounter: isBossEncounter,
+            current_floor: {
+                name: castle.floor,
+            },
+            current_room: {
+                name: castle.room,
+            },
+        },
+    };
+}
