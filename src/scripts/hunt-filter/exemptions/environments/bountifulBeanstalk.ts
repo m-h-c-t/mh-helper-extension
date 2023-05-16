@@ -87,12 +87,18 @@ class CastleBossExemption implements IMessageExemption {
 
     /** Check if stage is a known castle giant stage that matches associated mouse */
     private isCastleStageAndBoss(stage: unknown, mouse: unknown) {
-        return typeof stage === 'string' &&
-        this.CastleBossStagesToMouse[stage] === mouse;
+        if (typeof stage === 'string') {
+            // Trim off the ' - Zone Name' portion of stage
+            const floorStage = stage.replace(/ -.*$/, '');
+            return this.CastleBossStagesToMouse[floorStage] === mouse;
+        }
+
+        return false;
     }
 
     private isBeanstalkStage(stage: unknown) {
-        return stage === "Beanstalk" || stage === "Beanstalk Boss";
+        // Returning to a beanstalk boss is impossible. Progress is reset.
+        return stage === "Beanstalk";
     }
 }
 
