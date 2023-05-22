@@ -21,8 +21,9 @@ export class BountifulBeanstalkStager implements IStager {
 
             // Extreme Mystery Room -> Mystery
             const room = castle.current_room.name
-                .replace(/^\w+\s/, '')
-                .replace(/\s(Bean )?Room$/, '');
+                .replace(/^(Standard|Super|Extreme|Ultimate)/, '')
+                .replace(/(Bean )?Room$/, '')
+                .trim();
 
             if (castle.is_boss_encounter) {
                 floor += " Giant";

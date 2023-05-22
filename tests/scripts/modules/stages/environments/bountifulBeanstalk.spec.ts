@@ -50,7 +50,9 @@ describe('Bountiful Beanstalk stages', () => {
 
     it.each`
         floorName               | roomName                              | expected
+        ${'Dungeon Floor'}      | ${'Mystery Room'}                     | ${'Dungeon - Mystery'}
         ${'Dungeon Floor'}      | ${'Standard Mystery Room'}            | ${'Dungeon - Mystery'}
+        ${'Dungeon Floor'}      | ${'Lavish Lapis Room'}                | ${'Dungeon - Lavish Lapis'}
         ${'Ballroom Floor'}     | ${'Extreme Magic Bean Room'}          | ${'Ballroom - Magic'}
         ${'Great Hall Floor'}   | ${'Ultimate Royal Ruby Bean Room'}    | ${'Great Hall - Royal Ruby'}
     `('should set stage to $expected when castle floor name is $floorName and in $roomName room', ({floorName, roomName, expected}) => {
@@ -72,6 +74,22 @@ describe('Bountiful Beanstalk stages', () => {
         stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe('Fee Fi Fo Fum Giant - English Man');
+    });
+
+    it.each`
+        floorName               | roomName                              | expected
+        ${'Dungeon Floor'}      | ${'Mystery Room'}                     | ${'Dungeon Giant - Mystery'}
+        ${'Dungeon Floor'}      | ${'Standard Mystery Room'}            | ${'Dungeon Giant - Mystery'}
+        ${'Dungeon Floor'}      | ${'Lavish Lapis Room'}                | ${'Dungeon Giant - Lavish Lapis'}
+        ${'Ballroom Floor'}     | ${'Extreme Magic Bean Room'}          | ${'Ballroom Giant - Magic'}
+        ${'Great Hall Floor'}   | ${'Ultimate Golden Goose Egg Room'}   | ${'Great Hall Giant - Golden Goose Egg'}
+    `('should set stage to $expected at $floorName boss and in $roomName room', ({floorName, roomName, expected}) => {
+        const isBossEncounter = true;
+        preUser.quests.QuestBountifulBeanstalk = createCastleAttributes({floor: floorName, room: roomName}, isBossEncounter);
+
+        stager.addStage(message, preUser, postUser, journal);
+
+        expect(message.stage).toBe(expected);
     });
 
 });
