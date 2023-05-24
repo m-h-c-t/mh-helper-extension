@@ -1,7 +1,7 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {BountifulBeanstalkStager} from '@scripts/modules/stages/environments/bountifulBeanstalk';
 import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
+import {ComponentEntry, IntakeMessage} from '@scripts/types/mhct';
 import {LoggerService} from '@scripts/util/logger';
 import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
 import * as stageTest from '@tests/scripts/modules/stages/environments/bountifulBeanstalk.spec';
@@ -74,14 +74,39 @@ describe('Bountiful Beanstalk exemptions', () => {
                 expect(valid).toBe(false);
             });
 
-            it('should accept on transition from giant to beanstalk', () => {
-                preUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes({floor: 'Dungeon Floor', room: 'Extreme Lavish Lapis Bean Room'}, true);
-                postUser.quests.QuestBountifulBeanstalk = stageTest.createBeanstalkAttributes(false);
-                preMessage.mouse = postMessage.mouse = 'Dungeon Master';
-                applyStage();
+            describe.each`
+                floor                   | giant
+                ${'Dungeon Floor'}      | ${'Dungeon Master'},
+                ${'Ballroom Floor'}     | ${'Malevolent Maestro'},
+                ${'Great Hall Floor'}   | ${'Mythical Giant King'},
+            `('Giant catching', ({floor, giant}) => {
+                it(`should accept on transition from catching ${giant} to beanstalk`, () => {
+                    preUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes({floor: floor, room: 'Extreme Lavish Lapis Bean Room'}, true);
+                    postUser.quests.QuestBountifulBeanstalk = stageTest.createBeanstalkAttributes(false);
+                    preMessage.mouse = postMessage.mouse = giant;
+                    // Going back changes cheese
+                    preMessage.cheese = {id: 1, name: 'Some'};
+                    postMessage.cheese = {id: 2, name: 'Another'};
 
-                const valid = target.validateMessage(preMessage, postMessage);
-                expect(valid).toBe(true);
+                    applyStage();
+
+                    const valid = target.validateMessage(preMessage, postMessage);
+                    expect(valid).toBe(true);
+                });
+
+                it(`should accept on transition from catching ${giant} to beanstalk and cheese disarming`, () => {
+                    preUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes({floor: floor, room: 'Extreme Lavish Lapis Bean Room'}, true);
+                    postUser.quests.QuestBountifulBeanstalk = stageTest.createBeanstalkAttributes(false);
+                    preMessage.mouse = postMessage.mouse = giant;
+                    // Going back disarms cheese (sets user.bait_item_id: 0, user.bait_name: 0). See createMessageFromHunt
+                    preMessage.cheese = {id: 1, name: 'Some Cheese'};
+                    postMessage.cheese = {} as ComponentEntry;
+
+                    applyStage();
+
+                    const valid = target.validateMessage(preMessage, postMessage);
+                    expect(valid).toBe(true);
+                });
             });
 
             type HelperType = { floor: string, room: string, isBossEncounter: boolean };
