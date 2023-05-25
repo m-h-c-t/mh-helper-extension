@@ -74,7 +74,7 @@ class CastleBossExemption implements IMessageExemption {
         if (
             this.isTransitionFromBoss(pre.stage, post.stage, pre.mouse)
         ) {
-            return ["stage"];
+            return ['stage', 'cheese'];
         }
 
         return null;

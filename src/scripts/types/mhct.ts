@@ -22,7 +22,7 @@ export interface IntakeMessage {
  * An object with an numbered id and string name.
  */
 // This may need to be ComponentEntry<TId, TName> if id needs to be not a number
-interface ComponentEntry {
+export interface ComponentEntry {
     id: number;
     name: string;
 }
