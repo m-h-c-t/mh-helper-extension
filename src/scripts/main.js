@@ -13,7 +13,7 @@ import * as detailingFuncs from './modules/details/legacy';
     'use strict';
 
     let base_domain_url = "https://www.mhct.win";
-    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url, rejection_intake_url;
+    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url, rejection_intake_url, scav_helper_url;
 
     let mhhh_version = 0;
     let hunter_id_hash = '0';
@@ -110,6 +110,7 @@ import * as detailingFuncs from './modules/details/legacy';
         map_helper_url = base_domain_url + "/maphelper.php";
         rh_intake_url = base_domain_url + "/rh_intake.php";
         rejection_intake_url = base_domain_url + "/rejection_intake.php";
+        scav_helper_url = base_domain_url + "/scavhelper.php";
 
         await createHunterIdHash();
     }
@@ -127,7 +128,8 @@ import * as detailingFuncs from './modules/details/legacy';
             }
 
             if (ev.data.mhct_message === 'mhmh'
-                || ev.data.mhct_message === 'ryonn') {
+                || ev.data.mhct_message === 'ryonn'
+                || ev.data.mhct_message === 'mhsh') {
                 openMapMiceSolver(ev.data.mhct_message);
                 return;
             }
@@ -202,6 +204,11 @@ import * as detailingFuncs from './modules/details/legacy';
             glue = ';';
             method = 'GET';
             input_name = 'q';
+        }  else if (solver === 'mhsh') {
+            url = scav_helper_url;
+            glue = '\n';
+            method = 'POST';
+            input_name = 'items';
         } else {
             return;
         }
@@ -223,9 +230,9 @@ import * as detailingFuncs from './modules/details/legacy';
                         alert('This seems to be a new kind of map and not yet supported.');
                         return;
                     }
-                    const mice = getMapMice(data, true);
+                    const clue = getTreasureClue(data, true, input_name);
                     $('<form method="' + method + '" action="' + url + '" target="_blank">' +
-                    '<input type="hidden" name="' + input_name + '" value="' + mice.join(glue) +
+                    '<input type="hidden" name="' + input_name + '" value="' + clue.join(glue) +
                     '"></form>').appendTo('body').submit().remove();
                 }
             });
@@ -247,6 +254,32 @@ import * as detailingFuncs from './modules/details/legacy';
         }
 
         return Object.values(mice);
+    }
+
+    // Extract map loot from a map
+    function getMapLoot(data, uncaught_only) {
+        const hint = {};
+        $.each(data.treasure_map.goals.item, (key, item) => {
+            hint[item.unique_id] = item.name;
+        });
+
+        if (uncaught_only) {
+            $.each(data.treasure_map.hunters, (key, hunter) => {
+                $.each(hunter.completed_goal_ids.item, (key, item_id) => {
+                    delete hint[item_id];
+                });
+            });
+        }
+
+        return Object.values(hint);
+    }
+
+
+    function getTreasureClue(data, uncaught_only, input_name) {
+        if(input_name == 'mice')
+            return getMapMice(data, uncaught_only);
+        if(input_name == 'items')
+            return getMapLoot(data, uncaught_only);
     }
 
     /**

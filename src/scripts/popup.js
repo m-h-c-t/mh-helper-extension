@@ -6,7 +6,7 @@
  * @param {boolean} [silent] if true, errors will not be displayed to the user.
  */
 function findOpenMHTab(callback, button_id, silent) {
-    chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, tabs => {
+    chrome.tabs.query({currentWindow: true, 'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, tabs => {
         if (tabs.length > 0) {
             callback(tabs[0].id, button_id);
         }
@@ -24,7 +24,7 @@ function findOpenMHTab(callback, button_id, silent) {
  */
 function sendMessageToScript(tab_id, button_id) {
     // Switch to MH tab if needed.
-    const needsMHPageActive = ['horn', 'tsitu_loader', 'mhmh', 'ryonn'];
+    const needsMHPageActive = ['horn', 'tsitu_loader', 'mhmh', 'ryonn', 'mhsh'];
     if (needsMHPageActive.includes(button_id)) {
         chrome.tabs.update(tab_id, {'active': true});
     }
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, null, true);
 
     // Send specific clicks to the content script for handling and/or additional forwarding.
-    ['mhmh', 'userhistory', 'ryonn', 'horn', 'tsitu_loader'].forEach(id => {
+    ['mhmh', 'userhistory', 'ryonn', 'horn', 'tsitu_loader', 'mhsh'].forEach(id => {
         const button_element = document.getElementById(id);
         if (button_element) {
             button_element.addEventListener('click', () => findOpenMHTab(sendMessageToScript, id));
