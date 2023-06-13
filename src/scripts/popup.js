@@ -8,7 +8,9 @@
 function findOpenMHTab(callback, button_id, silent) {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, tabs => {
         if (tabs.length > 0) {
-            callback(tabs[0].id, button_id);
+            const isPrivate = typeof browser !== 'undefined' ? browser.extension.inIncognitoContext : chrome.extension.inIncognitoContext;
+            const tf = tabs.filter(t => t.incognito === isPrivate);
+            callback(tf[0].id, button_id);
         }
         else if (!silent) {
             displayErrorPopup("Please navigate to MouseHunt page first.");
