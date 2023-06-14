@@ -33,9 +33,13 @@ describe('Bountiful Beanstalk exemptions', () => {
         });
 
         describe('Beanstalk', () => {
-            it('should accept on transition to boss', () => {
+            it.each([
+                'Budrich Thornborn',
+                'Leafton Beanwell',
+                'Herbaceous Bravestalk',
+            ])('should accept on transition to boss when catching %p', (mouse) => {
                 // Arrange
-                setBeanstalkQuestAttributes(false, true, 'Budrich Thornborn');
+                setBeanstalkQuestAttributes(false, true, mouse);
 
                 // Act
                 const valid = target.validateMessage(preMessage, postMessage);

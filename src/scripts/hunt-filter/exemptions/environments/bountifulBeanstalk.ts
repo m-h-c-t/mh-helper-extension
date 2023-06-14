@@ -13,6 +13,7 @@ class BeanstalkBossExemption implements IMessageExemption {
     readonly BeanstalkMice: string[] = [
         "Budrich Thornborn",
         "Leafton Beanwell",
+        "Herbaceous Bravestalk",
     ];
     readonly BeanstalkBossMouse = "Vinneus Stalkhome";
 
