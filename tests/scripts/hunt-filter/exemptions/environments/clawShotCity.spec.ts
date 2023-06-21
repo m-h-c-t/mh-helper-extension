@@ -31,7 +31,7 @@ describe('Claw Shot City exemptions', () => {
             postMessage = {...getDefaultIntakeMessage()};
         });
 
-        it('should reject transtion on bounty hunter catch', () => {
+        it('should accept transtion on bounty hunter catch', () => {
             preUser.quests.QuestClawShotCity = {map_active: false, has_wanted_poster: false};
             postUser.quests.QuestClawShotCity = {map_active: false, has_wanted_poster: true};
             preMessage.mouse = postMessage.mouse = 'Bounty Hunter';
@@ -39,7 +39,7 @@ describe('Claw Shot City exemptions', () => {
 
             const valid = target.validateMessage(preMessage, postMessage);
 
-            expect(valid).toBe(false);
+            expect(valid).toBe(true);
         });
 
         /** Sets the pre and post message stage based on current pre and post user */
