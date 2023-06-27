@@ -40,7 +40,7 @@ export interface Quests {
     QuestAncientCity?: any
     QuestBalacksCove?: any
     QuestBountifulBeanstalk?: quests.QuestBountifulBeanstalk
-    QuestClawShotCity?: any
+    QuestClawShotCity?: quests.QuestClawShotCity
     QuestForbiddenGrove?: quests.QuestForbiddenGrove
     QuestForewordFarm?: any
     QuestFortRox?: any
