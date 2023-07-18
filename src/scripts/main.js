@@ -180,8 +180,8 @@ import * as detailingFuncs from './modules/details/legacy';
 
     function openBookmarklet(url) {
         fetch(url).then(response => response.text()).then((data) => {
-            const new_source = url.replace("menu", "\" + t + \"");
-            const tsitus_menu = data.replace(',d="https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@"+e+"/src/bookmarklet/bm-"+t+".min.js";n.src=d', ";n.src=\"" + new_source + "\"");
+            const new_source = url.replace("menu", "\" + e + \"");
+            const tsitus_menu = data.replace(',n="https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-"+e+".min.js";t.src=n', ";t.src=\"" + new_source + "\"");
             document.location.href = "javascript:void function(){" + tsitus_menu + "%0A}();";
         });
     }
