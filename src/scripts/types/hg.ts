@@ -9,10 +9,7 @@ export interface HgResponse {
     inventory?: Record<string, InventoryItem>  | []
 }
 
-export type User =
-    | HgUser;
-
-export type HgUser = {
+export interface User {
     user_id: number;
     sn_user_id: number;
     unique_hash: string;

@@ -9,9 +9,10 @@ import {FloatingIslandsStager} from "@scripts/modules/stages/environments/floati
 // HAI = High Altitude Island
 // SP = Sky Palace = Vault
 
-
 /* Stages
-Base stage names
+Base stage names are built from the powertype then appended with Low or High or Palace
+
+All island names for reference
 +-----------+------------------+--------------------+--------------------+
 |   Type    |       Low        |        High        |       Palace       |
 +-----------+------------------+--------------------+--------------------+
@@ -29,24 +30,23 @@ Quotes ("") around a phrase indicate stage name, otherwise comments.
 
 Enemy encounter stages:
 "Warden"
-"<high_stage> Paragon"
+"<powertype> Paragon"
 "Empress"
 
 Palace Stage Modifiers:
 Whenever a palace run gets 3x of a the same modifier it gets put into a specific stage
-"<stage> <mod_counter>x <mod_type>"
+"<stage> - <mod_counter>x <mod_type>"
 <mod_type> can be the following:
-"Ancient Jade Stockpile"
-"Empyrean Seal Stowage"
-"Ore and Glass Deposit"
-"Sky Pirate Den" (only when NOT hunting with SPS)
+"Jade"
+"Emp Seal"
+"Glass + Ore"
+"Pirates" (only when NOT hunting with SPS)
 
 Special stage cases
 Loot cache are handled slightly different, both for low, high, and palace runs but only with CC and ERCC equipped
-"<stage> - Loot x<mod_count>" (mod 2x for low/high and 2x to 4x for palace)
+"<stage> - <mod_count>x Loot" (mod 2x for low/high and 2x to 4x for palace)
 Pirates are the final special case. Equipping Sky Pirate Swiss will change the stage.
-"No Pirates"
-"<Island|Vault> Pirates x<mod_count>" Choose Island (even for high alt) or Vault, then up to 2x for low/high and up to 4x for palace
+"<[Low|High]|Palace> - <mod_count>x Pirates" Choose "Low|High" or Palace, then up to 2x for low/high and up to 4x for palace
 
 */
 
@@ -72,13 +72,13 @@ describe('Floating Islands stages', () => {
             .toThrow('QuestFloatingIslands is undefined');
     });
 
-    describe('Enemy Encounters', () => {
-        it('should set stage to island name by default', () => {
-            setHuntingSiteAtts({});
-            stager.addStage(message, preUser, postUser, journal);
+    it('should throw on unhandled island state', () => {
+        setHuntingSiteAtts({});
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Unknown Floating Island stage');
+    });
 
-            expect(message.stage).toBe('Test Island');
-        });
+    describe('Enemy Encounters', () => {
 
         it('should set stage to Warden on low tier enemy encounter', () => {
             setHuntingSiteAtts({
@@ -97,7 +97,7 @@ describe('Floating Islands stages', () => {
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Test Island Paragon');
+            expect(message.stage).toBe('TestPowertype Paragon');
         });
 
         it('should set stage to Empress on vault enemy encounter', () => {
@@ -109,15 +109,6 @@ describe('Floating Islands stages', () => {
 
             expect(message.stage).toBe('Empress');
         });
-
-        it('should append Enemy Encounter to stage on unhandled enemy encounter', () => {
-            setHuntingSiteAtts({
-                is_enemy_encounter: true,
-            });
-            stager.addStage(message, preUser, postUser, journal);
-
-            expect(message.stage).toBe('Test Island Enemy Encounter');
-        });
     });
 
     describe('Pirates', () => {
@@ -127,29 +118,30 @@ describe('Floating Islands stages', () => {
 
         it('should be Island pirates with no vault', () => {
             setHuntingSiteAtts({
-                is_vault_island: false,
+                is_low_tier_island: true,
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Island No Pirates');
+            expect(message.stage).toBe('Low|High - 0x Pirates');
         });
 
-        it('should be Island pirates with no vault', () => {
+        it('should be Island pirates with vault', () => {
             setHuntingSiteAtts({
                 is_vault_island: true,
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Vault No Pirates');
+            expect(message.stage).toBe('Palace - 0x Pirates');
         });
 
         it('should append number of active pirate mod panels', () => {
             setHuntingSiteAtts({
+                is_low_tier_island: true,
                 activated_island_mod_types: ['ore_bonus', 'sky_pirates', 'sky_pirates'],
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Island Pirates x2');
+            expect(message.stage).toBe('Low|High - 2x Pirates');
         });
     });
 
@@ -157,21 +149,34 @@ describe('Floating Islands stages', () => {
         it('should default stage when user has 1x loot_cache active with CCC', () => {
             preUser.bait_name = "Cloud Cheesecake";
             setHuntingSiteAtts({
+                is_low_tier_island: true,
                 activated_island_mod_types: ['loot_cache'],
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Test Island');
+            expect(message.stage).toBe('TestPowertype Low');
         });
 
-        it('should default stage when user has at least 2x loot_cache active with CCC', () => {
+        it('should set loot cache stage when user has at least 2x loot_cache active with CCC', () => {
             preUser.bait_name = "Cloud Cheesecake";
             setHuntingSiteAtts({
+                is_low_tier_island: true,
                 activated_island_mod_types: ['loot_cache', 'loot_cache'],
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Test Island - Loot x2');
+            expect(message.stage).toBe('TestPowertype Low - 2x Loot');
+        });
+
+        it('should set loot cache stage when user has at least 2x loot_cache active with ERCCC', () => {
+            preUser.bait_name = "Extra Rich Cloud Cheesecake";
+            setHuntingSiteAtts({
+                is_vault_island: true,
+                activated_island_mod_types: ['loot_cache', 'loot_cache', 'loot_cache', 'loot_cache'],
+            });
+            stager.addStage(message, preUser, postUser, journal);
+
+            expect(message.stage).toBe('TestPowertype Palace - 4x Loot');
         });
     });
 
@@ -183,7 +188,7 @@ describe('Floating Islands stages', () => {
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Test Island');
+            expect(message.stage).toBe('TestPowertype Palace');
         });
 
         it('should set to default stage with less than 3 common active mod panels', () => {
@@ -193,27 +198,27 @@ describe('Floating Islands stages', () => {
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Test Island');
+            expect(message.stage).toBe('TestPowertype Palace');
         });
 
-        it('should set to default stage with less than 3 common active mod panels', () => {
+        it('should set to glore type stage with 3 common active mod panels', () => {
             setHuntingSiteAtts({
                 is_vault_island: true,
                 activated_island_mod_types: ['ore_gem_bonus', 'ore_gem_bonus', 'ore_gem_bonus', 'cloudstone_bonus'],
                 island_mod_panels: [
                     {
                         type: 'ore_gem_bonus',
-                        name: 'Ore and Gem Deposit',
+                        name: 'Ore and Glass Deposit',
                     },
                     {
-                        type: 'charm_bonus',
+                        type: 'cloudstone_bonus',
                         name: 'Empyrean Seal Stowage',
                     },
                 ],
             });
             stager.addStage(message, preUser, postUser, journal);
 
-            expect(message.stage).toBe('Test Island 3x Ore and Gem Deposit');
+            expect(message.stage).toBe('TestPowertype Palace - 3x Glass + Ore');
         });
     });
 
@@ -227,7 +232,7 @@ describe('Floating Islands stages', () => {
 
     function getDefaultEnvironmentAtts(): FloatingIslandHuntingSiteAtts {
         return {
-            island_name: 'Test Island',
+            island_name: 'TestPowertype Island', // <powertype> Island. Tests should expect "Test" to be powertype
             is_enemy_encounter: null,
             is_low_tier_island: null,
             is_high_tier_island: null,
