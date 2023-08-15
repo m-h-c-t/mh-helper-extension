@@ -45,7 +45,7 @@ export interface Quests {
     QuestForewordFarm?: any
     QuestFortRox?: any
     QuestHarbour?: any
-    QuestIceberg?: any
+    QuestIceberg?: quests.QuestIceberg;
     QuestIceFortress?: quests.QuestIceFortress;
     QuestLabyrinth?: any
     QuestLivingGarden?: any

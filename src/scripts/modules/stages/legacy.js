@@ -269,10 +269,10 @@ export function addLostCityStage(message, user, user_post, hunt) {
 /**
  * Report the current distance / obstacle.
  * TODO: Stage / hunt details for first & second icewing hunting?
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+ * @param {import("@scripts/types/mhct").IntakeMessage} message The message to be sent.
+ * @param {import("@scripts/types/hg").User} user The user state object, when the hunt was invoked (pre-hunt).
+ * @param {import("@scripts/types/hg").User} user_post The user state object, after the hunt.
+ * @param {unknown} hunt The journal entry corresponding to the active hunt.
  */
 export function addIcebergStage(message, user, user_post, hunt) {
     const quest = user.quests.QuestIceberg;
