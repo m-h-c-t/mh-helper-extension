@@ -32,7 +32,7 @@ describe('Iceberg exemptions', () => {
         });
 
         describe('generals', () => {
-            it('should reject transition to generals stage', () => {
+            it('should accept transition to generals stage', () => {
                 preUser.quests.QuestIceberg = {current_phase: 'Treacherous Tunnels'};
                 postUser.quests.QuestIceberg = {current_phase: 'General'};
                 preMessage.mouse = postMessage.mouse = 'Polar Bear';
@@ -40,10 +40,10 @@ describe('Iceberg exemptions', () => {
 
                 const valid = target.validateMessage(preMessage, postMessage);
 
-                expect(valid).toBe(false);
+                expect(valid).toBe(true);
             });
 
-            it('should reject after general catch', () => {
+            it('should accept after general catch', () => {
                 preUser.quests.QuestIceberg = {current_phase: 'General'};
                 postUser.quests.QuestIceberg = {current_phase: 'Brutal Bulwark'};
                 preMessage.mouse = postMessage.mouse = 'General Drheller';
@@ -51,12 +51,12 @@ describe('Iceberg exemptions', () => {
 
                 const valid = target.validateMessage(preMessage, postMessage);
 
-                expect(valid).toBe(false);
+                expect(valid).toBe(true);
             });
         });
 
         describe('icewing', () => {
-            it('should reject transition to generals stage', () => {
+            it('should accept transition to generals stage', () => {
                 preUser.quests.QuestIceberg = {current_phase: 'General'};
                 postUser.quests.QuestIceberg = {current_phase: 'Icewing\'s Lair'};
                 preMessage.mouse = postMessage.mouse = 'Princess Fist';
@@ -64,10 +64,10 @@ describe('Iceberg exemptions', () => {
 
                 const valid = target.validateMessage(preMessage, postMessage);
 
-                expect(valid).toBe(false);
+                expect(valid).toBe(true);
             });
 
-            it('should reject after Icewing catch', () => {
+            it('should accept after Icewing catch', () => {
                 preUser.quests.QuestIceberg = {current_phase: 'Icewing\'s Lair'};
                 postUser.quests.QuestIceberg = {current_phase: 'Hidden Depths'};
                 preMessage.mouse = postMessage.mouse = 'Icewing';
@@ -75,19 +75,19 @@ describe('Iceberg exemptions', () => {
 
                 const valid = target.validateMessage(preMessage, postMessage);
 
-                expect(valid).toBe(false);
+                expect(valid).toBe(true);
             });
         });
 
         describe('deep', () => {
-            it('should reject transition on deep catch', () => {
+            it('should accept transition on deep catch', () => {
                 preMessage.location = {name: 'Iceberg', id: 0};
                 postMessage.location = {name: 'Slushy Shoreline', id: 0};
                 preMessage.mouse = postMessage.mouse = 'Deep';
 
                 const valid = target.validateMessage(preMessage, postMessage);
 
-                expect(valid).toBe(false);
+                expect(valid).toBe(true);
             });
         });
 
