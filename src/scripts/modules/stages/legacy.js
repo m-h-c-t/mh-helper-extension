@@ -1,6 +1,3 @@
-
-
-
 /**
  * Add the "wall state" for Mousoleum hunts.
  * @param {Object <string, any>} message The message to be sent.
@@ -529,7 +526,7 @@ export function addTrainStage(message, user, user_post, hunt) {
             message.stage = stage;
         } else if (quest.current_phase === "boarding") {
             let stage = "2. Raider River";
-            if (quest.minigame && quest.minigame.trouble_area) {
+            if (quest.minigame?.trouble_area) {
             // Raider River has an additional server-side state change.
                 const area = quest.minigame.trouble_area;
                 const final_area = final_quest.minigame.trouble_area;
@@ -577,7 +574,7 @@ export function addTrainStage(message, user, user_post, hunt) {
  */
 export function addForewordFarmStage(message, user, user_post, hunt) {
     const quest = user.quests.QuestForewordFarm;
-    if (quest && quest.mice_state && typeof quest.mice_state === "string") {
+    if (quest?.mice_state && typeof quest.mice_state === "string") {
         message.stage = quest.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
     }
 }

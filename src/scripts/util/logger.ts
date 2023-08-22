@@ -12,10 +12,10 @@ export abstract class LoggerService {
     abstract getLevel(): LogLevel;
     abstract setLevel(level: LogLevel): void;
 
-    abstract debug(message?: string, ...args: any[]): void;
-    abstract info(message?: string, ...args: any[]): void;
-    abstract warn(message?: string, ...args: any[]): void;
-    abstract error(message?: string, ...args: any[]): void;
+    abstract debug(message?: string, ...args: unknown[]): void;
+    abstract info(message?: string, ...args: unknown[]): void;
+    abstract warn(message?: string, ...args: unknown[]): void;
+    abstract error(message?: string, ...args: unknown[]): void;
 }
 
 export class ConsoleLogger implements LoggerService {
@@ -34,23 +34,23 @@ export class ConsoleLogger implements LoggerService {
         return this.level;
     }
 
-    public debug(message?: string, ...args: any[]): void {
+    public debug(message?: string, ...args: unknown[]): void {
         this.log(LogLevel.Debug, message, ...args);
     }
 
-    public info(message?: string, ...args: any[]): void {
+    public info(message?: string, ...args: unknown[]): void {
         this.log(LogLevel.Info, message, ...args);
     }
 
-    public warn(message?: string, ...args: any[]): void {
+    public warn(message?: string, ...args: unknown[]): void {
         this.log(LogLevel.Warn, message, ...args);
     }
 
-    public error(message?: string, ...args: any[]): void {
+    public error(message?: string, ...args: unknown[]): void {
         this.log(LogLevel.Error, message, ...args);
     }
 
-    private log(level: LogLevel, message?: string, ...args: any[]): void {
+    private log(level: LogLevel, message?: string, ...args: unknown[]): void {
         if (this.level > level) {
             return;
         }

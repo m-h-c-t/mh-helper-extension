@@ -60,7 +60,7 @@ class CastleBossExemption implements IMessageExemption {
     readonly description = "Bountiful Beanstalk Castle Giant encounter";
     readonly property = "stage";
 
-    readonly CastleBossStagesToMouse: {[key: string]: string | undefined} = {
+    readonly CastleBossStagesToMouse: Record<string, string | undefined> = {
         'Dungeon Giant': 'Dungeon Master' ,
         'Ballroom Giant': 'Malevolent Maestro' ,
         'Great Hall Giant': 'Mythical Giant King',

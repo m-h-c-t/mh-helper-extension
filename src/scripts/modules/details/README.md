@@ -11,11 +11,12 @@ First decide whether you need to add details for a specific location, an `IEnvir
     `IDetailer`
 
     ```typescript
-    import { type User } from '@scripts/types/hg';
-    import { type IDetailer } from '../details.types';
+    import type {JournalMarkup, User} from '@scripts/types/hg';
+    import type {IDetailer} from '../details.types';
+    import type {IntakeMessage} from '@scripts/types/mhct';
 
     export class <GlobalEvent>Detailer implements IDetailer {
-        addDetails(message: any, userPre: User, userPost: User, journal: any): Record<PropertyKey, unknown> | undefined {
+        addDetails(message: IntakeMessage, userPre: User, userPost: User, journal: JournalMarkup): object | undefined {
 
         }
     }
@@ -24,20 +25,21 @@ First decide whether you need to add details for a specific location, an `IEnvir
     `IEnvironmentDetailer`
 
     ```typescript
-    import { type User } from '@scripts/types/hg';
-    import { type IEnvironmentDetailer } from '../details.types';
+    import type {JournalMarkup, User} from '@scripts/types/hg';
+    import type {IEnvironmentDetailer} from '../details.types';
+    import type {IntakeMessage} from '@scripts/types/mhct';
 
     export class <Location>Detailer implements IEnvironmentDetailer {
         readonly environment: string = '<Location>';
 
-        addDetails(message: any, userPre: User, userPost: User, journal: any): Record<PropertyKey, unknown> | undefined {
+        addDetails(message: IntakeMessage, userPre: User, userPost: User, journal: JournalMarkup): object | undefined {
 
         }
     }
     ```
 
 3. The `environment` field, if required, should return a string of the location , e.g., `"Valour Rift"` or `"Town of Gnawnia"`.
-4. In the `getDetails` function, optionally return a record of details to add to the hunt otherwise do nothing.
+4. In the `getDetails` function, optionally return a object of details to add to the hunt otherwise do nothing.
    - `throw` an `Error` in this function (with a detailed message) if you encounter an unexpected state and wish to discard the hunt.
 5. Add the detailer to [index.ts](index.ts).
 6. Create your unit tests in the test folder!

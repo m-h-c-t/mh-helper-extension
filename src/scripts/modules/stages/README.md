@@ -7,13 +7,15 @@ Need to add a new stage for a location?
    Or use this template
 
     ```typescript
-    import { type User } from '@scripts/types/hg';
-    import { type IStager } from './stages.types';
+    import type {User} from '@scripts/types/hg';
+    import type {IStager} from '../stages.types';
+    import type {IntakeMessage} from '@scripts/types/mhct';
+
 
     export class <Location>Stager implements IStager {
         readonly environment: string = '<Location>';
 
-        addStage(message: any, userPre: User, userPost: User, journal: any): void {
+        addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {
           // assign message.stage
           // can be string or { key: value }
 

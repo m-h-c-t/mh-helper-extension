@@ -1,5 +1,6 @@
 import type {IStager} from '../stages.types';
 import type {User} from '@scripts/types/hg';
+import type {IntakeMessage} from '@scripts/types/mhct';
 import type {RoomType} from '@scripts/types/quests';
 
 export class SuperBrieFactoryStager implements IStager {
@@ -12,7 +13,7 @@ export class SuperBrieFactoryStager implements IStager {
         "quality_assurance_room": "QA Room",
     };
 
-    addStage(message: any, userPre: User, userPost: User, journal: any): void {
+    addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {
         const quest = userPre.quests.QuestSuperBrieFactory;
 
         if (quest == null) {

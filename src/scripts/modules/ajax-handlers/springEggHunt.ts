@@ -26,7 +26,7 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
         return url.includes("mousehuntgame.com/managers/ajax/events/spring_hunt.php");
     }
 
-    async execute(responseJSON: any): Promise<void> {
+    async execute(responseJSON: HgResponse): Promise<void> {
         this.recordEgg(responseJSON as HgResponseWithEggContents);
     }
 

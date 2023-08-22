@@ -1,3 +1,4 @@
+import type {HgResponse} from "@scripts/types/hg";
 import type {HgItem} from "@scripts/types/mhct";
 import type {LoggerService} from "@scripts/util/logger";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
@@ -26,7 +27,7 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
         return url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php");
     }
 
-    async execute(responseJSON: any): Promise<void> {
+    async execute(responseJSON: HgResponse): Promise<void> {
         this.recordSnackPack(responseJSON as HgResponseWithVendingMachine);
     }
 

@@ -2,14 +2,14 @@ export type QuestBountifulBeanstalk =
     | BeanstalkAttributes
     | CastleAttributes;
 
-export type BeanstalkAttributes = {
+export interface BeanstalkAttributes {
     in_castle: false;
     beanstalk: {
         is_boss_encounter: boolean;
     };
-};
+}
 
-export type CastleAttributes = {
+export interface CastleAttributes {
     in_castle: true;
     castle: {
         is_boss_encounter: boolean;
@@ -20,4 +20,4 @@ export type CastleAttributes = {
             name: string;
         }
     };
-};
+}

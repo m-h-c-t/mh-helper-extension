@@ -1,4 +1,5 @@
 import {SEHAjaxHandler} from "@scripts/modules/ajax-handlers";
+import {HgResponse} from "@scripts/types/hg";
 import {HgItem} from "@scripts/types/mhct";
 
 jest.mock('@scripts/util/logger');
@@ -27,7 +28,7 @@ describe("SEHAjaxHandler", () => {
 
     describe("execute", () => {
         it('logs if SEH response is not egg opening', async () => {
-            await handler.execute({});
+            await handler.execute({} as unknown as HgResponse);
 
             expect(logger.debug).toBeCalledWith('Skipping SEH egg submission as this isn\'t an egg convertible');
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
@@ -36,7 +37,7 @@ describe("SEHAjaxHandler", () => {
         it('warns if response is unexpected', async () => {
             // vending_machine_reponse.type missing here,
             // but add some other data to verify that it will print out entire response
-            const response = {user_id: 4, egg_contents: {}};
+            const response = {user_id: 4, egg_contents: {}} as unknown as HgResponse;
             await handler.execute(response);
 
             expect(logger.warn).toBeCalledWith('Unable to parse SEH response', {responseJSON: response});
@@ -180,7 +181,7 @@ const testResponses = {
                 "type": "sky_scrambler_stat_item",
             },
         },
-    },
+    } as unknown as HgResponse,
 
     // 2 Loot Cache Eggs
     // 4 Sky Glass, 8 Cloud Curd, 4 Sky Ore
@@ -229,7 +230,7 @@ const testResponses = {
                 "type": "floating_islands_sky_ore_stat_item",
             },
         },
-    },
+    } as unknown as HgResponse,
     // 1 Architeuthulhu Egg
     // 50 Inspiration Ink
     responseThree: {
@@ -256,5 +257,5 @@ const testResponses = {
                 "type": "inspiration_ink_stat_item",
             },
         },
-    },
+    } as unknown as HgResponse,
 };

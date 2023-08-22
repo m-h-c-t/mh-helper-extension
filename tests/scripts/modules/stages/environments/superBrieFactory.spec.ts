@@ -28,7 +28,7 @@ describe("SuperBrieFactoryStager", () => {
         const user = changeFactoryQuest(defaultUser, undefined!);
 
         expect(() => {
-            stager.addStage({} as any, user, user, defaultJournal);
+            stager.addStage({} as IntakeMessage, user, user, defaultJournal);
         }).toThrowError("User is in SB+ factory but quest wasn't found.");
     });
 

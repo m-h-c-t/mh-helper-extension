@@ -1,4 +1,5 @@
 /* eslint-env node */
+/** @type {import('@typescript-eslint/utils/dist/ts-eslint').Linter.Config} */
 module.exports = {
     root: true,
     env: {
@@ -9,7 +10,9 @@ module.exports = {
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
-        //'plugin:@typescript-eslint/recommended-requiring-type-checking',
+        // TODO: enable v6's recommended-type-checked
+        'plugin:@typescript-eslint/stylistic-type-checked',
+        // TODO (low priority): consider enabling strict-type-checked
     ],
     parser: '@typescript-eslint/parser',
     plugins: ['@typescript-eslint'],
