@@ -1,4 +1,5 @@
 import {FungalCavernStager} from "@scripts/modules/stages/environments/fungalCavern";
+import type {IntakeMessage} from "@scripts/types/mhct";
 import {User} from "@scripts/types/hg";
 
 describe("FungalCavernStager", () => {
@@ -9,7 +10,7 @@ describe("FungalCavernStager", () => {
     });
 
     it("is gemology base stage if gemology base is armed", () => {
-        const message = {} as any;
+        const message = {} as IntakeMessage;
         const userPre = {
             base_name: "Gemology Base",
         } as User;
@@ -18,7 +19,7 @@ describe("FungalCavernStager", () => {
     });
 
     it("is not gemology stage if gemology base is not armed", () => {
-        const message = {} as any;
+        const message = {} as IntakeMessage;
         const userPre = {
             base_name: "",
         } as User;
