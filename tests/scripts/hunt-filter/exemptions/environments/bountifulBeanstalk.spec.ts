@@ -113,7 +113,7 @@ describe('Bountiful Beanstalk exemptions', () => {
                 });
             });
 
-            type HelperType = { floor: string, room: string, isBossEncounter: boolean };
+            interface HelperType { floor: string, room: string, isBossEncounter: boolean }
             function setCastleQuestAttributes(preAttributes: HelperType, postAttributes: HelperType, mouse: string) {
                 preUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes(preAttributes, preAttributes.isBossEncounter);
                 postUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes(preAttributes, postAttributes.isBossEncounter);

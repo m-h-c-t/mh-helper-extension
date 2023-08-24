@@ -1,4 +1,5 @@
 import {SBFactoryAjaxHandler} from "@scripts/modules/ajax-handlers";
+import {HgResponse} from "@scripts/types/hg";
 import {HgItem} from "@scripts/types/mhct";
 
 jest.mock('@scripts/util/logger');
@@ -27,7 +28,7 @@ describe("SBFactoryAjaxHandler", () => {
 
     describe("execute", () => {
         it('logs if birthday response is not purchase', async () => {
-            await handler.execute({});
+            await handler.execute({} as unknown as HgResponse);
 
             expect(logger.debug).toBeCalledWith('Skipped snack pack submission as this isn\'t a vending purchase');
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
@@ -36,7 +37,7 @@ describe("SBFactoryAjaxHandler", () => {
         it('warns if response is unexpected', async () => {
             // vending_machine_reponse.type missing here,
             // but add some other data to verify that it will print out entire response
-            const response = {user_id: 4, vending_machine_purchase: {}};
+            const response = {user_id: 4, vending_machine_purchase: {}} as unknown as HgResponse;
             await handler.execute(response);
 
             expect(logger.warn).toBeCalledWith('Unable to parse bday response', {responseJSON: response});
@@ -165,7 +166,7 @@ const testResponses = {
                 "quantity": 54,
             },
         },
-    },
+    } as unknown as HgResponse,
 
     // Story Seeds (inferred from preview by Dave on 2023-02-17 FBF)
     // 20 Second Draft Derby Cheese, 30 Clamembert Cheese, 60 Mythical Mulch
@@ -217,5 +218,5 @@ const testResponses = {
                 "quantity": 60,
             },
         },
-    },
+    } as unknown as HgResponse,
 };

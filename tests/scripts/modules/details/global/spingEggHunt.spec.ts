@@ -1,21 +1,23 @@
 import {SpringEggHuntDetailer, type SpringEggHuntDetails} from '@scripts/modules/details/global/springEggHunt';
 import {type User} from '@scripts/types/hg';
+import {type IntakeMessage} from '@scripts/types/mhct';
 import {type QuestSpringHunt} from '@scripts/types/quests';
 
 describe('SpringEggHuntDetailer', () => {
     describe('getDetails', () => {
         it('returns undefined when quest is undefined', () => {
             const detailer = new SpringEggHuntDetailer();
+            const message = {} as IntakeMessage;
             const user: User = {
                 quests: {},
             } as User;
 
-            expect(detailer.addDetails(null, user, user, null!)).toBe(undefined);
+            expect(detailer.addDetails(message, user, user, null!)).toBe(undefined);
         });
 
         it('adds expected details when SEH quest is active', () => {
             const detailer = new SpringEggHuntDetailer();
-
+            const message = {} as IntakeMessage;
             const preQuest: QuestSpringHunt = getDefaultQuest();
             preQuest.charge_quantity = "10";
             const postQuest: QuestSpringHunt = getDefaultQuest();
@@ -40,7 +42,7 @@ describe('SpringEggHuntDetailer', () => {
                 can_double_eggs: true,
             };
 
-            expect(detailer.addDetails(null, preUser, postUser, null!)).toStrictEqual(expected);
+            expect(detailer.addDetails(message, preUser, postUser, null!)).toStrictEqual(expected);
         });
     });
 

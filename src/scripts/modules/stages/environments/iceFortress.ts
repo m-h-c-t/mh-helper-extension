@@ -1,11 +1,12 @@
 import {type IStager} from '../stages.types';
 import {type QuestIceFortress} from '@scripts/types/quests/iceFortress';
 import {type User} from '@scripts/types/hg';
+import {type IntakeMessage} from '@scripts/types/mhct';
 
 export class IceFortressStager implements IStager {
     readonly environment: string = 'Ice Fortress';
 
-    addStage(message: any, userPre: User, userPost: User, journal: any): void {
+    addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {
         const quest: QuestIceFortress | undefined = userPre.quests.QuestIceFortress;
 
         if (quest == null) {

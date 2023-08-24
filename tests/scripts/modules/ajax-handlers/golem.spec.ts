@@ -1,5 +1,6 @@
 import {GWHGolemAjaxHandler} from '@scripts/modules/ajax-handlers/golem';
 import type {GolemPayload} from '@scripts/modules/ajax-handlers/golem.types';
+import {HgResponse} from '@scripts/types/hg';
 
 jest.mock('@scripts/util/logger');
 import {ConsoleLogger} from '@scripts/util/logger';
@@ -37,7 +38,7 @@ describe('GWHGolemAjaxHandler', () => {
         it('does not call submitGolems with unhandled json', () => {
             handler.submitGolems = jest.fn();
 
-            handler.execute({});
+            handler.execute({} as unknown as HgResponse);
 
             expect(logger.debug).toHaveBeenCalledWith('Skipped GWH golem submission since there are no golem rewards.', {});
             expect(handler.submitGolems).not.toHaveBeenCalled();
@@ -122,5 +123,5 @@ const testResponses = {
                 },
             },
         ],
-    },
+    } as unknown as HgResponse,
 };

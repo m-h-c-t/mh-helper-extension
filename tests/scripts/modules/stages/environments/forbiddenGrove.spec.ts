@@ -1,17 +1,18 @@
 import {ForbiddenGroveStager} from "@scripts/modules/stages/environments/forbiddenGrove";
 import {User} from "@scripts/types/hg";
+import {IntakeMessage} from "@scripts/types/mhct";
 
 describe("ForbiddenGroveStager", () => {
     const stager = new ForbiddenGroveStager();
     let defaultPre: User;
     let defaultPost: User;
-    let defaultMessage: any = {};
-    let defaultJournal: any = {};
+    let defaultMessage: IntakeMessage = {} as IntakeMessage;
+    let defaultJournal: unknown = {};
 
     beforeEach(() => {
         defaultPre = getDefaultUser();
         defaultPost = getDefaultUser();
-        defaultMessage = {};
+        defaultMessage = {} as IntakeMessage;
         defaultJournal = {};
     });
 
@@ -30,10 +31,10 @@ describe("ForbiddenGroveStager", () => {
 
         // common act to run addStage
         const act = (
-            message: any = defaultMessage,
+            message: IntakeMessage = defaultMessage,
             userPre: User = defaultPre,
             userPost: User = defaultPost,
-            journal: any = defaultJournal
+            journal: unknown = defaultJournal
         ) => {
             stager.addStage(message, userPre, userPost, journal);
         };
