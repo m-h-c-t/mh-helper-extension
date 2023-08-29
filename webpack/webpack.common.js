@@ -6,22 +6,6 @@ const RemoteDownloadFileWebpackPlugin = require('./RemoteDownloadFileWebpackPlug
 const srcScripts = path.resolve(__dirname, '../src/scripts/');
 const outpath = path.resolve(__dirname, '../dist/');
 
-function modify(buffer) {
-    // copy-webpack-plugin passes a buffer
-    var manifest = JSON.parse(buffer.toString());
-
-    // make any modifications you like, such as
-    // manifest.version = package.version;
-    if(process.env.TARGET == 'firefox') {
-        delete manifest.incognito;
-    }
-
-    // pretty print to JSON with two spaces
-    manifest_JSON = JSON.stringify(manifest, null, 2);
-
-    return manifest_JSON;
- }
-
 module.exports = {
     entry: {
         background: path.join(srcScripts, 'background.js'),
@@ -59,18 +43,10 @@ module.exports = {
                     from: './',
                     to: outpath,
                     globOptions: {
-                        ignore: ['**/scripts', '**/manifest.json'],
+                        ignore: ['**/scripts'],
                     },
                     context: 'src/',
                 },
-                {
-                    from: "./manifest.json",
-                    to: outpath,
-                    transform(content, absoluteFrom) {
-                      return modify(content);
-                    },
-                    context: 'src/',
-                  },
             ],
         }),
         new RemoteDownloadFileWebpackPlugin([

@@ -43,8 +43,8 @@
     "build": "webpack --config webpack/webpack.prod.js",
     "build:dev": "webpack --config webpack/webpack.dev.js",
     "build:watch": "webpack --config webpack/webpack.dev.js --watch",
-    "dev": "cross-env TARGET=chrome npm run build:dev && concurrently \"npm run web-run\" \"cross-env TARGET=chrome npm run build:watch\"",
-    "dev:firefox": "cross-env TARGET=firefox npm run build:dev && concurrently \"npm run web-run:firefox\" \"cross-env TARGET=firefox npm run build:watch\"",
+    "dev": "npm run build:dev && concurrently \"npm run web-run\" \"npm run build:watch\"",
+    "dev:firefox": "npm run build:dev && concurrently \"npm run web-run:firefox\" \"npm run build:watch\"",
     "lint": "eslint .",
     "test": "jest"
   },
@@ -59,7 +59,6 @@
     "@typescript-eslint/parser": "^5.59.8",
     "concurrently": "^8.0.1",
     "copy-webpack-plugin": "^11.0.0",
-    "cross-env": "^7.0.3",
     "eslint": "^8.41.0",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
     "got-cjs": "^12.5.4",
