@@ -1,6 +1,3 @@
-
-
-
 /**
  * Add the "wall state" for Mousoleum hunts.
  * @param {Object <string, any>} message The message to be sent.
@@ -31,10 +28,10 @@ export function addHarbourStage(message, user, user_post, hunt) {
 
 /**
  * Separate hunts with certain mice available from those without.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+ * @param {import("@scripts/types/mhct").IntakeMessage} message The message to be sent.
+ * @param {import("@scripts/types/hg").User} user The user state object, when the hunt was invoked (pre-hunt).
+ * @param {import("@scripts/types/hg").User} user_post The user state object, after the hunt.
+ * @param {unknown} hunt The journal entry corresponding to the active hunt.
  */
 export function addClawShotCityStage(message, user, user_post, hunt) {
     const quest = user.quests.QuestClawShotCity;
@@ -269,10 +266,10 @@ export function addLostCityStage(message, user, user_post, hunt) {
 /**
  * Report the current distance / obstacle.
  * TODO: Stage / hunt details for first & second icewing hunting?
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+ * @param {import("@scripts/types/mhct").IntakeMessage} message The message to be sent.
+ * @param {import("@scripts/types/hg").User} user The user state object, when the hunt was invoked (pre-hunt).
+ * @param {import("@scripts/types/hg").User} user_post The user state object, after the hunt.
+ * @param {unknown} hunt The journal entry corresponding to the active hunt.
  */
 export function addIcebergStage(message, user, user_post, hunt) {
     const quest = user.quests.QuestIceberg;
@@ -529,7 +526,7 @@ export function addTrainStage(message, user, user_post, hunt) {
             message.stage = stage;
         } else if (quest.current_phase === "boarding") {
             let stage = "2. Raider River";
-            if (quest.minigame && quest.minigame.trouble_area) {
+            if (quest.minigame?.trouble_area) {
             // Raider River has an additional server-side state change.
                 const area = quest.minigame.trouble_area;
                 const final_area = final_quest.minigame.trouble_area;
@@ -577,7 +574,7 @@ export function addTrainStage(message, user, user_post, hunt) {
  */
 export function addForewordFarmStage(message, user, user_post, hunt) {
     const quest = user.quests.QuestForewordFarm;
-    if (quest && quest.mice_state && typeof quest.mice_state === "string") {
+    if (quest?.mice_state && typeof quest.mice_state === "string") {
         message.stage = quest.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
     }
 }

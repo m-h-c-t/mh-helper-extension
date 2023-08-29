@@ -1,6 +1,7 @@
 import {LoggerService} from "@scripts/util/logger";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {GolemPayload, GolemResponse} from "./golem.types";
+import {HgResponse, JournalMarkup} from "@scripts/types/hg";
 
 const rarities = ["area", "hat", "scarf"] as const;
 
@@ -25,13 +26,14 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
         return true;
     }
 
-    public async execute(responseJSON: any): Promise<void> {
+    public async execute(responseJSON: HgResponse): Promise<void> {
         // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-        const golemData: GolemResponse | undefined = responseJSON?.golem_rewards;
-        if (!golemData) {
+        if (!(responseJSON && typeof responseJSON === 'object' && 'golem_rewards' in responseJSON)) {
             this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", responseJSON);
             return;
         }
+
+        const golemData: GolemResponse = responseJSON.golem_rewards as GolemResponse;
         const uid = responseJSON.user.sn_user_id.toString();
         if (!uid) {
             this.logger.warn("Skipped GWH golem submission due to missing user attribution.", responseJSON);
@@ -112,17 +114,13 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
      * Extract the claimed golem location from HG response.
      * @param journalMarkup The journal_markup field from the winter_hunt_area.php response when claiming a golem
      */
-    private getLocationFromJournalMarkup(journalMarkup: any): string | null {
-        const journal = journalMarkup as [
-            {
-                render_data?: {
-                    text?: string
-                }
-            }
-        ];
+    private getLocationFromJournalMarkup(journalMarkup: JournalMarkup[] | undefined): string | null {
+        if (!journalMarkup) {
+            throw new Error('No journal markup found in the golem response');
+        }
 
         const golemLocationRegex = /My golem returned from (?:the )?(.+) with/;
-        for (const journalEntry of journal) {
+        for (const journalEntry of journalMarkup) {
             const result = golemLocationRegex.exec(journalEntry?.render_data?.text ?? "");
             if (result) {
                 return result[1];

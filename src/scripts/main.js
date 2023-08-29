@@ -181,8 +181,8 @@ import * as detailingFuncs from './modules/details/legacy';
 
     function openBookmarklet(url) {
         fetch(url).then(response => response.text()).then((data) => {
-            const new_source = url.replace("menu", "\" + t + \"");
-            const tsitus_menu = data.replace(',d="https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@"+e+"/src/bookmarklet/bm-"+t+".min.js";n.src=d', ";n.src=\"" + new_source + "\"");
+            const new_source = url.replace("menu", "\" + e + \"");
+            const tsitus_menu = data.replace(',n="https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-"+e+".min.js";t.src=n', ";t.src=\"" + new_source + "\"");
             document.location.href = "javascript:void function(){" + tsitus_menu + "%0A}();";
         });
     }
@@ -463,7 +463,7 @@ import * as detailingFuncs from './modules/details/legacy';
      */
     function recordPrizePack(settings, xhr) {
         if (
-            !xhr.responseJSON || !xhr.responseJSON.kings_giveaway_result ||
+            !xhr.responseJSON?.kings_giveaway_result ||
             !xhr.responseJSON.inventory || !xhr.responseJSON.kings_giveaway_result.quantity ||
             xhr.responseJSON.kings_giveaway_result.slot !== "bonus"
         ) {
@@ -824,7 +824,7 @@ import * as detailingFuncs from './modules/details/legacy';
     function parseJournalEntries(hunt_response, max_old_entry_id) {
         let journal = {};
         const more_details = {};
-        more_details['hunt_count'] = 0;
+        more_details.hunt_count = 0;
         let journal_entries = hunt_response.journal_markup;
         if (!journal_entries) { return null; }
 
@@ -1006,7 +1006,7 @@ import * as detailingFuncs from './modules/details/legacy';
             }
             else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
 
-                more_details['alchemists_cookbook_base_bonus'] = true;
+                more_details.alchemists_cookbook_base_bonus = true;
                 logger.debug("Adding Cookbook Base Bonus to details", {procs: more_details});
             }
             else if (css_class.search(/boiling_cauldron_potion_bonus/) !== -1) {
@@ -1049,9 +1049,9 @@ import * as detailingFuncs from './modules/details/legacy';
                         }
                     }
                 }
-                more_details['boiling_cauldron_trap_bonus'] = true;
+                more_details.boiling_cauldron_trap_bonus = true;
                 if (is_boon) {
-                    more_details['gloomy_cauldron_boon'] = true;
+                    more_details.gloomy_cauldron_boon = true;
                 }
                 logger.debug("Boiling Cauldron Trap details", {procs: more_details});
             }
@@ -1088,11 +1088,11 @@ import * as detailingFuncs from './modules/details/legacy';
             }
             else if (css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
-                more_details['pirate_sleigh_trigger'] = true;
+                more_details.pirate_sleigh_trigger = true;
                 logger.debug("Pirate Sleigh proc", {procs: more_details});
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
-                more_details['hunt_count']++;
+                more_details.hunt_count++;
                 logger.debug("Got a hunt record ", {procs: more_details});
                 if (css_class.includes('active')) {
                     journal = markup;
@@ -1105,7 +1105,7 @@ import * as detailingFuncs from './modules/details/legacy';
         });
         if (journal && Object.keys(journal).length) {
             // Only assign if there's an active hunt
-            journal['more_details'] = more_details;
+            journal.more_details = more_details;
         }
         return journal;
     }
@@ -1479,7 +1479,7 @@ import * as detailingFuncs from './modules/details/legacy';
         const profileAutoScan = () => {
             const profile_RE = /profile.php\?snuid=(\w+)$/g; // "$" at regex end = only auto-fetch when AJAX route changing onto a plain profile page
             const profile_RE_matches = document.URL.match(profile_RE);
-            if (profile_RE_matches !== null && profile_RE_matches.length) {
+            if (profile_RE_matches?.length) {
                 const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
 
                 // Form data directly in URL to distinguish it from a profile "King's Crowns" tab click

@@ -33,9 +33,13 @@ describe('Bountiful Beanstalk exemptions', () => {
         });
 
         describe('Beanstalk', () => {
-            it('should accept on transition to boss', () => {
+            it.each([
+                'Budrich Thornborn',
+                'Leafton Beanwell',
+                'Herbaceous Bravestalk',
+            ])('should accept on transition to boss when catching %p', (mouse) => {
                 // Arrange
-                setBeanstalkQuestAttributes(false, true, 'Budrich Thornborn');
+                setBeanstalkQuestAttributes(false, true, mouse);
 
                 // Act
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -109,7 +113,7 @@ describe('Bountiful Beanstalk exemptions', () => {
                 });
             });
 
-            type HelperType = { floor: string, room: string, isBossEncounter: boolean };
+            interface HelperType { floor: string, room: string, isBossEncounter: boolean }
             function setCastleQuestAttributes(preAttributes: HelperType, postAttributes: HelperType, mouse: string) {
                 preUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes(preAttributes, preAttributes.isBossEncounter);
                 postUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes(preAttributes, postAttributes.isBossEncounter);

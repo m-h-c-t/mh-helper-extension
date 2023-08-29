@@ -180,7 +180,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             fn = console.warn;
         }
         fn({message: msg.log, sender});
-    } else if (msg.settings && msg.settings.debug_logging) {
+    } else if (msg.settings?.debug_logging) {
         console.log({msg, msg_sender: sender});
     }
 
@@ -198,7 +198,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
  * @returns {Promise <number | boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
  */
 async function submitCrowns(crowns) {
-    if (!crowns || !crowns.user || (crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond) === 0) {
+    if (!crowns?.user || (crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond) === 0) {
         return false;
     }
 

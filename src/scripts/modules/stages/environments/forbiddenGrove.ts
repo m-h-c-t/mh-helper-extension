@@ -1,5 +1,6 @@
 import type {User} from '@scripts/types/hg';
 import type {IStager} from '../stages.types';
+import type {IntakeMessage} from '@scripts/types/mhct';
 
 export class ForbiddenGroveStager implements IStager {
     readonly environment: string = 'Forbidden Grove';
@@ -10,7 +11,7 @@ export class ForbiddenGroveStager implements IStager {
      * of the hunt itself. If the door closes between the time HG computes the prehunt user object and when
      * HG receives the hunt request, we should reject logging the hunt.
      */
-    addStage(message: any, userPre: User, userPost: User, journal: any): void {
+    addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {
         const preQuest = userPre.quests.QuestForbiddenGrove;
         const postQuest = userPost.quests.QuestForbiddenGrove;
 

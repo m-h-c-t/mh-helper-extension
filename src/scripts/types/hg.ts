@@ -11,6 +11,7 @@ export interface HgResponse {
 
 export interface User {
     user_id: number;
+    sn_user_id: number;
     unique_hash: string;
     num_active_turns: number;
     next_activeturn_seconds: number;
@@ -37,35 +38,35 @@ export interface User {
 
 // TODO: Define needed interfaces for quests in /types/quests/<QuestName>.ts
 export interface Quests {
-    QuestAncientCity?: any
-    QuestBalacksCove?: any
+    QuestAncientCity?: unknown
+    QuestBalacksCove?: unknown
     QuestBountifulBeanstalk?: quests.QuestBountifulBeanstalk
-    QuestClawShotCity?: any
+    QuestClawShotCity?: quests.QuestClawShotCity
     QuestForbiddenGrove?: quests.QuestForbiddenGrove
-    QuestForewordFarm?: any
-    QuestFortRox?: any
-    QuestHarbour?: any
-    QuestIceberg?: any
+    QuestForewordFarm?: unknown
+    QuestFortRox?: unknown
+    QuestHarbour?: unknown
+    QuestIceberg?: quests.QuestIceberg;
     QuestIceFortress?: quests.QuestIceFortress;
-    QuestLabyrinth?: any
-    QuestLivingGarden?: any
-    QuestLostCity?: any
-    QuestMousoleum?: any
-    QuestMoussuPicchu?: any
-    QuestPollutionOutbreak?: any
-    QuestQuesoGeyser?: any
-    QuestRelicHunter?: any
-    QuestRiftBristleWoods?: any
-    QuestRiftBurroughs?: any
-    QuestRiftFuroma?: any
-    QuestRiftWhiskerWoods?: any
-    QuestSandDunes?: any
-    QuestSunkenCity?: any
+    QuestLabyrinth?: unknown
+    QuestLivingGarden?: unknown
+    QuestLostCity?: unknown
+    QuestMousoleum?: unknown
+    QuestMoussuPicchu?: unknown
+    QuestPollutionOutbreak?: unknown
+    QuestQuesoGeyser?: unknown
+    QuestRelicHunter?: unknown
+    QuestRiftBristleWoods?: unknown
+    QuestRiftBurroughs?: unknown
+    QuestRiftFuroma?: unknown
+    QuestRiftWhiskerWoods?: unknown
+    QuestSandDunes?: unknown
+    QuestSunkenCity?: unknown
     QuestSuperBrieFactory?: quests.QuestSuperBrieFactory
     QuestSpringHunt?: quests.QuestSpringHunt
     QuestTableOfContents?: quests.QuestTableOfContents
-    QuestTrainStation?: any
-    QuestWinterHunt2021?: any
+    QuestTrainStation?: unknown
+    QuestWinterHunt2021?: unknown
 }
 
 export type EnvironmentAttributes = unknown;
