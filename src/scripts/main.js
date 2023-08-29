@@ -117,7 +117,7 @@ import * as detailingFuncs from './modules/details/legacy';
 
     // Listening for calls
     function addWindowMessageListeners() {
-        window.addEventListener('message', ev => {
+        window.addEventListener('message', async ev => {
             if (ev.data.mhct_message == null) {
                 return;
             }
@@ -129,7 +129,7 @@ import * as detailingFuncs from './modules/details/legacy';
 
             if (ev.data.mhct_message === 'mhmh'
                 || ev.data.mhct_message === 'ryonn') {
-                openMapMiceSolver(ev.data.mhct_message);
+                await openMapMiceSolver(ev.data.mhct_message);
                 return;
             }
 
@@ -187,8 +187,11 @@ import * as detailingFuncs from './modules/details/legacy';
         });
     }
 
-    // Get map mice
-    function openMapMiceSolver(solver) {
+    /**
+     * Opens tab to relevant map solver
+     * @param {'mhmh' | 'ryonn' } solver
+     */
+    async function openMapMiceSolver(solver) {
         let url = '';
         let glue = '';
         let method = '';
@@ -196,9 +199,10 @@ import * as detailingFuncs from './modules/details/legacy';
 
         if(!['mhmh', 'ryonn'].includes(solver)) return;
 
-        let treasure_map = user.quests.QuestRelicHunter.maps;
+        const quest = user.quests.QuestRelicHunter;
+        let treasure_map = quest?.maps;
 
-        if(!treasure_map.length) {
+        if(!treasure_map?.length) {
             alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
             return;
         }
@@ -210,44 +214,44 @@ import * as detailingFuncs from './modules/details/legacy';
             return;
         }
 
-
-        for(const i in treasure_map) {
-
+        /** @type {import("./types/hg").HgResponse | undefined} */
+        const data = await new Promise((resolve) => {
             const payload = {
-                map_id: treasure_map[i].map_id,
+                map_id: quest?.default_map_id,
                 action: "map_info",
                 uh: user.unique_hash,
                 last_read_journal_entry_id: lastReadJournalEntryId,
             };
 
             $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap.php', payload, null, 'json')
-                .done(data => {
-                    if (data) {
+                .done(data => resolve(data));
+        });
 
-                        if(solver === 'mhmh') {
-                            url = data.treasure_map.is_scavenger_hunt? scav_helper_url : map_helper_url;
-                            glue = '\n';
-                            method = 'POST';
-                            input_name = data.treasure_map.is_scavenger_hunt? 'items' : 'mice';
-                        }
 
-                        if(solver === 'ryonn') {
-                            url = 'http://dbgames.info/mousehunt/tavern';
-                            glue = ';';
-                            method = 'GET';
-                            input_name = 'q';
-                        }
-
-                        const goals = getMapGoals(data, true);
-
-                        $('<form method="' + method + '" action="' + url + '" target="_blank">' +
-                        '<input type="hidden" name="' + input_name + '" value="' + goals.join(glue) +
-                        '"></form>').appendTo('body').submit().remove();
-                    }
-                });
+        if (!data?.treasure_map) {
+            alert('Something went wrong while retrieving map goals.');
+            return;
         }
 
+        if(solver === 'mhmh') {
+            url = data.treasure_map.is_scavenger_hunt? scav_helper_url : map_helper_url;
+            glue = '\n';
+            method = 'POST';
+            input_name = data.treasure_map.is_scavenger_hunt? 'items' : 'mice';
+        }
 
+        if(solver === 'ryonn') {
+            url = 'http://dbgames.info/mousehunt/tavern';
+            glue = ';';
+            method = 'GET';
+            input_name = 'q';
+        }
+
+        const goals = getMapGoals(data, true);
+
+        $('<form method="' + method + '" action="' + url + '" target="_blank">' +
+            '<input type="hidden" name="' + input_name + '" value="' + goals.join(glue) +
+            '"></form>').appendTo('body').submit().remove();
     }
 
     /**
