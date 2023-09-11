@@ -8,7 +8,6 @@ import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
 import * as stagingFuncs from './modules/stages/legacy';
 import * as detailingFuncs from './modules/details/legacy';
-import {recordPrizePack} from "./modules/ajax-handlers/legacy";
 
 (function () {
     'use strict';
@@ -23,8 +22,9 @@ import {recordPrizePack} from "./modules/ajax-handlers/legacy";
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const ajaxSuccessHandlers = [
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
-        new successHandlers.SEHAjaxHandler(logger, submitConvertible),
+        new successHandlers.KingsGiveawayAjaxHandler(logger, submitConvertible),
         new successHandlers.SBFactoryAjaxHandler(logger, submitConvertible),
+        new successHandlers.SEHAjaxHandler(logger, submitConvertible),
     ];
 
     async function main() {
@@ -349,10 +349,6 @@ import {recordPrizePack} from "./modules/ajax-handlers/legacy";
                 if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
                     getSettings(settings => recordCrowns(settings, xhr, url));
                 }
-            } else if (url.includes("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")) {
-                // Triggers on Birthday Items claim, room change click (+others, perhaps).
-                // Wed Jun 23 2021 22:00:00 GMT-0400 [King's Giveaway Key Vanishing date 15th])
-                recordPrizePack(xhr, logger, submitConvertible);
             } else if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
                 createHunterIdHash();
             }
