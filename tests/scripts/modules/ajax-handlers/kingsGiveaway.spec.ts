@@ -93,6 +93,60 @@ describe("KingsGiveawayAjaxHandler", () => {
             );
         });
 
+
+        it("submits expected upon opening 10th pack", async () => {
+
+            await handler.execute(testResponses.responseOfTenthKey);
+
+            const expectedPrizeConvertible = {
+                id: CustomConvertibleIds.KingsMiniPrizePack,
+                name: "King's Mini Prize Pack",
+                quantity: 1,
+            };
+
+            const expectedPrizeItems = [
+                {
+                    id: 114,
+                    name: "SUPER|brie+",
+                    quantity: 5,
+                },
+            ];
+
+            expect(submitConvertibleCallback).toHaveBeenNthCalledWith(1,
+                expect.objectContaining(expectedPrizeConvertible),
+                expect.arrayContaining(expectedPrizeItems)
+            );
+
+            const expectedVaultConvertible = {
+                id: CustomConvertibleIds.KingsGiveawayVault,
+                name: "King's Giveaway Vault",
+                quantity: 1,
+            };
+
+            const expectedVaultItems = [
+                {
+                    id: 420,
+                    name: "King's Credits",
+                    quantity: 300,
+                },
+                {
+                    id: 1692,
+                    name: "Rainbow Charms",
+                    quantity: 50,
+                },
+                {
+                    id: 1974,
+                    name: "Rainbow Scroll Case",
+                    quantity: 1,
+                },
+            ];
+
+            expect(submitConvertibleCallback).toHaveBeenNthCalledWith(2,
+                expect.objectContaining(expectedVaultConvertible),
+                expect.arrayContaining(expectedVaultItems)
+            );
+        });
+
         it("errors out on response three", async () => {
 
             await handler.execute(testResponses.responseWithInventoryError);
@@ -104,9 +158,14 @@ describe("KingsGiveawayAjaxHandler", () => {
 });
 
 // Data is minimum required for the execute to pass
-const testResponses: Record<string, Pick<KingsGiveawayResponse, "kings_giveaway_result" | "inventory">> = {
+const testResponses: Record<string, Pick<KingsGiveawayResponse, "kings_giveaway" | "kings_giveaway_result" | "inventory">> = {
     // 5 Super Regal Charms
     responseOne: {
+        "kings_giveaway": {
+            "remaining_openable_prize_packs": 10,
+            "vault_is_open": null,
+            "vault_prizes": [],
+        },
         "kings_giveaway_result": {
             "quantity": 1,
             "slot": "bonus",
@@ -130,6 +189,11 @@ const testResponses: Record<string, Pick<KingsGiveawayResponse, "kings_giveaway_
 
     // 5000 gold
     responseTwo: {
+        "kings_giveaway": {
+            "remaining_openable_prize_packs": 10,
+            "vault_is_open": null,
+            "vault_prizes": [],
+        },
         "kings_giveaway_result": {
             "quantity": 1,
             "slot": "bonus",
@@ -146,7 +210,56 @@ const testResponses: Record<string, Pick<KingsGiveawayResponse, "kings_giveaway_
         },
     },
 
+    // 10th opening + vault prizes
+    responseOfTenthKey: {
+        "kings_giveaway": {
+            "remaining_openable_prize_packs": null,
+            "vault_is_open": true,
+            "vault_prizes": [
+                {
+                    "quantity": 300,
+                    "type": "prize_credit_stat_item",
+                    "name": "King's Credits",
+                },
+                {
+                    "quantity": 50,
+                    "type": "rainbow_luck_trinket",
+                    "name": "Rainbow Charms",
+                },
+                {
+                    "quantity": 1,
+                    "type": "rainbow_scroll_case_convertible",
+                    "name": "Rainbow Scroll Case",
+                },
+            ],
+        },
+        "kings_giveaway_result": {
+            "slot": "bonus",
+            "quantity": 1,
+            "items": [
+                {
+                    "type": "super_brie_cheese",
+                    "name": "SUPER|brie+",
+                    "quantity": 5,
+                },
+            ],
+        },
+        "inventory": {
+            "super_brie_cheese": {
+                "item_id": 114,
+                "name": "SUPER|brie+",
+                "quantity": 5,
+                "type": "super_brie_cheese",
+            },
+        },
+    },
+
     responseWithInventoryError: {
+        "kings_giveaway": {
+            "remaining_openable_prize_packs": 10,
+            "vault_is_open": null,
+            "vault_prizes": [],
+        },
         "kings_giveaway_result": {
             "quantity": 1,
             "slot": "bonus",

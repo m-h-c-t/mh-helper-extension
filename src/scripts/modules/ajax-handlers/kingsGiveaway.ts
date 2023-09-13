@@ -5,7 +5,6 @@ import {KingsGiveawayResponse} from "./kingsGiveaway.types";
 import {CustomConvertibleIds, EventDates} from "@scripts/util/constants";
 import {parseHgInt} from "@scripts/util/number";
 
-
 export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
     /**
      * Create a new instance of KingsGiveawayAjaxHandler
@@ -38,7 +37,9 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
             return;
         }
 
+        // Both of these functions assume the result is mini prize pack opening response
         await this.recordPrizePack(responseJSON);
+        await this.recordVault(responseJSON);
     }
 
     /**
@@ -104,8 +105,65 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
         this.submitConvertibleCallback(convertible, items);
     }
 
-    private isKgaResponse(responseJSON: unknown): responseJSON is KingsGiveawayResponse {
-        const keyToTestFor: keyof KingsGiveawayResponse = 'kings_giveaway_result';
-        return responseJSON != null && typeof responseJSON === 'object' && keyToTestFor in responseJSON;
+    async recordVault(responseJSON: KingsGiveawayResponse) {
+        const kga = responseJSON.kings_giveaway;
+
+        // 10th opening response: remaining_openable_prize_packs turns null and vault_is_open is true
+        if (kga.remaining_openable_prize_packs != null || !kga.vault_is_open || kga.vault_prizes.length == 0) {
+            return;
+        }
+
+        const convertible = {
+            id: CustomConvertibleIds.KingsGiveawayVault,
+            name: "King's Giveaway Vault",
+            quantity: 1,
+        };
+
+        // vault_prizes don't have an id needed to submit with convertible
+        // need to get them manually from the table below
+        const items: HgItem[] = kga.vault_prizes.map(i => {
+            const id = KingsGiveawayAjaxHandler.KingsVaultItemTypeToId[i.type];
+            if (id == null) {
+                throw new Error(`Unknown item type '${i.type}' in King's Vault`);
+            }
+
+            return {
+                id: id,
+                name: i.name,
+                quantity: parseHgInt(i.quantity),
+            };
+        });
+
+        this.submitConvertibleCallback(convertible, items);
     }
+
+    /**
+     * Validates that the given object is a JSON response from opening a bonus mini prize pack
+     * @param responseJSON
+     * @returns
+     */
+    private isKgaResponse(responseJSON: unknown): responseJSON is KingsGiveawayResponse {
+        const resultKey: keyof KingsGiveawayResponse = 'kings_giveaway_result';
+        const kgaKey: keyof KingsGiveawayResponse = 'kings_giveaway';
+        return responseJSON != null &&
+            typeof responseJSON === 'object' &&
+            resultKey in responseJSON &&
+            kgaKey in responseJSON;
+    }
+
+    private static KingsVaultItemTypeToId: Record<string, number | undefined> = {
+        'ancient_relic_collectible': 923,
+        'baitkeep_trinket': 1815,
+        'extreme_regal_trinket': 2542,
+        'gold_stat_item': 431,
+        'prize_credit_stat_item': 420,
+        'party_size_rainbow_scroll_case_convertible': 3243,
+        'rainbow_scroll_case_convertible': 1974,
+        'rainbow_luck_trinket': 1692,
+        'rare_map_dust_stat_item': 1926,
+        'super_brie_cheese': 114,
+        'super_regal_trinket': 1982,
+        'ultimate_trinket': 1075,
+        'ultimate_regal_trinket': 3617,
+    };
 }
