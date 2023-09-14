@@ -1,6 +1,7 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const RemoteDownloadFileWebpackPlugin = require('./RemoteDownloadFileWebpackPlugin.js');
 
 const srcScripts = path.resolve(__dirname, '../src/scripts/');
@@ -32,6 +33,7 @@ module.exports = {
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js'],
+        plugins: [new TsconfigPathsPlugin()]
     },
     plugins: [
         // Typescript type check and lint on separate process
