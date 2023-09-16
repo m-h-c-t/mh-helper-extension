@@ -136,7 +136,9 @@ jobs:
             StrictHostKeyChecking no
           END
       - name: Allow new version if not already
-        run: ssh do 'grep -qxF "${{ env.EXT_VERSION_NUM }}" ${{ ENV.VERSIONS_FILE }} || echo "${{ env.EXT_VERSION_NUM }}" >> ${{ ENV.VERSIONS_FILE }}'
+        run: |
+          echo "Setting version on server to ${{ env.EXT_VERSION_NUM }}"
+          ssh do 'grep -qxF "${{ env.EXT_VERSION_NUM }}" ${{ ENV.VERSIONS_FILE }} || echo "${{ env.EXT_VERSION_NUM }}" >> ${{ ENV.VERSIONS_FILE }}'
 
 
   # chrome-submit:
