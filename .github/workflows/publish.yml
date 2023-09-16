@@ -37,19 +37,19 @@ jobs:
               exit 1
             fi
           else
-            # Need to keep separate DATE var b/c $(date -d) can't parse y.m.d
-            DATE=$(date)
-            EXT_VERSION=$(date -d "$DATE" +%y.%-m.%-d);
+            EXT_VERSION=$(date +%y.%-m.%-d);
 
             while git rev-parse "refs/tags/$EXT_VERSION" >/dev/null 2>&1; do
               echo "Tag $EXT_VERSION already exists. Incrementing day."
               DATE=$(date -d "$DATE + 1 day")
               EXT_VERSION=$(date -d "$DATE" +%y.%-m.%-d);
             done;
-
-            echo "Setting extension version to $EXT_VERSION"
-            echo "ext-version=$EXT_VERSION" >> $GITHUB_OUTPUT
           fi
+          echo "Setting extension version to $EXT_VERSION"
+          echo "ext-version=$EXT_VERSION" >> $GITHUB_OUTPUT
+          # Remove dots and pad to two digits and remove spaces
+          EXT_VERSION_NUM=$(echo $EXT_VERSION | sed 's/\./ /g' | xargs -n1 | awk '{printf "%02d", $1;}' | xargs)
+          echo "ext-version-num=$EXT_VERSION_NUM" >> $GITHUB_OUTPUT
 
   # create-zip:
   #   runs-on: ubuntu-latest
@@ -117,7 +117,7 @@ jobs:
       - generate-version
       # - create-zip
     env:
-      EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
+      EXT_VERSION_NUM: ${{ needs.generate-version.outputs.ext-version-num }}
       VERSIONS_FILE: '/var/www/mh-hunt-helper/src/versions.txt'
     runs-on: ubuntu-latest
     steps:
@@ -130,11 +130,12 @@ jobs:
           Host do
             HostName ${{ secrets.DO_IP }}
             User ${{ secrets.DO_USER }}
+            Port ${{ secrets.DO_PORT }}
             IdentityFile ~/.ssh/do.key
             StrictHostKeyChecking no
           END
       - name: Allow new version if not already
-        run: ssh do 'grep -qxF "${{ env.EXT_VERSION }}" ${{ ENV.VERSIONS_FILE }} || echo "${{ env.EXT_VERSION }}" >> ${{ ENV.VERSIONS_FILE }}'
+        run: ssh do 'grep -qxF "${{ env.EXT_VERSION_NUM }}" ${{ ENV.VERSIONS_FILE }} || echo "${{ env.EXT_VERSION_NUM }}" >> ${{ ENV.VERSIONS_FILE }}'
 
 
   # chrome-submit:
