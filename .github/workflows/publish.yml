@@ -49,6 +49,7 @@ jobs:
           echo "ext-version=$EXT_VERSION" >> $GITHUB_OUTPUT
           # Remove dots and pad to two digits and remove spaces
           EXT_VERSION_NUM=$(echo $EXT_VERSION | sed 's/\./ /g' | xargs -n1 | awk '{printf "%02d", $1;}' | xargs)
+          echo "Setting extension version number to $EXT_VERSION_NUM"
           echo "ext-version-num=$EXT_VERSION_NUM" >> $GITHUB_OUTPUT
 
   # create-zip:
