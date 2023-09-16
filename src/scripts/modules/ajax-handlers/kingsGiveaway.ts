@@ -160,7 +160,7 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
         'party_size_rainbow_scroll_case_convertible': 3243,
         'rainbow_scroll_case_convertible': 1974,
         'rainbow_luck_trinket': 1692,
-        'rare_map_dust_stat_item': 1926,
+        'rare_map_dust_stat_item': 926,
         'super_brie_cheese': 114,
         'super_regal_trinket': 1982,
         'ultimate_trinket': 1075,
