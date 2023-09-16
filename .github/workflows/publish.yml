@@ -10,8 +10,8 @@ on:
 
 jobs:
 
-  setup:
-    name: Setup
+  generate-version:
+    name: Generate extension version
     runs-on: ubuntu-latest
     outputs:
       ext-version: ${{ steps.retreive-version.outputs.ext-version }}
@@ -51,113 +51,139 @@ jobs:
             echo "ext-version=$EXT_VERSION" >> $GITHUB_OUTPUT
           fi
 
-  CD:
-    runs-on: ubuntu-latest
+  # create-zip:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - generate-version
+  #   strategy:
+  #     matrix:
+  #       node-version: [18.x]
+  #   env:
+  #     EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
+  #   steps:
+  #     - name: Authorized by
+  #       run: echo "${{ github.event.sender.login }}"
+
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: '0'
+
+  #     - name: Set up Node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #         cache: 'npm'
+
+  #     - name: Update manifest
+  #       run: |
+  #         echo "New Version: ${{ env.EXT_VERSION }}"
+  #         sed -i'' -e 's|"version":.*|"version": "${{ env.EXT_VERSION }}",|' src/manifest.json
+  #         cat src/manifest.json
+
+  #     - name: Install dependencies
+  #       run: npm ci
+
+  #     - name: Build
+  #       run: npm run build
+
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: release-${{ env.EXT_VERSION }}
+  #         path: ./dist/*
+
+  #     - name: Zip it! zip it good!
+  #       id: create-zip
+  #       run: |
+  #         mkdir build
+  #         zip -r ./build/release-${{ env.EXT_VERSION }}.zip ./dist/*
+
+  #     - uses: ncipollo/release-action@v1
+  #       with:
+  #         name: ${{ env.EXT_VERSION }}
+  #         tag: ${{ env.EXT_VERSION }}
+  #         artifacts: ./build/release-${{ env.EXT_VERSION }}.zip
+  #         generateReleaseNotes: true
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+
+  #     - name: Tag with new version
+  #       id: create-tag
+  #       run: |
+  #         git tag ${{ env.EXT_VERSION }}
+  #         git push --tags
+
+  allow-version:
+    name: Add allowed version to server
     needs:
-      - setup
-    strategy:
-      matrix:
-        node-version: [18.x]
+      - generate-version
+      # - create-zip
     env:
-      EXT_VERSION: ${{ needs.setup.outputs.ext-version }}
-    steps:
-      - name: Authorized by
-        run: echo "${{ github.event.sender.login }}"
-
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: '0'
-
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: Update manifest
-        run: |
-          echo "New Version: ${{ env.EXT_VERSION }}"
-          sed -i'' -e 's|"version":.*|"version": "${{ env.EXT_VERSION }}",|' src/manifest.json
-          cat src/manifest.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: release-${{ env.EXT_VERSION }}
-          path: ./dist/*
-
-      - name: Zip it! zip it good!
-        id: create-zip
-        run: |
-          mkdir build
-          zip -r ./build/release-${{ env.EXT_VERSION }}.zip ./dist/*
-
-      - uses: ncipollo/release-action@v1
-        with:
-          name: ${{ env.EXT_VERSION }}
-          tag: ${{ env.EXT_VERSION }}
-          artifacts: ./build/release-${{ env.EXT_VERSION }}.zip
-          generateReleaseNotes: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Tag with new version
-        id: create-tag
-        run: |
-          git tag ${{ env.EXT_VERSION }}
-          git push --tags
-
-  chrome-submit:
-    name: Submit to Chrome
-    needs:
-      - setup
-      - CD
-    env:
-      EXT_VERSION: ${{ needs.setup.outputs.ext-version }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v3
-        name: Get extension artifact
-        with:
-          name: release-${{ env.EXT_VERSION }}
-          path: ./dist
-
-      - name: Create chrome artifact
-        run: |
-          mkdir build
-          zip -r chrome-extension.zip ./dist/*
-
-      - name: Upload new release zip to Chrome Webstore
-        uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
-        with:
-          refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
-          client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
-          client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
-          file-name: chrome-extension.zip
-          app-id: ${{ secrets.CHROME_WEBSTORE_ADDON_ID }}
-          publish: true
-
-  firefox-submit:
-    name: Submit to Firefox
-    needs:
-      - setup
-      - CD
-    env:
-      EXT_VERSION: ${{ needs.setup.outputs.ext-version }}
+      EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
+      VERSIONS_FILE: '/var/www/mh-hunt-helper/src/versions.txt'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
-        name: Get extension artifact
-        with:
-          name: release-${{ env.EXT_VERSION }}
-          path: ./dist
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.DO_KEY }}" > ~/.ssh/do.key
+          chmod 600 ~/.ssh/do.key
+          cat >>~/.ssh/config <<END
+          Host do
+            HostName ${{ secrets.DO_IP }}
+            User ${{ secrets.DO_USER }}
+            IdentityFile ~/.ssh/do.key
+            StrictHostKeyChecking no
+          END
+      - name: Allow new version if not already
+        run: ssh do 'grep -qxF "${{ env.EXT_VERSION }}" ${{ ENV.VERSIONS_FILE }} || echo "${{ env.EXT_VERSION }}" >> ${{ ENV.VERSIONS_FILE }}'
 
-      - name: Display structure of downloaded files
-        run: ls -R
 
-      - name: Upload new release to Firefox Webstore
-        run: npx -y web-ext sign --use-submission-api --channel=listed --source-dir=./dist/ --verbose --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
+  # chrome-submit:
+  #   name: Submit to Chrome
+  #   needs:
+  #     - generate-version
+  #     - create-zip
+  #   env:
+  #     EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/download-artifact@v3
+  #       name: Get extension artifact
+  #       with:
+  #         name: release-${{ env.EXT_VERSION }}
+  #         path: ./dist
+
+  #     - name: Create chrome artifact
+  #       run: |
+  #         mkdir build
+  #         zip -r chrome-extension.zip ./dist/*
+
+  #     - name: Upload new release zip to Chrome Webstore
+  #       uses: Klemensas/chrome-extension-upload-action@1df3cdf4047a4789bc61a64a125994d8caf23572
+  #       with:
+  #         refresh-token: ${{ secrets.CHROME_WEBSTORE_REFRESH_TOKEN }}
+  #         client-id: ${{ secrets.CHROME_WEBSTORE_CLIENT_ID }}
+  #         client-secret: ${{ secrets.CHROME_WEBSTORE_CLIENT_SECRET }}
+  #         file-name: chrome-extension.zip
+  #         app-id: ${{ secrets.CHROME_WEBSTORE_ADDON_ID }}
+  #         publish: true
+
+  # firefox-submit:
+  #   name: Submit to Firefox
+  #   needs:
+  #     - generate-version
+  #     - create-zip
+  #   env:
+  #     EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/download-artifact@v3
+  #       name: Get extension artifact
+  #       with:
+  #         name: release-${{ env.EXT_VERSION }}
+  #         path: ./dist
+
+  #     - name: Display structure of downloaded files
+  #       run: ls -R
+
+  #     - name: Upload new release to Firefox Webstore
+  #       run: npx -y web-ext sign --use-submission-api --channel=listed --source-dir=./dist/ --verbose --api-key ${{ secrets.FIREFOX_WEBSTORE_API_KEY }} --api-secret ${{ secrets.FIREFOX_WEBSTORE_API_SECRET }}
