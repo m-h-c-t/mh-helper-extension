@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       ext-version: ${{ steps.retreive-version.outputs.ext-version }}
+      ext-version-num: ${{ steps.retreive-version.outputs.ext-version-num }}
 
     steps:
       - name: Checkout repo
