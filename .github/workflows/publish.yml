@@ -10,11 +10,12 @@ on:
 
 jobs:
 
-  setup:
-    name: Setup
+  generate-version:
+    name: Generate extension version
     runs-on: ubuntu-latest
     outputs:
       ext-version: ${{ steps.retreive-version.outputs.ext-version }}
+      ext-version-num: ${{ steps.retreive-version.outputs.ext-version-num }}
 
     steps:
       - name: Checkout repo
@@ -37,7 +38,7 @@ jobs:
               exit 1
             fi
           else
-            # Need to keep separate DATE var b/c $(date -d) can't parse y.m.d
+            # we use DATE multiple times
             DATE=$(date)
             EXT_VERSION=$(date -d "$DATE" +%y.%-m.%-d);
 
@@ -46,20 +47,23 @@ jobs:
               DATE=$(date -d "$DATE + 1 day")
               EXT_VERSION=$(date -d "$DATE" +%y.%-m.%-d);
             done;
-
-            echo "Setting extension version to $EXT_VERSION"
-            echo "ext-version=$EXT_VERSION" >> $GITHUB_OUTPUT
           fi
+          echo "Setting extension version to $EXT_VERSION"
+          echo "ext-version=$EXT_VERSION" >> $GITHUB_OUTPUT
+          # Remove dots and pad to two digits and remove spaces
+          EXT_VERSION_NUM=$(echo $EXT_VERSION | sed 's/\./ /g' | xargs -n1 | awk '{printf "%02d", $1;}' | xargs)
+          echo "Setting extension version number to $EXT_VERSION_NUM"
+          echo "ext-version-num=$EXT_VERSION_NUM" >> $GITHUB_OUTPUT
 
-  CD:
+  create-zip:
     runs-on: ubuntu-latest
     needs:
-      - setup
+      - generate-version
     strategy:
       matrix:
         node-version: [18.x]
     env:
-      EXT_VERSION: ${{ needs.setup.outputs.ext-version }}
+      EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
     steps:
       - name: Authorized by
         run: echo "${{ github.event.sender.login }}"
@@ -111,13 +115,42 @@ jobs:
           git tag ${{ env.EXT_VERSION }}
           git push --tags
 
+  allow-version:
+    name: Add allowed version to server
+    needs:
+      - generate-version
+      - create-zip
+    env:
+      EXT_VERSION_NUM: ${{ needs.generate-version.outputs.ext-version-num }}
+      VERSIONS_FILE: '/var/www/mh-hunt-helper/src/versions.txt'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.DO_KEY }}" > ~/.ssh/do.key
+          chmod 600 ~/.ssh/do.key
+          cat >>~/.ssh/config <<END
+          Host do
+            HostName ${{ secrets.DO_IP }}
+            User ${{ secrets.DO_USER }}
+            Port ${{ secrets.DO_PORT }}
+            IdentityFile ~/.ssh/do.key
+            StrictHostKeyChecking no
+          END
+      - name: Allow new version if not already
+        run: |
+          echo "Setting version on server to ${{ env.EXT_VERSION_NUM }}"
+          ssh do 'grep -qxF "${{ env.EXT_VERSION_NUM }}" ${{ ENV.VERSIONS_FILE }} || echo "${{ env.EXT_VERSION_NUM }}" >> ${{ ENV.VERSIONS_FILE }}'
+
+
   chrome-submit:
     name: Submit to Chrome
     needs:
-      - setup
-      - CD
+      - generate-version
+      - create-zip
     env:
-      EXT_VERSION: ${{ needs.setup.outputs.ext-version }}
+      EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
@@ -144,10 +177,10 @@ jobs:
   firefox-submit:
     name: Submit to Firefox
     needs:
-      - setup
-      - CD
+      - generate-version
+      - create-zip
     env:
-      EXT_VERSION: ${{ needs.setup.outputs.ext-version }}
+      EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
