@@ -38,7 +38,9 @@ jobs:
               exit 1
             fi
           else
-            EXT_VERSION=$(date +%y.%-m.%-d);
+            # we use DATE multiple times
+            DATE=$(date)
+            EXT_VERSION=$(date -d "$DATE" +%y.%-m.%-d);
 
             while git rev-parse "refs/tags/$EXT_VERSION" >/dev/null 2>&1; do
               echo "Tag $EXT_VERSION already exists. Incrementing day."
