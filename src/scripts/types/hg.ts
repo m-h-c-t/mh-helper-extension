@@ -7,6 +7,7 @@ export interface HgResponse {
     active_turn?: boolean;
     journal_markup?: JournalMarkup[];
     inventory?: Record<string, InventoryItem>  | []
+    treasure_map?: TreasureMap;
 }
 
 export interface User {
@@ -55,7 +56,7 @@ export interface Quests {
     QuestMoussuPicchu?: unknown
     QuestPollutionOutbreak?: unknown
     QuestQuesoGeyser?: unknown
-    QuestRelicHunter?: unknown
+    QuestRelicHunter?: quests.QuestRelicHunter;
     QuestRiftBristleWoods?: unknown
     QuestRiftBurroughs?: unknown
     QuestRiftFuroma?: unknown
@@ -108,3 +109,18 @@ export interface InventoryItem {
 //     "skin" | "crafting_item" | "stat" | "potion" | "quest" |
 //     "convertible" | "collectible" | "message_item" | "torn_page"
 
+export interface TreasureMap {
+    map_id: number;
+    map_class: 'treasure' | 'poster' | 'event';
+    is_wanted_poster: null;
+    is_scavenger_hunt: null;
+    goals: {
+        mouse: MapGoal[];
+        item: MapGoal[];
+    }
+}
+
+interface MapGoal {
+    unique_id: number;
+    name: string;
+}

@@ -13,7 +13,7 @@ import * as detailingFuncs from './modules/details/legacy';
     'use strict';
 
     let base_domain_url = "https://www.mhct.win";
-    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url, rejection_intake_url;
+    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url, rejection_intake_url,scav_helper_url;
 
     let mhhh_version = 0;
     let hunter_id_hash = '0';
@@ -111,13 +111,14 @@ import * as detailingFuncs from './modules/details/legacy';
         map_helper_url = base_domain_url + "/maphelper.php";
         rh_intake_url = base_domain_url + "/rh_intake.php";
         rejection_intake_url = base_domain_url + "/rejection_intake.php";
+        scav_helper_url = base_domain_url + "/scavhelper.php";
 
         await createHunterIdHash();
     }
 
     // Listening for calls
     function addWindowMessageListeners() {
-        window.addEventListener('message', ev => {
+        window.addEventListener('message', async ev => {
             if (ev.data.mhct_message == null) {
                 return;
             }
@@ -129,7 +130,7 @@ import * as detailingFuncs from './modules/details/legacy';
 
             if (ev.data.mhct_message === 'mhmh'
                 || ev.data.mhct_message === 'ryonn') {
-                openMapMiceSolver(ev.data.mhct_message);
+                await openMapMiceSolver(ev.data.mhct_message);
                 return;
             }
 
@@ -187,67 +188,96 @@ import * as detailingFuncs from './modules/details/legacy';
         });
     }
 
-    // Get map mice
-    function openMapMiceSolver(solver) {
+    /**
+     * Opens tab to relevant map solver
+     * @param {'mhmh' | 'ryonn' } solver
+     */
+    async function openMapMiceSolver(solver) {
         let url = '';
         let glue = '';
         let method = '';
         let input_name ='';
-        if (solver === 'mhmh') {
-            url = map_helper_url;
+
+        if(!['mhmh', 'ryonn'].includes(solver)) return;
+
+        const quest = user.quests.QuestRelicHunter;
+        let treasure_map = quest?.maps;
+
+        if(!treasure_map?.length) {
+            alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
+            return;
+        }
+
+        treasure_map = treasure_map.filter(map => ['treasure', 'event'].includes(map.map_class));
+
+        if(!treasure_map.length) {
+            alert('This seems to be a new kind of map and not yet supported.');
+            return;
+        }
+
+        /** @type {import("./types/hg").HgResponse | undefined} */
+        const data = await new Promise((resolve) => {
+            const payload = {
+                map_id: quest?.default_map_id,
+                action: "map_info",
+                uh: user.unique_hash,
+                last_read_journal_entry_id: lastReadJournalEntryId,
+            };
+
+            $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap.php', payload, null, 'json')
+                .done(data => resolve(data));
+        });
+
+
+        if (!data?.treasure_map) {
+            alert('Something went wrong while retrieving map goals.');
+            return;
+        }
+
+        if(solver === 'mhmh') {
+            url = data.treasure_map.is_scavenger_hunt? scav_helper_url : map_helper_url;
             glue = '\n';
             method = 'POST';
-            input_name = 'mice';
-        } else if (solver === 'ryonn') {
+            input_name = data.treasure_map.is_scavenger_hunt? 'items' : 'mice';
+        }
+
+        if(solver === 'ryonn') {
             url = 'http://dbgames.info/mousehunt/tavern';
             glue = ';';
             method = 'GET';
             input_name = 'q';
-        } else {
-            return;
         }
 
-        const payload = {
-            map_id: user.quests.QuestRelicHunter.default_map_id,
-            action: "map_info",
-            uh: user.unique_hash,
-            last_read_journal_entry_id: lastReadJournalEntryId,
-        };
-        $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap.php', payload, null, 'json')
-            .done(data => {
-                if (data) {
-                    if (!data.treasure_map || data.treasure_map.view_state === "noMap") {
-                        alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
-                        return;
-                    }
-                    if (!['treasure', 'event'].includes(data.treasure_map.map_class)) {
-                        alert('This seems to be a new kind of map and not yet supported.');
-                        return;
-                    }
-                    const mice = getMapMice(data, true);
-                    $('<form method="' + method + '" action="' + url + '" target="_blank">' +
-                    '<input type="hidden" name="' + input_name + '" value="' + mice.join(glue) +
-                    '"></form>').appendTo('body').submit().remove();
-                }
-            });
+        const goals = getMapGoals(data, true);
+
+        $('<form method="' + method + '" action="' + url + '" target="_blank">' +
+            '<input type="hidden" name="' + input_name + '" value="' + goals.join(glue) +
+            '"></form>').appendTo('body').submit().remove();
     }
 
-    // Extract map mice from a map
-    function getMapMice(data, uncaught_only) {
-        const mice = {};
-        $.each(data.treasure_map.goals.mouse, (key, mouse) => {
-            mice[mouse.unique_id] = mouse.name;
+    /**
+     * Extract goals from map (can be scav or treasure)
+     * @param {Object} data Data response from managers/ajax/users/treasuremap.php
+     * @param {boolean} remaining_only Boolean, if true, to filter out completed goals
+     * @returns {string[]} Goal names. If on treasure map, it will be mice names and if
+     * on scavenger it will be item names.
+     */
+    function getMapGoals(data, remaining_only) {
+        const goalCategory = data.treasure_map.is_scavenger_hunt ? 'item' : 'mouse';
+        const goals = {};
+        $.each(data.treasure_map.goals[goalCategory], (key, goal) => {
+            goals[goal.unique_id] = goal.name;
         });
 
-        if (uncaught_only) {
+        if (remaining_only) {
             $.each(data.treasure_map.hunters, (key, hunter) => {
-                $.each(hunter.completed_goal_ids.mouse, (key, mouse_id) => {
-                    delete mice[mouse_id];
+                $.each(hunter.completed_goal_ids[goalCategory], (key, goal_id) => {
+                    delete goals[goal_id];
                 });
             });
         }
 
-        return Object.values(mice);
+        return Object.values(goals);
     }
 
     /**
@@ -441,7 +471,7 @@ import * as detailingFuncs from './modules/details/legacy';
             return;
         }
         const map = {
-            mice: getMapMice(resp),
+            mice: getMapGoals(resp),
             id: map_id,
             name: name.replace(/ treasure/i, '')
                 .replace(/rare /i, '')
