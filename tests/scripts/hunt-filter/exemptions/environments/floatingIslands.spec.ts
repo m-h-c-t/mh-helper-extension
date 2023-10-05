@@ -49,24 +49,24 @@ describe('Floating Islands exemptions', () => {
                     ...atts,
                 };
 
-                it('should reject on transition to boss', () => {
+                it('should accept on transition to boss', () => {
                     preMessage.mouse = postMessage.mouse = 'Daydreamer';
                     // regular atts go in pre, boss goes in post
                     setHuntingSiteAtts(regularAtts, bossAtts);
 
                     const valid = target.validateMessage(preMessage, postMessage);
 
-                    expect(valid).toBe(false);
+                    expect(valid).toBe(true);
                 });
 
-                it('should reject on transition from boss', () => {
+                it('should accept on transition from boss', () => {
                     preMessage.mouse = postMessage.mouse = mouse;
                     // reverse the above condition to get transtion from boss
                     setHuntingSiteAtts(bossAtts, regularAtts);
 
                     const valid = target.validateMessage(preMessage, postMessage);
 
-                    expect(valid).toBe(false);
+                    expect(valid).toBe(true);
                 });
             });
 
