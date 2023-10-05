@@ -1,5 +1,6 @@
 export * from '@scripts/types/quests/bountifulBeanstalk';
 export * from '@scripts/types/quests/clawShotCity';
+export * from '@scripts/types/quests/floatingIslands';
 export * from '@scripts/types/quests/forbiddenGrove';
 export * from '@scripts/types/quests/iceberg';
 export * from '@scripts/types/quests/iceFortress';

@@ -1200,7 +1200,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Festive Comet": stagingFuncs.addFestiveCometStage,
         "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,
         "Fiery Warpath": stagingFuncs.addFieryWarpathStage,
-        "Floating Islands": stagingFuncs.addFloatingIslandsStage,
         "Foreword Farm": stagingFuncs.addForewordFarmStage,
         "Fort Rox": stagingFuncs.addFortRoxStage,
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
