@@ -1,7 +1,7 @@
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 import {IStager} from "@scripts/modules/stages/stages.types";
-import {FloatingIslandHuntingSiteAtts} from "@scripts/types/quests/floatingIslands";
+import {FloatingIslandHuntingSiteAtts, QuestFloatingIslands} from "@scripts/types/quests/floatingIslands";
 import {FloatingIslandsStager} from "@scripts/modules/stages/environments/floatingIslands";
 
 // Common Nomenclature
@@ -229,16 +229,22 @@ describe('Floating Islands stages', () => {
             },
         };
     }
-
-    function getDefaultEnvironmentAtts(): FloatingIslandHuntingSiteAtts {
-        return {
-            island_name: 'TestPowertype Island', // <powertype> Island. Tests should expect "Test" to be powertype
-            is_enemy_encounter: null,
-            is_low_tier_island: null,
-            is_high_tier_island: null,
-            is_vault_island: null,
-            activated_island_mod_types: [],
-            island_mod_panels: [],
-        };
-    }
 });
+
+export function getDefaultQuest(): QuestFloatingIslands {
+    return {
+        hunting_site_atts: getDefaultEnvironmentAtts(),
+    };
+}
+
+export function getDefaultEnvironmentAtts(): FloatingIslandHuntingSiteAtts {
+    return {
+        island_name: 'TestPowertype Island', // <powertype> Island. Tests should expect "Test" to be powertype
+        is_enemy_encounter: null,
+        is_low_tier_island: null,
+        is_high_tier_island: null,
+        is_vault_island: null,
+        activated_island_mod_types: [],
+        island_mod_panels: [],
+    };
+}
