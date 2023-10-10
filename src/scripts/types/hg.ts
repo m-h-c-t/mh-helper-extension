@@ -31,7 +31,7 @@ export interface User {
     environment_name: string;
     environment_id: number;
     quests: Quests;
-    enviroment_atts: EnvironmentAttributes;
+    enviroment_atts?: EnvironmentAttributes;
     environment_atts?: EnvironmentAttributes;
     viewing_atts: ViewingAttributes;
 }
@@ -42,16 +42,17 @@ export interface Quests {
     QuestBalacksCove?: unknown
     QuestBountifulBeanstalk?: quests.QuestBountifulBeanstalk
     QuestClawShotCity?: quests.QuestClawShotCity
+    QuestFloatingIslands?: quests.QuestFloatingIslands
     QuestForbiddenGrove?: quests.QuestForbiddenGrove
     QuestForewordFarm?: unknown
     QuestFortRox?: unknown
-    QuestHarbour?: unknown
+    QuestHarbour?: quests.QuestHarbour
     QuestIceberg?: quests.QuestIceberg;
     QuestIceFortress?: quests.QuestIceFortress;
     QuestLabyrinth?: unknown
     QuestLivingGarden?: unknown
     QuestLostCity?: unknown
-    QuestMousoleum?: unknown
+    QuestMousoleum?: quests.QuestMousoleum
     QuestMoussuPicchu?: quests.QuestMoussuPicchu
     QuestPollutionOutbreak?: unknown
     QuestQuesoGeyser?: unknown
