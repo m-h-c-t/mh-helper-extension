@@ -1,22 +1,5 @@
 /**
  * Separate hunts with certain mice available from those without.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addHarbourStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestHarbour;
-    // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
-    if (quest.status === "searchStarted" && !quest.can_claim) {
-        message.stage = "On Bounty";
-    } else {
-        message.stage = "No Bounty";
-    }
-}
-
-/**
- * Separate hunts with certain mice available from those without.
  * @param {import("@scripts/types/mhct").IntakeMessage} message The message to be sent.
  * @param {import("@scripts/types/hg").User} user The user state object, when the hunt was invoked (pre-hunt).
  * @param {import("@scripts/types/hg").User} user_post The user state object, after the hunt.

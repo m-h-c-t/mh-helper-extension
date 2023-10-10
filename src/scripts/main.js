@@ -1204,7 +1204,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Fort Rox": stagingFuncs.addFortRoxStage,
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
-        "Harbour": stagingFuncs.addHarbourStage,
         "Iceberg": stagingFuncs.addIcebergStage,
         "Labyrinth": stagingFuncs.addLabyrinthStage,
         "Living Garden": stagingFuncs.addGardenStage,
