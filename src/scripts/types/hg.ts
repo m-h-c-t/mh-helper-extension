@@ -53,7 +53,7 @@ export interface Quests {
     QuestLivingGarden?: unknown
     QuestLostCity?: unknown
     QuestMousoleum?: quests.QuestMousoleum
-    QuestMoussuPicchu?: unknown
+    QuestMoussuPicchu?: quests.QuestMoussuPicchu
     QuestPollutionOutbreak?: unknown
     QuestQuesoGeyser?: unknown
     QuestRelicHunter?: unknown
