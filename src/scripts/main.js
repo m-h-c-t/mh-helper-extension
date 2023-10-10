@@ -1195,7 +1195,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Balack's Cove": stagingFuncs.addBalacksCoveStage,
         "Bristle Woods Rift": stagingFuncs.addBristleWoodsRiftStage,
         "Burroughs Rift": stagingFuncs.addBurroughsRiftStage,
-        "Claw Shot City": stagingFuncs.addClawShotCityStage,
         "Cursed City": stagingFuncs.addLostCityStage,
         "Festive Comet": stagingFuncs.addFestiveCometStage,
         "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,

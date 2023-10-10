@@ -1,5 +1,5 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {addClawShotCityStage} from '@scripts/modules/stages/legacy';
+import {ClawShotCityStager} from '@scripts/modules/stages/environments/clawShotCity';
 import {User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {LoggerService} from '@scripts/util/logger';
@@ -7,12 +7,12 @@ import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filte
 
 describe('Claw Shot City exemptions', () => {
     let logger: LoggerService;
-    let stager: (message: IntakeMessage, pre: User, post: User, journal: unknown) => void;
+    let stager: ClawShotCityStager;
     let target: IntakeRejectionEngine;
 
     beforeEach(() => {
         logger = {} as LoggerService;
-        stager = addClawShotCityStage;
+        stager = new ClawShotCityStager();
         target = new IntakeRejectionEngine(logger);
 
         logger.debug = jest.fn();
@@ -44,8 +44,8 @@ describe('Claw Shot City exemptions', () => {
 
         /** Sets the pre and post message stage based on current pre and post user */
         function calculateStage() {
-            stager(preMessage, preUser, {} as User, {});
-            stager(postMessage, postUser, {} as User, {});
+            stager.addStage(preMessage, preUser, {} as User, {});
+            stager.addStage(postMessage, postUser, {} as User, {});
         }
     });
 
