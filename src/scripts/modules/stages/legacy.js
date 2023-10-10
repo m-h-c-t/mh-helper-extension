@@ -1,32 +1,4 @@
 /**
- * Add the "wall state" for Mousoleum hunts.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addMousoleumStage(message, user, user_post, hunt) {
-    message.stage = (user.quests.QuestMousoleum.has_wall) ? "Has Wall" : "No Wall";
-}
-
-/**
- * Separate hunts with certain mice available from those without.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addHarbourStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestHarbour;
-    // Hunting crew + can't yet claim booty = Pirate Crew mice are in the attraction pool
-    if (quest.status === "searchStarted" && !quest.can_claim) {
-        message.stage = "On Bounty";
-    } else {
-        message.stage = "No Bounty";
-    }
-}
-
-/*
  * Set the stage based on decoration and boss status.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
@@ -656,49 +628,5 @@ export function addValourRiftStage(message, user, user_post, hunt) {
         default:
             message.location = null;
             break;
-    }
-}
-
-export function addFloatingIslandsStage(message, user, user_post, hunt) {
-    const envAttributes = user.environment_atts || user.enviroment_atts;
-    const pirates = ["No Pirates", "Pirates x1", "Pirates x2", "Pirates x3", "Pirates x4"];
-    const hsa = envAttributes.hunting_site_atts;
-    message.stage = hsa.island_name;
-
-    if (hsa.is_enemy_encounter) {
-        if (hsa.is_low_tier_island)
-            message.stage = "Warden";
-        else if (hsa.is_high_tier_island)
-            message.stage += " Paragon";
-        else if (hsa.is_vault_island)
-            message.stage = "Empress";
-        else
-            message.stage += " Enemy Encounter";
-    }
-    else if (user.bait_name === "Sky Pirate Swiss Cheese") {
-        message.stage = hsa.is_vault_island ? "Vault " : "Island ";
-        message.stage += pirates[hsa.activated_island_mod_types.filter(item => item === "sky_pirates").length];
-    }
-    else if (((user.bait_name === "Extra Rich Cloud Cheesecake") || (user.bait_name === "Cloud Cheesecake")) &&
-            (hsa.activated_island_mod_types.filter(item => item === "loot_cache").length >= 2)) {
-        message.stage += ` - Loot x${hsa.activated_island_mod_types.filter(item => item === "loot_cache").length}`;
-    }
-    // This is a new if situation to account for the above scenarios. It adds to them.
-    else if (hsa.is_vault_island
-    && 'activated_island_mod_types' in hsa
-    && Array.isArray(hsa.activated_island_mod_types)) {
-    //NOTE: There is a paperdoll attribute that may be quicker to use
-        const panels = {};
-        hsa.activated_island_mod_types.forEach(t => t in panels ? panels[t]++ : panels[t] = 1);
-        let counter = 0;
-        let mod_type = '';
-        for (const [type, num] of Object.entries(panels)) {
-            if (num >= 3) {
-                counter = num;
-                mod_type = hsa.island_mod_panels.filter(p => p.type === type)[0].name;
-            }
-        }
-        if (counter && mod_type)
-            message.stage += ` ${counter}x ${mod_type}`;
     }
 }
