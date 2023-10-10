@@ -4,6 +4,7 @@ export * from '@scripts/types/quests/floatingIslands';
 export * from '@scripts/types/quests/forbiddenGrove';
 export * from '@scripts/types/quests/iceberg';
 export * from '@scripts/types/quests/iceFortress';
+export * from '@scripts/types/quests/mousoleum';
 export * from '@scripts/types/quests/superBrieFactory';
 export * from '@scripts/types/quests/tableOfContents';
 export * from '@scripts/types/quests/springHunt';

@@ -4,6 +4,7 @@ import {FloatingIslandsStager} from './environments/floatingIslands';
 import {ForbiddenGroveStager} from './environments/forbiddenGrove';
 import {FungalCavernStager} from './environments/fungalCavern';
 import {IceFortressStager} from './environments/iceFortress';
+import {MousoleumStager} from './environments/mousoleum';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 
 const stageModules: IStager[]  = [
@@ -12,6 +13,7 @@ const stageModules: IStager[]  = [
     new ForbiddenGroveStager(),
     new FungalCavernStager(),
     new IceFortressStager(),
+    new MousoleumStager(),
     new SuperBrieFactoryStager(),
 ];
 
