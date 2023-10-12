@@ -1,7 +1,18 @@
 
 export class CustomConvertibleIds {
+    // KGA
     public static readonly KingsMiniPrizePack: number = 130008;
     public static readonly KingsGiveawayVault: number = 130009;
+
+    // Halloween
+    public static readonly HalloweenSpookyShuffleNovice = 130010;
+    public static readonly HalloweenSpookyShuffleNoviceDusted = 130011;
+    public static readonly HalloweenSpookyShuffleMaster = 130012;
+    public static readonly HalloweenSpookyShuffleMasterDusted = 130013;
+    public static readonly HalloweenSpookyShuffleBaron = 130014;
+    public static readonly HalloweenSpookyShuffleBaronDusted = 130015;
+    public static readonly HalloweenSpookyShuffleGrandDuke = 130016;
+    public static readonly HalloweenSpookyShuffleGrandDukeDusted = 130017;
 }
 
 /**
