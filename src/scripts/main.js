@@ -25,6 +25,7 @@ import * as detailingFuncs from './modules/details/legacy';
         new successHandlers.KingsGiveawayAjaxHandler(logger, submitConvertible),
         new successHandlers.SBFactoryAjaxHandler(logger, submitConvertible),
         new successHandlers.SEHAjaxHandler(logger, submitConvertible),
+        new successHandlers.SpookyShuffleAjaxHandler(logger, submitConvertible),
     ];
 
     async function main() {
