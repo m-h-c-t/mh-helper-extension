@@ -110,7 +110,7 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
 
     async fetchItemNameToIdMap(): Promise<Record<string, number>> {
         // async fetch of all items that are of the same classification of the rewards in spooky shuffle
-        const itemArray = await hgFuncs.getItemsByClass(['bait', 'stat', 'trinket', 'crafting_item', 'potion'], true);
+        const itemArray = await hgFuncs.getItemsByClass(['bait', 'stat', 'trinket', 'crafting_item', 'potion', 'convertible'], true);
 
         const itemMap = itemArray.reduce((map: Record<string, number>, item) => {
             map[item.name] = parseHgInt(item.item_id);
