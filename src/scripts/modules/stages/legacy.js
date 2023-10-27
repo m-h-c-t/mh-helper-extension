@@ -73,24 +73,6 @@ export function addWhiskerWoodsRiftStage(message, user, user_post, hunt) {
 }
 
 /**
- * Labyrinth stage reflects the type of hallway.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addLabyrinthStage(message, user, user_post, hunt) {
-    if (user.quests.QuestLabyrinth.status === "hallway") {
-        const hallway = user.quests.QuestLabyrinth.hallway_name;
-        // Remove first word (like Short)
-        message.stage = hallway.substr(hallway.indexOf(" ") + 1).replace(/ hallway/i, '');
-    } else {
-    // Not recording intersections at this time.
-        message.location = null;
-    }
-}
-
-/**
  * Stage in the FW reflects the current wave only.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).

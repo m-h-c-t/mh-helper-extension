@@ -7,6 +7,7 @@ import {ForbiddenGroveStager} from './environments/forbiddenGrove';
 import {FungalCavernStager} from './environments/fungalCavern';
 import {HarbourStager} from './environments/harbour';
 import {IceFortressStager} from './environments/iceFortress';
+import {LabyrinthStager} from './environments/labyrinth';
 import {MoussuPicchuStager} from './environments/moussuPicchu';
 import {MousoleumStager} from './environments/mousoleum';
 import {SlushyShorelineStager} from './environments/slushyShoreline';
@@ -21,6 +22,7 @@ const stageModules: IStager[]  = [
     new FungalCavernStager(),
     new HarbourStager(),
     new IceFortressStager(),
+    new LabyrinthStager(),
     new MoussuPicchuStager(),
     new MousoleumStager(),
     new SlushyShorelineStager(),
