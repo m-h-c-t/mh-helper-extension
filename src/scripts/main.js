@@ -1174,7 +1174,6 @@ import * as detailingFuncs from './modules/details/legacy';
 
     /** @type {Object <string, Function>} */
     const location_stage_lookup = {
-        "Balack's Cove": stagingFuncs.addBalacksCoveStage,
         "Bristle Woods Rift": stagingFuncs.addBristleWoodsRiftStage,
         "Burroughs Rift": stagingFuncs.addBurroughsRiftStage,
         "Cursed City": stagingFuncs.addLostCityStage,

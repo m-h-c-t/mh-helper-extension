@@ -1,3 +1,4 @@
+export * from '@scripts/types/quests/balacksCove';
 export * from '@scripts/types/quests/bountifulBeanstalk';
 export * from '@scripts/types/quests/clawShotCity';
 export * from '@scripts/types/quests/floatingIslands';

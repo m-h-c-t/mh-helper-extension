@@ -1,4 +1,5 @@
 import {type IStager} from './stages.types';
+import {BalacksCoveStager} from './environments/balacksCove';
 import {BountifulBeanstalkStager} from './environments/bountifulBeanstalk';
 import {ClawShotCityStager} from './environments/clawShotCity';
 import {FloatingIslandsStager} from './environments/floatingIslands';
@@ -12,6 +13,7 @@ import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 
 const stageModules: IStager[]  = [
+    new BalacksCoveStager(),
     new BountifulBeanstalkStager(),
     new ClawShotCityStager(),
     new FloatingIslandsStager(),
