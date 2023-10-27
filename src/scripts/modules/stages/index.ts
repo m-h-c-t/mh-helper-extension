@@ -8,6 +8,7 @@ import {HarbourStager} from './environments/harbour';
 import {IceFortressStager} from './environments/iceFortress';
 import {MoussuPicchuStager} from './environments/moussuPicchu';
 import {MousoleumStager} from './environments/mousoleum';
+import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 
 const stageModules: IStager[]  = [
@@ -20,6 +21,7 @@ const stageModules: IStager[]  = [
     new IceFortressStager(),
     new MoussuPicchuStager(),
     new MousoleumStager(),
+    new SlushyShorelineStager(),
     new SuperBrieFactoryStager(),
 ];
 
