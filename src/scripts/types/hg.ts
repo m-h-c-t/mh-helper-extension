@@ -73,8 +73,9 @@ export interface Quests {
 
 export type EnvironmentAttributes = unknown;
 
-export type ViewingAttributes = 
-    | FieryWarpathViewingAttributes;
+export type ViewingAttributes =
+    | FieryWarpathViewingAttributes
+    | Record<string, never>;
 
 export interface FieryWarpathViewingAttributes {
     desert_warpath: {
