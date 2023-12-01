@@ -8,11 +8,13 @@ import {FungalCavernStager} from './environments/fungalCavern';
 import {HarbourStager} from './environments/harbour';
 import {IceFortressStager} from './environments/iceFortress';
 import {LabyrinthStager} from './environments/labyrinth';
+import {LivingGardenStager} from './environments/livingGarden';
 import {MoussuPicchuStager} from './environments/moussuPicchu';
 import {MousoleumStager} from './environments/mousoleum';
 import {MuridaeMarketStager} from './environments/muridaeMarket';
 import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
+import {TwistedGardenStager} from './environments/twistedGarden';
 
 const stageModules: IStager[]  = [
     new BalacksCoveStager(),
@@ -24,11 +26,13 @@ const stageModules: IStager[]  = [
     new HarbourStager(),
     new IceFortressStager(),
     new LabyrinthStager(),
+    new LivingGardenStager(),
     new MoussuPicchuStager(),
     new MousoleumStager(),
     new MuridaeMarketStager(),
     new SlushyShorelineStager(),
     new SuperBrieFactoryStager(),
+    new TwistedGardenStager(),
 ];
 
 export {stageModules};
