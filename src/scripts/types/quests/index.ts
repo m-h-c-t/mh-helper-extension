@@ -8,6 +8,7 @@ export * from '@scripts/types/quests/harbour';
 export * from '@scripts/types/quests/iceberg';
 export * from '@scripts/types/quests/iceFortress';
 export * from '@scripts/types/quests/labyrinth';
+export * from '@scripts/types/quests/livingGarden';
 export * from '@scripts/types/quests/mousoleum';
 export * from '@scripts/types/quests/moussuPicchu';
 export * from '@scripts/types/quests/sandDunes';

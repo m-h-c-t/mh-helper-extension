@@ -115,19 +115,6 @@ export function addSeasonalGardenStage(message, user, user_post, hunt) {
 }
 
 /**
- * Read the bucket / vial state to determine the stage for Living & Twisted garden.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addGardenStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestLivingGarden;
-    const container_status = (quest.is_normal) ? quest.minigame.bucket_state : quest.minigame.vials_state;
-    message.stage = (container_status === "dumped") ? "Pouring" : "Not Pouring";
-}
-
-/**
  * Indicate whether or not the Cursed / Corrupt mouse is present
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
@@ -162,20 +149,6 @@ export function addIcebergStage(message, user, user_post, hunt) {
 
     if (!message.stage) {
         message.location = null;
-    }
-}
-
-/**
- * Report the Artisan Charm status.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addMuridaeMarketStage(message, user, user_post, hunt) {
-    message.stage = "Not Artisan";
-    if (user.trinket_name === "Artisan Charm") {
-        message.stage = "Artisan";
     }
 }
 
