@@ -23,13 +23,13 @@ describe('GWHGolemAjaxHandler', () => {
 
         it('is false when GWH is done', () => {
             // return the day after our filter
-            Date.now = jest.fn(() => new Date('2023-01-22T05:00:00Z').getTime());
+            Date.now = jest.fn(() => new Date('2024-01-22T05:00:00Z').getTime());
 
             expect(handler.match(gwhURL)).toBe(false);
         });
 
         it('is true on match during event', () => {
-            Date.now = jest.fn(() => new Date('2022-12-07T05:00:00Z').getTime());
+            Date.now = jest.fn(() => new Date('2023-12-07T05:00:00Z').getTime());
             expect(handler.match(gwhURL)).toBe(true);
         });
     });

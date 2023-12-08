@@ -2,6 +2,8 @@ import {LoggerService} from "@scripts/util/logger";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {GolemPayload, GolemResponse} from "./golem.types";
 import {HgResponse, JournalMarkup} from "@scripts/types/hg";
+import {EventDates} from "@scripts/util/constants";
+import {hasEventEnded} from "@scripts/util/time";
 
 const rarities = ["area", "hat", "scarf"] as const;
 
@@ -19,7 +21,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
             return false;
         }
 
-        if (Date.now() > new Date("2023-01-21T05:00:00").getTime()) {
+        if (hasEventEnded(EventDates.GreatWinterHuntEndDate)) {
             return false;
         }
 
