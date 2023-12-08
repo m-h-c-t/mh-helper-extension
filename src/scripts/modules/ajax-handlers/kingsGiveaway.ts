@@ -4,6 +4,7 @@ import {LoggerService} from "@scripts/util/logger";
 import {KingsGiveawayResponse} from "./kingsGiveaway.types";
 import {CustomConvertibleIds, EventDates} from "@scripts/util/constants";
 import {parseHgInt} from "@scripts/util/number";
+import {hasEventEnded} from "@scripts/util/time";
 
 export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -24,7 +25,7 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
             return false;
         }
 
-        if (Date.now() > EventDates.KingsGiveawayEndDate.getTime()) {
+        if (hasEventEnded(EventDates.KingsGiveawayEndDate)) {
             return false;
         }
 
