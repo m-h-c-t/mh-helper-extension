@@ -54,9 +54,9 @@
     "url": "git+https://github.com/mh-community-tools/mh-helper-extension.git"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.10",
-    "@typescript-eslint/eslint-plugin": "^6.13.2",
-    "@typescript-eslint/parser": "^6.13.2",
+    "@types/jest": "^29.5.11",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
     "concurrently": "^8.2.2",
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.55.0",
@@ -67,7 +67,7 @@
     "ts-jest": "^29.1.1",
     "ts-loader": "^9.5.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
-    "typescript": "^5.3.2",
+    "typescript": "^5.3.3",
     "web-ext": "^7.9.0",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
