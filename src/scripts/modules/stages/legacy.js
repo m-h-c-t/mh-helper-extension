@@ -115,17 +115,6 @@ export function addSeasonalGardenStage(message, user, user_post, hunt) {
 }
 
 /**
- * Determine if there is a stampede active
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addSandDunesStage(message, user, user_post, hunt) {
-    message.stage = (user.quests.QuestSandDunes.minigame.has_stampede) ? "Stampede" : "No Stampede";
-}
-
-/**
  * Indicate whether or not the Cursed / Corrupt mouse is present
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
