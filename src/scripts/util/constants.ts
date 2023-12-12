@@ -21,5 +21,9 @@ export class CustomConvertibleIds {
  * NOT the end date of the event.
  */
 export class EventDates {
+    // KGA
     public static readonly KingsGiveawayEndDate: Date = new Date("2023-10-03T15:00:00Z");
+
+    // GWH
+    public static readonly GreatWinterHuntEndDate: Date = new Date("2024-01-16T16:00:00Z");
 }
