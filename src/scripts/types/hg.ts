@@ -73,7 +73,15 @@ export interface Quests {
 
 export type EnvironmentAttributes = unknown;
 
-export type ViewingAttributes = unknown;
+export type ViewingAttributes =
+    | FieryWarpathViewingAttributes
+    | Record<string, never>;
+
+export interface FieryWarpathViewingAttributes {
+    desert_warpath: {
+        wave: number | "portal"
+    }
+}
 
 export interface JournalMarkup {
     render_data: RenderData;
