@@ -4,7 +4,7 @@ import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
 
 export class IceFortressStager implements IStager {
-    readonly environment: string = 'Ice Fortress';
+    readonly environment: string = "Ice Fortress";
 
     addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {
         const quest: QuestIceFortress | undefined = userPre.quests.QuestIceFortress;
@@ -15,7 +15,9 @@ export class IceFortressStager implements IStager {
 
         if (quest.shield.is_broken) {
             // Not adding stages of of right now b/c transition rejection
-            // message.stage = "Boss";
+            message.stage = "Shield Down";
+        } else {
+            message.stage = "Shield Up";
         }
     }
 }
