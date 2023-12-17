@@ -9,15 +9,15 @@ class IceFortressExemption implements IMessageExemption {
         post: IntakeMessage
     ): (keyof IntakeMessage)[] | null {
         if (
-            pre.stage === "Barrier Down" &&
-            post.stage === "Barrier Up" &&
+            pre.stage === "Shield Down" &&
+            post.stage === "Shield Up" &&
             pre.mouse === "Frost King"
         ) {
             return ["stage"];
         }
         else if (
-            pre.stage === "Barrier Up" &&
-            post.stage === "Barrier Down"
+            pre.stage === "Shield Up" &&
+            post.stage === "Shield Down"
         ) {
             // Possibly we could check things like what the old barrier level was but this should be fine
             // This is the hunt that led to the destruction of the barrier
