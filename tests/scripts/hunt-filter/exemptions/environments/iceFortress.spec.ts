@@ -32,20 +32,18 @@ describe('Ice Fortress exemptions', () => {
         });
 
         it('should accept when no transitions', () => {
-            preUser.quests.QuestIceFortress = { shield : { is_broken: false },
-                                                cannons:    { 
-                                                    charm_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    cinnamon_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    snow_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                            }
-                                                };
-                                                preUser.quests.QuestIceFortress = { shield : { is_broken: false },
-                                                cannons:    { 
-                                                    charm_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    cinnamon_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    snow_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                            }
-                                                };
+            preUser.quests.QuestIceFortress = {shield : {is_broken: false},
+                cannons:    {
+                    charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                }};
+            preUser.quests.QuestIceFortress = {shield : {is_broken: false},
+                cannons:    {
+                    charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                }};
             calculateStage();
 
             const valid = target.validateMessage(preMessage, postMessage);
@@ -54,20 +52,18 @@ describe('Ice Fortress exemptions', () => {
         });
 
         it('should accept transtion on breaking the shield', () => {
-            preUser.quests.QuestIceFortress = { shield : { is_broken: false },
-                                                cannons:    { 
-                                                    charm_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    cinnamon_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    snow_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                            }
-                                                };
-            postUser.quests.QuestIceFortress = { shield : { is_broken: true },
-                                                cannons:    { 
-                                                    charm_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    cinnamon_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    snow_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                            }
-                                                };
+            preUser.quests.QuestIceFortress = {shield : {is_broken: false},
+                cannons:    {
+                    charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                }};
+            postUser.quests.QuestIceFortress = {shield : {is_broken: true},
+                cannons:    {
+                    charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                }};
             calculateStage();
 
             const valid = target.validateMessage(preMessage, postMessage);
@@ -76,20 +72,18 @@ describe('Ice Fortress exemptions', () => {
         });
 
         it('should accept transtion on catching Frost King', () => {
-            preUser.quests.QuestIceFortress = { shield : { is_broken: true },
-                                                cannons:    { 
-                                                    charm_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    cinnamon_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    snow_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                            }
-                                                };
-            postUser.quests.QuestIceFortress = { shield : { is_broken: false },
-                                                cannons:    { 
-                                                    charm_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    cinnamon_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                    snow_cannon: { is_enabled: null, is_active: null, just_fired: null, state: "disabled" },
-                                                            }
-                                                };
+            preUser.quests.QuestIceFortress = {shield : {is_broken: true},
+                cannons:    {
+                    charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                }};
+            postUser.quests.QuestIceFortress = {shield : {is_broken: false},
+                cannons:    {
+                    charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                }};
             preMessage.mouse = postMessage.mouse = 'Frost King';
             calculateStage();
 
@@ -109,7 +103,7 @@ describe('Ice Fortress exemptions', () => {
             environment_name: 'Ice Fortress',
             quests: {
                 QuestIceFortress: {
-                    shield: { is_broken: false }
+                    shield: {is_broken: false},
                 },
             },
         } as User;
