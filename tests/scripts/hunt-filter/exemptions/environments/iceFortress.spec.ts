@@ -91,7 +91,7 @@ describe('Ice Fortress exemptions', () => {
                         charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
                         cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
                         snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
-                    }
+                    },
                 },
             },
         } as User;
