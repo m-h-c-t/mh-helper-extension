@@ -4,7 +4,7 @@ import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 describe('Lost City stages', () => {
-    it('should be for the "" environment', () => {
+    it('should be for the "Lost City" environment', () => {
         const stager = new LostCityStager();
         expect(stager.environment).toBe('Lost City');
     });
@@ -50,7 +50,7 @@ describe('Lost City stages', () => {
 });
 
 describe('Cursed City stages', () => {
-    it('should be for the "" environment', () => {
+    it('should be for the "Cursed City" environment', () => {
         const stager = new CursedCityStager();
         expect(stager.environment).toBe('Cursed City');
     });
