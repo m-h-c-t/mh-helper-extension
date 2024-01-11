@@ -1176,7 +1176,6 @@ import * as detailingFuncs from './modules/details/legacy';
     const location_stage_lookup = {
         "Bristle Woods Rift": stagingFuncs.addBristleWoodsRiftStage,
         "Burroughs Rift": stagingFuncs.addBurroughsRiftStage,
-        "Cursed City": stagingFuncs.addLostCityStage,
         "Festive Comet": stagingFuncs.addFestiveCometStage,
         "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,
         "Foreword Farm": stagingFuncs.addForewordFarmStage,
@@ -1184,7 +1183,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
         "Iceberg": stagingFuncs.addIcebergStage,
-        "Lost City": stagingFuncs.addLostCityStage,
         "Queso Geyser": stagingFuncs.addQuesoGeyserStage,
         "Seasonal Garden": stagingFuncs.addSeasonalGardenStage,
         "Sunken City": stagingFuncs.addSunkenCityStage,
