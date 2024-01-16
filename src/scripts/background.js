@@ -90,7 +90,7 @@ function icon_timer_updateBadge(tab_id, settings) {
             }
         }
 
-        if (chrome.runtime.lastError || !response) {
+        if (chrome.runtime.lastError ?? !response) {
             const logInfo = {tab_id, request, response, time: new Date(),
                 message: "Error occurred while updating badge icon timer."};
             if (chrome.runtime.lastError) {
