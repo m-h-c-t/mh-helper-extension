@@ -64,7 +64,7 @@ export class ZokorStager implements IStager {
     }
 
     private getStage(value: string) {
-        const district = (Object.keys(this.partialDistrictToStage) as Array<District>).find(key => value.search(new RegExp(key, 'i')) !== -1);
+        const district = (Object.keys(this.partialDistrictToStage) as District[]).find(key => value.search(new RegExp(key, 'i')) !== -1);
 
         if (!district) {
             throw new Error(`${value} is not recogized as a known Zokor district`);
