@@ -1,4 +1,4 @@
-import {addZokorStage} from "@scripts/modules/stages/legacy";
+import {ZokorStager} from "@scripts/modules/stages/environments/zokor";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
@@ -52,7 +52,13 @@ describe('Zokor stages', () => {
         'Lair - Each 30+',
     ];
 
-    it.each(DISTRICTS.map((v, i) => [v, ZOKOR_STAGES[i]]))('', (district, expected) => {
+    it('should be for the "Zokor" environment', () => {
+        const stager = new ZokorStager();
+        expect(stager.environment).toBe('Zokor');
+    });
+
+    it.each(DISTRICTS.map((v, i) => [v, ZOKOR_STAGES[i]]))('wip: %p when the district is $district', (district, expected) => {
+        const stager = new ZokorStager();
         const message = {} as IntakeMessage;
         const preUser = {quests: {QuestAncientCity: {
             district_name: district,
@@ -60,12 +66,13 @@ describe('Zokor stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addZokorStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe(expected);
     });
 
-    it('should set location to null for unknown district', () => {
+    it('should throw for unknown district', () => {
+        const stager = new ZokorStager();
         const message = {location: {}} as IntakeMessage;
         const preUser = {quests: {QuestAncientCity: {
             district_name: 'District 9',
@@ -73,10 +80,18 @@ describe('Zokor stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        expect(message.location).not.toBeNull();
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Skipping unknown Zokor district');
+    });
 
-        addZokorStage(message, preUser, postUser, journal);
+    it.each([undefined, null])('should throw when QuestAncientCity is %p', (state) => {
+        const stager = new ZokorStager();
+        const message = {location: {}} as IntakeMessage;
+        const preUser = {quests: {QuestAncientCity: state}} as User;
+        const postUser = {} as User;
+        const journal = {};
 
-        expect(message.location).toBeNull();
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestAncientCity is undefined');
     });
 });

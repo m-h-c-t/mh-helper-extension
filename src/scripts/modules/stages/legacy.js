@@ -161,46 +161,6 @@ export function addSunkenCityStage(message, user, user_post, hunt) {
 }
 
 /**
- * Report the stage as the type and quantity of clues required.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addZokorStage(message, user, user_post, hunt) {
-    const zokor_district = user.quests.QuestAncientCity.district_name;
-    if (zokor_district) {
-        const zokor_stages = {
-            "Garden":     "Farming 0+",
-            "Study":      "Scholar 15+",
-            "Shrine":     "Fealty 15+",
-            "Outskirts":  "Tech 15+",
-            "Room":       "Treasure 15+",
-            "Minotaur":   "Lair - Each 30+",
-            "Temple":     "Fealty 50+",
-            "Auditorium": "Scholar 50+",
-            "Farmhouse":  "Farming 50+",
-            "Center":     "Tech 50+",
-            "Vault":      "Treasure 50+",
-            "Library":    "Scholar 80+",
-            "Manaforge":  "Tech 80+",
-            "Sanctum":    "Fealty 80+",
-        };
-        for (const [key, value] of Object.entries(zokor_stages)) {
-            const pattern = new RegExp(key, "i");
-            if (zokor_district.search(pattern) !== -1) {
-                message.stage = value;
-                break;
-            }
-        }
-    }
-
-    if (!message.stage) {
-        message.location = null;
-    }
-}
-
-/**
  * Report the pagoda / battery charge information.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).

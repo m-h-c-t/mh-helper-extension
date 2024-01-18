@@ -1190,7 +1190,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Toxic Spill": stagingFuncs.addToxicSpillStage,
         "Valour Rift": stagingFuncs.addValourRiftStage,
         "Whisker Woods Rift": stagingFuncs.addWhiskerWoodsRiftStage,
-        "Zokor": stagingFuncs.addZokorStage,
     };
 
     /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */

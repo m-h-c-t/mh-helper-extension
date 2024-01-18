@@ -19,6 +19,7 @@ import {SandDunesStager} from './environments/sandDunes';
 import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 import {TwistedGardenStager} from './environments/twistedGarden';
+import {ZokorStager} from './environments/zokor';
 
 const stageModules: IStager[]  = [
     new BalacksCoveStager(),
@@ -41,6 +42,7 @@ const stageModules: IStager[]  = [
     new SlushyShorelineStager(),
     new SuperBrieFactoryStager(),
     new TwistedGardenStager(),
+    new ZokorStager(),
 ];
 
 export {stageModules};

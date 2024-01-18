@@ -38,7 +38,7 @@ export interface User {
 
 // TODO: Define needed interfaces for quests in /types/quests/<QuestName>.ts
 export interface Quests {
-    QuestAncientCity?: unknown
+    QuestAncientCity?: quests.QuestAncientCity // Zokor
     QuestBalacksCove?: quests.QuestBalacksCove
     QuestBountifulBeanstalk?: quests.QuestBountifulBeanstalk
     QuestClawShotCity?: quests.QuestClawShotCity
