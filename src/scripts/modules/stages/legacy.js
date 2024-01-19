@@ -424,21 +424,6 @@ export function addFortRoxStage(message, user, user_post, hunt) {
 }
 
 /**
- * Report the current chamber name.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addBristleWoodsRiftStage(message, user, user_post, hunt) {
-    message.stage = user.quests.QuestRiftBristleWoods.chamber_name;
-    if (message.stage === "Rift Acolyte Tower") {
-        message.stage = "Entrance";
-    }
-}
-
-
-/**
  * Report the state of corks and eruptions
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
