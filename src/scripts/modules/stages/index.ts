@@ -1,6 +1,7 @@
 import {type IStager} from './stages.types';
 import {BalacksCoveStager} from './environments/balacksCove';
 import {BountifulBeanstalkStager} from './environments/bountifulBeanstalk';
+import {BristleWoodsRiftStager} from './environments/bristleWoodsRift';
 import {ClawShotCityStager} from './environments/clawShotCity';
 import {CursedCityStager} from './environments/cursedCity';
 import {FieryWarpathStager} from './environments/fieryWarpath';
@@ -24,6 +25,7 @@ import {ZokorStager} from './environments/zokor';
 const stageModules: IStager[]  = [
     new BalacksCoveStager(),
     new BountifulBeanstalkStager(),
+    new BristleWoodsRiftStager(),
     new ClawShotCityStager(),
     new CursedCityStager(),
     new FieryWarpathStager(),

@@ -58,7 +58,7 @@ export interface Quests {
     QuestPollutionOutbreak?: unknown
     QuestQuesoGeyser?: unknown
     QuestRelicHunter?: unknown
-    QuestRiftBristleWoods?: unknown
+    QuestRiftBristleWoods?: quests.QuestRiftBristleWoods
     QuestRiftBurroughs?: unknown
     QuestRiftFuroma?: unknown
     QuestRiftWhiskerWoods?: unknown
