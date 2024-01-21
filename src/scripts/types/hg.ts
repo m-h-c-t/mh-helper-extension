@@ -56,7 +56,7 @@ export interface Quests {
     QuestMousoleum?: quests.QuestMousoleum
     QuestMoussuPicchu?: quests.QuestMoussuPicchu
     QuestPollutionOutbreak?: unknown
-    QuestQuesoGeyser?: unknown
+    QuestQuesoGeyser?: quests.QuestQuesoGeyser
     QuestRelicHunter?: unknown
     QuestRiftBristleWoods?: quests.QuestRiftBristleWoods
     QuestRiftBurroughs?: unknown

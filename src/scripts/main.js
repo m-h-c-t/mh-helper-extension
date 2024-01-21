@@ -1181,7 +1181,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
         "Iceberg": stagingFuncs.addIcebergStage,
-        "Queso Geyser": stagingFuncs.addQuesoGeyserStage,
         "Seasonal Garden": stagingFuncs.addSeasonalGardenStage,
         "Sunken City": stagingFuncs.addSunkenCityStage,
         "Table of Contents": stagingFuncs.addTableOfContentsStage,
