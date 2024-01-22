@@ -106,32 +106,6 @@ export function addSeasonalGardenStage(message, user, user_post, hunt) {
 }
 
 /**
- * Report the current distance / obstacle.
- * TODO: Stage / hunt details for first & second icewing hunting?
- * @param {import("@scripts/types/mhct").IntakeMessage} message The message to be sent.
- * @param {import("@scripts/types/hg").User} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {import("@scripts/types/hg").User} user_post The user state object, after the hunt.
- * @param {unknown} hunt The journal entry corresponding to the active hunt.
- */
-export function addIcebergStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestIceberg;
-    message.stage = (({
-        "Treacherous Tunnels": "0-300ft",
-        "Brutal Bulwark":    "301-600ft",
-        "Bombing Run":      "601-1600ft",
-        "The Mad Depths":  "1601-1800ft",
-        "Icewing's Lair":       "1800ft",
-        "Hidden Depths":   "1801-2000ft",
-        "The Deep Lair":        "2000ft",
-        "General":            "Generals",
-    })[quest.current_phase]);
-
-    if (!message.stage) {
-        message.location = null;
-    }
-}
-
-/**
  * Report the zone and depth, if any.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).

@@ -1,8 +1,13 @@
-import {addIcebergStage} from "@scripts/modules/stages/legacy";
+import {IcebergStager} from "@scripts/modules/stages/environments/iceberg";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 describe('Iceberg Stages', () => {
+    it('should be for the "Iceberg" environment', () => {
+        const stager = new IcebergStager();
+        expect(stager.environment).toBe('Iceberg');
+    });
+
     it.each`
     phase                       | expected
     ${'Treacherous Tunnels'}    | ${'0-300ft'}
@@ -14,6 +19,7 @@ describe('Iceberg Stages', () => {
     ${'The Deep Lair'}          | ${'2000ft'}
     ${'General'}                | ${'Generals'}
     `('should set stage to $expected when in the $phase phase', ({expected, phase}) => {
+        const stager = new IcebergStager();
         const message = {} as IntakeMessage;
         const preUser = {quests: {QuestIceberg: {
             current_phase: phase,
@@ -21,12 +27,13 @@ describe('Iceberg Stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addIcebergStage(message, preUser, postUser, journal);
+        stager.addStage(message, preUser, postUser, journal);
 
         expect(message.stage).toBe(expected);
     });
 
-    it('should set location to null on unknown phase', () => {
+    it('should should throw on unknown phase', () => {
+        const stager = new IcebergStager();
         const message = {location: {}} as IntakeMessage;
         const preUser = {quests: {QuestIceberg: {
             current_phase: 'Aard\'s Lair',
@@ -34,8 +41,18 @@ describe('Iceberg Stages', () => {
         const postUser = {} as User;
         const journal = {};
 
-        addIcebergStage(message, preUser, postUser, journal);
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Skipping unknown Iceberg stage');
+    });
 
-        expect(message.location).toBe(null);
+    it.each([undefined, null])('should throw when QuestIceberg is %p', (state) => {
+        const stager = new IcebergStager();
+        const message = {location: {}} as IntakeMessage;
+        const preUser = {quests: {QuestIceberg: state}} as User;
+        const postUser = {} as User;
+        const journal = {};
+
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestIceberg is undefined');
     });
 });

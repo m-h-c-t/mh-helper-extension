@@ -1,5 +1,6 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {addIcebergStage} from '@scripts/modules/stages/legacy';
+import {IcebergStager} from '@scripts/modules/stages/environments/iceberg';
+import {IStager} from '@scripts/modules/stages/stages.types';
 import {User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {LoggerService} from '@scripts/util/logger';
@@ -7,12 +8,12 @@ import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filte
 
 describe('Iceberg exemptions', () => {
     let logger: LoggerService;
-    let stager: (message: IntakeMessage, pre: User, post: User, journal: unknown) => void;
+    let stager: IStager;
     let target: IntakeRejectionEngine;
 
     beforeEach(() => {
         logger = {} as LoggerService;
-        stager = addIcebergStage;
+        stager = new IcebergStager();
         target = new IntakeRejectionEngine(logger);
 
         logger.debug = jest.fn();
@@ -93,8 +94,8 @@ describe('Iceberg exemptions', () => {
 
         /** Sets the pre and post message stage based on current pre and post user */
         function calculateStage() {
-            stager(preMessage, preUser, {} as User, {});
-            stager(postMessage, postUser, {} as User, {});
+            stager.addStage(preMessage, preUser, {} as User, {});
+            stager.addStage(postMessage, postUser, {} as User, {});
         }
     });
 

@@ -10,6 +10,7 @@ import {ForbiddenGroveStager} from './environments/forbiddenGrove';
 import {FortRoxStager} from './environments/fortRox';
 import {FungalCavernStager} from './environments/fungalCavern';
 import {HarbourStager} from './environments/harbour';
+import {IcebergStager} from './environments/iceberg';
 import {IceFortressStager} from './environments/iceFortress';
 import {LabyrinthStager} from './environments/labyrinth';
 import {LivingGardenStager} from './environments/livingGarden';
@@ -36,6 +37,7 @@ const stageModules: IStager[]  = [
     new FortRoxStager(),
     new FungalCavernStager(),
     new HarbourStager(),
+    new IcebergStager(),
     new IceFortressStager(),
     new LabyrinthStager(),
     new LivingGardenStager(),
