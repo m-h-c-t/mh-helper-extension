@@ -1179,7 +1179,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
         "Sunken City": stagingFuncs.addSunkenCityStage,
-        "Valour Rift": stagingFuncs.addValourRiftStage,
     };
 
     /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */
