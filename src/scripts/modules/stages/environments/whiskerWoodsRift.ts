@@ -1,6 +1,7 @@
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
 import {type IStager} from '../stages.types';
+import {parseHgInt} from '@scripts/util/number';
 
 export class WhiskerWoodsRiftStager implements IStager {
     readonly environment: string = 'Whisker Woods Rift';
@@ -14,9 +15,9 @@ export class WhiskerWoodsRiftStager implements IStager {
         }
 
         const zones = userPre.quests.QuestRiftWhiskerWoods.zones;
-        const clearing = zones.clearing.level;
-        const tree = zones.tree.level;
-        const lagoon = zones.lagoon.level;
+        const clearing = parseHgInt(zones.clearing.level);
+        const tree = parseHgInt(zones.tree.level);
+        const lagoon = parseHgInt(zones.lagoon.level);
 
         const rage: {
             clearing?: string;

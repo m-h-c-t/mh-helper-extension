@@ -5,6 +5,6 @@ export interface QuestRiftWhiskerWoods {
 export type ZoneType = 'clearing' | 'tree' | 'lagoon';
 
 interface ZoneStatus {
-    percent: number;
-    level: number;
+    percent: string | number;
+    level: string | number;
 }
