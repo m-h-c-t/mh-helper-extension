@@ -1,9 +1,7 @@
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
+import {IcebergPhases, type IcebergPhase} from '@scripts/types/quests';
 import {type IStager} from '../stages.types';
-
-const ICEBERGE_PHASES = [ 'Treacherous Tunnels', 'Brutal Bulwark', 'Bombing Run', 'The Mad Depths', 'Icewing\'s Lair', 'Hidden Depths', 'The Deep Lair', 'General'] as const;
-type IcebergPhase = typeof ICEBERGE_PHASES[number];
 
 export class IcebergStager implements IStager {
     readonly environment: string = 'Iceberg';
@@ -38,6 +36,6 @@ export class IcebergStager implements IStager {
     }
 
     private isIcebergPhase(value: string): value is IcebergPhase {
-        return ICEBERGE_PHASES.includes(value as IcebergPhase);
+        return IcebergPhases.includes(value as IcebergPhase);
     }
 }
