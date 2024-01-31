@@ -4,6 +4,7 @@ export * from '@scripts/types/quests/bristleWoodsRift';
 export * from '@scripts/types/quests/clawShotCity';
 export * from '@scripts/types/quests/floatingIslands';
 export * from '@scripts/types/quests/forbiddenGrove';
+export * from '@scripts/types/quests/fortRox';
 export * from '@scripts/types/quests/halloween';
 export * from '@scripts/types/quests/harbour';
 export * from '@scripts/types/quests/iceberg';

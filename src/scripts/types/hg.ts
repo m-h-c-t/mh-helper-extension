@@ -45,7 +45,7 @@ export interface Quests {
     QuestFloatingIslands?: quests.QuestFloatingIslands
     QuestForbiddenGrove?: quests.QuestForbiddenGrove
     QuestForewordFarm?: unknown
-    QuestFortRox?: unknown
+    QuestFortRox?: quests.QuestFortRox
     QuestHarbour?: quests.QuestHarbour
     QuestHalloweenBoilingCauldron?: quests.QuestHalloweenBoilingCauldron
     QuestIceberg?: quests.QuestIceberg;
