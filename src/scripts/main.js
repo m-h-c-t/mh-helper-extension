@@ -1184,7 +1184,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Sunken City": stagingFuncs.addSunkenCityStage,
         "Toxic Spill": stagingFuncs.addToxicSpillStage,
         "Valour Rift": stagingFuncs.addValourRiftStage,
-        "Whisker Woods Rift": stagingFuncs.addWhiskerWoodsRiftStage,
     };
 
     /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */

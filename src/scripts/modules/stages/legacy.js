@@ -29,53 +29,6 @@ export function addFestiveCometStage(message, user, user_post, hunt) {
 }
 
 /**
- * WWR stage reflects the zones' rage categories
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addWhiskerWoodsRiftStage(message, user, user_post, hunt) {
-    const zones = user.quests.QuestRiftWhiskerWoods.zones;
-    const clearing = zones.clearing.level;
-    const tree = zones.tree.level;
-    const lagoon = zones.lagoon.level;
-
-    const rage = {};
-    if (0 <= clearing && clearing <= 24) {
-        rage.clearing = 'CC 0-24';
-    } else if (clearing <= 49) {
-        rage.clearing = 'CC 25-49';
-    } else if (clearing === 50) {
-        rage.clearing = 'CC 50';
-    }
-
-    if (0 <= tree && tree <= 24) {
-        rage.tree = 'GGT 0-24';
-    } else if (tree <= 49) {
-        rage.tree = 'GGT 25-49';
-    } else if (tree === 50) {
-        rage.tree = 'GGT 50';
-    }
-
-    if (0 <= lagoon && lagoon <= 24) {
-        rage.lagoon = 'DL 0-24';
-    } else if (lagoon <= 49) {
-        rage.lagoon = 'DL 25-49';
-    } else if (lagoon === 50) {
-        rage.lagoon = 'DL 50';
-    }
-    if (!rage.clearing || !rage.tree || !rage.lagoon) {
-        message.location = null;
-    } else {
-        message.stage = rage;
-    }
-}
-
-/**
-}
-
-/**
  * Read the viewing attributes to determine the season. Reject hunts where the season changed.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).

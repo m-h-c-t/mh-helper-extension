@@ -61,7 +61,7 @@ export interface Quests {
     QuestRiftBristleWoods?: quests.QuestRiftBristleWoods
     QuestRiftBurroughs?: unknown
     QuestRiftFuroma?: unknown
-    QuestRiftWhiskerWoods?: unknown
+    QuestRiftWhiskerWoods?: quests.QuestRiftWhiskerWoods
     QuestSandDunes?: quests.QuestSandDunes
     QuestSunkenCity?: unknown
     QuestSuperBrieFactory?: quests.QuestSuperBrieFactory

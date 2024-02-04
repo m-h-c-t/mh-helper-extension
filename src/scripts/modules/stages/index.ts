@@ -24,6 +24,7 @@ import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 import {TableOfContentsStager} from './environments/tableOfContents';
 import {TwistedGardenStager} from './environments/twistedGarden';
+import {WhiskerWoodsRiftStager} from './environments/whiskerWoodsRift';
 import {ZokorStager} from './environments/zokor';
 
 const stageModules: IStager[]  = [
@@ -52,6 +53,7 @@ const stageModules: IStager[]  = [
     new SuperBrieFactoryStager(),
     new TableOfContentsStager(),
     new TwistedGardenStager(),
+    new WhiskerWoodsRiftStager(),
     new ZokorStager(),
 ];
 
