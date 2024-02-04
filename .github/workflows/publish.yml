@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -68,7 +68,7 @@ jobs:
       - name: Authorized by
         run: echo "${{ github.event.sender.login }}"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: '0'
 
@@ -153,7 +153,7 @@ jobs:
       EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         name: Get extension artifact
         with:
           name: release-${{ env.EXT_VERSION }}
@@ -183,7 +183,7 @@ jobs:
       EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         name: Get extension artifact
         with:
           name: release-${{ env.EXT_VERSION }}
