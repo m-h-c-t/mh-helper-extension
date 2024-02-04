@@ -21,14 +21,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: "web-ext lint"
-        uses: kewisch/action-web-ext@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          cmd: lint
-          source: src
-          channel: listed
-          verbose: true
+        run: |
+          cd src
+          npm exec web-ext lint
 
   lint:
     runs-on: ubuntu-latest
