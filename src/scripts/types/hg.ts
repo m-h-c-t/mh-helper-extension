@@ -59,7 +59,7 @@ export interface Quests {
     QuestQuesoGeyser?: quests.QuestQuesoGeyser
     QuestRelicHunter?: unknown
     QuestRiftBristleWoods?: quests.QuestRiftBristleWoods
-    QuestRiftBurroughs?: unknown
+    QuestRiftBurroughs?: quests.QuestRiftBurroughs
     QuestRiftFuroma?: unknown
     QuestRiftWhiskerWoods?: quests.QuestRiftWhiskerWoods
     QuestSandDunes?: quests.QuestSandDunes
