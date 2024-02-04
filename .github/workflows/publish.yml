@@ -61,7 +61,7 @@ jobs:
       - generate-version
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
     env:
       EXT_VERSION: ${{ needs.generate-version.outputs.ext-version }}
     steps:
