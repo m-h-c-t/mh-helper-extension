@@ -15,6 +15,6 @@ export const PollutionTitles = [
 
 export type PollutionTitle = typeof PollutionTitles[number];
 
-export type PollutionTitleStatus = {
+export interface PollutionTitleStatus {
     active: boolean
 }
