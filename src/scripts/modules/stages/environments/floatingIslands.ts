@@ -20,7 +20,7 @@ export class FloatingIslandsStager implements IStager {
             return hsa.activated_island_mod_types.filter(t => t == type).length;
         };
 
-        const matcher = hsa.island_name.match(/^(\w+) .*$/);
+        const matcher = hsa.island_name.match(/^(Launch Pad|\w+).*$/);
         if (!matcher) {
             throw new Error('Failed to match Floating Island\'s island name.');
         }
@@ -33,6 +33,8 @@ export class FloatingIslandsStager implements IStager {
             message.stage = `${powerType} High`;
         } else if (hsa.is_vault_island) {
             message.stage = `${powerType} Palace`;
+        } else if (powerType == "Launch Pad") {
+            message.stage = 'Launch Pad';
         } else {
             throw new Error('Unknown Floating Island stage');
         }

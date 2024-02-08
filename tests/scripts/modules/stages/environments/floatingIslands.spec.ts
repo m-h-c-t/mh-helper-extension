@@ -222,6 +222,15 @@ describe('Floating Islands stages', () => {
         });
     });
 
+    it('should match on Launch Pad', () => {
+        setHuntingSiteAtts({
+            island_name: 'Launch Pad',
+        });
+        stager.addStage(message, preUser, postUser, journal);
+
+        expect(message.stage).toBe('Launch Pad');
+    });
+
     function setHuntingSiteAtts(attributes: Partial<FloatingIslandHuntingSiteAtts>) {
         preUser.quests = {
             QuestFloatingIslands: {
