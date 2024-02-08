@@ -195,21 +195,6 @@ export function addTrainStage(message, user, user_post, hunt) {
 }
 
 /**
- * Add the pest indication
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addForewordFarmStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestForewordFarm;
-    if (quest?.mice_state && typeof quest.mice_state === "string") {
-        message.stage = quest.mice_state.split('_').map(word => word[0].toUpperCase() + word.substring(1)).join(' ');
-    }
-}
-
-/**
-/**
  * Report tower stage: Outside, Eclipse, Floors 1-7, 9-15, 17-23, 25-31+, Umbra
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).

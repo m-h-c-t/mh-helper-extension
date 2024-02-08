@@ -1176,7 +1176,6 @@ import * as detailingFuncs from './modules/details/legacy';
     const location_stage_lookup = {
         "Festive Comet": stagingFuncs.addFestiveCometStage,
         "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,
-        "Foreword Farm": stagingFuncs.addForewordFarmStage,
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
         "Sunken City": stagingFuncs.addSunkenCityStage,
