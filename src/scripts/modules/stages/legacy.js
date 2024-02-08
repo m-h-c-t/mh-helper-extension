@@ -89,39 +89,6 @@ export function addFuromaRiftStage(message, user, user_post, hunt) {
 }
 
 /**
- *
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addToxicSpillStage(message, user, user_post, hunt) {
-    const titles = user.quests.QuestPollutionOutbreak.titles;
-    const final_titles = user_post.quests.QuestPollutionOutbreak.titles;
-    const formatted_titles = {
-        hero:                 'Hero',
-        knight:               'Knight',
-        lord_lady:            'Lord/Lady',
-        baron_baroness:       'Baron/Baroness',
-        count_countess:       'Count/Countess',
-        duke_dutchess:        'Duke/Duchess',
-        grand_duke:           'Grand Duke/Duchess',
-        archduke_archduchess: 'Archduke/Archduchess',
-    };
-    for (const [title, level] of Object.entries(titles)) {
-        if (level.active) {
-            if (final_titles[title].active === level.active) {
-                message.stage = formatted_titles[title];
-            }
-            break;
-        }
-    }
-    if (!message.stage) {
-        message.location = null;
-    }
-}
-
-/**
  * Report on the unique minigames in each sub-location. Reject hunts for which the train
  * moved / updated / departed, as the hunt stage is ambiguous.
  * @param {Object <string, any>} message The message to be sent.

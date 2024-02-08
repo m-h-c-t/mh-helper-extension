@@ -1179,7 +1179,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
         "Sunken City": stagingFuncs.addSunkenCityStage,
-        "Toxic Spill": stagingFuncs.addToxicSpillStage,
         "Valour Rift": stagingFuncs.addValourRiftStage,
     };
 
