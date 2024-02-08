@@ -1179,7 +1179,6 @@ import * as detailingFuncs from './modules/details/legacy';
         "Foreword Farm": stagingFuncs.addForewordFarmStage,
         "Furoma Rift": stagingFuncs.addFuromaRiftStage,
         "Gnawnian Express Station": stagingFuncs.addTrainStage,
-        "Seasonal Garden": stagingFuncs.addSeasonalGardenStage,
         "Sunken City": stagingFuncs.addSunkenCityStage,
         "Toxic Spill": stagingFuncs.addToxicSpillStage,
         "Valour Rift": stagingFuncs.addValourRiftStage,

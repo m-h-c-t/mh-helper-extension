@@ -21,6 +21,7 @@ import {MousoleumStager} from './environments/mousoleum';
 import {MuridaeMarketStager} from './environments/muridaeMarket';
 import {QuesoGeyserStager} from './environments/quesoGeyser';
 import {SandDunesStager} from './environments/sandDunes';
+import {SeasonalGardenStager} from './environments/seasonalGarden';
 import {SlushyShorelineStager} from './environments/slushyShoreline';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 import {TableOfContentsStager} from './environments/tableOfContents';
@@ -51,6 +52,7 @@ const stageModules: IStager[]  = [
     new MuridaeMarketStager(),
     new QuesoGeyserStager(),
     new SandDunesStager(),
+    new SeasonalGardenStager(),
     new SlushyShorelineStager(),
     new SuperBrieFactoryStager(),
     new TableOfContentsStager(),
