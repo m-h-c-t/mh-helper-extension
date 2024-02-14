@@ -85,7 +85,7 @@ function icon_timer_updateBadge(tab_id, settings) {
 
         async function show_pop_alert() {
             await new Promise(r => setTimeout(r, 1000));
-            if (confirm("Mousehunt Horn is Ready! Sound it now?")) {
+            if (confirm("MouseHunt Horn is Ready! Sound it now?")) {
                 chrome.tabs.sendMessage(tab_id, {mhct_link: "horn"});
             }
         }
