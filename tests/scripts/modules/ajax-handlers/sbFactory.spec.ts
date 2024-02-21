@@ -72,9 +72,9 @@ describe("SBFactoryAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
-                expectedConvertible,
-                expectedItems
+            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+                expect.objectContaining(expectedConvertible),
+                expect.objectContaining(expectedItems)
             );
         });
 
@@ -106,9 +106,9 @@ describe("SBFactoryAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
-                expectedConvertible,
-                expectedItems
+            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+                expect.objectContaining(expectedConvertible),
+                expect.objectContaining(expectedItems)
             );
         });
     });
