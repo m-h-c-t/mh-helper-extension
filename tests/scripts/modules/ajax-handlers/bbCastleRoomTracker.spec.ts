@@ -87,6 +87,7 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
         it("should ignore if not in castle", async () => {
             await handler.execute(
                 getDefaultResponse({
+                    active_turn: true,
                     user: {
                         quests: {
                             QuestBountifulBeanstalk: {
@@ -105,6 +106,7 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
         it("should ignore if not suitable room position", async () => {
             await handler.execute(
                 getDefaultResponse({
+                    active_turn: true,
                 })
             );
 
@@ -115,7 +117,6 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
 
         it("should submit if user just planted vine", async () => {
             await handler.execute(getDefaultResponse({
-                active_turn: undefined,
                 user: {
                     quests: {
                         QuestBountifulBeanstalk: {
@@ -161,6 +162,7 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
 
         it("should submit if user just entered new room", async () => {
             await handler.execute(getDefaultResponse({
+                active_turn: true,
                 user: {
                     quests: {
                         QuestBountifulBeanstalk: {
@@ -201,7 +203,7 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
 
         it("should submit next room if user just triggered chase", async () => {
             await handler.execute(getDefaultResponse({
-                success: 1,
+                active_turn: true,
                 user: {
                     quests: {
                         QuestBountifulBeanstalk: {
@@ -251,6 +253,7 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
                 throw err;
             });
             await handler.execute(getDefaultResponse({
+                active_turn: true,
                 user: {
                     quests: {
                         QuestBountifulBeanstalk: {
@@ -280,6 +283,7 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
                 })
             ) as jest.Mock;
             await handler.execute(getDefaultResponse({
+                active_turn: true,
                 user: {
                     quests: {
                         QuestBountifulBeanstalk: {
@@ -312,7 +316,6 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
     function getDefaultResponse(overrides: object): HgResponse {
         return mergician(
             {
-                active_turn: true,
                 user: {
                     environment_name: "Bountiful Beanstalk",
                     quests: {
