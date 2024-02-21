@@ -17,7 +17,7 @@ export class BountifulBeanstalkRoomTrackerAjaxHandler extends AjaxSuccessHandler
 
     public match(url: string): boolean {
         // We use bountiful_beanstalk.php when the user plants a vine to submit first room
-        // Otherwise, use activeturn to check if user is at the start of a room
+        // Otherwise, use activeturn to check if user is at the start/end of a room
         if (!(
             url.includes("mousehuntgame.com/managers/ajax/environment/bountiful_beanstalk.php") ||
             url.includes("mousehuntgame.com/managers/ajax/turns/activeturn.php")
@@ -58,7 +58,7 @@ export class BountifulBeanstalkRoomTrackerAjaxHandler extends AjaxSuccessHandler
 
         // We submit the current room iff:
         // 1) At step 0
-        // 2) Not being chansed
+        // 2) Not being chased
 
         // Submit the next room iff:
         // 1) At step 19
