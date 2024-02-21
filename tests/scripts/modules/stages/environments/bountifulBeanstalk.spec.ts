@@ -121,13 +121,22 @@ export function createCastleAttributes(castle: {floor: string, room: string}, is
     return {
         in_castle: true,
         castle: {
+            is_boss_chase: isBossEncounter,
             is_boss_encounter: isBossEncounter,
             current_floor: {
+                type: '',
                 name: castle.floor,
             },
             current_room: {
+                type: '',
                 name: castle.room,
             },
+            next_room: {
+                type: '',
+                name: castle.room,
+            },
+            room_position: 0,
         },
+        embellishments: [],
     };
 }
