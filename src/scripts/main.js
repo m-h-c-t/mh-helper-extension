@@ -21,6 +21,7 @@ import * as detailingFuncs from './modules/details/legacy';
     const logger = new ConsoleLogger();
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const ajaxSuccessHandlers = [
+        new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
         new successHandlers.KingsGiveawayAjaxHandler(logger, submitConvertible),
         new successHandlers.SBFactoryAjaxHandler(logger, submitConvertible),
