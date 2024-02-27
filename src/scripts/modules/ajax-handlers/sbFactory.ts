@@ -1,6 +1,7 @@
 import type {HgResponse} from "@scripts/types/hg";
 import type {HgItem} from "@scripts/types/mhct";
 import type {LoggerService} from "@scripts/util/logger";
+import {CustomConvertibleIds as Ids} from "@scripts/util/constants";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import type {HgResponseWithVendingMachine, VendingMachinePurchaseType} from "./sbFactory.types";
 
@@ -51,13 +52,14 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
 
         // Convert pack code names to made-up internal identifiers
         const packs: Record<VendingMachinePurchaseType, number> = {
-            larry_starter_mix_snack_pack:	130001,
-            tribal_crunch_snack_pack:	130002,
-            wild_west_ranch_rings_snack_pack:	130003,
-            sandy_bert_bites_snack_pack:	130004,
-            hollow_heights_party_pack_snack_pack:	130005,
-            riftios_snack_pack:	130006,
-            story_seeds_snack_pack: 130007,
+            larry_starter_mix_snack_pack:	Ids.LarryStarterMixSnackPack,
+            tribal_crunch_snack_pack:	Ids.TribalCrunchSnackPack,
+            wild_west_ranch_rings_snack_pack:	Ids.WildWestRanchRingsSnackPack,
+            sandy_bert_bites_snack_pack:	Ids.SandyBertBitesSnackPack,
+            hollow_heights_party_pack_snack_pack:	Ids.HollowHeightsPartyPackSnackPack,
+            riftios_snack_pack:	Ids.RiftiosSnackPack,
+            story_seeds_snack_pack: Ids.StorySeedsSnackPack,
+            bountiful_beans_snack_pack: Ids.BountifulBeansSnackPack,
         };
 
         if (!(purchase.type in packs)) {
