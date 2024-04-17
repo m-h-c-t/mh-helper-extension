@@ -58,37 +58,6 @@ export function addSunkenCityStage(message, user, user_post, hunt) {
 }
 
 /**
- * Report the pagoda / battery charge information.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addFuromaRiftStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestRiftFuroma;
-    if (quest.view_state.includes("trainingGrounds")) {
-        message.stage = "Outside";
-    } else if (quest.view_state.includes("pagoda")) {
-        message.stage = (({
-            "charge_level_one":   "Battery 1",
-            "charge_level_two":   "Battery 2",
-            "charge_level_three": "Battery 3",
-            "charge_level_four":  "Battery 4",
-            "charge_level_five":  "Battery 5",
-            "charge_level_six":   "Battery 6",
-            "charge_level_seven": "Battery 7",
-            "charge_level_eight": "Battery 8",
-            "charge_level_nine":  "Battery 9",
-            "charge_level_ten":   "Battery 10",
-        })[quest.droid.charge_level]);
-    }
-
-    if (!message.stage) {
-        message.location = null;
-    }
-}
-
-/**
  * Report on the unique minigames in each sub-location. Reject hunts for which the train
  * moved / updated / departed, as the hunt stage is ambiguous.
  * @param {Object <string, any>} message The message to be sent.
