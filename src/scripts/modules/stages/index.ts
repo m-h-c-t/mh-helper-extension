@@ -30,6 +30,7 @@ import {TableOfContentsStager} from './environments/tableOfContents';
 import {ToxicSpillStager} from './environments/toxicSpill';
 import {TwistedGardenStager} from './environments/twistedGarden';
 import {WhiskerWoodsRiftStager} from './environments/whiskerWoodsRift';
+import {ValourRiftStager} from './environments/valourRift';
 import {ZokorStager} from './environments/zokor';
 
 const stageModules: IStager[]  = [
@@ -64,6 +65,7 @@ const stageModules: IStager[]  = [
     new ToxicSpillStager(),
     new TwistedGardenStager(),
     new WhiskerWoodsRiftStager(),
+    new ValourRiftStager(),
     new ZokorStager(),
 ];
 

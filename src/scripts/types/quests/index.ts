@@ -23,5 +23,6 @@ export * from '@scripts/types/quests/superBrieFactory';
 export * from '@scripts/types/quests/tableOfContents';
 export * from '@scripts/types/quests/springHunt';
 export * from '@scripts/types/quests/toxicSpill';
+export * from '@scripts/types/quests/valourRift';
 export * from '@scripts/types/quests/whiskerWoodsRift';
 export * from '@scripts/types/quests/zokor';

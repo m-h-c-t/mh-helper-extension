@@ -62,6 +62,7 @@ export interface Quests {
     QuestRiftBurroughs?: quests.QuestRiftBurroughs
     QuestRiftFuroma?: quests.QuestRiftFuroma
     QuestRiftWhiskerWoods?: quests.QuestRiftWhiskerWoods
+    QuestRiftValour?: quests.QuestRiftValour
     QuestSandDunes?: quests.QuestSandDunes
     QuestSunkenCity?: unknown
     QuestSuperBrieFactory?: quests.QuestSuperBrieFactory
@@ -71,7 +72,9 @@ export interface Quests {
     QuestWinterHunt2021?: unknown
 }
 
-export type EnvironmentAttributes = unknown;
+export type EnvironmentAttributes =
+    | quests.ValourRiftEnvironmentAttributes
+    | Record<string, never>;
 
 export type ViewingAttributes =
     | FieryWarpathViewingAttributes
