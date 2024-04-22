@@ -7,6 +7,7 @@ import {clawShotCityExemptions} from './environments/clawShotCity';
 import {floatingIslandsExemptions} from './environments/floatingIslands';
 import {icebergExemptions} from './environments/iceberg';
 import {iceFortressExemptions} from './environments/iceFortress';
+import {schoolOfSorceryExemptions} from './environments/schoolOfSorcery';
 import {superBrieFactoryExemptions} from './environments/superBrieFactory';
 import {valourRiftExemptions} from './environments/valourRift';
 
@@ -19,6 +20,7 @@ export const MessageExemptions: IMessageExemption[] = [
     ...icebergExemptions,
     ...iceFortressExemptions,
     ...floatingIslandsExemptions,
+    ...schoolOfSorceryExemptions,
     ...superBrieFactoryExemptions,
     ...valourRiftExemptions,
 ];
