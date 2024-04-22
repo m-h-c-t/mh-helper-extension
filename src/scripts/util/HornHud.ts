@@ -22,7 +22,7 @@ export class HornHud {
      * Check if the horn can be sounded if it's ready and not currently animated
      */
     public static canSoundHorn() {
-        return this.isHornReady() && !this.isHornSounding();
+        return !this.isMessageActive() && this.isHornReady() && !this.isHornSounding();
     }
 
     /**
