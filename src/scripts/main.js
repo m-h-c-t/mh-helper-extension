@@ -1081,10 +1081,15 @@ import * as detailingFuncs from './modules/details/legacy';
             const prop_name = `${component.prop}_name`;
             const prop_id = `${component.prop}_item_id`;
             const item_name = user[prop_name];
-            message[component.message_field] = (!item_name) ? {} : {
-                id: user[prop_id],
-                name: item_name.replace(component.replacer, ''),
-            };
+            message[component.message_field] = (!item_name)
+                ? {
+                    id: 0,
+                    name: '',
+                }
+                : {
+                    id: user[prop_id],
+                    name: item_name.replace(component.replacer, ''),
+                };
 
             if (item_name !== user_post[prop_name]) {
                 debug_logs.push(`User ${component.message_field} changed: Was '${item_name}' and is now '${user_post[prop_name] || "None"}'`);
