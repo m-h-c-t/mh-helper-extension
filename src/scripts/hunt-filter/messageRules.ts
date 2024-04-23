@@ -17,6 +17,15 @@ class IntakeMessageSameWeapon implements IPropertyRule<IntakeMessage> {
     }
 }
 
+class IntakeMessageSameCharm implements IPropertyRule<IntakeMessage> {
+    readonly description = "Charm should not change";
+    readonly property = "charm";
+    isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
+        return (pre.charm != null && post.charm !== null)
+            && pre.charm.name === post.charm.name;
+    }
+}
+
 class IntakeMessageSameBase implements IPropertyRule<IntakeMessage> {
     readonly description = "Base should not change";
     readonly property = "base";
@@ -51,6 +60,7 @@ class IntakeMessageSameStage implements IPropertyRule<IntakeMessage> {
 export const MessageRules: IPropertyRule<IntakeMessage>[] = [
     new IntakeMessageSameCheese,
     new IntakeMessageSameWeapon,
+    new IntakeMessageSameCharm,
     new IntakeMessageSameBase,
     new IntakeMessageSameLocation,
     new IntakeMessageSameStage,
