@@ -23,8 +23,10 @@ import {MousoleumStager} from './environments/mousoleum';
 import {MuridaeMarketStager} from './environments/muridaeMarket';
 import {QuesoGeyserStager} from './environments/quesoGeyser';
 import {SandDunesStager} from './environments/sandDunes';
+import {SchoolOfSorceryStager} from './environments/schoolOfSorcery';
 import {SeasonalGardenStager} from './environments/seasonalGarden';
 import {SlushyShorelineStager} from './environments/slushyShoreline';
+import {SunkenCityStager} from './environments/sunkenCity';
 import {SuperBrieFactoryStager} from './environments/superBrieFactory';
 import {TableOfContentsStager} from './environments/tableOfContents';
 import {ToxicSpillStager} from './environments/toxicSpill';
@@ -58,8 +60,10 @@ const stageModules: IStager[]  = [
     new MuridaeMarketStager(),
     new QuesoGeyserStager(),
     new SandDunesStager(),
+    new SchoolOfSorceryStager(),
     new SeasonalGardenStager(),
     new SlushyShorelineStager(),
+    new SunkenCityStager(),
     new SuperBrieFactoryStager(),
     new TableOfContentsStager(),
     new ToxicSpillStager(),

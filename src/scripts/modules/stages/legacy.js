@@ -29,34 +29,6 @@ export function addFestiveCometStage(message, user, user_post, hunt) {
 }
 
 /**
- * Report the zone and depth, if any.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function addSunkenCityStage(message, user, user_post, hunt) {
-    const quest = user.quests.QuestSunkenCity;
-    if (!quest.is_diving) {
-        message.stage = "Docked";
-        return;
-    }
-
-    const depth = quest.distance;
-    message.stage = quest.zone_name;
-    if (depth < 2000) {
-        message.stage += " 0-2km";
-    } else if (depth < 10000) {
-        message.stage += " 2-10km";
-    } else if (depth < 15000) {
-        message.stage += " 10-15km";
-    } else if (depth < 25000) {
-        message.stage += " 15-25km";
-    } else if (depth >= 25000) {
-        message.stage += " 25km+";
-    }
-}
-
 /**
  * Report on the unique minigames in each sub-location. Reject hunts for which the train
  * moved / updated / departed, as the hunt stage is ambiguous.
