@@ -69,7 +69,7 @@ export interface Quests {
     QuestSuperBrieFactory?: quests.QuestSuperBrieFactory
     QuestSpringHunt?: quests.QuestSpringHunt
     QuestTableOfContents?: quests.QuestTableOfContents
-    QuestTrainStation?: unknown
+    QuestTrainStation?: quests.QuestTrainStation // Gnawnian Express Station
     QuestWinterHunt2021?: unknown
 }
 

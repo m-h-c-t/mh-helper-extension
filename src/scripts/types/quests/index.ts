@@ -8,6 +8,7 @@ export * from '@scripts/types/quests/forbiddenGrove';
 export * from '@scripts/types/quests/forewordFarm';
 export * from '@scripts/types/quests/fortRox';
 export * from '@scripts/types/quests/furomaRift';
+export * from '@scripts/types/quests/gnawnianExpressStation';
 export * from '@scripts/types/quests/halloween';
 export * from '@scripts/types/quests/harbour';
 export * from '@scripts/types/quests/iceberg';
