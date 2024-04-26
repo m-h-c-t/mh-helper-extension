@@ -6,7 +6,6 @@ import * as successHandlers from './modules/ajax-handlers';
 import {HornHud} from './util/HornHud';
 import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
-import * as stagingFuncs from './modules/stages/legacy';
 import * as detailingFuncs from './modules/details/legacy';
 
 (function () {
@@ -1178,13 +1177,6 @@ import * as detailingFuncs from './modules/details/legacy';
         }
     }
 
-    /** @type {Object <string, Function>} */
-    const location_stage_lookup = {
-        "Festive Comet": stagingFuncs.addFestiveCometStage,
-        "Frozen Vacant Lot": stagingFuncs.addFestiveCometStage,
-        "Gnawnian Express Station": stagingFuncs.addTrainStage,
-    };
-
     /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */
     const location_stager_lookup = {};
     for (const stager of stagers.stageModules) {
@@ -1199,12 +1191,6 @@ import * as detailingFuncs from './modules/details/legacy';
      * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
      */
     function addStage(message, user, user_post, hunt) {
-        // legacy staging funcs
-        const stage_func = location_stage_lookup[user.environment_name];
-        if (stage_func) {
-            stage_func(message, user, user_post, hunt);
-        }
-
         // IStagers
         const stager = location_stager_lookup[user.environment_name];
         if (stager) {

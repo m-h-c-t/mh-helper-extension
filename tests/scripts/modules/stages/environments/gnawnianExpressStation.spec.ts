@@ -1,4 +1,4 @@
-import {addTrainStage} from "@scripts/modules/stages/legacy";
+import {GnawnianExpressStationStager} from "@scripts/modules/stages/environments/gnawnianExpressStation";
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
@@ -12,10 +12,7 @@ describe('Gnawnian Express Station stages', () => {
     const journal = {};
 
     beforeEach(() => {
-        stager = {
-            environment: 'Gnawnian Express Station',
-            addStage: addTrainStage,
-        };
+        stager = new GnawnianExpressStationStager();
         message = {} as IntakeMessage;
         preUser = {quests: {
             QuestTrainStation: getDefaultQuest(),
@@ -29,24 +26,34 @@ describe('Gnawnian Express Station stages', () => {
         expect(stager.environment).toBe('Gnawnian Express Station');
     });
 
+    it('it should throw when quest is undefined', () => {
+        preUser.quests.QuestTrainStation = undefined;
+
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestTrainStation is undefined');
+
+        preUser.quests.QuestTrainStation = getDefaultQuest();
+        postUser.quests.QuestTrainStation = undefined;
+
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('QuestTrainStation is undefined');
+    });
+
     it('should reject when pre and post on_train differ', () => {
         message.location = {id: 0, name: "GES"}; // legacy rejects by setting location to null
         preUser.quests.QuestTrainStation = createJumpPhaseAttributes();
         postUser.quests.QuestTrainStation = createOffTrainAttributes();
 
-        stager.addStage(message, preUser, postUser, journal);
-
-        expect(message.location).toBeNull();
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Skipping hunt due to server-side train stage change');
     });
 
     it('should reject when pre and post train phase differ', () => {
-        message.location = {id: 0, name: "GES"}; // legacy rejects by setting location to null
         preUser.quests.QuestTrainStation = createSuppyPhaseAttributes();
         postUser.quests.QuestTrainStation = createBoardingPhaseAttributes();
 
-        stager.addStage(message, preUser, postUser, journal);
-
-        expect(message.location).toBeNull();
+        expect(() => stager.addStage(message, preUser, postUser, journal))
+            .toThrow('Skipping hunt due to server-side train stage change');
     });
 
     it('should set stage to Station when not on train', () => {
@@ -98,13 +105,11 @@ describe('Gnawnian Express Station stages', () => {
         };
 
         it('should reject if pre and post trouble area differ', () => {
-            message.location = {id: 0, name: "GES"}; // legacy rejects by setting location to null
             preUser.quests.QuestTrainStation = createBoardingPhaseAttributes('door');
             postUser.quests.QuestTrainStation = createBoardingPhaseAttributes('rails');
 
-            stager.addStage(message, preUser, postUser, journal);
-
-            expect(message.location).toBeNull();
+            expect(() => stager.addStage(message, preUser, postUser, journal))
+                .toThrow('Skipping hunt during server-side trouble area change');
         });
 
         it.each<{troubleArea: TroubleArea, charm: DefendingCharm}>([
