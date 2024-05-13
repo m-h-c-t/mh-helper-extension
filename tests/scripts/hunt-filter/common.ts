@@ -47,6 +47,7 @@ export function getDefaultUser(): User {
 export function getDefaultIntakeMessage(): IntakeMessage {
     return {
         extension_version: 0,
+        entry_timestamp: 0,
         user_id: 0,
         entry_id: 0,
         location: {
