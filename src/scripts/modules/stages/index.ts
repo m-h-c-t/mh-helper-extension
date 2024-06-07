@@ -12,6 +12,7 @@ import {ForewordFarmStager} from './environments/forewardFarm';
 import {FortRoxStager} from './environments/fortRox';
 import {FungalCavernStager} from './environments/fungalCavern';
 import {FuromaRiftStager} from './environments/furomaRift';
+import {GnawnianExpressStationStager} from './environments/gnawnianExpressStation';
 import {HarbourStager} from './environments/harbour';
 import {IcebergStager} from './environments/iceberg';
 import {IceFortressStager} from './environments/iceFortress';
@@ -49,6 +50,7 @@ const stageModules: IStager[]  = [
     new FortRoxStager(),
     new FungalCavernStager(),
     new FuromaRiftStager(),
+    new GnawnianExpressStationStager(),
     new HarbourStager(),
     new IcebergStager(),
     new IceFortressStager(),

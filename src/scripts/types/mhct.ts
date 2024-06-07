@@ -2,6 +2,7 @@ export interface IntakeMessage {
     extension_version: number;
     user_id: number;
     entry_id: number;
+    entry_timestamp: number;
     location: ComponentEntry | null;
     shield: boolean;
     total_power: number;

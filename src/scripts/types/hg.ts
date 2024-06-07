@@ -11,16 +11,16 @@ export interface HgResponse {
 
 export interface User {
     user_id: number;
-    sn_user_id: number;
+    sn_user_id: number | string;
     unique_hash: string;
     num_active_turns: number;
     next_activeturn_seconds: number;
     base_name: string;
-    base_item_id: number;
+    base_item_id: number | string;
     weapon_name: string;
-    weapon_item_id: number;
+    weapon_item_id: number | string;
     trinket_name: string | null;
-    trinket_item_id: number | null;
+    trinket_item_id: number | string | null;
     bait_name: string;
     bait_item_id: number;
     trap_power: number;
@@ -69,7 +69,7 @@ export interface Quests {
     QuestSuperBrieFactory?: quests.QuestSuperBrieFactory
     QuestSpringHunt?: quests.QuestSpringHunt
     QuestTableOfContents?: quests.QuestTableOfContents
-    QuestTrainStation?: unknown
+    QuestTrainStation?: quests.QuestTrainStation // Gnawnian Express Station
     QuestWinterHunt2021?: unknown
 }
 
@@ -100,7 +100,7 @@ export interface JournalMarkup {
 export interface RenderData {
     //image: Image | [];
     entry_id: number;
-    mouse_type: string;
+    mouse_type: string | boolean;
     css_class: string;
     entry_date: string;
     environment: string;
