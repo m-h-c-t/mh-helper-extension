@@ -2,7 +2,8 @@ import {KingsGiveawayAjaxHandler} from "@scripts/modules/ajax-handlers/kingsGive
 import {KingsGiveawayResponse} from "@scripts/modules/ajax-handlers/kingsGiveaway.types";
 import {HgResponse} from "@scripts/types/hg";
 import {HgItem} from "@scripts/types/mhct";
-import {CustomConvertibleIds} from "@scripts/util/constants";
+import {CustomConvertibleIds, EventDates} from "@scripts/util/constants";
+import {addDays} from "@scripts/util/time";
 
 jest.mock("@scripts/util/logger");
 import {ConsoleLogger} from "@scripts/util/logger";
@@ -25,13 +26,13 @@ describe("KingsGiveawayAjaxHandler", () => {
 
         it("is false when KGA has vanished", () => {
             // return the day after our filter
-            Date.now = jest.fn(() => new Date("2023-10-04T05:00:00Z").getTime());
+            Date.now = jest.fn(() => addDays(EventDates.KingsGiveawayEndDate, 1).getTime());
 
             expect(handler.match(kga_url)).toBe(false);
         });
 
         it("is true when url matches", () => {
-            Date.now = jest.fn(() => new Date("2023-09-12T05:00:00Z").getTime());
+            Date.now = jest.fn(() => addDays(EventDates.KingsGiveawayEndDate, -5).getTime());
 
             expect(handler.match(kga_url)).toBe(true);
         });
