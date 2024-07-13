@@ -164,10 +164,10 @@ import * as detailingFuncs from './modules/details/legacy';
             if (ev.data.mhct_message === 'crownSubmissionStatus') {
                 const counts = ev.data.submitted;
                 if (counts) {
-                    displayFlashMessage(ev.data.settings, "success",
+                    showFlashMessage("success",
                         `Submitted ${counts} crowns for ${$('span[class*="titleBar-name"]').text()}.`);
                 } else if (counts != null) {
-                    displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
+                    showFlashMessage("error", "There was an issue submitting crowns on the backend.");
                 } else {
                     logger.debug('Skipped submission (already sent).');
                 }
@@ -262,7 +262,7 @@ import * as detailingFuncs from './modules/details/legacy';
             mhct_display_message: 1,
             type,
             message,
-        })
+        });
     }
 
     /**
