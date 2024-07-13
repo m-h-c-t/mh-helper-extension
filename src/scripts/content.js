@@ -156,6 +156,7 @@ window.addEventListener("message",
         return new Promise((resolve) => {
             chrome.storage.sync.get({
                 // DEFAULTS
+                message_display: 'hud',
                 success_messages: true,
                 error_messages: true,
                 debug_logging: false,
