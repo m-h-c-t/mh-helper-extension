@@ -12,9 +12,23 @@ extension_version.setAttribute("type", "hidden");
 extension_version.setAttribute("value", chrome.runtime.getManifest().version);
 document.body.appendChild(extension_version);
 
-const mhctBanner = document.createElement('div');
-mhctBanner.classList.add('mhct-banner');
-document.body.appendChild(mhctBanner);
+async function createMessageDiv() {
+    const settings = await getSettings();
+    switch (settings.message_display) {
+        case 'hud': {
+            HornHud.init();
+            break;
+        }
+        case 'toast':
+        case 'banner': {
+            const mhctMsg = document.createElement('div');
+            mhctMsg.classList.add('mhct-msg-display', `mhct-${settings.message_display}`);
+            document.body.appendChild(mhctMsg);
+            break;
+        }
+    }
+}
+createMessageDiv();
 
 async function showDarkMode() {
     const settings = await new Promise((resolve) => {
@@ -206,15 +220,17 @@ window.addEventListener("message",
 
         if (settings.message_display === 'hud') {
             await HornHud.showMessage(message, type);
-        } else if (settings.message_display === 'banner') {
+        } else {
+            const mhctMsg = document.querySelector('.mhct-msg-display');
+            if (mhctMsg == null) {
+                return;
+            }
 
-            mhctBanner.textContent = `MHCT Helper: ${message}`;
-            mhctBanner.classList.add(`mhct-banner-${type}`);
-            mhctBanner.classList.add('mhct-banner--active');
+            mhctMsg.textContent = `MHCT Helper: ${message}`;
+            mhctMsg.classList.add('mhct-msg-display--active', `mhct-${type}`);
 
             setTimeout(() => {
-                mhctBanner.classList.remove(`mhct-banner-${type}`);
-                mhctBanner.classList.remove('mhct-banner--active');
+                mhctMsg.classList.remove('mhct-msg-display--active', `mhct-${type}`);
             }, 1500 + 2000 * (type !== "success"));
         }
     }
