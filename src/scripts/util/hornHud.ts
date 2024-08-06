@@ -3,7 +3,81 @@
  * This class can only be uses from contexts that have access to DOM.
  */
 export class HornHud {
-    // This class was crafting by looking through app.js in the mousehunt source code
+
+    public static async showMessage(
+        message: string,
+        type: 'success' | 'warning' | 'error' = 'success'
+    ) {
+        const messageDom = this.getMessageDOM();
+        if (messageDom === null) {
+            return;
+        }
+
+        const messageTitle = 'MHCT';
+        const duration = 2000 + 2000 * (type !== 'success' ? 1 : 0);
+
+        // if there is already a message active, we'll restore it later
+        const hasPreviousMessage = this.isMessageActive();
+        const previousMessage = messageDom.innerHTML;
+
+        const messageView = document.createElement('div');
+        messageView.classList.add(
+            'huntersHornMessageView',
+            `huntersHornMessageView--mhct_${type}`
+        );
+
+        const title = document.createElement('div');
+        title.classList.add('huntersHornMessageView__title');
+        title.textContent = messageTitle;
+        messageView.appendChild(title);
+
+        const content = document.createElement('div');
+        content.classList.add('huntersHornMessageView__content');
+        const text = document.createElement('div');
+        text.classList.add('huntersHornMessageView__text');
+        text.textContent = message;
+        content.appendChild(text);
+        messageView.appendChild(content);
+
+        const countdown = document.createElement('button');
+        countdown.classList.add('huntersHornMessageView__countdown');
+        countdown.innerHTML = `
+            <div class="huntersHornMessageView__countdownButtonImage"></div>
+            <svg class="huntersHornMessageView__countdownSVG">
+                <circle r="46%" cx="50%" cy="50%" class="huntersHornMessageView__countdownCircleTrack"></circle>
+                <circle r="46%" cx="50%" cy="50%" class="huntersHornMessageView__countdownCircle" style="animation-duration: ${duration}ms;"></circle>
+            </svg>
+        `;
+
+        const removeMessage = async () => {
+            countdown.classList.add(
+                'huntersHornMessageView__countdown--complete'
+            );
+            messageDom.classList.remove('huntersHornView__message--active');
+
+            if (hasPreviousMessage) {
+                await new Promise((r) => setTimeout(r, 300));
+                messageDom.innerHTML = previousMessage;
+                messageDom.classList.add('huntersHornView__message--active');
+            }
+        };
+
+        countdown.addEventListener('click', removeMessage);
+        messageView.appendChild(countdown);
+
+        // Allow previous message to animate out before replacing
+        if (hasPreviousMessage) {
+            messageDom.classList.remove('huntersHornView__message--active');
+            await new Promise((r) => setTimeout(r, 300));
+        }
+
+        messageDom.replaceChildren(messageView);
+        messageDom.classList.add('huntersHornView__message--active');
+
+        setTimeout(() => {
+            removeMessage();
+        }, duration);
+    }
 
     /**
      * Get the horn timer text.

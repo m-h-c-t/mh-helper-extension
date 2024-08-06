@@ -25,6 +25,7 @@
     "content_scripts": [{
         "all_frames" : true,
         "matches": ["*://www.mousehuntgame.com/*"],
+        "css": ["css/user-notify.css"],
         "js": ["scripts/content.js"]
     }],
 
@@ -32,7 +33,7 @@
         "scripts/main.js",
         "third_party/tsitu/*",
         "third_party/potatosalad/*",
-        "images/icon128.png"
+        "images/*"
     ],
 
     "background": {

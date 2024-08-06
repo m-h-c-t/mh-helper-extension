@@ -30,14 +30,24 @@
             <div class="panel panel-default">
                 <div class="panel-body text-left">
                     <label class="full_width">
-                        Display success messages
+                        Message Display
+                        <div class="switch pull-right">
+                            <select id="message_display" class="pull-right">
+                                <option value="hud">HUD</option>
+                                <option value="banner">Banner</option>
+                                <option value="toast">Toast</option>
+                            </select>
+                        </div>
+                    </label>
+                    <label class="full_width">
+                        • Success messages
                         <div class="switch pull-right">
                             <input type="checkbox" id="success_messages" class="pull-right" checked>
                             <span class="slider round"></span>
                         </div>
                     </label>
                     <label class="full_width">
-                        Display error messages
+                        • Error messages
                         <div class="switch pull-right">
                             <input type="checkbox" id="error_messages" class="pull-right" checked>
                             <span class="slider round"></span>

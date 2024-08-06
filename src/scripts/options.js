@@ -1,5 +1,6 @@
 // JS script available only within the embedded options.html page
 const mhhhOptions = [
+    {name: 'message_display',            p: 'value',   default: 'hud'},
     {name: 'success_messages',           p: 'checked', default: true},
     {name: 'error_messages',             p: 'checked', default: true},
     {name: 'debug_logging',              p: 'checked', default: false},

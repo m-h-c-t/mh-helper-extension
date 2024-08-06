@@ -2,8 +2,8 @@
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
 import {getUnixTimestamp} from "./util/time";
+import {HornHud} from './util/hornHud';
 import {parseHgInt} from "./util/number";
-import {HornHud} from './util/HornHud';
 import * as successHandlers from './modules/ajax-handlers';
 import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
@@ -164,10 +164,10 @@ import * as detailingFuncs from './modules/details/legacy';
             if (ev.data.mhct_message === 'crownSubmissionStatus') {
                 const counts = ev.data.submitted;
                 if (counts) {
-                    displayFlashMessage(ev.data.settings, "success",
+                    showFlashMessage("success",
                         `Submitted ${counts} crowns for ${$('span[class*="titleBar-name"]').text()}.`);
                 } else if (counts != null) {
-                    displayFlashMessage(ev.data.settings, "error", "There was an issue submitting crowns on the backend.");
+                    showFlashMessage("error", "There was an issue submitting crowns on the backend.");
                 } else {
                     logger.debug('Skipped submission (already sent).');
                 }
@@ -258,38 +258,10 @@ import * as detailingFuncs from './modules/details/legacy';
      * @param {string} message The message content to display.
      */
     function showFlashMessage(type, message) {
-        getSettings(settings => displayFlashMessage(settings, type, message));
-    }
-
-    /**
-     * Display the given message in an appropriately colored pop-up flash message.
-     * @param {Object <string, any>} settings The user's extension settings
-     * @param {"error"|"warning"|"success"} type The type of message being displayed, which controls the color and duration.
-     * @param {string} message The message content to display.
-     */
-    function displayFlashMessage(settings, type, message) {
-        if ((type === 'success' && !settings.success_messages)
-            || (type !== 'success' && !settings.error_messages)) {
-            return;
-        }
-        const mhhh_flash_message_div = $('#mhhh_flash_message_div');
-        mhhh_flash_message_div.text("MHCT Helper: " + message);
-
-        mhhh_flash_message_div.css('left', 'calc(50% - ' + (mhhh_flash_message_div.width() / 2) + 'px)');
-
-        if (type === 'success') {
-            mhhh_flash_message_div.css('background', 'lightgreen');
-            mhhh_flash_message_div.css('border', '1px solid green');
-        } else if (type === 'error') {
-            mhhh_flash_message_div.css('background', 'pink');
-            mhhh_flash_message_div.css('border', '1px solid red');
-        } else { // warning
-            mhhh_flash_message_div.css('background', 'gold');
-            mhhh_flash_message_div.css('border', '1px solid darkgoldenrod');
-        }
-
-        mhhh_flash_message_div.fadeIn(() => {
-            setTimeout(() => $('#mhhh_flash_message_div').fadeOut(), 1500 + 2000 * (type !== "success"));
+        window.postMessage({
+            mhct_display_message: 1,
+            type,
+            message,
         });
     }
 

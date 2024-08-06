@@ -1,0 +1,96 @@
+/* 
+  Chrome injected CSS is at the user level and not the author level like FF so !important is needed b/c the 
+  page CSS will have priority otherwise
+*/
+.huntersHornMessageView--mhct_success {
+  border-image-source: url("chrome-extension://__MSG_@@extension_id__/images/sandwich-board-success.png") !important;
+}
+.huntersHornMessageView--mhct_warning {
+  border-image-source: url("chrome-extension://__MSG_@@extension_id__/images/sandwich-board-warning.png") !important;
+}
+.huntersHornMessageView--mhct_error {
+  border-image-source: url("chrome-extension://__MSG_@@extension_id__/images/sandwich-board-error.png") !important;
+}
+
+.huntersHornMessageView--mhct_success
+  .huntersHornMessageView__content::before,
+.huntersHornMessageView--mhct_warning
+  .huntersHornMessageView__content::before,
+.huntersHornMessageView--mhct_error .huntersHornMessageView__content::before {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/images/icon64.png") !important;
+}
+
+@-moz-document url-prefix() {
+  .huntersHornMessageView--mhct_success {
+    border-image-source: url("moz-extension://__MSG_@@extension_id__/images/sandwich-board-success.png") !important;
+  }
+  .huntersHornMessageView--mhct_warning {
+    border-image-source: url("moz-extension://__MSG_@@extension_id__/images/sandwich-board-warning.png") !important;
+  }
+  .huntersHornMessageView--mhct_error {
+    border-image-source: url("moz-extension://__MSG_@@extension_id__/images/sandwich-board-error.png") !important;
+  }
+
+  .huntersHornMessageView--mhct_success
+    .huntersHornMessageView__content::before,
+  .huntersHornMessageView--mhct_warning
+    .huntersHornMessageView__content::before,
+  .huntersHornMessageView--mhct_error .huntersHornMessageView__content::before {
+    background-image: url("moz-extension://__MSG_@@extension_id__/images/icon64.png") !important;
+  }
+}
+
+.huntersHornMessageView--mhct_success .huntersHornMessageView__content:before,
+.huntersHornMessageView--mhct_warning .huntersHornMessageView__content:before,
+.huntersHornMessageView--mhct_error .huntersHornMessageView__content:before {
+  content: "";
+  display: block;
+  width: 63px;
+  height: 40px;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: contain;
+}
+
+.mhct-msg-display {
+  box-shadow: 0px 1px 3px -1px black;
+  font-size: larger;
+  opacity: 0%;
+  padding: 1em;
+  pointer-events: none;
+  position: fixed;
+  text-align: center;
+  transition: all 0.4s;
+  z-index: 100;
+}
+
+.mhct-msg-display.mhct-banner {
+  font-weight: 600;
+  top: 0;
+  width: 100%;
+}
+
+.mhct-msg-display.mhct-toast {
+  border-radius: 10px;
+  font-weight: 400;
+  bottom: 10px;
+  right: 10px;
+  width: auto;
+}
+
+.mhct-msg-display--active {
+  opacity: 1;
+}
+
+.mhct-msg-display.mhct-success {
+  background: lightgreen;
+  border: 1px solid green;
+}
+.mhct-msg-display.mhct-error {
+  background: pink;
+  border: 1px solid red;
+}
+.mhct-msg-display.mhct-warning {
+  background: gold;
+  border: 1px solid darkgoldenrod;
+}

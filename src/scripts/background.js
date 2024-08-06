@@ -26,6 +26,7 @@ setInterval(() => check_settings(icon_timer_find_open_mh_tab), 1000);
 function check_settings(callback) {
     chrome.storage.sync.get({
         // DEFAULTS
+        message_display: 'hud',
         success_messages: true,
         error_messages: true,
         icon_timer: true,

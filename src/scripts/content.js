@@ -1,9 +1,10 @@
-import {HornHud} from './util/HornHud';
+import {HornHud} from './util/hornHud';
 
 (function () {
 if (document.body == null) {
     return;
 }
+
 // Pass version # from manifest to injected script
 const extension_version = document.createElement("input");
 extension_version.setAttribute("id", "mhhh_version");
@@ -11,25 +12,23 @@ extension_version.setAttribute("type", "hidden");
 extension_version.setAttribute("value", chrome.runtime.getManifest().version);
 document.body.appendChild(extension_version);
 
-// Add flash message div
-const mhhh_flash_message_div = document.createElement("div");
-mhhh_flash_message_div.setAttribute("id", "mhhh_flash_message_div");
-mhhh_flash_message_div.setAttribute(
-    "style",
-    "display:none;" +
-    "z-index:100;" +
-    "position:fixed;" +
-    "top: 0;" +
-    "background-color: white;" +
-    "padding: 1em;" +
-    "font-size: larger;" +
-    "width: 100%;" +
-    "text-align: center;" +
-    "box-shadow: 0px 1px 4px 0px black;" +
-    "opacity: 95%;" +
-    "pointer-events: none;" +
-    "font-weight: 600;");
-document.body.appendChild(mhhh_flash_message_div);
+async function createMessageDiv() {
+    const settings = await getSettings();
+    switch (settings.message_display) {
+        case 'hud': {
+            HornHud.init();
+            break;
+        }
+        case 'toast':
+        case 'banner': {
+            const mhctMsg = document.createElement('div');
+            mhctMsg.classList.add('mhct-msg-display', `mhct-${settings.message_display}`);
+            document.body.appendChild(mhctMsg);
+            break;
+        }
+    }
+}
+createMessageDiv();
 
 async function showDarkMode() {
     const settings = await new Promise((resolve) => {
@@ -143,6 +142,8 @@ window.addEventListener("message",
             chrome.runtime.sendMessage({"log": data});
         } else if (data.mhct_finish_load === 1) {
             showTsituLoader();
+        } else if (data.mhct_display_message === 1) {
+            displayFlashMessage(data.type, data.message);
         }
     },
     false
@@ -156,6 +157,7 @@ window.addEventListener("message",
         return new Promise((resolve) => {
             chrome.storage.sync.get({
                 // DEFAULTS
+                message_display: 'hud',
                 success_messages: true,
                 error_messages: true,
                 debug_logging: false,
@@ -202,4 +204,34 @@ window.addEventListener("message",
         }
     }
 
+    /**
+     * Display the given message in an appropriately colored pop-up flash message.
+     * @param {"error"|"warning"|"success"} type The type of message being displayed, which controls the color and duration.
+     * @param {string} message The message content to display.
+     */
+    async function displayFlashMessage(type, message) {
+
+        const settings = await getSettings();
+        if ((type === 'success' && !settings.success_messages) ||
+            (type !== 'success' && !settings.error_messages)
+        ) {
+            return;
+        }
+
+        if (settings.message_display === 'hud') {
+            await HornHud.showMessage(message, type);
+        } else {
+            const mhctMsg = document.querySelector('.mhct-msg-display');
+            if (mhctMsg == null) {
+                return;
+            }
+
+            mhctMsg.textContent = `MHCT Helper: ${message}`;
+            mhctMsg.classList.add('mhct-msg-display--active', `mhct-${type}`);
+
+            setTimeout(() => {
+                mhctMsg.classList.remove('mhct-msg-display--active', `mhct-${type}`);
+            }, 1500 + 2000 * (type !== "success"));
+        }
+    }
 }());
