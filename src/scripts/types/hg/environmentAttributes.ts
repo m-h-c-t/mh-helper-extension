@@ -1,4 +1,9 @@
-import * as quests from './quests';
+import {z} from "zod";
+import {valourRiftEnvironmentAttributesSchema} from "./quests";
 
-export type EnvironmentAttributes = quests.ValourRiftEnvironmentAttributes |
-    Record<string, never>;
+export const environmentAttributesSchema = z.union([
+    valourRiftEnvironmentAttributesSchema,
+    z.object({}),
+]);
+
+export type EnvironmentAttributes = z.infer<typeof environmentAttributesSchema>;

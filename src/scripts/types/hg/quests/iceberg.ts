@@ -1,6 +1,4 @@
-export interface QuestIceberg {
-    current_phase: IcebergPhase;
-}
+import {z} from "zod";
 
 export const IcebergPhases = [
     'Treacherous Tunnels',
@@ -12,5 +10,11 @@ export const IcebergPhases = [
     'The Deep Lair',
     'General',
 ] as const;
+const icebergPhaseSchema = z.enum(IcebergPhases);
 
-export type IcebergPhase = typeof IcebergPhases[number];
+export const questIcebergSchema = z.object({
+    current_phase: icebergPhaseSchema,
+});
+
+export type IcebergPhase = z.infer<typeof icebergPhaseSchema>;
+export type QuestIceberg = z.infer<typeof questIcebergSchema>;

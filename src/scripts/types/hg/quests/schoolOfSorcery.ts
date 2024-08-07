@@ -1,25 +1,34 @@
-export type QuestSchoolOfSorcery = {
-    course_selections: CourseSelection[];
-} & (RunningInHallway | TakingACourse);
+import {z} from "zod";
 
-interface RunningInHallway {
-    in_course: false;
-}
+const courseTypeSchema = z.enum(['arcane_101_course', 'shadow_101_course', 'exam_course']);
+const currentCourseSchema = z.object({
+    course_type: courseTypeSchema,
+    power_type: z.union([z.literal('shadow'), z.literal('arcane')]),
+    is_boss_encounter: z.boolean().nullable(),
+});
 
-interface TakingACourse {
-    current_course: CurrentCourse;
-    in_course: true;
-}
+const courseSelectionSchema = z.object({
+    type: courseTypeSchema,
+    name: z.string(),
+});
 
-export interface CourseSelection {
-    type: CourseType;
-    name: string;
-}
+const runningInHallwaySchema = z.object({
+    in_course: z.literal(false),
+});
 
-export interface CurrentCourse {
-    course_type: CourseType;
-    power_type: 'shadow' | 'arcane'
-    is_boss_encounter: boolean | null
-}
+const takingACourseSchema = z.object({
+    current_course: currentCourseSchema,
+    in_course: z.literal(true),
+});
 
-export type CourseType = 'arcane_101_course' | 'shadow_101_course' | 'exam_course';
+export const questSchoolOfSorcerySchema = z.intersection(
+    z.object({
+        course_selections: z.array(courseSelectionSchema),
+    }),
+    z.union([runningInHallwaySchema, takingACourseSchema]),
+);
+
+export type CourseType = z.infer<typeof courseTypeSchema>;
+export type CurrentCourse = z.infer<typeof currentCourseSchema>;
+export type CourseSelection = z.infer<typeof courseSelectionSchema>;
+export type QuestSchoolOfSorcery = z.infer<typeof questSchoolOfSorcerySchema>;

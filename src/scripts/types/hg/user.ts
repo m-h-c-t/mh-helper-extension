@@ -1,31 +1,32 @@
-import {ViewingAttributes} from "./viewingAttributes";
-import {EnvironmentAttributes} from './environmentAttributes';
-import {Quests} from './quests';
+import {z} from "zod";
+import {environmentAttributesSchema} from "./environmentAttributes";
+import {viewingAttributesSchema} from "./viewingAttributes";
+import {questsSchema} from "./quests";
 
+export const userSchema = z.object({
+    user_id: z.number(),
+    sn_user_id: z.coerce.string(),
+    unique_hash: z.string(),
+    num_active_turns: z.number(),
+    next_activeturn_seconds: z.number(),
+    base_name: z.string(),
+    base_item_id: z.coerce.number(),
+    weapon_name: z.string(),
+    weapon_item_id: z.coerce.number(),
+    trinket_name: z.string().nullable(),
+    trinket_item_id: z.coerce.number().nullable(),
+    bait_name: z.coerce.string(), // all bait_ fields all can be 0 if none equipped or ran out
+    bait_item_id: z.coerce.number(),
+    trap_power: z.coerce.number(),
+    trap_power_bonus: z.coerce.number(),
+    trap_luck: z.coerce.number(),
+    trap_attraction_bonus: z.coerce.number(),
+    has_shield: z.boolean(),
+    environment_name: z.string(),
+    environment_id: z.coerce.number(),
+    quests: questsSchema,
+    enviroment_atts: environmentAttributesSchema,
+    viewing_atts: viewingAttributesSchema,
+});
 
-export interface User {
-    user_id: number;
-    sn_user_id: number | string;
-    unique_hash: string;
-    num_active_turns: number;
-    next_activeturn_seconds: number;
-    base_name: string;
-    base_item_id: number | string;
-    weapon_name: string;
-    weapon_item_id: number | string;
-    trinket_name: string | null;
-    trinket_item_id: number | string | null;
-    bait_name: string;
-    bait_item_id: number;
-    trap_power: number;
-    trap_power_bonus: number;
-    trap_luck: number;
-    trap_attraction_bonus: number;
-    has_shield: boolean;
-    environment_name: string;
-    environment_id: number;
-    quests: Quests;
-    enviroment_atts?: EnvironmentAttributes;
-    environment_atts?: EnvironmentAttributes;
-    viewing_atts: ViewingAttributes;
-}
+export type User = z.infer<typeof userSchema>;

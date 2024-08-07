@@ -1,11 +1,4 @@
-export interface QuestRiftFuroma {
-    view_state: string
-    droid: Droid
-}
-
-export interface Droid {
-    charge_level: string
-}
+import {z} from "zod";
 
 export const DroidChargeLevels = [
     'charge_level_one',
@@ -19,5 +12,14 @@ export const DroidChargeLevels = [
     'charge_level_nine',
     'charge_level_ten',
 ] as const;
+const droidChargeLevelSchema = z.enum(DroidChargeLevels);
 
-export type DroidChargeLevel = typeof DroidChargeLevels[number];
+export const questRiftFuromaSchema = z.object({
+    view_state: z.string(),
+    droid: z.object({
+        charge_level: droidChargeLevelSchema,
+    }),
+});
+
+export type DroidChargeLevel = z.infer<typeof droidChargeLevelSchema>;
+export type QuestRiftFuroma = z.infer<typeof questRiftFuromaSchema>;
