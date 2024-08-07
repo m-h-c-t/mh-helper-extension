@@ -2,7 +2,7 @@ import {ValourRiftStager} from "@scripts/modules/stages/environments/valourRift"
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import {QuestRiftValour} from "@scripts/types/quests";
+import {QuestRiftValour} from "@scripts/types/hg/quests";
 
 describe('Valour Rift stages', () => {
     let stager: IStager;

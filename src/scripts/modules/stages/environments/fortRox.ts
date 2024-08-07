@@ -1,6 +1,6 @@
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
-import {type FortRoxStage, FortRoxStages} from '@scripts/types/quests/fortRox';
+import {type FortRoxStage, FortRoxStages} from '@scripts/types/hg/quests/fortRox';
 import {type IStager} from '../stages.types';
 
 export class FortRoxStager implements IStager {

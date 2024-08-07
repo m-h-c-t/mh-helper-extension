@@ -1,7 +1,7 @@
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 import {IStager} from "@scripts/modules/stages/stages.types";
-import {FloatingIslandHuntingSiteAtts, QuestFloatingIslands} from "@scripts/types/quests/floatingIslands";
+import {FloatingIslandHuntingSiteAtts, QuestFloatingIslands} from "@scripts/types/hg/quests/floatingIslands";
 import {FloatingIslandsStager} from "@scripts/modules/stages/environments/floatingIslands";
 
 // Common Nomenclature

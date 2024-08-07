@@ -2,7 +2,7 @@ import {GnawnianExpressStationStager} from "@scripts/modules/stages/environments
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import {BoardingPhase, JumpPhase, OffTrain, QuestTrainStation, SupplyPhase, TroubleArea} from "@scripts/types/quests";
+import {BoardingPhase, JumpPhase, OffTrain, QuestTrainStation, SupplyPhase, TroubleArea} from "@scripts/types/hg/quests";
 
 describe('Gnawnian Express Station stages', () => {
     let stager: IStager;

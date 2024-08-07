@@ -2,7 +2,7 @@ import {LoggerService} from "@scripts/util/logger";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {HgResponse, JournalMarkup} from "@scripts/types/hg";
 import {BeanstalkRarityPayload} from "./beanstalkRoomTracker.types";
-import {CastleAttributes, Embellishment} from "@scripts/types/quests";
+import {CastleAttributes, Embellishment} from "@scripts/types/hg/quests";
 
 /**
  * Reports room rarities so they can be analyzed with other tools

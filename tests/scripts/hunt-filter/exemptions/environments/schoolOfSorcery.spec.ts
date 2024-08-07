@@ -2,7 +2,7 @@ import {IntakeRejectionEngine} from "@scripts/hunt-filter/engine";
 import {SchoolOfSorceryStager} from "@scripts/modules/stages/environments/schoolOfSorcery";
 import {User} from "@scripts/types/hg";
 import {ComponentEntry, IntakeMessage} from "@scripts/types/mhct";
-import {CourseType} from "@scripts/types/quests/schoolOfSorcery";
+import {CourseType} from "@scripts/types/hg/quests/schoolOfSorcery";
 import {LoggerService} from "@scripts/util/logger";
 import {
     getDefaultIntakeMessage,

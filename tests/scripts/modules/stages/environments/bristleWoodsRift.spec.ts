@@ -2,7 +2,7 @@ import {BristleWoodsRiftStager} from "@scripts/modules/stages/environments/brist
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import {QuestRiftBristleWoods} from "@scripts/types/quests";
+import {QuestRiftBristleWoods} from "@scripts/types/hg/quests";
 
 describe('Bristle Woods Rift stages', () => {
     let stager: IStager;

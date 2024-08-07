@@ -1,6 +1,6 @@
 import {type User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {QuesoGeyserState, QuesoGeyserStates} from '@scripts/types/quests/quesoGeyser';
+import {QuesoGeyserState, QuesoGeyserStates} from '@scripts/types/hg/quests/quesoGeyser';
 import {type IStager} from '../stages.types';
 
 export class QuesoGeyserStager implements IStager {

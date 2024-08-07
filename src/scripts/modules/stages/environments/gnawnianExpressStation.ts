@@ -1,6 +1,6 @@
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
-import {TroubleArea, type BoardingPhase} from '@scripts/types/quests/gnawnianExpressStation';
+import {TroubleArea, type BoardingPhase} from '@scripts/types/hg/quests/gnawnianExpressStation';
 import {type IStager} from '../stages.types';
 
 export class GnawnianExpressStationStager implements IStager {

@@ -1,7 +1,7 @@
 import {SpringEggHuntDetailer, type SpringEggHuntDetails} from '@scripts/modules/details/global/springEggHunt';
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
-import {type QuestSpringHunt} from '@scripts/types/quests';
+import {type QuestSpringHunt} from '@scripts/types/hg/quests';
 
 describe('SpringEggHuntDetailer', () => {
     describe('getDetails', () => {
