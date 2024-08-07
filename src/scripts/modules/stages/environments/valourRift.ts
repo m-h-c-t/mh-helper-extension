@@ -1,6 +1,6 @@
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
-import {type ValourRiftEnvironmentAttributes, type ValourRiftState, ValourRiftStates} from '@scripts/types/quests/valourRift';
+import {type ValourRiftEnvironmentAttributes, type ValourRiftState, ValourRiftStates} from '@scripts/types/hg/quests/valourRift';
 import {type IStager} from '../stages.types';
 
 export class ValourRiftStager implements IStager {

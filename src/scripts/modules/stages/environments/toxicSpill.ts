@@ -1,6 +1,6 @@
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import {PollutionTitle, PollutionTitles, PollutionTitleStatus} from "@scripts/types/quests";
+import {PollutionTitle, PollutionTitles, PollutionTitleStatus} from "@scripts/types/hg/quests";
 import {IStager} from "../stages.types";
 
 

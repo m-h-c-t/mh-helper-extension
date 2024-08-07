@@ -2,7 +2,7 @@ import {BountifulBeanstalkStager} from "@scripts/modules/stages/environments/bou
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import type {BeanstalkAttributes, CastleAttributes, QuestBountifulBeanstalk} from "@scripts/types/quests";
+import type {BeanstalkAttributes, CastleAttributes, QuestBountifulBeanstalk} from "@scripts/types/hg/quests";
 
 describe('Bountiful Beanstalk stages', () => {
     let stager: IStager;

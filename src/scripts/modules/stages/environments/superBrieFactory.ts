@@ -1,7 +1,7 @@
 import type {IStager} from '../stages.types';
 import type {User} from '@scripts/types/hg';
 import type {IntakeMessage} from '@scripts/types/mhct';
-import type {RoomType} from '@scripts/types/quests';
+import type {RoomType} from '@scripts/types/hg/quests';
 
 export class SuperBrieFactoryStager implements IStager {
     readonly environment: string = 'SUPER|brie+ Factory';
