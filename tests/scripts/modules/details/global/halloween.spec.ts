@@ -1,7 +1,7 @@
 import {HalloweenDetailer, type HalloweenDetails} from '@scripts/modules/details/global/halloween';
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
-import {type QuestHalloweenBoilingCauldron} from '@scripts/types/quests';
+import {type QuestHalloweenBoilingCauldron} from '@scripts/types/hg/quests';
 
 describe('HalloweenDetailer', () => {
     describe('getDetails', () => {

@@ -2,7 +2,7 @@ import {SchoolOfSorceryStager} from "@scripts/modules/stages/environments/school
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import type {CourseSelection, CourseType, QuestSchoolOfSorcery} from "@scripts/types/quests";
+import type {CourseSelection, CourseType, QuestSchoolOfSorcery} from "@scripts/types/hg/quests";
 
 describe('School of Sorcery stages', () => {
     let stager: IStager;

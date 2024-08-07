@@ -1,7 +1,7 @@
 import {SuperBrieFactoryStager} from "@scripts/modules/stages/environments/superBrieFactory";
 import type {User} from "@scripts/types/hg";
 import type {IntakeMessage} from "@scripts/types/mhct";
-import type {QuestSuperBrieFactory} from "@scripts/types/quests";
+import type {QuestSuperBrieFactory} from "@scripts/types/hg/quests";
 
 describe("SuperBrieFactoryStager", () => {
     const defaultJournal = {};

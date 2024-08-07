@@ -1,7 +1,7 @@
 import type {User} from '@scripts/types/hg';
 import type {IntakeMessage} from '@scripts/types/mhct';
 import type {IStager} from '../stages.types';
-import type {CourseSelection, CourseType} from '@scripts/types/quests/schoolOfSorcery';
+import type {CourseSelection, CourseType} from '@scripts/types/hg/quests/schoolOfSorcery';
 
 
 export class SchoolOfSorceryStager implements IStager {

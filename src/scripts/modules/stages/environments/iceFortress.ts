@@ -1,5 +1,5 @@
 import {type IStager} from '../stages.types';
-import {type QuestIceFortress} from '@scripts/types/quests/iceFortress';
+import {type QuestIceFortress} from '@scripts/types/hg/quests/iceFortress';
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
 

@@ -1,6 +1,6 @@
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
-import {IcebergPhases, type IcebergPhase} from '@scripts/types/quests';
+import {IcebergPhases, type IcebergPhase} from '@scripts/types/hg/quests';
 import {type IStager} from '../stages.types';
 
 export class IcebergStager implements IStager {

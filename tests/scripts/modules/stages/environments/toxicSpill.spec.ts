@@ -2,7 +2,7 @@ import {ToxicSpillStager} from "@scripts/modules/stages/environments/toxicSpill"
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import {PollutionTitle, PollutionTitleStatus, PollutionTitles} from "@scripts/types/quests";
+import {PollutionTitle, PollutionTitleStatus, PollutionTitles} from "@scripts/types/hg/quests";
 
 describe('Toxic Spill stages', () => {
     let stager: IStager;
