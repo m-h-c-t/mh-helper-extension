@@ -51,6 +51,7 @@ describe('Fort Rox stages', () => {
 
     it('should throw when night stage is unknown', () => {
         preUser.quests.QuestFortRox!.is_night = true;
+        // @ts-expect-error - testing invalid input
         preUser.quests.QuestFortRox!.current_stage = 'stage_foo';
 
         expect(() => stager.addStage(message, preUser, postUser, journal))

@@ -7,7 +7,7 @@ export class ValourRiftStager implements IStager {
     readonly environment: string = 'Valour Rift';
 
     addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {
-        const attrs = userPre.environment_atts ?? userPre.enviroment_atts;
+        const attrs = userPre.enviroment_atts;
         const quest = userPre.quests.QuestRiftValour;
 
         if (!quest) {

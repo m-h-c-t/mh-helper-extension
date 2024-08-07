@@ -48,6 +48,7 @@ describe('Burroughs Rift stages', () => {
     it('should throw when mist level is unknown', () => {
         message.location = {id: 0, name: ''};
         preUser.quests = {QuestRiftBurroughs: {
+            // @ts-expect-error - testing invalid input
             mist_tier: 'tier_42',
         }};
 
