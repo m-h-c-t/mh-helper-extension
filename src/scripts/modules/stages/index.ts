@@ -5,6 +5,7 @@ import {BristleWoodsRiftStager} from './environments/bristleWoodsRift';
 import {BurroughsRiftStager} from './environments/burroughsRift';
 import {ClawShotCityStager} from './environments/clawShotCity';
 import {CursedCityStager} from './environments/cursedCity';
+import {DraconicDepthsStager} from './environments/draconicDepths';
 import {FieryWarpathStager} from './environments/fieryWarpath';
 import {FloatingIslandsStager} from './environments/floatingIslands';
 import {ForbiddenGroveStager} from './environments/forbiddenGrove';
@@ -43,6 +44,7 @@ const stageModules: IStager[]  = [
     new BurroughsRiftStager(),
     new ClawShotCityStager(),
     new CursedCityStager(),
+    new DraconicDepthsStager(),
     new FieryWarpathStager(),
     new FloatingIslandsStager(),
     new ForbiddenGroveStager(),
