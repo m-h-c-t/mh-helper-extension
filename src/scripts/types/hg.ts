@@ -42,6 +42,7 @@ export interface Quests {
     QuestBalacksCove?: quests.QuestBalacksCove
     QuestBountifulBeanstalk?: quests.QuestBountifulBeanstalk
     QuestClawShotCity?: quests.QuestClawShotCity
+    QuestDraconicDepths?: quests.QuestDraconicDepths
     QuestFloatingIslands?: quests.QuestFloatingIslands
     QuestForbiddenGrove?: quests.QuestForbiddenGrove
     QuestForewordFarm?: quests.QuestForewordFarm
