@@ -4,6 +4,7 @@ import {globalExemptions} from './global';
 import {acolyteRealmExemptions} from './environments/acolyteRealm';
 import {bountifulBeanstalkExemptions} from './environments/bountifulBeanstalk';
 import {clawShotCityExemptions} from './environments/clawShotCity';
+import {draconicDepthsExemptions} from './environments/draconicDepth';
 import {floatingIslandsExemptions} from './environments/floatingIslands';
 import {icebergExemptions} from './environments/iceberg';
 import {iceFortressExemptions} from './environments/iceFortress';
@@ -17,6 +18,7 @@ export const MessageExemptions: IMessageExemption[] = [
     ...acolyteRealmExemptions,
     ...bountifulBeanstalkExemptions,
     ...clawShotCityExemptions,
+    ...draconicDepthsExemptions,
     ...icebergExemptions,
     ...iceFortressExemptions,
     ...floatingIslandsExemptions,
