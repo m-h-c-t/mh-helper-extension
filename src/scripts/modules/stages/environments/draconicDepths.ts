@@ -1,6 +1,7 @@
 import type {User} from '@scripts/types/hg';
 import type {IStager} from '../stages.types';
 import type {IntakeMessage} from '@scripts/types/mhct';
+import {CavernTypes} from '@scripts/types/quests/draconicDepths';
 
 
 export class DraconicDepthsStager implements IStager {
@@ -18,11 +19,13 @@ export class DraconicDepthsStager implements IStager {
             // Cavern - 2x Fire 0-99
             // Cavern - 1x Poison 100-249
             // Cavern - 3x Ice 750+
-            let multiplier = 1;
+            let multiplier: 1 | 2 | 3 | '?' = 1;
             if (quest.cavern.type.startsWith('double')) {
                 multiplier = 2;
             } else if (quest.cavern.type.startsWith('triple')) {
                 multiplier = 3;
+            } else if (!CavernTypes.includes(quest.cavern.type)) {
+                multiplier = '?';
             }
 
             // capitalize first letter of category: poison -> Poison

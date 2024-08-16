@@ -1,6 +1,6 @@
 export type QuestDraconicDepths = CrucibleEnvironment | CavernEnvironment;
 
-const CavernTypes = [
+export const CavernTypes = [
     "flame_cavern",
     "double_flame_cavern",
     "triple_flame_cavern",

@@ -39,7 +39,7 @@ describe('Draconic Depths stages', () => {
         expect(message.stage).toBe('Crucible Forge');
     });
 
-    it.each<{type: CavernType, category: 'fire' | 'ice' | 'poison' | 'elemental', currentTier: number, expected: string}>([
+    it.each<{type: CavernType | 'invalid_cavern', category: 'fire' | 'ice' | 'poison' | 'elemental', currentTier: number, expected: string}>([
         {type: 'flame_cavern', category: 'fire', currentTier: 1, expected: 'Cavern - 1x Fire 0-99'},
         {type: 'ice_lair', category: 'ice', currentTier: 2, expected: 'Cavern - 1x Ice 100-249'},
         {type: 'toxic_tunnels', category: 'poison', currentTier: 3, expected: 'Cavern - 1x Poison 250-749'},
@@ -47,10 +47,12 @@ describe('Draconic Depths stages', () => {
         {type: 'triple_flame_cavern', category: 'fire', currentTier: 1, expected: 'Cavern - 3x Fire 0-99'},
         {type: 'elemental_dragon_den', category: 'elemental', currentTier: 1, expected: 'Cavern - Elemental 0-99'},
         {type: 'elemental_dragon_den', category: 'elemental', currentTier: 4, expected: 'Cavern - Elemental 750+'},
+        {type: 'invalid_cavern', category: 'poison', currentTier: 4, expected: 'Cavern - ?x Poison 750+'},
     ])('should set stage to "$expected" when in looting a tier $currentTier $type', ({type, category, currentTier, expected}) => {
         preUser.quests.QuestDraconicDepths = {
             in_cavern: true,
             cavern: {
+                // @ts-expect-error - testing invalid cavern type
                 type,
                 category,
                 loot_tier: {
