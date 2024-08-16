@@ -3,6 +3,7 @@ export * from '@scripts/types/quests/bountifulBeanstalk';
 export * from '@scripts/types/quests/bristleWoodsRift';
 export * from '@scripts/types/quests/burroughsRift';
 export * from '@scripts/types/quests/clawShotCity';
+export * from '@scripts/types/quests/draconicDepths';
 export * from '@scripts/types/quests/floatingIslands';
 export * from '@scripts/types/quests/forbiddenGrove';
 export * from '@scripts/types/quests/forewordFarm';
