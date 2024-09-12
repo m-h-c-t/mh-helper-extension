@@ -16,7 +16,6 @@ async function createMessageDiv() {
     const settings = await getSettings();
     switch (settings.message_display) {
         case 'hud': {
-            HornHud.init();
             break;
         }
         case 'toast':
