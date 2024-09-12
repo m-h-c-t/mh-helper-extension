@@ -3,10 +3,34 @@
  * This class can only be uses from contexts that have access to DOM.
  */
 export class HornHud {
+    private static messageQueue: { message: string, type: 'success' | 'warning' | 'error' }[] = [];
+    private static isProcessingQueue = false;
 
     public static async showMessage(
         message: string,
         type: 'success' | 'warning' | 'error' = 'success'
+    ) {
+        this.messageQueue.push({message, type});
+
+        if (!this.isProcessingQueue) {
+            await this.processQueue();
+        }
+    }
+
+    private static async processQueue() {
+        this.isProcessingQueue = true;
+
+        while (this.messageQueue.length > 0) {
+            const {message, type} = this.messageQueue.shift()!;
+            await this.displayMessage(message, type);
+        }
+
+        this.isProcessingQueue = false;
+    }
+
+    private static async displayMessage(
+        message: string,
+        type: 'success' | 'warning' | 'error'
     ) {
         const messageDom = this.getMessageDOM();
         if (messageDom === null) {
@@ -74,9 +98,8 @@ export class HornHud {
         messageDom.replaceChildren(messageView);
         messageDom.classList.add('huntersHornView__message--active');
 
-        setTimeout(() => {
-            removeMessage();
-        }, duration);
+        await new Promise((r) => setTimeout(r, duration));
+        await removeMessage();
     }
 
     /**
