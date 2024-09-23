@@ -2,6 +2,7 @@
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
 import {getUnixTimestamp} from "./util/time";
+import {hgResponseSchema} from "./types/hg";
 import {HornHud} from './util/hornHud';
 import {parseHgInt} from "./util/number";
 import * as successHandlers from './modules/ajax-handlers';
@@ -327,6 +328,18 @@ import * as detailingFuncs from './modules/details/legacy';
                 createHunterIdHash();
             }
 
+            if (url.startsWith("https://www.mousehuntgame.com")) {
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    const parseResult = hgResponseSchema.safeParse(json);
+                    if (!parseResult.success) {
+                        logger.warn("Unexpected response type received", parseResult.error?.message);
+                    }
+                } catch {
+                    // Invalid JSON or response is text/html
+                }
+            }
+
             for (const handler of ajaxSuccessHandlers) {
                 if (handler.match(url)) {
                     handler.execute(xhr.responseJSON);
@@ -428,11 +441,18 @@ import * as detailingFuncs from './modules/details/legacy';
     }
 
     /**
-     * @param {import("./types/hg").HgResponse} pre_response The object obtained prior to invoking `activeturn.php`.
-     * @param {import("./types/hg").HgResponse} post_response Parsed JSON representation of the response from calling activeturn.php
+     * @param {unknown} pre_response The object obtained prior to invoking `activeturn.php`.
+     * @param {unknown} post_response Parsed JSON representation of the response from calling activeturn.php
      */
     function recordHuntWithPrehuntUser(pre_response, post_response) {
         logger.debug("In recordHuntWithPrehuntUser pre and post:", pre_response, post_response);
+
+        const safeParseResultPre = hgResponseSchema.safeParse(pre_response);
+        const safeParseResultPost = hgResponseSchema.safeParse(post_response);
+
+        if (!safeParseResultPre.success || !safeParseResultPost.success) {
+            logger.warn("Unexpected response type received", safeParseResultPre.error?.message, safeParseResultPost.error?.message);
+        }
 
         // General data flow
         // - Validate API response object
