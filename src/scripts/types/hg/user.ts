@@ -25,7 +25,7 @@ export const userSchema = z.object({
     environment_name: z.string(),
     environment_id: z.coerce.number(),
     quests: questsSchema,
-    enviroment_atts: environmentAttributesSchema,
+    enviroment_atts: environmentAttributesSchema.optional(),
     viewing_atts: viewingAttributesSchema,
 });
 
