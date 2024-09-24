@@ -328,16 +328,18 @@ import * as detailingFuncs from './modules/details/legacy';
                 createHunterIdHash();
             }
 
-            if (url.startsWith("https://www.mousehuntgame.com")) {
-                try {
+            try {
+                const parsedUrl = new URL(url);
+                // mobile api calls are not checked
+                if (parsedUrl.hostname === "www.mousehuntgame.com" && !parsedUrl.pathname.startsWith("/api/")) {
                     const json = JSON.parse(xhr.responseText);
                     const parseResult = hgResponseSchema.safeParse(json);
                     if (!parseResult.success) {
                         logger.warn("Unexpected response type received", parseResult.error?.message);
                     }
-                } catch {
-                    // Invalid JSON or response is text/html
                 }
+            } catch {
+                // Invalid url, JSON, or response is not JSON
             }
 
             for (const handler of ajaxSuccessHandlers) {
