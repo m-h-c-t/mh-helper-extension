@@ -1,6 +1,6 @@
 import {type User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {MistTier, MistTiers} from '@scripts/types/quests';
+import {MistTier, MistTiers} from '@scripts/types/hg/quests';
 import {type IStager} from '../stages.types';
 
 export class BurroughsRiftStager implements IStager {

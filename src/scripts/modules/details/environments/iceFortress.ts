@@ -1,6 +1,6 @@
 import type {JournalMarkup, User} from '@scripts/types/hg';
 import type {IEnvironmentDetailer} from '../details.types';
-import type {QuestIceFortress} from '@scripts/types/quests/iceFortress';
+import type {QuestIceFortress} from '@scripts/types/hg/quests/iceFortress';
 import type {IntakeMessage} from '@scripts/types/mhct';
 
 export class IceFortressDetailer implements IEnvironmentDetailer {

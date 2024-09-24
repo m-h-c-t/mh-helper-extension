@@ -1,6 +1,6 @@
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
-import {DroidChargeLevels, DroidChargeLevel} from '@scripts/types/quests';
+import {DroidChargeLevels, DroidChargeLevel} from '@scripts/types/hg/quests';
 import {type IStager} from '../stages.types';
 
 export class FuromaRiftStager implements IStager {

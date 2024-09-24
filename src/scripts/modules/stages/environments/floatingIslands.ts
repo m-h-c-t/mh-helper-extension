@@ -1,6 +1,6 @@
 import {type User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IslandModType} from '@scripts/types/quests/floatingIslands';
+import {type IslandModType} from '@scripts/types/hg/quests/floatingIslands';
 import {type IStager} from '../stages.types';
 
 // See floatingIslands.spec.ts for docs about all stage names

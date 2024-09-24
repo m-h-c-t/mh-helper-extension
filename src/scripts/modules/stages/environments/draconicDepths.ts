@@ -1,7 +1,7 @@
 import type {User} from '@scripts/types/hg';
 import type {IStager} from '../stages.types';
 import type {IntakeMessage} from '@scripts/types/mhct';
-import {CavernTypes} from '@scripts/types/quests/draconicDepths';
+import {CavernTypes} from '@scripts/types/hg/quests/draconicDepths';
 
 
 export class DraconicDepthsStager implements IStager {

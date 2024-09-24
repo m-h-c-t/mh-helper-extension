@@ -2,7 +2,7 @@ import {FortRoxStager} from "@scripts/modules/stages/environments/fortRox";
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import {QuestFortRox} from "@scripts/types/quests";
+import {QuestFortRox} from "@scripts/types/hg/quests";
 
 describe('Fort Rox stages', () => {
     let stager: IStager;

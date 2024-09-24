@@ -2,7 +2,7 @@ import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {FloatingIslandsStager} from '@scripts/modules/stages/environments/floatingIslands';
 import {User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {FloatingIslandHuntingSiteAtts} from '@scripts/types/quests/floatingIslands';
+import {FloatingIslandHuntingSiteAtts} from '@scripts/types/hg/quests/floatingIslands';
 import {LoggerService} from '@scripts/util/logger';
 import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
 import * as stageTest from '@tests/scripts/modules/stages/environments/floatingIslands.spec';
