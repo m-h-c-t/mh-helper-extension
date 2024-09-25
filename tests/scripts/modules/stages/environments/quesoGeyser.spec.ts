@@ -55,6 +55,7 @@ describe('Queso Geyser stages', () => {
     });
 
     it('should throw when state is unknown', () => {
+        // @ts-expect-error - testing invalid input
         preUser.quests.QuestQuesoGeyser!.state = 'guaranteed_rib_mode';
 
         expect(() => stager.addStage(message, preUser, postUser, journal))

@@ -1,6 +1,9 @@
+import {z} from "zod";
 
-export interface QuestHalloweenBoilingCauldron {
-    reward_track: {
-        is_complete: true | null;
-    }
-}
+export const questHalloweenBoilingCauldronSchema = z.object({
+    reward_track: z.object({
+        is_complete: z.union([z.literal(true), z.literal(null)]),
+    }),
+});
+
+export type QuestHalloweenBoilingCauldron = z.infer<typeof questHalloweenBoilingCauldronSchema>;

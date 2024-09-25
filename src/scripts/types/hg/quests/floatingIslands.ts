@@ -1,21 +1,4 @@
-export interface QuestFloatingIslands {
-    hunting_site_atts: FloatingIslandHuntingSiteAtts
-}
-
-export interface FloatingIslandHuntingSiteAtts {
-    island_name: string;
-    is_enemy_encounter: boolean | null;
-    is_low_tier_island: boolean | null;
-    is_high_tier_island: boolean | null;
-    is_vault_island: boolean | null;
-    activated_island_mod_types: IslandModType[];
-    island_mod_panels: IslandModPanel[];
-}
-
-interface IslandModPanel {
-    type: IslandModType;
-    name: string;
-}
+import {z} from "zod";
 
 export const IslandModTypes = [
     'empty',
@@ -37,4 +20,27 @@ export const IslandModTypes = [
     'cloudstone_bonus',
     'charm_bonus',
 ] as const;
-export type IslandModType = typeof IslandModTypes[number];
+const islandModTypesSchema = z.enum(IslandModTypes);
+
+const islandModPanelSchema = z.object({
+    type: z.string(),
+    name: z.string(),
+});
+
+export const floatingIslandsHunterSiteAttsSchema = z.object({
+    island_name: z.string(),
+    is_enemy_encounter: z.boolean().nullable(),
+    is_low_tier_island: z.boolean().nullable(),
+    is_high_tier_island: z.boolean().nullable(),
+    is_vault_island: z.boolean().nullable(),
+    activated_island_mod_types: z.array(islandModTypesSchema),
+    island_mod_panels: z.array(islandModPanelSchema),
+});
+
+export const questFloatingIslandsSchema = z.object({
+    hunting_site_atts: floatingIslandsHunterSiteAttsSchema,
+});
+
+export type IslandModType = z.infer<typeof islandModTypesSchema>;
+export type FloatingIslandHuntingSiteAtts = z.infer<typeof floatingIslandsHunterSiteAttsSchema>;
+export type QuestFloatingIslands = z.infer<typeof questFloatingIslandsSchema>;

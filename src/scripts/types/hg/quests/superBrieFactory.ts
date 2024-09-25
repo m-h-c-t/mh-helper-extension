@@ -1,15 +1,18 @@
+import {z} from "zod";
 
-export interface QuestSuperBrieFactory {
-    factory_atts: FactoryAtts;
-}
+const roomTypeSchema = z.enum([
+    "mixing_room",
+    "break_room",
+    "pumping_room",
+    "quality_assurance_room",
+]);
 
-interface FactoryAtts {
-    current_room: RoomType;
-    boss_warning: boolean | null;
-}
+export const questSuperBrieFactorySchema = z.object({
+    factory_atts: z.object({
+        current_room: roomTypeSchema,
+        boss_warning: z.boolean().nullable(),
+    }),
+});
 
-export type RoomType =
-    | "mixing_room"
-    | "break_room"
-    | "pumping_room"
-    | "quality_assurance_room";
+export type RoomType = z.infer<typeof roomTypeSchema>;
+export type QuestSuperBrieFactory = z.infer<typeof questSuperBrieFactorySchema>;

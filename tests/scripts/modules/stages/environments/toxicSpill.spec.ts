@@ -2,13 +2,27 @@ import {ToxicSpillStager} from "@scripts/modules/stages/environments/toxicSpill"
 import {IStager} from "@scripts/modules/stages/stages.types";
 import {User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
-import {PollutionTitle, PollutionTitleStatus, PollutionTitles} from "@scripts/types/hg/quests";
+import {PollutionTitle, PollutionTitleStatus, PollutionTitles, QuestPollutionOutbreak} from "@scripts/types/hg/quests";
 
 describe('Toxic Spill stages', () => {
     let stager: IStager;
+    let message: IntakeMessage;
+    let preUser: User;
+    let postUser: User;
+    const journal = {};
 
     beforeEach(() => {
         stager = new ToxicSpillStager();
+        message = {
+            location: {},
+        } as IntakeMessage;
+        preUser = {
+            quests: {QuestPollutionOutbreak: getDefaultQuest()},
+        } as User;
+        postUser = {
+            quests: {QuestPollutionOutbreak: getDefaultQuest()},
+        } as User;
+
     });
 
     it('should be for the Toxic Spill environment', () => {
@@ -16,24 +30,18 @@ describe('Toxic Spill stages', () => {
     });
 
     it.each([undefined, null])('should throw when pre-User QuestPollutionOutbreak is %p', (quest) => {
-        const message = {location: {}} as IntakeMessage;
-        const preUser = {quests: {QuestPollutionOutbreak: quest}} as User;
-        const postUser = {quests: {QuestPollutionOutbreak: {
-            titles: generateTitlesWithActive('archduke_archduchess'),
-        }}} as User;
-        const journal = {};
+        // @ts-expect-error - testing invalid input
+        preUser.quests.QuestPollutionOutbreak = quest;
+        postUser.quests.QuestPollutionOutbreak!.titles.archduke_archduchess.active = true;
 
         expect(() => stager.addStage(message, preUser, postUser, journal))
             .toThrow('QuestPollutionOutbreak is undefined');
     });
 
     it.each([undefined, null])('should throw when post-User QuestPollutionOutbreak is %p', (quest) => {
-        const message = {location: {}} as IntakeMessage;
-        const preUser = {quests: {QuestPollutionOutbreak: {
-            titles: generateTitlesWithActive('baron_baroness'),
-        }}} as User;
-        const postUser = {quests: {QuestPollutionOutbreak: quest}} as User;
-        const journal = {};
+        preUser.quests.QuestPollutionOutbreak!.titles.baron_baroness.active = true;
+        // @ts-expect-error - testing invalid input
+        postUser.quests.QuestPollutionOutbreak = quest;
 
         expect(() => stager.addStage(message, preUser, postUser, journal))
             .toThrow('QuestPollutionOutbreak is undefined');
@@ -50,14 +58,8 @@ describe('Toxic Spill stages', () => {
         ${'grand_duke'}             | ${'Grand Duke/Duchess'}
         ${'archduke_archduchess'}   | ${'Archduke/Archduchess'}
     `('should set stage to $expected when pre+post active title is $activeTitle', ({activeTitle, expected}) => {
-        const message = {} as IntakeMessage;
-        const preUser = {quests: {QuestPollutionOutbreak: {
-            titles: generateTitlesWithActive(activeTitle),
-        }}} as User;
-        const postUser = {quests: {QuestPollutionOutbreak: {
-            titles: generateTitlesWithActive(activeTitle),
-        }}} as User;
-        const journal = {};
+        preUser.quests.QuestPollutionOutbreak!.titles = generateTitlesWithActive(activeTitle);
+        postUser.quests.QuestPollutionOutbreak!.titles = generateTitlesWithActive(activeTitle);
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -65,14 +67,11 @@ describe('Toxic Spill stages', () => {
     });
 
     it('should throw for unknown active title', () => {
-        const message = {} as IntakeMessage;
-        const preUser = {quests: {QuestPollutionOutbreak: {
-            titles: {...generateTitles(), ...{sage: {active: true}}},
-        }}} as unknown as User;
-        const postUser = {quests: {QuestPollutionOutbreak: {
-            titles: generateTitlesWithActive('grand_duke'),
-        }}} as User;
-        const journal = {};
+        preUser.quests.QuestPollutionOutbreak!.titles = {
+            ...generateTitles(),
+            ...{sage: {active: true}},
+        };
+        postUser.quests.QuestPollutionOutbreak!.titles = generateTitlesWithActive('grand_duke');
 
         expect(() => stager.addStage(message, preUser, postUser, journal))
             .toThrow('Skipping hunt due to unknown active title');
@@ -89,7 +88,6 @@ describe('Toxic Spill stages', () => {
         const postUser = {quests: {QuestPollutionOutbreak: {
             titles: generateTitlesWithActive('grand_duke'),
         }}} as User;
-        const journal = {};
 
         expect(() => stager.addStage(message, preUser, postUser, journal))
             .toThrow('Skipping hunt during server-side pollution change');
@@ -108,6 +106,12 @@ describe('Toxic Spill stages', () => {
                 [title]: {active: false},
             };
         }, {} as Record<PollutionTitle, PollutionTitleStatus>);
+    }
+
+    function getDefaultQuest(): QuestPollutionOutbreak {
+        return {
+            titles: {...generateTitles()},
+        };
     }
 });
 

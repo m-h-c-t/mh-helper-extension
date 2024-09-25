@@ -1,13 +1,18 @@
-import {InventoryItem} from "./inventoryItem";
-import {JournalMarkup} from "./journalMarkup";
-import {User} from './user';
+import {z} from "zod";
+import {userSchema} from "./user";
+import {journalMarkupSchema} from "./journalMarkup";
+import {inventoryItemSchema} from "./inventoryItem";
 
+export const hgResponseSchema = z.object({
+    user: userSchema,
+    page: z.unknown().optional(),
+    success: z.union([z.literal(0), z.literal(1)]),
+    active_turn: z.boolean().optional(),
+    journal_markup: z.array(journalMarkupSchema).optional(),
+    inventory: z.union([
+        z.record(z.string(), inventoryItemSchema),
+        z.array(z.unknown()),
+    ]).optional(),
+});
 
-export interface HgResponse {
-    user: User;
-    page?: unknown;
-    success: 0 | 1;
-    active_turn?: boolean;
-    journal_markup?: JournalMarkup[];
-    inventory?: Record<string, InventoryItem> | [];
-}
+export type HgResponse = z.infer<typeof hgResponseSchema>;
