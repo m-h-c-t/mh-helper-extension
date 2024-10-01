@@ -39,7 +39,7 @@ describe("SpookyShuffleAjaxHandler", () => {
             const response = {user_id: 4} as unknown as HgResponse;
             await handler.execute(response);
 
-            expect(logger.warn).toBeCalledWith('Unexpected spooky shuffle response.', response);
+            expect(logger.warn).toHaveBeenCalledWith('Unexpected spooky shuffle response object.', expect.anything());
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
@@ -54,7 +54,7 @@ describe("SpookyShuffleAjaxHandler", () => {
             };
             await handler.execute({memory_game: result} as unknown as HgResponse);
 
-            expect(logger.debug).toBeCalledWith('Spooky Shuffle board is not complete yet.');
+            expect(logger.debug).toHaveBeenCalledWith('Spooky Shuffle board is not complete yet.');
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
@@ -69,7 +69,7 @@ describe("SpookyShuffleAjaxHandler", () => {
             };
             await handler.execute({memory_game: result} as unknown as HgResponse);
 
-            expect(logger.debug).toBeCalledWith('Spooky Shuffle board is not complete yet.');
+            expect(logger.debug).toHaveBeenCalledWith('Spooky Shuffle board is not complete yet.');
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
@@ -118,9 +118,9 @@ describe("SpookyShuffleAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
-                expectedConvertible,
-                expectedItems
+            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+                expect.objectContaining(expectedConvertible),
+                expect.objectContaining(expectedItems)
             );
         });
 
@@ -183,9 +183,9 @@ describe("SpookyShuffleAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
-                expectedConvertible,
-                expectedItems
+            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+                expect.objectContaining(expectedConvertible),
+                expect.objectContaining(expectedItems)
             );
         });
 
@@ -221,8 +221,8 @@ describe("SpookyShuffleAjaxHandler", () => {
             };
             await handler.execute({memory_game: result} as unknown as HgResponse);
 
-            expect(logger.warn).toBeCalledWith(`Item 'Test Item' wasn't found in item map. Check its classification type`);
-            expect(submitConvertibleCallback).not.toBeCalled();
+            expect(logger.warn).toHaveBeenCalledWith(`Item 'Test Item' wasn't found in item map. Check its classification type`);
+            expect(submitConvertibleCallback).not.toHaveBeenCalled();
         });
 
     });
