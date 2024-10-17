@@ -1,7 +1,7 @@
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {HgItem} from "@scripts/types/mhct";
 import {LoggerService} from "@scripts/util/logger";
-import {SpookyShuffleResponse, TitleRange} from "./spookyShuffle.types";
+import {SpookyShuffleResponse, spookyShuffleResponseSchema, TitleRange} from "./spookyShuffle.types";
 import {CustomConvertibleIds} from "@scripts/util/constants";
 import {parseHgInt} from "@scripts/util/number";
 import * as hgFuncs from "@scripts/util/hgFunctions";
@@ -30,7 +30,6 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
 
     async execute(responseJSON: unknown): Promise<void> {
         if (!this.isSpookyShuffleResponse(responseJSON)) {
-            this.logger.warn("Unexpected spooky shuffle response.", responseJSON);
             return;
         }
 
@@ -129,10 +128,14 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
      * @returns
      */
     private isSpookyShuffleResponse(responseJSON: unknown): responseJSON is SpookyShuffleResponse {
-        const resultKey: keyof SpookyShuffleResponse = 'memory_game';
-        return responseJSON != null &&
-            typeof responseJSON === 'object' &&
-            resultKey in responseJSON;
+        const response = spookyShuffleResponseSchema.safeParse(responseJSON);
+
+        if (!response.success) {
+            const errorMessage = response.error.message;
+            this.logger.warn("Unexpected spooky shuffle response object.", errorMessage);
+        }
+
+        return response.success;
     }
 
     static ShuffleConvertibleIds: Record<TitleRange, number> = {
