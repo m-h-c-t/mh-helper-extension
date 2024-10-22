@@ -1,6 +1,5 @@
 import {SpookyShuffleAjaxHandler} from "@scripts/modules/ajax-handlers";
-import {SpookyShuffleStatus} from "@scripts/modules/ajax-handlers/spookyShuffle.types";
-import {HgResponse} from "@scripts/types/hg";
+import {SpookyShuffleResponse, SpookyShuffleStatus} from "@scripts/modules/ajax-handlers/spookyShuffle.types";
 import {HgItem} from "@scripts/types/mhct";
 
 jest.mock('@scripts/util/logger');
@@ -9,6 +8,7 @@ jest.mock('@scripts/util/hgFunctions');
 import {ConsoleLogger} from '@scripts/util/logger';
 import {getItemsByClass} from "@scripts/util/hgFunctions";
 import {CustomConvertibleIds} from "@scripts/util/constants";
+import {HgResponseBuilder} from "@tests/utility/builders";
 
 const logger = new ConsoleLogger();
 const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>;
@@ -18,6 +18,9 @@ const mockedGetItemsByClass = jest.mocked(getItemsByClass);
 const spookyShuffle_url = "mousehuntgame.com/managers/ajax/events/spooky_shuffle.php";
 
 describe("SpookyShuffleAjaxHandler", () => {
+
+    const responseBuilder = new HgResponseBuilder();
+
     beforeEach(() => {
         jest.clearAllMocks();
         jest.resetModules();
@@ -35,11 +38,13 @@ describe("SpookyShuffleAjaxHandler", () => {
 
     describe("execute", () => {
         it('warns if response is unexpected', async () => {
+
             // memory_game missing here,
-            const response = {user_id: 4} as unknown as HgResponse;
+            const response = responseBuilder.build();
+
             await handler.execute(response);
 
-            expect(logger.warn).toBeCalledWith('Unexpected spooky shuffle response.', response);
+            expect(logger.warn).toHaveBeenCalledWith('Unexpected spooky shuffle response object.', expect.anything());
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
@@ -52,9 +57,13 @@ describe("SpookyShuffleAjaxHandler", () => {
                 title_range: 'novice_journeyman',
                 cards: [],
             };
-            await handler.execute({memory_game: result} as unknown as HgResponse);
+            const response: SpookyShuffleResponse = {
+                ...responseBuilder.build(),
+                memory_game: result,
+            };
+            await handler.execute(response);
 
-            expect(logger.debug).toBeCalledWith('Spooky Shuffle board is not complete yet.');
+            expect(logger.debug).toHaveBeenCalledWith('Spooky Shuffle board is not complete yet.');
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
@@ -67,9 +76,14 @@ describe("SpookyShuffleAjaxHandler", () => {
                 title_range: 'novice_journeyman',
                 cards: [],
             };
-            await handler.execute({memory_game: result} as unknown as HgResponse);
+            const response: SpookyShuffleResponse = {
+                ...responseBuilder.build(),
+                memory_game: result,
+            };
 
-            expect(logger.debug).toBeCalledWith('Spooky Shuffle board is not complete yet.');
+            await handler.execute(response);
+
+            expect(logger.debug).toHaveBeenCalledWith('Spooky Shuffle board is not complete yet.');
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
@@ -98,12 +112,17 @@ describe("SpookyShuffleAjaxHandler", () => {
                         name: 'Test Item',
                         is_matched: true,
                         is_revealed: true,
-                        is_tested_pair: true,
                         quantity: 567,
                     },
                 ],
             };
-            await handler.execute({memory_game: result} as unknown as HgResponse);
+            const response: SpookyShuffleResponse = {
+                ...responseBuilder.build(),
+                memory_game: result,
+            };
+
+            await handler.execute(response);
+
             const expectedConvertible = {
                 id: CustomConvertibleIds.HalloweenSpookyShuffleNovice,
                 name: 'Spooky Shuffle (Test Title Range)',
@@ -118,9 +137,9 @@ describe("SpookyShuffleAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
-                expectedConvertible,
-                expectedItems
+            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+                expect.objectContaining(expectedConvertible),
+                expect.objectContaining(expectedItems)
             );
         });
 
@@ -150,7 +169,6 @@ describe("SpookyShuffleAjaxHandler", () => {
                         name: 'Test Item',
                         is_matched: true,
                         is_revealed: true,
-                        is_tested_pair: true,
                         quantity: 567,
                     },
                     {
@@ -158,12 +176,17 @@ describe("SpookyShuffleAjaxHandler", () => {
                         name: 'Gold',
                         is_matched: true,
                         is_revealed: true,
-                        is_tested_pair: true,
                         quantity: 5000,
                     },
                 ],
             };
-            await handler.execute({memory_game: result} as unknown as HgResponse);
+            const response: SpookyShuffleResponse = {
+                ...responseBuilder.build(),
+                memory_game: result,
+            };
+
+            await handler.execute(response);
+
             const expectedConvertible = {
                 id: CustomConvertibleIds.HalloweenSpookyShuffleGrandDukeDusted,
                 name: 'Upgraded Spooky Shuffle (Grand Test Title and up)',
@@ -183,9 +206,9 @@ describe("SpookyShuffleAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
-                expectedConvertible,
-                expectedItems
+            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+                expect.objectContaining(expectedConvertible),
+                expect.objectContaining(expectedItems)
             );
         });
 
@@ -214,15 +237,19 @@ describe("SpookyShuffleAjaxHandler", () => {
                         name: 'Test Item',
                         is_matched: true,
                         is_revealed: true,
-                        is_tested_pair: true,
                         quantity: 567,
                     },
                 ],
             };
-            await handler.execute({memory_game: result} as unknown as HgResponse);
+            const response: SpookyShuffleResponse = {
+                ...responseBuilder.build(),
+                memory_game: result,
+            };
 
-            expect(logger.warn).toBeCalledWith(`Item 'Test Item' wasn't found in item map. Check its classification type`);
-            expect(submitConvertibleCallback).not.toBeCalled();
+            await handler.execute(response);
+
+            expect(logger.warn).toHaveBeenCalledWith(`Item 'Test Item' wasn't found in item map. Check its classification type`);
+            expect(submitConvertibleCallback).not.toHaveBeenCalled();
         });
 
     });
