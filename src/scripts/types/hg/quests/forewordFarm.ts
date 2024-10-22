@@ -1,6 +1,4 @@
-export interface QuestForewordFarm {
-    mice_state: string // MiceState
-}
+import {z} from "zod";
 
 export const MiceStates = [
     'no_plants',
@@ -10,5 +8,11 @@ export const MiceStates = [
     'three_papyrus',
     'boss',
 ] as const;
+const miceStatesSchema = z.enum(MiceStates);
 
-export type MiceState = typeof MiceStates[number];
+export const questForewordFarmSchema = z.object({
+    mice_state: miceStatesSchema,
+});
+
+export type MiceState = z.infer<typeof miceStatesSchema>;
+export type QuestForewordFarm = z.infer<typeof questForewordFarmSchema>;

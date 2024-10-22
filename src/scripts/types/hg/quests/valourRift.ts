@@ -1,25 +1,30 @@
-export interface QuestRiftValour {
-    state: string
-    floor: number
-}
+import {z} from "zod";
 
 export const ValourRiftStates = ['farming', 'tower'] as const;
+const valourRiftStatesSchema = z.enum(ValourRiftStates);
 
-export type ValourRiftState = typeof ValourRiftStates[number];
+const valourRiftFarmingEnvironmentAttributesSchema = z.object({
+    phase: z.literal('farming'),
+});
 
-export type ValourRiftEnvironmentAttributes = ValourRiftFarmingEnvironmentAttributes | ValourRiftTowerEnvironmentAttributes;
+const valourRiftTowerEnvironmentAttributesSchema = z.object({
+    phase: z.literal('tower'),
+    active_augmentations: z.object({
+        hr: z.boolean().optional(),
+        sr: z.boolean().optional(),
+        ss: z.boolean().optional(),
+        tu: z.boolean().optional(),
+        sste: z.boolean().optional(),
+    }),
+});
 
-interface ValourRiftFarmingEnvironmentAttributes {
-    phase: 'farming'
-}
+export const valourRiftEnvironmentAttributesSchema = z.union([valourRiftFarmingEnvironmentAttributesSchema, valourRiftTowerEnvironmentAttributesSchema]);
 
-interface ValourRiftTowerEnvironmentAttributes {
-    phase: 'tower'
-    active_augmentations: {
-        hr?: boolean
-        sr?: boolean
-        ss?: boolean
-        tu?: boolean
-        sste?: boolean
-    }
-}
+export const questRiftValourSchema = z.object({
+    state: z.string(),
+    floor: z.coerce.number(),
+});
+
+export type ValourRiftState = z.infer<typeof valourRiftStatesSchema>;
+export type ValourRiftEnvironmentAttributes = z.infer<typeof valourRiftEnvironmentAttributesSchema>;
+export type QuestRiftValour = z.infer<typeof questRiftValourSchema>;

@@ -57,6 +57,7 @@ describe('Furoma Rift stages', () => {
 
     it('should should throw when droid charge level is unknown', () => {
         const message = {location: {}} as IntakeMessage;
+        // @ts-expect-error - testing invalid input
         const preUser = {quests: {QuestRiftFuroma: {
             view_state: 'pagoda',
             droid: {

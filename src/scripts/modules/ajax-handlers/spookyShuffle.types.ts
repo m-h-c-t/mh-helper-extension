@@ -1,22 +1,5 @@
-import {HgResponse} from "@scripts/types/hg";
-
-export interface SpookyShuffleResponse extends HgResponse {
-    memory_game: SpookyShuffleStatus;
-}
-
-export interface SpookyShuffleStatus {
-    is_complete: true | null;
-    is_upgraded: true | null;
-    has_selected_testing_pair: boolean; // true on selection of the 2nd card
-    reward_tiers: RewardTier[];
-    title_range: TitleRange;
-    cards: Card[];
-}
-
-interface RewardTier {
-    type: TitleRange;
-    name: string; // A readable/nice english string of the title range
-}
+import z from "zod";
+import {hgResponseSchema} from "@scripts/types/hg";
 
 const TitleRanges = [
     'novice_journeyman',
@@ -25,23 +8,49 @@ const TitleRanges = [
     'grand_duke_plus',
 ] as const;
 
-export type TitleRange = typeof TitleRanges[number];
+const titleRangeSchema = z.enum(TitleRanges);
 
-type Card = {
-    id: number;
-    quantity: number | null;
-    is_matched: true | null;
-    is_tested_pair: true | null;
-} & (KnownCard | UnknownCard);
+export type TitleRange = z.infer<typeof titleRangeSchema>;
 
-interface KnownCard {
-    name: string;
-    is_revealed: true;
-    quantity: number;
-}
+// knowns cards have most field filled in except is_matched
+const knownCardSchema = z.object({
+    name: z.string(),
+    is_revealed: z.literal(true),
+    quantity: z.coerce.number(),
+    is_matched: z.union([z.literal(true), z.literal(null)]),
+});
 
-interface UnknownCard {
-    name: null;
-    is_revealed: false;
-    quantity: null;
-}
+// unknown cards have all null fields
+const unknownCardSchema = z.object({
+    name: z.literal(null),
+    is_revealed: z.literal(null),
+    quantity: z.literal(null),
+    is_matched: z.literal(null),
+});
+
+// cards can be either known or unknown but will always have an numeric id
+const cardSchema = z.object({
+    id: z.coerce.number(),
+}).and(z.discriminatedUnion('is_revealed', [knownCardSchema, unknownCardSchema]));
+
+const rewardTierSchema = z.object({
+    type: titleRangeSchema,
+    name: z.string(), // A readable/nice english string of the title range
+});
+
+const spookyShuffleStatusSchema = z.object({
+    is_complete: z.boolean().nullable(),
+    is_upgraded: z.boolean().nullable(),
+    has_selected_testing_pair: z.boolean(),
+    reward_tiers: z.array(rewardTierSchema),
+    title_range: titleRangeSchema,
+    cards: z.array(cardSchema),
+});
+
+export type SpookyShuffleStatus = z.infer<typeof spookyShuffleStatusSchema>;
+
+export const spookyShuffleResponseSchema = hgResponseSchema.extend({
+    memory_game: spookyShuffleStatusSchema,
+});
+
+export type SpookyShuffleResponse = z.infer<typeof spookyShuffleResponseSchema>;

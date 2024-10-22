@@ -1,17 +1,21 @@
-export type QuestLivingGarden = LivingGardenState | TwistedGardenState
+import {z} from "zod";
 
-interface LivingGardenState {
-    is_normal: true
-    minigame: {
-        bucket_state: PourStatus
-    }
-}
+const pourStatusSchema = z.enum(['filling', 'dumped']);
 
-interface TwistedGardenState {
-    is_normal: false
-    minigame: {
-         vials_state: PourStatus
-    }
-}
+const livingGardenStateSchema = z.object({
+    is_normal: z.literal(true),
+    minigame: z.object({
+        bucket_state: pourStatusSchema,
+    }),
+});
 
-type PourStatus = 'filling' | 'dumped';
+const twistedGardenStateSchema = z.object({
+    is_normal: z.literal(false),
+    minigame: z.object({
+        vials_state: pourStatusSchema,
+    }),
+});
+
+export const questLivingGardenSchema = z.union([livingGardenStateSchema, twistedGardenStateSchema]);
+
+export type QuestLivingGarden = z.infer<typeof questLivingGardenSchema>;

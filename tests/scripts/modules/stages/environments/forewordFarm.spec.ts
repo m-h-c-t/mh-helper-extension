@@ -30,6 +30,7 @@ describe('Foreword Farm stages', () => {
 
     it('should throw when mice state is unknown', () => {
         preUser.quests = {QuestForewordFarm: {
+            // @ts-expect-error - testing invalid input
             mice_state: 'plants?_what_plants',
         }};
 

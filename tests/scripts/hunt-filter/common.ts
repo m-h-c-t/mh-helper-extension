@@ -18,7 +18,7 @@ export function getValidPostResponse(): HgResponse {
 export function getDefaultUser(): User {
     return {
         user_id: 0,
-        sn_user_id: 0,
+        sn_user_id: '0',
         unique_hash: 'mhct',
         num_active_turns: 0,
         next_activeturn_seconds: 0,

@@ -1,6 +1,5 @@
-export interface QuestPollutionOutbreak {
-    titles: Record<PollutionTitle, PollutionTitleStatus>
-}
+import {zodRecordWithEnum} from "@scripts/util/zod";
+import {z} from "zod";
 
 export const PollutionTitles = [
     'hero',
@@ -12,9 +11,16 @@ export const PollutionTitles = [
     'grand_duke',
     'archduke_archduchess',
 ] as const;
+const pollutionTitlesSchema = z.enum(PollutionTitles);
 
-export type PollutionTitle = typeof PollutionTitles[number];
+const pollutionTitlesStatusSchema = z.object({
+    active: z.boolean(),
+});
 
-export interface PollutionTitleStatus {
-    active: boolean
-}
+export const questPollutionOutbreakSchema = z.object({
+    titles: zodRecordWithEnum(pollutionTitlesSchema, pollutionTitlesStatusSchema),
+});
+
+export type PollutionTitle = z.infer<typeof pollutionTitlesSchema>;
+export type PollutionTitleStatus = z.infer<typeof pollutionTitlesStatusSchema>;
+export type QuestPollutionOutbreak = z.infer<typeof questPollutionOutbreakSchema>;
