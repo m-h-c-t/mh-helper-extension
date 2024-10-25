@@ -1341,7 +1341,9 @@ import * as detailingFuncs from './modules/details/legacy';
         };
 
         URLDiffCheck(); // Initial call on page load
-        $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
+        if (settings.tracking_enabled) {
+            $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
+        }
 
         let versionInfo = "version " + mhhh_version;
         if (Number(mhhh_version) == 0) {
