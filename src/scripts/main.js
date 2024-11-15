@@ -216,7 +216,7 @@ import * as detailingFuncs from './modules/details/legacy';
             uh: user.unique_hash,
             last_read_journal_entry_id: lastReadJournalEntryId,
         };
-        $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap.php', payload, null, 'json')
+        $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap_v2.php', payload, null, 'json')
             .done(data => {
                 if (data) {
                     if (!data.treasure_map || data.treasure_map.view_state === "noMap") {
