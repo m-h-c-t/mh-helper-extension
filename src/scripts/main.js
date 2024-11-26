@@ -215,6 +215,7 @@ import * as detailingFuncs from './modules/details/legacy';
             action: "map_info",
             uh: user.unique_hash,
             last_read_journal_entry_id: lastReadJournalEntryId,
+            'X-Requested-By': `MHCT/${mhhh_version}`,
         };
         $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap_v2.php', payload, null, 'json')
             .done(data => {
@@ -295,6 +296,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         hg_is_ajax: 1,
                         last_read_journal_entry_id: lastReadJournalEntryId,
                         uh: user.unique_hash,
+                        'X-Requested-By': `MHCT/${mhhh_version}`,
                     },
                     dataType: "json",
                 }).done(userRqResponse => {
@@ -705,8 +707,8 @@ import * as detailingFuncs from './modules/details/legacy';
                 hunter_id_hash,
                 entry_timestamp: final_message.entry_timestamp,
                 extension_version: mhhh_version,
+                'X-Requested-By': `MHCT/${mhhh_version}`,
             };
-
 
             // Get UUID
             $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
@@ -1322,7 +1324,12 @@ import * as detailingFuncs from './modules/details/legacy';
                 // Form data directly in URL to distinguish it from a profile "King's Crowns" tab click
                 const crownUrl = `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=HunterProfile&page_arguments%5Btab%5D=kings_crowns&page_arguments%5Bsub_tab%5D=false&page_arguments%5Bsnuid%5D=${profile_snuid}&uh=${user.unique_hash}`;
 
-                $.post(crownUrl, "sn=Hitgrab&hg_is_ajax=1", null, "json")
+                const payload = {
+                    sn: 'Hitgrab',
+                    hg_is_ajax: 1,
+                    'X-Requested-By': `MHCT/${mhhh_version}`,
+                };
+                $.post(crownUrl, payload, null, "json")
                     .fail(err => {
                         logger.debug(`Crown query failed for snuid=${profile_snuid}`, err);
                     });
