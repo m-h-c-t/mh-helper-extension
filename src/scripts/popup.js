@@ -53,19 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Set up the options page listener.
-    const options_button = document.getElementById('options_button');
-    if (options_button) {
-        options_button.addEventListener('click', () => {
-            if (chrome.runtime.openOptionsPage) {
-                // New way to open options pages, if supported (Chrome 42+).
-                chrome.runtime.openOptionsPage();
-            } else {
-                // Reasonable fallback.
-                window.open(chrome.runtime.getURL('options.html'));
-            }
-        });
-    }
+    document.querySelectorAll('.tableSwap').forEach(e => e.addEventListener('click', swapTables));
 });
 
 /**
@@ -97,4 +85,12 @@ function displayErrorPopup(message) {
     error_popup.innerText = message;
     error_popup.style.display = 'block';
     setTimeout(() => error_popup.style.display = 'none', 2000);
+}
+
+function swapTables() {
+    const current = document.querySelector('.table-container.active');
+    const next = document.querySelector('.table-container:not(.active)');
+
+    current.classList.remove('active');
+    next.classList.add('active');
 }

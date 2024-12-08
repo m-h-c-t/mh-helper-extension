@@ -1,31 +1,29 @@
-.popup-link {
-    cursor: pointer;
-    white-space: nowrap;
+
+.container-fluid {
+    min-width: 280px;
 }
 
-.popup-link-out,
-.popup-link-out:hover,
-.popup-link-out:active,
-.popup-link-out:visited {
-    display: block;
+td > a,
+tr {
     text-decoration: none;
-    color: black;
     white-space: nowrap;
+    color: var(--bs-body-color);
 }
-td {
-    background-color: white;
+
+svg path {
+    fill: var(--bs-body-color);
 }
+
+.table-container:not(.active) {
+    display: none;
+}
+
 td:hover {
     background-color: goldenrod;
 }
 
 .error_popup {
     display: none;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    z-index:+1;
-    width:100%;
 }
 
 @keyframes wiggle {
@@ -40,8 +38,6 @@ td:hover {
     color: white;
     font-weight: bolder;
     font-size: large;
-    padding-top: 1em;
-    padding-bottom: 1em;
 }
 
 .horn {
