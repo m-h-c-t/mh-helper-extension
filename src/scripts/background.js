@@ -15,46 +15,51 @@ chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
 
-// Schedule an update of the badge text every second, using the latest settings.
-setInterval(() => check_settings(icon_timer_find_open_mh_tab), 1000);
+setInterval(updateIcon, 1000);
 
+// Set the default user settings, also holds current
+let userSettings = {
+    version: 1,
+    'tracking-hunts': true,
+    'tracking-crowns': true,
+    'tracking-convertibles': true,
+    'tracking-events': true,
+    'notification-sound': false,
+    'notification-volume': 100,
+    'notification-custom': false,
+    'notification-custom-url': '',
+    'notification-desktop': false,
+    'notification-alert-type': 'intrusive',
+    'notification-message-display': 'hud',
+    'notification-success-messages': true,
+    'notification-error-messages': true,
+    'enhancement-icon-timer': true,
+    'enhancement-tsitu-loader': false,
+    'enhancement-tsitu-loader-offset': 80,
+    'enhancement-escape-dismiss': false,
+    'enhancement-dark-mode': false,
+    'general-log-level': 'info',
+};
 
-/**
- *
- * @param {Function} callback Some callable that needs the current extension settings
- */
-function check_settings(callback) {
-    chrome.storage.sync.get({
-        // DEFAULTS
-        message_display: 'hud',
-        success_messages: true,
-        error_messages: true,
-        icon_timer: true,
-        horn_sound: false,
-        custom_sound: '',
-        horn_volume: 100,
-        horn_alert: false,
-        horn_webalert: false,
-        horn_popalert: false,
-        tracking_enabled: true,
-        dark_mode: false,
-    },
-    settings => callback(settings));
+function changeUserSettings(settings) {
+    if (settings.value) {
+        userSettings = settings.value;
+    }
+
+    chrome.storage.sync.set(userSettings);
+
+    return userSettings;
 }
 
-/**
- * Update the badge text icon timer with info from the latest settings and current MH page.
- * @param {Object <string, any>} settings Extension settings
- */
-function icon_timer_find_open_mh_tab(settings) {
+function updateIcon() {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
         (found_tabs) => {
             const [mhTab] = found_tabs;
             if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
-                icon_timer_updateBadge(mhTab.id, settings);
+                icon_timer_updateBadge(mhTab.id);
             } else {
                 // The tab was either not found, or is still loading.
-                icon_timer_updateBadge(false, settings);
+                icon_timer_updateBadge(false);
             }
         });
 }
@@ -66,9 +71,8 @@ let notification_done = false;
  * Scheduled function that sets the badge color & text based on current settings.
  * Modifies the global `notification_done` as appropriate.
  * @param {number|boolean} tab_id The MH tab's ID, or `false` if no MH page is open & loaded.
- * @param {Object <string, any>} settings Extension settings
  */
-function icon_timer_updateBadge(tab_id, settings) {
+function icon_timer_updateBadge(tab_id) {
     if (tab_id === false) {
         chrome.browserAction.setBadgeText({text: ''});
         return;
@@ -78,13 +82,13 @@ function icon_timer_updateBadge(tab_id, settings) {
     const request = {mhct_link: "huntTimer"};
     chrome.tabs.sendMessage(tab_id, request, response => {
 
-        async function show_web_alert() {
+        async function showIntrusiveAlert() {
             await new Promise(r => setTimeout(r, 1000));
             chrome.tabs.update(tab_id, {'active': true});
             chrome.tabs.sendMessage(tab_id, {mhct_link: "show_horn_alert"});
         }
 
-        async function show_pop_alert() {
+        async function showBackgroundAlert() {
             await new Promise(r => setTimeout(r, 1000));
             if (confirm("MouseHunt Horn is Ready! Sound it now?")) {
                 chrome.tabs.sendMessage(tab_id, {mhct_link: "horn"});
@@ -101,19 +105,24 @@ function icon_timer_updateBadge(tab_id, settings) {
             chrome.browserAction.setBadgeText({text: ''});
             notification_done = true;
         } else if (response === "Ready") {
-            if (settings.icon_timer) {
+            if (userSettings["enhancement-icon-timer"]) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#9b7617'});
                 chrome.browserAction.setBadgeText({text: '🎺'});
             }
             // If we haven't yet sent a notification about the horn, do so if warranted.
             if (!notification_done) {
-                if (settings.horn_sound && settings.horn_volume > 0) {
-                    const myAudio = new Audio(settings.custom_sound || default_sound);
-                    myAudio.volume = (settings.horn_volume / 100).toFixed(2);
+                const volume = userSettings["notification-volume"];
+                if (userSettings["notification-sound"] && volume > 0) {
+                    let myAudio = new Audio(default_sound);
+                    if (userSettings["notification-custom"]) {
+                        myAudio = new Audio(userSettings["notification-custom-url"]);
+                    }
+
+                    myAudio.volume = (volume / 100).toFixed(2);
                     myAudio.play();
                 }
 
-                if (settings.horn_alert) {
+                if (userSettings["notification-desktop"]) {
                     chrome.notifications.create(
                         "MHCT Horn",
                         {
@@ -125,17 +134,18 @@ function icon_timer_updateBadge(tab_id, settings) {
                     );
                 }
 
-                if (settings.horn_webalert) {
-                    show_web_alert();
-                }
-
-                if (settings.horn_popalert) {
-                    show_pop_alert();
+                switch (userSettings["notification-alert-type"]) {
+                    case "background":
+                        showBackgroundAlert();
+                        break;
+                    case "intrusive":
+                        showIntrusiveAlert();
+                        break;
                 }
             }
             notification_done = true;
         } else if (["King's Reward", "Logged out"].includes(response)) {
-            if (settings.icon_timer) {
+            if (userSettings["enhancement-icon-timer"]) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#F00'});
                 chrome.browserAction.setBadgeText({text: 'RRRRRRR'});
             }
@@ -144,7 +154,7 @@ function icon_timer_updateBadge(tab_id, settings) {
             // The user is logged in, has no KR, and the horn isn't ready yet. Set
             // the badge text to the remaining time before the next horn.
             notification_done = false;
-            if (settings.icon_timer) {
+            if (userSettings["enhancement-icon-timer"]) {
                 chrome.browserAction.setBadgeBackgroundColor({color: '#222'});
                 response = response.replace(':', '');
                 const response_int = parseInt(response, 10);
@@ -171,7 +181,7 @@ function icon_timer_updateBadge(tab_id, settings) {
 }
 
 // Handle messages sent by the extension to the runtime.
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+function onMessage(msg, sender, sendResponse) {
     // Check the message for something to log in the background's console.
     if (msg.log) {
         let fn = console.log;
@@ -190,8 +200,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         submitCrowns(msg.crowns).then(sendResponse);
         return true;
     }
-    // TODO: Handle other extension messages.
-});
+
+    let response;
+    switch (msg.what) {
+        case 'userSettings':
+            response = changeUserSettings(msg);
+            break;
+    }
+
+    sendResponse(response);
+}
+
+chrome.runtime.onMessage.addListener(onMessage);
 
 /**
  * Promise to submit the given crowns for external storage (e.g. for MHCC or others)
@@ -235,3 +255,77 @@ async function submitCrowns(crowns) {
     setTimeout(() => window.sessionStorage.removeItem(crowns.user), 300 * 1000);
     return crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond;
 }
+
+// TODO: Clean up into a separate file
+
+async function migrateUserSettings() {
+    const defaults = userSettings;
+
+    const results = await new Promise(resolve => chrome.storage.sync.get(null, resolve));
+
+    if (!(results instanceof Object)) {
+        return;
+    }
+
+    const version = results.version || 0;
+
+    // settings didn't have version field, so it's likely the old format
+    if (version === 0 && Object.keys(results).length > 0) {
+        // tracking
+        defaults['tracking-hunts'] = results.tracking_enabled;
+        defaults['tracking-crowns'] = results.tracking_enabled;
+
+        // notification
+        defaults['notification-sound'] = results.horn_sound;
+        defaults['notification-volume'] = results.horn_volume;
+        defaults['notification-custom'] = results.custom_sound !== '';
+        defaults['notification-custom-url'] = results.custom_sound;
+        defaults['notification-desktop'] = results.horn_alert;
+        const instrusive = results.horn_webalert;
+        const background = results.horn_popalert;
+
+        if (!instrusive && !background) {
+            defaults['notification-alert-type'] = 'none';
+        } else if (instrusive) {
+            defaults['notification-alert-type'] = 'intrusive';
+        } else if (background) {
+            defaults['notification-alert-type'] = 'background';
+        }
+
+        defaults['notification-message-display'] = results.message_display;
+        defaults['notification-success-messages'] = results.success_messages;
+        defaults['notification-error-messages'] = results.error_messages;
+
+        // enhancement
+        defaults['enhancement-icon-timer'] = results.icon_timer;
+        defaults['enhancement-tsitu-loader'] = results.tsitu_loader_on;
+        defaults['enhancement-tsitu-loader-offset'] = results.tsitu_loader_offset;
+        defaults['enhancement-escape-dismiss'] = results.escape_button_close;
+        defaults['enhancement-dark-mode'] = results.dark_mode;
+
+        chrome.storage.sync.clear();
+        chrome.storage.sync.set(defaults);
+    }
+
+    userSettings = defaults;
+}
+
+async function loadUserSettings() {
+    await migrateUserSettings();
+
+    const defaults = userSettings;
+    const results = await new Promise(resolve => chrome.storage.sync.get(Object.assign(defaults), resolve));
+    const newSettings = results instanceof Object && results || Object.assign(defaults);
+
+    userSettings = newSettings;
+}
+
+(async () => {
+
+    try {
+        await loadUserSettings();
+    } catch (e) {
+        console.trace(e);
+    }
+
+})();
