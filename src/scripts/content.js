@@ -1,10 +1,11 @@
 import {HornHud} from './util/hornHud';
 
-(function () {
+(async function () {
 if (document.body == null) {
     return;
 }
 
+let userSettings = {};
 // Pass version # from manifest to injected script
 const extension_version = document.createElement("input");
 extension_version.setAttribute("id", "mhhh_version");
@@ -13,29 +14,22 @@ extension_version.setAttribute("value", chrome.runtime.getManifest().version);
 document.body.appendChild(extension_version);
 
 async function createMessageDiv() {
-    const settings = await getSettings();
-    switch (settings.message_display) {
+    const type = userSettings['notification-message-display'];
+    switch (type) {
         case 'hud': {
             break;
         }
         case 'toast':
         case 'banner': {
             const mhctMsg = document.createElement('div');
-            mhctMsg.classList.add('mhct-msg-display', `mhct-${settings.message_display}`);
+            mhctMsg.classList.add('mhct-msg-display', `mhct-${type}`);
             document.body.appendChild(mhctMsg);
             break;
         }
     }
 }
-createMessageDiv();
 
 async function showDarkMode() {
-    const settings = await new Promise((resolve) => {
-        chrome.storage.sync.get({
-            dark_mode: false,
-        }, data => resolve(data));
-    });
-
     function includeCSSfile(filepath) {
         const link_tag = document.createElement('link');
         link_tag.setAttribute('rel', 'stylesheet');
@@ -44,7 +38,7 @@ async function showDarkMode() {
         (document.head || document.documentElement).appendChild(link_tag);
     }
 
-    if (settings.dark_mode) {
+    if (userSettings['enhancement-dark-mode']) {
         // There must be a better way of doing this
 
         const css_files = [
@@ -68,7 +62,6 @@ async function showDarkMode() {
         window.console.log("MHCT: Dark Theme loaded. Welcome to the Dark Side!");
     }
 }
-showDarkMode();
 
 // Inject main script
 function injectMainScript() {
@@ -79,8 +72,6 @@ function injectMainScript() {
         s.remove();
     };
 }
-
-injectMainScript();
 
 // Handles messages from popup or background.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -125,17 +116,15 @@ window.addEventListener("message",
         // Lots of MessageEvents are sent, so only respond to ones we know about.
         const data = event.data;
         if (data.mhct_settings_request === 1) {
-            getSettings()
-                .then(settings => event.source.postMessage({
-                    "mhct_settings_response": 1,
-                    "settings": settings,
-                }, event.origin));
+            event.source.postMessage({
+                "mhct_settings_response": 1,
+                "settings": userSettings,
+            }, event.origin);
         } else if (data.mhct_crown_update === 1) {
             data.origin = event.origin;
             chrome.runtime.sendMessage(data, (wasSubmitted) => event.source.postMessage({
                 "mhct_message": "crownSubmissionStatus",
                 "submitted": wasSubmitted,
-                "settings": data.settings,
             }, event.origin));
         } else if (data.mhct_log_request === 1) {
             chrome.runtime.sendMessage({"log": data});
@@ -152,31 +141,9 @@ window.addEventListener("message",
      * Promise to get the extension's settings.
      * @returns {Promise <Object <string, any>>} The extension's settings
      */
-    function getSettings() {
-        return new Promise((resolve) => {
-            chrome.storage.sync.get({
-                // DEFAULTS
-                message_display: 'hud',
-                success_messages: true,
-                error_messages: true,
-                debug_logging: false,
-                icon_timer: true,
-                horn_sound: false,
-                custom_sound: '',
-                horn_volume: 100,
-                horn_alert: false,
-                horn_webalert: false,
-                horn_popalert: false,
-                tracking_enabled: true,
-                escape_button_close: false,
-                dark_mode: false,
-            },
-            items => {
-                if (chrome.runtime.lastError) {
-                    window.console.error(chrome.runtime.lastError.message);
-                }
-                resolve(items || {});
-            });
+    async function getSettings() {
+        return new Promise(resolve => {
+            chrome.runtime.sendMessage({what: 'userSettings'}, resolve);
         });
     }
 
@@ -184,20 +151,13 @@ window.addEventListener("message",
      * Promise to show Tsitu's menu via the embedded script.
      * @param {boolean} forceShow Bypass settings and always show
      */
-    async function showTsituLoader(forceShow) {
-        const settings = await new Promise((resolve) => {
-            chrome.storage.sync.get({
-                tsitu_loader_on: false,
-                tsitu_loader_offset: 80,
-            }, data => resolve(data));
-        });
-
-        if (forceShow | settings.tsitu_loader_on) {
+    async function showTsituLoader(forceShow = false) {
+        if (forceShow || userSettings['enhancement-tsitu-loader']) {
             // There must be a better way of doing this
             window.postMessage({
                 mhct_message: 'tsitu_loader',
                 // ensure offset is a string: https://github.com/tsitu/MH-Tools/blob/584b0182195d2fc35756dd34a74ee0573b845d1f/src/bookmarklet/bm-menu.js#L205
-                tsitu_loader_offset: `${settings.tsitu_loader_offset}`,
+                tsitu_loader_offset: `${userSettings['enhancement-tsitu-loader-offset']}`,
                 file_link: chrome.runtime.getURL('third_party/tsitu/bm-menu.min.js'),
             }, "*");
         }
@@ -209,15 +169,16 @@ window.addEventListener("message",
      * @param {string} message The message content to display.
      */
     async function displayFlashMessage(type, message) {
+        const showSuccess = userSettings['notification-success-messages'];
+        const showError = userSettings['notification-error-messages'];
 
-        const settings = await getSettings();
-        if ((type === 'success' && !settings.success_messages) ||
-            (type !== 'success' && !settings.error_messages)
+        if ((type === 'success' && !showSuccess) ||
+            (type !== 'success' && !showError)
         ) {
             return;
         }
 
-        if (settings.message_display === 'hud') {
+        if (userSettings['notification-message-display'] === 'hud') {
             await HornHud.showMessage(message, type);
         } else {
             const mhctMsg = document.querySelector('.mhct-msg-display');
@@ -233,4 +194,11 @@ window.addEventListener("message",
             }, 1500 + 2000 * (type !== "success"));
         }
     }
+
+    // Initial page load setup
+    userSettings = await getSettings();
+    createMessageDiv();
+    injectMainScript();
+    showDarkMode();
+
 }());
