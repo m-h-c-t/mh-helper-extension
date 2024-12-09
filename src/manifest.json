@@ -40,6 +40,11 @@
         "scripts": ["scripts/background.js"]
     },
 
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
+    },
+
     "browser_specific_settings": {
         "gecko": {
             "id": "{801e5516-3311-4ee7-8185-7da12ffab807}"
