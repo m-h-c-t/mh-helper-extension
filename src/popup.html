@@ -1,79 +1,184 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <base href="/">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/popup.css">
-    <script defer type="text/javascript" src="scripts/popup.js"></script>
+    <title>MHCT Popup</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/popup.css" />
 </head>
-<body class="text-center">
-    <div id="horn" class="popup-link">
-        Sound Horn: <span id="huntTimer">-:--</span>
-    </div>
-    <div class="container-fluid">
-        <h3><a href="https://www.mhct.win" target="_blank" class="popup-link-out">MH Community Tools</a></h3>
-        <span id="version" class="text-muted" style="font-size:small;"></span>
-        <table class="table text-center table-responsive table-bordered">
-        <tbody>
-            <tr><td id="userhistory" class="popup-link" colspan="2">
-                Your Hunt History
-            </td></tr>
-            <tr><td id="mhmh" class="popup-link" colspan="2">
-                MHCT Map Helper (auto)
-            </td></tr>
-            <tr><td colspan="2">
-                <a href="https://www.mhct.win/attractions.php" target="_blank" class="popup-link-out">Mouse Attraction Rates</a>
-            </td></tr>
-            <tr><td colspan="2">
-                <a href="https://www.mhct.win/loot.php" target="_blank" class="popup-link-out">Looter (Drop Rates)</a>
-            </td></tr>
-            <tr>
-                <td>
-                    <a href="https://www.mhct.win/mapper.php" target="_blank" class="popup-link-out">Mapper (Map Contents)</a>
-                </td>
-                <td>
-                    <a href="https://www.mhct.win/reverse-mapper.php" target="_blank" class="popup-link-out">Reverse</a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a href="https://www.mhct.win/converter.php" target="_blank" class="popup-link-out">Convertibles</a>
-                </td>
-                <td>
-                    <a href="https://www.mhct.win/reverse-converter.php" target="_blank" class="popup-link-out">Reverse</a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a href="https://www.mhct.win/rh-tracker.php" target="_blank" class="popup-link-out">RH Tracker</a>
-                </td>
-                <td>
-                    <a href="https://www.mhct.win/tracker.php" target="_blank" class="popup-link-out">Stats</a>
-                </td>
-            </tr>
-            <tr><td colspan="2">
-                <a href="https://www.mhct.win/countdown.php" target="_blank" class="popup-link-out">Events Countdown</a>
-            </td></tr>
-            <tr>
-                <td>
-                    <a href="https://discord.gg/E4utmBD" target="_blank" class="popup-link-out">Feedback/Support</a>
-                </td>
-                <td>
-                    <a href="https://www.mhct.win/faq.php" target="_blank" class="popup-link-out">F.A.Q.</a>
-                </td>
-            </tr>
-            <tr><td colspan="2">
-                <a href="popup2.html" class="popup-link-out"><div class="pull-right">&gt;&gt;</div>More Links</a>
-            </td></tr>
-        </tbody>
-        </table>
-        <h4><svg id="options_button" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="popup-link pull-left bi bi-gear-fill" viewBox="0 0 16 16">
-            <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
-          </svg> Support us <a href="https://www.mhct.win/donations.php" target="_blank">here</a>.</h4>
-    </div>
-    <div id="error_popup" class="alert alert-danger error_popup"></div>
+
+<body>
+    <header id="horn" class="d-flex justify-content-center align-items-center py-3 border-bottom">
+        Sound Horn:&nbsp;<span id="huntTimer">-:--</span>
+    </header>
+    <main>
+        <div class="container-fluid text-center">
+            <h3 class="mt-2">
+                <a class="text-body link-underline  link-underline-opacity-0" href="https://www.mhct.win" target="_blank">MH Community Tools</a>
+            </h3>
+            <span id="version" class="text-body-secondary" style="font-size:small;"></span>
+
+            <table id="mainLinks" class="table table-bordered table-container active">
+                <tbody>
+                    <tr>
+                        <td id="userhistory" colspan="2">
+                            Your Hunt History
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="mhmh" colspan="2">
+                            MHCT Map Helper
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <a href="https://www.mhct.win/attractions.php" target="_blank">
+                                Mouse Attraction Rates
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <a href="https://www.mhct.win/loot.php" target="_blank">
+                                Looter (Drop Rates)
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://www.mhct.win/mapper.php" target="_blank">Mapper (Map Contents)</a>
+                        </td>
+                        <td>
+                            <a href="https://www.mhct.win/reverse-mapper.php" target="_blank">Reverse</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://www.mhct.win/converter.php" target="_blank">Convertibles</a>
+                        </td>
+                        <td>
+                            <a href="https://www.mhct.win/reverse-converter.php" target="_blank">Reverse</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://www.mhct.win/rh-tracker.php" target="_blank">RH Tracker</a>
+                        </td>
+                        <td>
+                            <a href="https://www.mhct.win/tracker.php" target="_blank">Stats</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <a href="https://www.mhct.win/countdown.php" target="_blank">Events Countdown</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://discord.gg/E4utmBD" target="_blank">Feedback/Support</a>
+                        </td>
+                        <td>
+                            <a href="https://www.mhct.win/faq.php" target="_blank">F.A.Q.</a>
+                        </td>
+                    </tr>
+                    <tr class="tableSwap">
+                        <td colspan="2">
+                            More Links
+                            <div class="float-end">&gt;&gt;</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table id="moreLinks" class="table text-center table-responsive table-bordered table-container">
+                <tbody>
+                    <tr>
+                        <td id="tsitu_loader">
+                            tsitu's Auto-Loader
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://dbgames.info/mousehunt/" target="_blank">Ryonn's MH Database</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="ryonn">
+                            <a href="#">Ryonn's Tavern (auto-populated)</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://www.reddit.com/r/mousehunt/" target="_blank">Subreddit</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://www.reddit.com/r/mousehunt/wiki/guide" target="_blank">Subreddit's Game
+                                Guide</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://www.reddit.com/r/mousehunt/wiki/user-scripts/" target="_blank">Useful
+                                Userscripts</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://sites.google.com/site/mhtimerslinks/" target="_blank">Timers & Links</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://discord.gg/E4utmBD" target="_blank">Discord Server</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="https://mhwiki.hitgrab.com/wiki/index.php/Main_Page" target="_blank">Wiki</a>
+                        </td>
+                    </tr>
+                    <tr class="tableSwap">
+                        <td>
+                            <span class="float-start">&lt;&lt;</span>Back</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer
+        class="h4 d-flex flex-wrap align-items-center justify-content-center justify-content-around">
+        <div class="col d-flex justify-content-center">
+            <a href="options.html" target="_blank">
+                <svg class="align-middle" viewBox="0 0 16 16" width="16"
+                    height="16">
+                    <path fill="red"
+                    d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z" />
+                </svg>
+            </a>
+        </div>
+        <div class="d-flex flex-grow-1 align-items-center justify-content-center">
+            <p class="mb-0 text-body-secondary">
+                Support us <a class="exclude link-underline link-underline-opacity-0"
+                    href="https://www.mhct.win/donations.php" target="_blank">here.</a>
+            </p>
+        </div>
+        <div class="col">
+
+        </div>
+    </footer>
+
+    <!-- Floating error popup -->
+    <div id="error_popup" class="position-absolute top-0 left-0 w-100 alert alert-danger error_popup"></div>
+
+    <script src="scripts/theme.js" type="module"></script>
+    <script src="scripts/popup.js" type="module"></script>
 </body>
+
 </html>

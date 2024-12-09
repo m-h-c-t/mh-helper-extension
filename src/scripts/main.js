@@ -18,16 +18,17 @@ import * as detailingFuncs from './modules/details/legacy';
 
     let mhhh_version = 0;
     let hunter_id_hash = '0';
+    let userSettings = {};
 
     const logger = new ConsoleLogger();
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
-        new successHandlers.KingsGiveawayAjaxHandler(logger, submitConvertible),
-        new successHandlers.SBFactoryAjaxHandler(logger, submitConvertible),
-        new successHandlers.SEHAjaxHandler(logger, submitConvertible),
-        new successHandlers.SpookyShuffleAjaxHandler(logger, submitConvertible),
+        new successHandlers.KingsGiveawayAjaxHandler(logger, submitEventConvertible),
+        new successHandlers.SBFactoryAjaxHandler(logger, submitEventConvertible),
+        new successHandlers.SEHAjaxHandler(logger, submitEventConvertible),
+        new successHandlers.SpookyShuffleAjaxHandler(logger, submitEventConvertible),
     ];
 
     async function main() {
@@ -36,16 +37,11 @@ import * as detailingFuncs from './modules/details/legacy';
                 throw "Can't find jQuery.";
             }
 
-            const settings = await getSettingsAsync();
-            await initialLoad(settings);
+            userSettings = await getSettingsAsync();
+            await initialLoad();
             addWindowMessageListeners();
-            if (settings?.tracking_enabled) {
-                logger.info("Tracking is enabled in settings.");
-                addAjaxHandlers();
-            } else {
-                logger.info("Tracking is disabled in settings.");
-            }
-            finalLoad(settings);
+            addAjaxHandlers();
+            finalLoad();
         } catch (error) {
             logger.error("Failed to initialize.", error);
         }
@@ -70,9 +66,7 @@ import * as detailingFuncs from './modules/details/legacy';
     }
 
     async function getSettingsAsync() {
-        return new Promise((resolve) => {
-            getSettings(data => resolve(data));
-        });
+        return new Promise(resolve => getSettings(resolve));
     }
 
     // Create hunter id hash using Crypto Web API
@@ -97,17 +91,37 @@ import * as detailingFuncs from './modules/details/legacy';
         });
     }
 
-    async function initialLoad(settings) {
+    async function initialLoad() {
         mhhh_version = formatVersion($("#mhhh_version").val());
         if (mhhh_version == 0) {
             logger.info("Test version detected, turning on debug mode and pointing to server on localhost");
             base_domain_url = 'http://localhost';
         }
-        if (settings.debug_logging || mhhh_version == 0) {
+
+        switch (userSettings['general-log-level']) {
+            case 'debug':
+                logger.setLevel(LogLevel.Debug);
+                break;
+            case 'info':
+                logger.setLevel(LogLevel.Info);
+                break;
+            case 'warn':
+                logger.setLevel(LogLevel.Warn);
+                break;
+            case 'error':
+                logger.setLevel(LogLevel.Error);
+                break;
+            default:
+                logger.setLevel(LogLevel.Info);
+        }
+
+        if (mhhh_version === 0) {
             logger.setLevel(LogLevel.Debug);
             logger.debug("Debug mode activated");
-            logger.debug("initialLoad ran with settings", {settings});
         }
+
+        logger.debug("initialLoad ran with settings", {userSettings});
+
         main_intake_url = base_domain_url + "/intake.php";
         map_intake_url = base_domain_url + "/map_intake.php";
         convertible_intake_url = base_domain_url + "/convertible_intake.php";
@@ -315,16 +329,23 @@ import * as detailingFuncs from './modules/details/legacy';
 
     // Listening routers
     function addAjaxHandlers() {
-        $(document).ajaxSend(getUserBeforeHunting);
+        if (userSettings['tracking-hunts']) {
+            $(document).ajaxSend(getUserBeforeHunting);
+        }
+
         $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
             const url = ajaxOptions.url;
             if (url.includes("mousehuntgame.com/managers/ajax/users/treasuremap.php")) {
-                recordMap(xhr);
+                if (userSettings['tracking-convertibles']) {
+                    recordMap(xhr);
+                }
             } else if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
+                // Calls submitItemConvertible which checks if tracking-convertibles is on
                 recordConvertible(xhr);
             } else if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
+                // This shouldn't be hit if tracking-crowns if off. See URLDiffCheck.
                 if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
-                    getSettings(settings => recordCrowns(settings, xhr, url));
+                    recordCrowns(xhr, url);
                 }
             } else if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
                 createHunterIdHash();
@@ -344,9 +365,11 @@ import * as detailingFuncs from './modules/details/legacy';
                 // Invalid url, JSON, or response is not JSON
             }
 
-            for (const handler of ajaxSuccessHandlers) {
-                if (handler.match(url)) {
-                    handler.execute(xhr.responseJSON);
+            if (userSettings['tracking-events']) {
+                for (const handler of ajaxSuccessHandlers) {
+                    if (handler.match(url)) {
+                        handler.execute(xhr.responseJSON);
+                    }
                 }
             }
         });
@@ -355,11 +378,10 @@ import * as detailingFuncs from './modules/details/legacy';
     /**
      * Record Crowns. The xhr response data also includes a `mouseData` hash keyed by each mouse's
      * HG identifier and with the associated relevant value properties of `name` and `num_catches`
-     * @param {Object <string, any>} settings The user's extension settings.
      * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
      * @param {string} url The URL that invoked the function call.
      */
-    function recordCrowns(settings, xhr, url) {
+    function recordCrowns(xhr, url) {
         const mouseCrowns = xhr.responseJSON?.page?.tabs?.kings_crowns?.subtabs?.[0]?.mouse_crowns;
         if (!mouseCrowns) {
             logger.debug('Skipped crown submission due to unhandled XHR structure');
@@ -414,7 +436,6 @@ import * as detailingFuncs from './modules/details/legacy';
         window.postMessage({
             "mhct_crown_update": 1,
             "crowns": payload,
-            "settings": settings,
         }, window.origin);
     }
 
@@ -669,7 +690,7 @@ import * as detailingFuncs from './modules/details/legacy';
             return;
         }
 
-        submitConvertible(convertible, items);
+        submitItemConvertible(convertible, items);
     }
 
     /**
@@ -679,10 +700,24 @@ import * as detailingFuncs from './modules/details/legacy';
      * @property {number} quantity the number of this item received or opened
      */
 
+    function submitEventConvertible(convertible, items) {
+        if (userSettings['tracking-events'] === false) {
+            return;
+        }
+
+        submitConvertible(convertible, items);
+    }
+
+    function submitItemConvertible(convertible, items) {
+        if (userSettings['tracking-convertibles'] === false) {
+            return;
+        }
+
+        submitConvertible(convertible, items);
+    }
+
     /**
-     * Helper function to submit opened items.
-     * @param {HgItem} convertible The item that was opened.
-     * @param {HgItem[]} items An array of items that were obtained by opening the convertible
+     * @deprecated Use `submitEventConvertible` or `submitItemConvertible` instead.
      */
     function submitConvertible(convertible, items) {
         const record = {
@@ -701,24 +736,21 @@ import * as detailingFuncs from './modules/details/legacy';
             final_message.entry_timestamp = getUnixTimestamp();
         }
 
-        getSettings(settings => {
-            if (!settings?.tracking_enabled) { return; }
-            const basic_info = {
-                hunter_id_hash,
-                entry_timestamp: final_message.entry_timestamp,
-                extension_version: mhhh_version,
-                'X-Requested-By': `MHCT/${mhhh_version}`,
-            };
+        const basic_info = {
+            hunter_id_hash,
+            entry_timestamp: final_message.entry_timestamp,
+            extension_version: mhhh_version,
+            'X-Requested-By': `MHCT/${mhhh_version}`,
+        };
 
-            // Get UUID
-            $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
-                if (data) {
-                    final_message.uuid = data;
-                    final_message.hunter_id_hash = hunter_id_hash;
-                    final_message.extension_version = mhhh_version;
-                    sendAlready(url, final_message);
-                }
-            });
+        // Get UUID
+        $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
+            if (data) {
+                final_message.uuid = data;
+                final_message.hunter_id_hash = hunter_id_hash;
+                final_message.extension_version = mhhh_version;
+                sendAlready(url, final_message);
+            }
         });
     }
 
@@ -769,8 +801,10 @@ import * as detailingFuncs from './modules/details/legacy';
                 // If this occurred after the daily reset, submit it. (Trap checks & friend hunts
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
-                    sendMessageToServer(main_intake_url, rh_message);
-                    logger.debug(`Found the Relic Hunter in ${rh_message.rh_environment}`);
+                    if (userSettings['tracking-events']) {
+                        sendMessageToServer(main_intake_url, rh_message);
+                        logger.debug(`Found the Relic Hunter in ${rh_message.rh_environment}`);
+                    }
                 }
             }
             else if (css_class.search(/prizemouse/) !== -1) {
@@ -817,7 +851,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
                         logger.debug("Desert Heater Base proc", {desert_heater_loot: items});
 
-                        submitConvertible(convertible, items);
+                        submitItemConvertible(convertible, items);
                     }
                 } else {
                     window.postMessage({
@@ -848,7 +882,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         }];
                         logger.debug("Submitting Unstable Charm: ", {unstable_charm_loot: items});
 
-                        submitConvertible(convertible, items);
+                        submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -871,7 +905,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         }];
                         logger.debug("Submitting Gift Wrapped Charm: ", {gift_wrapped_charm_loot: items});
 
-                        submitConvertible(convertible, items);
+                        submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -894,7 +928,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         }];
                         logger.debug("Submitting Torch Charm: ", {torch_charm_loot: items});
 
-                        submitConvertible(convertible, items);
+                        submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -919,7 +953,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         }];
                         logger.debug("Submitting Queso Cannonstorm Base: ", {queso_cannonstorm_base_loot: items});
 
-                        submitConvertible(convertible, items);
+                        submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -948,7 +982,7 @@ import * as detailingFuncs from './modules/details/legacy';
                             }];
                             logger.debug("Boiling Cauldron Trap proc", {boiling_cauldron_trap: items});
 
-                            submitConvertible(convertible, items);
+                            submitItemConvertible(convertible, items);
                         }
                     }
                 }
@@ -982,7 +1016,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
                         logger.debug("Guilded Charm proc", {gilded_charm: items});
 
-                        submitConvertible(convertible, items);
+                        submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -1299,6 +1333,10 @@ import * as detailingFuncs from './modules/details/legacy';
     }
 
     function escapeButtonClose() {
+        if (userSettings['escape-button-close'] === false) {
+            return;
+        }
+
         $(document).keyup(function (e) {
             if (e.key === "Escape" && $('a[id*=jsDialogClose],input[class*=jsDialogClose],a[class*=messengerUINotificationClose],a[class*=closeButton],input[value*=Close]').length > 0) {
                 $('a[id*=jsDialogClose],input[class*=jsDialogClose],a[class*=messengerUINotificationClose],a[class*=closeButton],input[value*=Close]').each(function () {
@@ -1309,10 +1347,8 @@ import * as detailingFuncs from './modules/details/legacy';
     }
 
     // Finish configuring the extension behavior.
-    function finalLoad(settings) {
-        if (settings.escape_button_close) {
-            escapeButtonClose();
-        }
+    function finalLoad() {
+        escapeButtonClose();
 
         // If this page is a profile page, query the crown counts (if the user tracks crowns).
         const profileAutoScan = () => {
@@ -1347,8 +1383,8 @@ import * as detailingFuncs from './modules/details/legacy';
             }
         };
 
-        URLDiffCheck(); // Initial call on page load
-        if (settings.tracking_enabled) {
+        if (userSettings['tracking-crowns']) {
+            URLDiffCheck(); // Initial call on page load
             $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
         }
 

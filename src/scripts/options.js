@@ -1,39 +1,80 @@
-// JS script available only within the embedded options.html page
-const mhhhOptions = [
-    {name: 'message_display',            p: 'value',   default: 'hud'},
-    {name: 'success_messages',           p: 'checked', default: true},
-    {name: 'error_messages',             p: 'checked', default: true},
-    {name: 'debug_logging',              p: 'checked', default: false},
-    {name: 'icon_timer',                 p: 'checked', default: true},
-    {name: 'horn_sound',                 p: 'checked', default: false},
-    {name: 'custom_sound',               p: 'value',   default: ''},
-    {name: 'horn_volume',                p: 'value',   default: 100},
-    {name: 'horn_volume_output',         p: 'value'},
-    {name: 'horn_alert',                 p: 'checked', default: false},
-    {name: 'horn_webalert',              p: 'checked', default: false},
-    {name: 'horn_popalert',              p: 'checked', default: false},
-    {name: 'tracking_enabled',           p: 'checked', default: true},
-    {name: 'tsitu_loader_on',            p: 'checked', default: false},
-    {name: 'tsitu_loader_offset',        p: 'value',   default: 80},
-    {name: 'tsitu_loader_offset_output', p: 'value'},
-    {name: 'escape_button_close',        p: 'checked', default: false},
-    {name: 'dark_mode',                  p: 'checked', default: false},
-];
+function qs$(a, b) {
+    if ( typeof a === 'string') {
+        return document.querySelector(a);
+    }
+    if ( a === null ) { return null; }
+    return a.querySelector(b);
+}
+
+function qsa$(a, b) {
+    if ( typeof a === 'string') {
+        return document.querySelectorAll(a);
+    }
+    if ( a === null ) { return []; }
+    return a.querySelectorAll(b);
+}
+
+let currentSettings = {};
+
+function onUserSettingsReceived(settings) {
+    const checkboxes = qsa$('[data-setting-type="bool"]');
+    const onCheckboxChange = ev => {
+        const checkbox = ev.target;
+        const name = checkbox.dataset.settingName || '';
+        currentSettings[name] = checkbox.checked;
+
+        synchronizeDOM();
+    };
+    for (const checkbox of checkboxes) {
+        const name = checkbox.dataset.settingName || '';
+        checkbox.checked = settings[name] === true;
+        checkbox.addEventListener('change', onCheckboxChange);
+    }
+
+    const onValueChange = ev => {
+        const input = ev.target;
+        const name = input.dataset.settingName || '';
+        currentSettings[name] = input.value;
+    };
+    qsa$('[data-setting-type="value"]').forEach(function(elem) {
+        elem.value = settings[elem.dataset.settingName];
+        elem.addEventListener('change', onValueChange);
+    });
+
+    synchronizeDOM();
+}
+
+function synchronizeDOM() {
+    qsa$('[data-hidden-until]').forEach(elem => {
+        const name = elem.dataset.hiddenUntil;
+        const checkbox = document.querySelector(`input[data-setting-name="${name}"]`);
+        if (checkbox.checked) {
+            elem.classList.remove('hidden');
+        } else {
+            elem.classList.add('hidden');
+        }
+    });
+
+    qsa$('input[type="range"]').forEach(function(elem) {
+        const output = document.querySelector(`output[for="${elem.id}"`);
+        if (output) {
+            output.value = elem.value;
+        }
+    });
+}
 
 // Click "Save" -> store the extension's settings in chrome.storage.
 document.getElementById('save').addEventListener('click', () => {
-    const currentOptions = mhhhOptions
-        .map(opt => ({name: opt.name, val: document.getElementById(opt.name)[opt.p]}))
-        .reduce((acc, obj) => (acc[obj.name] = obj.val, acc), {});
-    // Trim the custom sound (can this instead be done when defocusing after user data entry?)
-    currentOptions.custom_sound = currentOptions.custom_sound.trim();
-
-    chrome.storage.sync.set(currentOptions, () => {
-        const save_button = document.getElementById('save');
-        save_button.innerText = "Options Saved! (Refreshing MH Page)";
-        save_button.className = "btn btn-success";
-        setTimeout(() => {save_button.innerText = "Save"; save_button.className = "btn btn-primary";}, 2000);
-    });
+    chrome.runtime.sendMessage({what: 'userSettings', value: currentSettings});
+    const save_button = document.getElementById('save');
+    save_button.innerText = "Saved! (Refreshing MH Page)";
+    save_button.classList.remove("btn-primary");
+    save_button.classList.add("btn-success");
+    setTimeout(() => {
+        save_button.innerText = "Save";
+        save_button.classList.remove("btn-success");
+        save_button.classList.add("btn-primary");
+    }, 2000);
 
     // Reload all open MH pages to apply these settings.
     chrome.tabs.query(
@@ -42,25 +83,10 @@ document.getElementById('save').addEventListener('click', () => {
     );
 });
 
-// After loading the options page, display the last-saved settings (or defaults if unset).
-document.addEventListener('DOMContentLoaded', () => {
-    // Use default values where available.
-    const defaultOptions = mhhhOptions
-        .filter(prop => prop.default !== undefined)
-        .reduce((acc, prop) => (acc[prop.name] = prop.default, acc), {});
-    chrome.storage.sync.get(defaultOptions, items => {
-        mhhhOptions.forEach(prop => document.getElementById(prop.name)[prop.p] = items[prop.name]);
-        evaluateOptionsPageDarkMode();
-        // Display the numeric values of the range-input sliders.
-        document.getElementById('horn_volume_output').value = items.horn_volume;
-        document.getElementById('tsitu_loader_offset_output').value = items.tsitu_loader_offset;
-    });
-});
-
 // Echo the value of range controls to an output div.
-document.querySelectorAll('.input_range').forEach(
+qsa$('input[type="range"]').forEach(
     item => item.addEventListener('input', () => {
-        const output = document.querySelector("output[for=" + item.id);
+        const output = document.querySelector(`output[for="${item.id}"`);
         if (output) {
             output.value = item.value;
         }
@@ -69,7 +95,7 @@ document.querySelectorAll('.input_range').forEach(
 
 // Attach audio handler for the horn sound alert button.
 // TODO: Update settings page to allow selecting a local file, rather than only choosing a remote URL.
-document.querySelector("#play_sound").addEventListener('click', () => {
+qs$("#play_sound").addEventListener('click', () => {
     let file_path = document.querySelector("#custom_sound").value.trim();
     if (!file_path) {
         file_path = chrome.runtime.getURL('sounds/bell.mp3');
@@ -79,15 +105,12 @@ document.querySelector("#play_sound").addEventListener('click', () => {
     mySound.play();
 });
 
-//Click dark mode toggle
-document.querySelector('#dark_mode').addEventListener('click', () => {
-    evaluateOptionsPageDarkMode();
+// if firefox, hide background option from alert-type select
+if (navigator.userAgent.includes('Firefox')) {
+    qs$('#alert-type').querySelector('option[value="background"]').style.display = 'none';
+}
+
+chrome.runtime.sendMessage({what: 'userSettings'}, result => {
+    currentSettings = result;
+    onUserSettingsReceived(result);
 });
-
-//load dark mode
-const evaluateOptionsPageDarkMode = () => {
-    const bodyEl = document.querySelector('body.options');
-
-    if (document.querySelector('#dark_mode').checked === true) bodyEl?.classList.add('dark-mode');
-    else bodyEl?.classList.remove('dark-mode');
-};
