@@ -1,9 +1,10 @@
 import {GWHGolemAjaxHandler} from '@scripts/modules/ajax-handlers/golem';
-import type {GolemPayload} from '@scripts/modules/ajax-handlers/golem.types';
+import type {GolemPayload, GolemResponse} from '@scripts/modules/ajax-handlers/golem.types';
 import {HgResponse} from '@scripts/types/hg';
+import {ConsoleLogger} from '@scripts/util/logger';
+import {HgResponseBuilder} from '@tests/utility/builders';
 
 jest.mock('@scripts/util/logger');
-import {ConsoleLogger} from '@scripts/util/logger';
 
 const logger = new ConsoleLogger();
 const showFlashMessage = jest.fn();
@@ -21,15 +22,7 @@ describe('GWHGolemAjaxHandler', () => {
             expect(handler.match('mousehuntgame.com/managers/ajax/events/kings_giveaway.php')).toBe(false);
         });
 
-        it('is false when GWH is done', () => {
-            // return the day after our filter
-            Date.now = jest.fn(() => new Date('2024-01-22T05:00:00Z').getTime());
-
-            expect(handler.match(gwhURL)).toBe(false);
-        });
-
-        it('is true on match during event', () => {
-            Date.now = jest.fn(() => new Date('2023-12-07T05:00:00Z').getTime());
+        it('is true when url is gwh', () => {
             expect(handler.match(gwhURL)).toBe(true);
         });
     });
@@ -40,19 +33,27 @@ describe('GWHGolemAjaxHandler', () => {
 
             handler.execute({} as unknown as HgResponse);
 
-            expect(logger.debug).toHaveBeenCalledWith('Skipped GWH golem submission since there are no golem rewards.', {});
+            expect(logger.debug).toHaveBeenCalledWith('Skipped GWH golem submission since there are no golem rewards.', expect.anything());
             expect(handler.submitGolems).not.toHaveBeenCalled();
         });
 
         it('calls submitGolems with expected data', () => {
+
+            const builder = new HgResponseBuilder()
+                .withJournalMarkup(testResponses.prologuePondResponse.journal_markup);
+
+            const response: GolemResponse = {
+                ...builder.build(),
+                golem_rewards: testResponses.prologuePondResponse.golem_rewards,
+            };
             Date.now = jest.fn(() => 12345);
             handler.submitGolems = jest.fn();
 
-            handler.execute(testResponses.prologuePondResponse);
+            handler.execute(response);
 
             const expectedPayload: GolemPayload[] = [
                 {
-                    uid: '987654321',
+                    uid: '2',
                     location: 'Prologue Pond',
                     timestamp: 12345,
                     loot: [
@@ -87,10 +88,6 @@ describe('GWHGolemAjaxHandler', () => {
 const testResponses = {
     // responses are the minimum that are required for the test to pass
     prologuePondResponse: {
-        user: {
-            user_id: 'not this',
-            sn_user_id: 987654321,
-        },
         golem_rewards: {
             items: {
                 area: [
@@ -119,9 +116,15 @@ const testResponses = {
         journal_markup: [
             {
                 render_data: {
+                    entry_id: 1,
+                    mouse_type: false,
+                    css_class: '',
+                    entry_date: '1:23 pm',
+                    environment: 'Town of Gnawnia',
+                    entry_timestamp: 1234567890,
                     text: 'My golem returned from the Prologue Pond with 1',
                 },
             },
         ],
-    } as unknown as HgResponse,
+    },
 };

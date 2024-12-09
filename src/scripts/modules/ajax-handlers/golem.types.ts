@@ -1,9 +1,39 @@
+import z from 'zod';
+import {hgResponseSchema} from '@scripts/types/hg';
+import {zodRecordWithEnum} from '@scripts/util/zod';
+
+/**
+ * An item brought back back a golem
+ */
+const golemItemSchema = z.object({
+    name: z.string(),
+    quantity: z.coerce.number(),
+});
+
+type GolemItem = z.infer<typeof golemItemSchema>;
+
+const raritySchema = z.enum(["area", "hat", "scarf"]);
+export type Rarity = z.infer<typeof raritySchema>;
+
 /**
  * Golem Response from HG, previewed by CBS
  */
+const golemRewardsSchema = z.object({
+    items: zodRecordWithEnum(raritySchema, z.array(golemItemSchema)),
+});
+
+export type GolemRewards = z.infer<typeof golemRewardsSchema>;
+
+export const golemResponseSchema = hgResponseSchema.extend({
+    golem_rewards: golemRewardsSchema,
+});
+
+export type GolemResponse = z.infer<typeof golemResponseSchema>;
+
+/*
 export interface GolemResponse {
     items: Record<Rarity, GolemItem[]>
-    //bonus_items: [];
+    // bonus_items: [];
     // num_upgrade_items: number;
     // num_gilded_charms: number;
     // num_hailstones: number;
@@ -21,16 +51,7 @@ export interface GolemResponse {
     //     level: number;
     // };
 }
-
-/**
- * An item brought back back a golem
- */
-interface GolemItem {
-    name: string;
-    quantity: number;
-}
-
-export type Rarity = "area" | "hat" | "scarf";
+*/
 
 /**
  * The data that will be recorded externally

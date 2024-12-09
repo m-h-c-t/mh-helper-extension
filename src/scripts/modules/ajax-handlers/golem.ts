@@ -1,9 +1,7 @@
 import {LoggerService} from "@scripts/util/logger";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {GolemPayload, GolemResponse} from "./golem.types";
+import {GolemPayload, GolemResponse, golemResponseSchema} from "./golem.types";
 import {HgResponse, JournalMarkup} from "@scripts/types/hg";
-import {EventDates} from "@scripts/util/constants";
-import {hasEventEnded} from "@scripts/util/time";
 
 const rarities = ["area", "hat", "scarf"] as const;
 
@@ -17,11 +15,8 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
     }
 
     public match(url: string): boolean {
+        // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
         if (!url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt_region.php")) {
-            return false;
-        }
-
-        if (hasEventEnded(EventDates.GreatWinterHuntEndDate)) {
             return false;
         }
 
@@ -29,13 +24,11 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
     }
 
     public async execute(responseJSON: HgResponse): Promise<void> {
-        // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-        if (!(responseJSON && typeof responseJSON === 'object' && 'golem_rewards' in responseJSON)) {
-            this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", responseJSON);
+        if (!(this.isGolemRewardResponse(responseJSON))) {
             return;
         }
 
-        const golemData: GolemResponse = responseJSON.golem_rewards as GolemResponse;
+        const golemData = responseJSON.golem_rewards;
         const uid = responseJSON.user.sn_user_id.toString();
         if (!uid) {
             this.logger.warn("Skipped GWH golem submission due to missing user attribution.", responseJSON);
@@ -130,5 +123,21 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
         }
 
         return null;
+    }
+
+    /**
+     * Validates that the given object is a JSON response from retrieving golem rewards
+     * @param responseJSON
+     * @returns
+     */
+    private isGolemRewardResponse(responseJSON: unknown): responseJSON is GolemResponse {
+        const response = golemResponseSchema.safeParse(responseJSON);
+
+        if (!response.success) {
+            const errorMessage = response.error.message;
+            this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", errorMessage);
+        }
+
+        return response.success;
     }
 }
