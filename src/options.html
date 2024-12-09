@@ -2,191 +2,339 @@
 <html lang="en">
 
 <head>
-    <title>MHCT Helper Options</title>
-    <meta charset="utf-8">
-    <base href="/">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/options.css">
+    <title>MHCT Helper Settings</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link href="css/options.css" rel="stylesheet" />
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
 </head>
 
-<body class="options text-center">
-    <div class="container well">
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Tracking Enabled
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="tracking_enabled" class="pull-right" checked>
-                            <span class="slider round"></span>
+<body>
+    <main>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-8 mx-auto">
+                    <h2 class="h3 my-4 page-title">MHCT Helper Settings</h2>
+
+                    <!-- Category: Tracking -->
+                    <div class="my-4">
+                        <hr class="my-4" />
+                        <strong class="mb-0">Tracking</strong>
+                        <p>Control data submitted by the extension. <em><br>Active</em> = Extra API call needed</p>
+                        <div class="list-group mb-5 shadow">
+                            <!-- Hunts -->
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Hunts</strong><em> (Active)</em>
+                                        <p class="text-muted mb-0">
+                                            Gathered on active hunts (i.e not friend or trap checks)
+                                        </p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="tracking-hunts" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Profile Crowns -->
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Profile Crowns</strong><em> (Active)</em>
+                                        <p class="text-muted mb-0">
+                                            Gathered when visiting any profile
+                                        </p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="tracking-crowns" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Convertibles -->
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Convertibles</strong><em> (Passive)</em>
+                                        <p class="text-muted mb-0">
+                                            Opened convertibles (includes trap parts with random
+                                            bonuses).
+                                        </p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="tracking-convertibles" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Events -->
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Events</strong><em> (Passive)</em>
+                                        <p class="text-muted mb-0">
+                                            KGA, SBF, GWH, etc. <em>(includes RH hints)</em>
+                                        </p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="tracking-events" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Message Display
-                        <div class="switch pull-right">
-                            <select id="message_display" class="pull-right">
-                                <option value="hud">HUD</option>
-                                <option value="banner">Banner</option>
-                                <option value="toast">Toast</option>
-                            </select>
+                    </div>
+
+                    <!-- Category: Notifications -->
+                    <div class="my-4">
+                        <hr class="my-4" />
+                        <strong class="mb-0">Notifications</strong>
+                        <p>Control game alerts.</p>
+                        <div class="list-group mb-5 shadow">
+                            <!-- Horn Ready -->
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Horn Ready</strong>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-2">
+                                    <div class="col">
+                                        <p class="text-muted mb-0">Play Sound</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="notification-sound" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-4">
+                                    <div class="col">
+                                        <p class="text-muted mb-0">Volume</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-range" type="range" role="switch"
+                                                data-setting-name="notification-volume" data-setting-type="value" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-4">
+                                    <div class="col">
+                                        <p class="text-muted mb-0">Custom Sound</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="notification-custom" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-4 hidden"
+                                    data-hidden-until="notification-custom">
+                                    <div class="col">
+                                        <input class="form-text" type="text" data-setting-name="notification-custom-url"
+                                            placeholder="http://example.com/my.mp3" data-setting-type="value" />
+                                        <button id="play_sound" type="button" class="btn btn-outline-secondary">
+                                            ▶
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-2">
+                                    <div class="col">
+                                        <p class="text-muted mb-0">Desktop Notification</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="notification-desktop" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-2">
+                                    <div class="col">
+                                        <p class="text-muted mb-0">Webpage Alert</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <select id="alert-type" class="form-select" data-setting-name="notification-alert-type" data-setting-type="value" >
+                                                <option value="none">None</option>
+                                                <option value="intrusive">Intrusive</option>
+                                                <option value="background">Non-Intrusive</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Message Display -->
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Message Display</strong>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <select class="form-select" data-setting-name="notification-message-display" data-setting-type="value" >
+                                                <option value="hud">HUD</option>
+                                                <option value="banner">Banner</option>
+                                                <option value="toast">Toast</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-2">
+                                    <div class="col">
+                                        <p class="text-muted mb-0">Success Messages</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="notification-success-messages" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-2">
+                                    <div class="col">
+                                        <p class="text-muted mb-0">Error Messages</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="notification-error-messages" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </label>
-                    <label class="full_width">
-                        • Success messages
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="success_messages" class="pull-right" checked>
-                            <span class="slider round"></span>
+                    </div>
+
+                    <!-- Category: Enhancements -->
+                    <div class="my-4">
+                        <hr class="my-4" />
+                        <strong class="mb-0">Enhancements</strong>
+                        <p>Game related features.</p>
+                        <div class="list-group mb-5 shadow">
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Icon Timer</strong>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="enhancement-icon-timer" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tsitu -->
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Tsitu's AutoLoader</strong>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="enhancement-tsitu-loader" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-2">
+                                    <div class="col">
+                                        <p class="mb-0 text-muted">Distance from left</p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <output for="tsitu_loader_offset"></output>%
+                                    </div>
+                                </div>
+                                <div class="row align-items-center ms-2">
+                                    <div class="col">
+                                        <input id="tsitu_loader_offset" class="form-range" type="range" role="switch"
+                                            data-setting-name="enhancement-tsitu-loader-offset" data-setting-type="value" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Escape dismisses UI elements</strong>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="enhancement-escape-dismiss" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Dark Mode</strong><em> (by PotatoSalad)</em>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                data-setting-name="enhancement-dark-mode" data-setting-type="bool" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </label>
-                    <label class="full_width">
-                        • Error messages
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="error_messages" class="pull-right" checked>
-                            <span class="slider round"></span>
+                    </div>
+
+                    <!-- Category: General -->
+                    <div class="my-4">
+                        <hr class="my-4" />
+                        <strong class="mb-0">General</strong>
+                        <div class="list-group mb-5 shadow">
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <strong class="mb-0">Log Level</strong>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="form-check form-switch">
+                                            <select class="form-select" aria-label="Default select example" data-setting-name="general-log-level" data-setting-type="value" >
+                                                <option value="error">Error</option>
+                                                <option value="warning">Warning</option>
+                                                <option value="info">Info</option>
+                                                <option value="debug">Debug</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Display icon timer
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="icon_timer" class="pull-right" checked>
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Play sound when Horn is ready
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="horn_sound" class="pull-right">
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
-                    <label class="full_width">
-                        Custom sound (default=none)<br />
-                        <button id="play_sound" class="pull-right">▶️</button>
-                        <input type="text" id="custom_sound" placeholder="http://example.com/my.mp3">
-                    </label>
-                    <label class="full_width">
-                        Sound Volume:
-                        <div class="pull-right">
-                            <output for="horn_volume" id="horn_volume_output" class="range_output"></output>%
-                        </div>
-                        <input type="range" min="0" max="100" value="100" id="horn_volume" step="1"
-                            class="pull-right input_range">
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Desktop notification when Horn is ready
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="horn_alert" class="pull-right">
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
-                    <label class="full_width">
-                        Intrusive webpage alert when Horn is ready
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="horn_webalert" class="pull-right">
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
-                    <label class="full_width">
-                        Non-intrusive webpage alert when Horn is ready (by Haoala, Firefox Unsupported)
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="horn_popalert" class="pull-right">
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Show Tsitu's Loader
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="tsitu_loader_on" class="pull-right">
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
-                    <label class="full_width">
-                        Tsitu's Loader distance from the left
-                        <div class="pull-right">
-                            <output for="tsitu_loader_offset" id="tsitu_loader_offset_output"
-                                class="range_output"></output>%
-                        </div>
-                        <input type="range" min="0" max="100" value="100" id="tsitu_loader_offset" step="1"
-                            class="input_range">
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Escape button closes UI Elements
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="escape_button_close" class="pull-right">
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Dark Mode (by PotatoSalad)
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="dark_mode" class="pull-right" checked>
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="panel panel-default">
-                <div class="panel-body text-left">
-                    <label class="full_width">
-                        Show Debug-level Logs
-                        <div class="switch pull-right">
-                            <input type="checkbox" id="debug_logging" class="pull-right">
-                            <span class="slider round"></span>
-                        </div>
-                    </label>
+                    </div>
+
+                    <button id="save" type="button" class="btn btn-primary w-100 mb-4">Save</button>
+
                 </div>
             </div>
         </div>
     </div>
-
-    <button class="btn btn-primary" id="save">Save</button>
-    <script type="text/javascript" src="scripts/options.js"></script>
+    </main>
+    <script src="scripts/theme.js" type="module"></script>
+    <script src="scripts/options.js" type="module"></script>
 </body>
-
 </html>
