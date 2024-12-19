@@ -29,7 +29,7 @@ let userSettings = {
     'notification-custom': false,
     'notification-custom-url': '',
     'notification-desktop': false,
-    'notification-alert-type': 'intrusive',
+    'notification-alert-type': 'none',
     'notification-message-display': 'hud',
     'notification-success-messages': true,
     'notification-error-messages': true,
