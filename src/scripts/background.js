@@ -17,8 +17,7 @@ chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
 
 setInterval(updateIcon, 1000);
 
-// Set the default user settings, also holds current
-let userSettings = {
+const userSettingsDefault = {
     version: 1,
     'tracking-hunts': true,
     'tracking-crowns': true,
@@ -40,16 +39,7 @@ let userSettings = {
     'enhancement-dark-mode': false,
     'general-log-level': 'info',
 };
-
-function changeUserSettings(settings) {
-    if (settings.value) {
-        userSettings = settings.value;
-    }
-
-    chrome.storage.sync.set(userSettings);
-
-    return userSettings;
-}
+let userSettings = Object.assign({}, userSettingsDefault);
 
 function updateIcon() {
     chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
@@ -256,13 +246,51 @@ async function submitCrowns(crowns) {
     return crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond;
 }
 
+/** Settings */
 // TODO: Clean up into a separate file
+// Promisify storage API. TODO: Not needed in mv3.
+const storageAPI = {
+    get(key) {
+        return new Promise(resolve => chrome.storage.sync.get(key, resolve));
+    },
+    set(data) {
+        return new Promise(resolve => chrome.storage.sync.set(data, resolve));
+    },
+    clear() {
+        return new Promise(resolve => chrome.storage.sync.clear(resolve));
+    },
+};
 
+function changeUserSettings(settings) {
+    let shouldSave = false;
+
+    // Update user settings with the new values.
+    if (settings.value) {
+        // Only update settings that are already in the user settings.
+        for (const key in settings.value) {
+            if (Object.prototype.hasOwnProperty.call(userSettings, key) && userSettings[key] !== settings.value[key]) {
+                userSettings[key] = settings.value[key];
+                shouldSave = true;
+            }
+        }
+    }
+
+    if (shouldSave) {
+        saveUserSettings();
+    }
+
+    return userSettings;
+}
+
+/**
+ * Migrate user settings from the old format to the new format.
+ *
+ * Only modifies the sync storage, and only if the old settings are found.
+ */
 async function migrateUserSettings() {
-    const defaults = userSettings;
+    const defaults = userSettingsDefault;
 
-    const results = await new Promise(resolve => chrome.storage.sync.get(null, resolve));
-
+    const results = await storageAPI.get(null);
     if (!(results instanceof Object)) {
         return;
     }
@@ -303,21 +331,39 @@ async function migrateUserSettings() {
         defaults['enhancement-escape-dismiss'] = results.escape_button_close;
         defaults['enhancement-dark-mode'] = results.dark_mode;
 
-        chrome.storage.sync.clear();
-        chrome.storage.sync.set(defaults);
+        await storageAPI.clear();
+        await storageAPI.set(defaults);
     }
 
-    userSettings = defaults;
+    const currentVersion = userSettingsDefault.version;
+    if (version < currentVersion) {
+        await storageAPI.set({version: currentVersion});
+    }
 }
 
 async function loadUserSettings() {
     await migrateUserSettings();
 
-    const defaults = userSettings;
-    const results = await new Promise(resolve => chrome.storage.sync.get(Object.assign(defaults), resolve));
-    const newSettings = results instanceof Object && results || Object.assign(defaults);
+    const results = await storageAPI.get(Object.assign(userSettingsDefault));
+    const newSettings = results instanceof Object && results || Object.assign(userSettingsDefault);
 
     userSettings = newSettings;
+}
+
+async function saveUserSettings() {
+    const getModifiedSettings = (edit, orig = {}) => {
+        const out = {};
+        for ( const prop in edit ) {
+            if ( Object.prototype.hasOwnProperty.call(orig, prop) && edit[prop] !== orig[prop] ) {
+                out[prop] = edit[prop];
+            }
+        }
+        return out;
+    };
+
+    // Make sure to save keys that exist in the default settings.
+    const toSave = getModifiedSettings(userSettings, userSettingsDefault);
+    await storageAPI.set(toSave);
 }
 
 (async () => {
