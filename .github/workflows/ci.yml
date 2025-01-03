@@ -14,17 +14,6 @@ on:
       - '**.txt'
 
 jobs:
-  web-ext-lint:
-    name: "Web Ext Lint"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: "web-ext lint"
-        run: |
-          cd src
-          npm exec web-ext lint --verbose
-
   lint:
     runs-on: ubuntu-latest
 
@@ -69,6 +58,11 @@ jobs:
 
     - name: Build Firefox package
       run: npm run build:firefox
+
+    - name: "web-ext lint"
+      run: |
+        cd dist/firefox
+        npm exec web-ext lint --verbose
 
     - name: Run tests
       env:

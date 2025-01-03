@@ -1,4 +1,5 @@
 dist
 jest.config.js
 coverage
+webpack
 **/webpack.*.js
