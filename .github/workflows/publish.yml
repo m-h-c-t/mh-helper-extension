@@ -78,34 +78,51 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Update manifest
+      - name: Update manifests
         run: |
           echo "New Version: ${{ env.EXT_VERSION }}"
-          sed -i'' -e 's|"version":.*|"version": "${{ env.EXT_VERSION }}",|' src/manifest.json
-          cat src/manifest.json
+          jq --arg version ${{ env.EXT_VERSION }} '.version = $version' src/manifest.v3.chrome.json > src/manifest.v3.chrome.json
+          jq --arg version ${{ env.EXT_VERSION }} '.version = $version' src/manifest.v3.firefox.json > src/manifest.v3.firefox.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Build Chrome
+        run: npm run build:prod
 
+      - name: Build Firefox
+        run: npm run build:prod:firefox
+
+      # Chrome artifact
       - uses: actions/upload-artifact@v4
         with:
-          name: release-${{ env.EXT_VERSION }}
-          path: ./dist/*
+          name: release-chrome-${{ env.EXT_VERSION }}
+          path: ./dist/chrome/*
 
       - name: Zip it! zip it good!
-        id: create-zip
+        id: create-chrome-zip
         run: |
           mkdir build
-          zip -r ./build/release-${{ env.EXT_VERSION }}.zip ./dist/*
+          zip -r ./build/release-chrome-${{ env.EXT_VERSION }}.zip ./dist/chrome/*
+
+      # Firefox artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-firefox-${{ env.EXT_VERSION }}
+          path: ./dist/firefox/*
+
+      - name: Zip it! zip it good! (part 2)
+        id: create-firefox-zip
+        run: |
+          mkdir build
+          zip -r ./build/release-firefox-${{ env.EXT_VERSION }}.zip ./dist/firefox/*
 
       - uses: ncipollo/release-action@v1
         with:
           name: ${{ env.EXT_VERSION }}
           tag: ${{ env.EXT_VERSION }}
-          artifacts: ./build/release-${{ env.EXT_VERSION }}.zip
+          artifacts: './build/release-chrome-${{ env.EXT_VERSION }}.zip,
+                      ./build/release-firefox-${{ env.EXT_VERSION }}.zip'
           generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -156,7 +173,7 @@ jobs:
       - uses: actions/download-artifact@v4
         name: Get extension artifact
         with:
-          name: release-${{ env.EXT_VERSION }}
+          name: release-chrome-${{ env.EXT_VERSION }}
           path: ./dist
 
       - name: Create chrome artifact
@@ -186,7 +203,7 @@ jobs:
       - uses: actions/download-artifact@v4
         name: Get extension artifact
         with:
-          name: release-${{ env.EXT_VERSION }}
+          name: release-firefox-${{ env.EXT_VERSION }}
           path: ./dist
 
       - name: Display structure of downloaded files
