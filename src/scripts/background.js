@@ -15,7 +15,12 @@ chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
 
-setInterval(updateIcon, 1000);
+chrome.alarms.create('updateBadge', {periodInMinutes: 1/60});
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === 'updateBadge') {
+        updateIcon();
+    }
+});
 
 const userSettingsDefault = {
     version: 1,
@@ -64,7 +69,7 @@ let notification_done = false;
  */
 function icon_timer_updateBadge(tab_id) {
     if (tab_id === false) {
-        chrome.browserAction.setBadgeText({text: ''});
+        chrome.action.setBadgeText({text: ''});
         return;
     }
 
@@ -85,19 +90,19 @@ function icon_timer_updateBadge(tab_id) {
             }
         }
 
-        if (chrome.runtime.lastError || !response) {
+        if (chrome.runtime.lastError ?? !response) {
             const logInfo = {tab_id, request, response, time: new Date(),
                 message: "Error occurred while updating badge icon timer."};
             if (chrome.runtime.lastError) {
                 logInfo.message += `\n${chrome.runtime.lastError.message}`;
             }
             console.log(logInfo);
-            chrome.browserAction.setBadgeText({text: ''});
+            chrome.action.setBadgeText({text: ''});
             notification_done = true;
         } else if (response === "Ready") {
             if (userSettings["enhancement-icon-timer"]) {
-                chrome.browserAction.setBadgeBackgroundColor({color: '#9b7617'});
-                chrome.browserAction.setBadgeText({text: '🎺'});
+                chrome.action.setBadgeBackgroundColor({color: '#9b7617'});
+                chrome.action.setBadgeText({text: '🎺'});
             }
             // If we haven't yet sent a notification about the horn, do so if warranted.
             if (!notification_done) {
@@ -136,8 +141,8 @@ function icon_timer_updateBadge(tab_id) {
             notification_done = true;
         } else if (["King's Reward", "Logged out"].includes(response)) {
             if (userSettings["enhancement-icon-timer"]) {
-                chrome.browserAction.setBadgeBackgroundColor({color: '#F00'});
-                chrome.browserAction.setBadgeText({text: 'RRRRRRR'});
+                chrome.action.setBadgeBackgroundColor({color: '#F00'});
+                chrome.action.setBadgeText({text: 'RRRRRRR'});
             }
             notification_done = true;
         } else {
@@ -145,7 +150,7 @@ function icon_timer_updateBadge(tab_id) {
             // the badge text to the remaining time before the next horn.
             notification_done = false;
             if (userSettings["enhancement-icon-timer"]) {
-                chrome.browserAction.setBadgeBackgroundColor({color: '#222'});
+                chrome.action.setBadgeBackgroundColor({color: '#222'});
                 response = response.replace(':', '');
                 const response_int = parseInt(response, 10);
                 if (response.includes('min')) {
@@ -165,7 +170,7 @@ function icon_timer_updateBadge(tab_id) {
             } else { // reset in case user turns icon_timer off
                 response = "";
             }
-            chrome.browserAction.setBadgeText({text: response});
+            chrome.action.setBadgeText({text: response});
         }
     });
 }

@@ -1,7 +1,8 @@
 {
-    "manifest_version": 2,
+    "$schema": "https://json.schemastore.org/chrome-manifest",
+    "manifest_version": 3,
     "author": "MHCT",
-    "name": "MHCT  MouseHunt Helper",
+    "name": "MHCT MouseHunt Helper",
     "short_name": "MHCT Helper",
     "description": "Provides useful links and tracks MH game data for tools like rate calculators. Made by Tsitu, Tehhowch, Aardwolf, Jack and others.",
     "version": "0.0.0",
@@ -10,16 +11,13 @@
         "48": "images/icon48.png",
         "128": "images/icon128.png"
     },
-    "browser_action": {
-        "default_icon": "images/icon32.png",
-        "default_popup": "popup.html"
-    },
 
     "permissions": [
+        "alarms",
+        "notifications",
         "tabs",
-        "*://www.mousehuntgame.com/*",
-        "storage",
-        "notifications"
+        "scripting",
+        "storage"
     ],
 
     "content_scripts": [{
@@ -29,11 +27,20 @@
         "js": ["scripts/content.js"]
     }],
 
+    "host_permissions": [
+        "https://www.mousehuntgame.com/*"
+    ],
+
     "web_accessible_resources": [
-        "scripts/main.js",
-        "third_party/tsitu/*",
-        "third_party/potatosalad/*",
-        "images/*"
+        {
+            "resources": [
+                "scripts/main.js",
+                "third_party/tsitu/*",
+                "third_party/potatosalad/*",
+                "images/*"
+            ],
+            "matches": ["https://www.mousehuntgame.com/*"]
+        }
     ],
 
     "background": {
@@ -43,6 +50,15 @@
     "options_ui": {
         "page": "options.html",
         "open_in_tab": true
+    },
+
+    "action": {
+        "default_icon": {
+            "16": "images/icon16.png",
+            "48": "images/icon48.png",
+            "128": "images/icon128.png"
+        },
+        "default_popup": "popup.html"
     },
 
     "browser_specific_settings": {
