@@ -114,7 +114,6 @@ jobs:
       - name: Zip it! zip it good! (part 2)
         id: create-firefox-zip
         run: |
-          mkdir build
           zip -r ./build/release-firefox-${{ env.EXT_VERSION }}.zip ./dist/firefox/*
 
       - uses: ncipollo/release-action@v1
