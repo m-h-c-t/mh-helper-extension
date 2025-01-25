@@ -261,6 +261,9 @@ const storageAPI = {
     set(data) {
         return new Promise(resolve => chrome.storage.sync.set(data, resolve));
     },
+    remove(data) {
+        return new Promise(resolve => chrome.storage.sync.remove(data, resolve));
+    },
     clear() {
         return new Promise(resolve => chrome.storage.sync.clear(resolve));
     },
@@ -356,10 +359,11 @@ async function loadUserSettings() {
 }
 
 async function saveUserSettings() {
+    const hasOwnProperty = (o, p) => Object.prototype.hasOwnProperty.call(o, p);
     const getModifiedSettings = (edit, orig = {}) => {
         const out = {};
         for ( const prop in edit ) {
-            if ( Object.prototype.hasOwnProperty.call(orig, prop) && edit[prop] !== orig[prop] ) {
+            if ( hasOwnProperty(orig, prop) && edit[prop] !== orig[prop] ) {
                 out[prop] = edit[prop];
             }
         }
@@ -368,6 +372,19 @@ async function saveUserSettings() {
 
     // Make sure to save keys that exist in the default settings.
     const toSave = getModifiedSettings(userSettings, userSettingsDefault);
+
+    // Remove keys from settings that are now in the default settings.
+    const toRemove = [];
+    for (const key in userSettings) {
+        if ( key === 'version' ) { continue; }
+        if ( hasOwnProperty(userSettingsDefault, key) === false) { continue; }
+        if ( hasOwnProperty(toSave, key)) { continue; }
+        toRemove.push(key);
+    }
+    if (toRemove.length > 0) {
+        await storageAPI.remove(toRemove);
+    }
+
     await storageAPI.set(toSave);
 }
 

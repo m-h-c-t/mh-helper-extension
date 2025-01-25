@@ -46,8 +46,8 @@
     "build:firefox:watch": "webpack --env browser=firefox --watch",
     "build:prod": "webpack --mode production",
     "build:prod:firefox": "webpack --mode production --env browser=firefox",
-    "dev": "npm run build:dev && concurrently \"npm run web-run\" \"npm run build:watch\"",
-    "dev:firefox": "npm run build:dev && concurrently \"npm run web-run:firefox\" \"npm run build:watch\"",
+    "dev": "npm run build && concurrently \"npm run web-run\" \"npm run build:watch\"",
+    "dev:firefox": "npm run build:firefox && concurrently \"npm run web-run:firefox\" \"npm run build:firefox:watch\"",
     "lint": "eslint .",
     "test": "jest"
   },
