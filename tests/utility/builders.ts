@@ -1,4 +1,4 @@
-import {HgResponse, JournalMarkup, Quests, User} from "@scripts/types/hg";
+import {HgResponse, InventoryItem, JournalMarkup, Quests, User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
 /*
@@ -11,6 +11,7 @@ export class HgResponseBuilder {
     user?: User;
     page?: unknown;
     journalMarkup?: JournalMarkup[];
+    inventory?: Record<string, InventoryItem>;
 
     withActiveTurn(active: boolean) {
         this.activeTurn = active;
@@ -32,6 +33,11 @@ export class HgResponseBuilder {
         return this;
     }
 
+    withInventory(inventory: Record<string, InventoryItem>) {
+        this.inventory = inventory;
+        return this;
+    }
+
     public build(): HgResponse {
         if (this.user == null) {
             this.user = new UserBuilder().build();
@@ -43,6 +49,7 @@ export class HgResponseBuilder {
             user: this.user,
             page: this.page,
             journal_markup: this.journalMarkup,
+            inventory: this.inventory,
         };
     }
 }

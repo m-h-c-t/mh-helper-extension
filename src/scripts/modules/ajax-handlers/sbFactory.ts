@@ -3,7 +3,7 @@ import type {HgItem} from "@scripts/types/mhct";
 import type {LoggerService} from "@scripts/util/logger";
 import {CustomConvertibleIds as Ids} from "@scripts/util/constants";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
-import type {HgResponseWithVendingMachine, VendingMachinePurchaseType} from "./sbFactory.types";
+import {type VendingMachineReponse, type VendingMachinePurchaseType, vendingMachineResponseSchema} from "./sbFactory.types";
 
 export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -29,14 +29,18 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
     }
 
     async execute(responseJSON: HgResponse): Promise<void> {
-        this.recordSnackPack(responseJSON as HgResponseWithVendingMachine);
+        if (!this.isVendingMachineResponse(responseJSON)) {
+            return;
+        }
+
+        this.recordSnackPack(responseJSON);
     }
 
     /**
      * Record Birthday snack pack submissions as convertibles in MHCT
      * @param {import("@scripts/types/hg").HgResponse} responseJSON HitGrab ajax response from vending machine.
      */
-    recordSnackPack(responseJSON: HgResponseWithVendingMachine) {
+    recordSnackPack(responseJSON: VendingMachineReponse) {
         const purchase = responseJSON.vending_machine_purchase;
 
         if (!purchase) {
@@ -59,7 +63,7 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
             hollow_heights_party_pack_snack_pack:	Ids.HollowHeightsPartyPackSnackPack,
             riftios_snack_pack:	Ids.RiftiosSnackPack,
             story_seeds_snack_pack: Ids.StorySeedsSnackPack,
-            bountiful_beans_snack_pack: Ids.BountifulBeansSnackPack,
+            fantasy_fizz_snack_pack: Ids.FantasyFizzSnackPack,
         };
 
         if (!(purchase.type in packs)) {
@@ -104,5 +108,21 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
 
         this.logger.debug('SBFactoryAjaxHandler submitting snack pack', {convertible, items});
         this.submitConvertibleCallback(convertible, items);
+    }
+
+    /**
+     * Validates that the given object is a JSON response from interacting with vending machine
+     * @param responseJSON
+     * @returns
+     */
+    private isVendingMachineResponse(responseJSON: unknown): responseJSON is VendingMachineReponse {
+        const response = vendingMachineResponseSchema.safeParse(responseJSON);
+
+        if (!response.success) {
+            const errorMessage = response.error.message;
+            this.logger.warn("Unexpected vending machine response object.", errorMessage);
+        }
+
+        return response.success;
     }
 }

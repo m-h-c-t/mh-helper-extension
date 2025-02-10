@@ -1,9 +1,11 @@
 import {SBFactoryAjaxHandler} from "@scripts/modules/ajax-handlers";
-import {HgResponse} from "@scripts/types/hg";
+import {VendingMachinePurchase, VendingMachineReponse} from "@scripts/modules/ajax-handlers/sbFactory.types";
+import {InventoryItem} from "@scripts/types/hg";
 import {HgItem} from "@scripts/types/mhct";
+import {ConsoleLogger} from '@scripts/util/logger';
+import {HgResponseBuilder} from "@tests/utility/builders";
 
 jest.mock('@scripts/util/logger');
-import {ConsoleLogger} from '@scripts/util/logger';
 
 const logger = new ConsoleLogger();
 const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>;
@@ -12,6 +14,9 @@ const handler = new SBFactoryAjaxHandler(logger, submitConvertibleCallback);
 const sbfactory_url = "mousehuntgame.com/managers/ajax/events/birthday_factory.php";
 
 describe("SBFactoryAjaxHandler", () => {
+
+    const responseBuilder = new HgResponseBuilder();
+
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -28,25 +33,26 @@ describe("SBFactoryAjaxHandler", () => {
 
     describe("execute", () => {
         it('logs if birthday response is not purchase', async () => {
-            await handler.execute({} as unknown as HgResponse);
+            // vending_machine_purchase missing here,
+            const response = responseBuilder.build();
 
-            expect(logger.debug).toBeCalledWith('Skipped snack pack submission as this isn\'t a vending purchase');
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
-        });
-
-        it('warns if response is unexpected', async () => {
-            // vending_machine_reponse.type missing here,
-            // but add some other data to verify that it will print out entire response
-            const response = {user_id: 4, vending_machine_purchase: {}} as unknown as HgResponse;
             await handler.execute(response);
 
-            expect(logger.warn).toBeCalledWith('Unable to parse bday response', {responseJSON: response});
+            expect(logger.warn).toHaveBeenCalledWith('Unexpected vending machine response object.', expect.anything());
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
         });
 
         it('submits expected response one', async () => {
 
-            await handler.execute(testResponses.responseOne);
+            const hgResponse = responseBuilder.withInventory(
+                testResponses.responseOne.inventory
+            ).build();
+            const response: VendingMachineReponse = {
+                ...hgResponse,
+                vending_machine_purchase: testResponses.responseOne.vending_machine_purchase,
+            };
+
+            await handler.execute(response);
 
             const expectedConvertible = {
                 id: 130001,
@@ -80,7 +86,15 @@ describe("SBFactoryAjaxHandler", () => {
 
         it('submits expected response two', async () => {
 
-            await handler.execute(testResponses.responseTwo);
+            const hgResponse = responseBuilder.withInventory(
+                testResponses.responseTwo.inventory
+            ).build();
+            const response: VendingMachineReponse = {
+                ...hgResponse,
+                vending_machine_purchase: testResponses.responseTwo.vending_machine_purchase,
+            };
+
+            await handler.execute(response);
 
             const expectedConvertible = {
                 id: 130007,
@@ -115,7 +129,10 @@ describe("SBFactoryAjaxHandler", () => {
 });
 
 // Data is minimum required for the execute to pass
-const testResponses = {
+const testResponses: Record<string, {
+    vending_machine_purchase: VendingMachinePurchase,
+    inventory: Record<string, InventoryItem>,
+}> = {
     // Larry Starter Mix
     // 3 Glutter Cheese, 2 Runny Cheese, 1 Gauntlet Cheese Tier 7
     responseOne: {
@@ -166,7 +183,7 @@ const testResponses = {
                 "quantity": 54,
             },
         },
-    } as unknown as HgResponse,
+    },
 
     // Story Seeds (inferred from preview by Dave on 2023-02-17 FBF)
     // 20 Second Draft Derby Cheese, 30 Clamembert Cheese, 60 Mythical Mulch
@@ -218,5 +235,5 @@ const testResponses = {
                 "quantity": 60,
             },
         },
-    } as unknown as HgResponse,
+    },
 };
