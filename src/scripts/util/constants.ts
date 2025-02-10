@@ -9,6 +9,7 @@ export class CustomConvertibleIds {
     public static readonly RiftiosSnackPack                             = 130006;
     public static readonly StorySeedsSnackPack                          = 130007;
     public static readonly BountifulBeansSnackPack                      = 130018;
+    public static readonly FantasyFizzSnackPack                         = 130019;
 
     // KGA
     public static readonly KingsMiniPrizePack                           = 130008;
