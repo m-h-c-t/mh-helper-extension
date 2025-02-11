@@ -196,11 +196,9 @@ import * as detailingFuncs from './modules/details/legacy';
         HornHud.soundHorn();
     }
 
-    function openBookmarklet(url) {
-        fetch(url).then(response => response.text()).then((data) => {
-            const new_source = url.replace("menu", "\" + e + \"");
-            const tsitus_menu = data.replace(',n="https://cdn.jsdelivr.net/gh/tsitu/MH-Tools@master/src/bookmarklet/bm-"+e+".min.js";t.src=n', ";t.src=\"" + new_source + "\"");
-            document.location.href = "javascript:void function(){" + tsitus_menu + "%0A}();";
+    function openBookmarklet(menuURL) {
+        fetch(menuURL).then(response => response.text()).then((data) => {
+            document.location.href = "javascript:void function(){" + data + "%0A}();";
         });
     }
 
