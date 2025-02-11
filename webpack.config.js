@@ -45,7 +45,6 @@ module.exports = (env) => {
             plugins: [new TsconfigPathsPlugin()],
         },
         plugins: [
-
             new ForkTsCheckerWebpackPlugin(),
             new HtmlWebpackPlugin({
                 template: './src/options.html',
@@ -69,6 +68,17 @@ module.exports = (env) => {
                     { from: './src/images', to: 'images' },
                     { from: './src/css', to: 'css' },
                     { from: './src/sounds', to: 'sounds' },
+                ],
+            }),
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        from: './src/third_party/tsitu/bm-menu.min.js',
+                        to: 'third_party/tsitu/bm-menu.min.js',
+                        transform(content, path) {
+                            return content.toString().replace(/EXTENSION_URL/g, env.browser == 'firefox' ? 'moz-extension://2821c798-d296-4e14-bf5b-e35400b58efc' : 'chrome-extension://ghfmjkamilolkalibpmokjigalmncfek');
+                        },
+                    },
                 ],
             }),
             new RemoteDownloadFileWebpackPlugin([
@@ -102,7 +112,6 @@ module.exports = (env) => {
                         'bm-cre.min.js',
                         'bm-crown.min.js',
                         'bm-map.min.js',
-                        'bm-menu.min.js',
                         'bm-powers.min.js',
                         'bm-setup-fields.min.js',
                         'bm-setup-items.min.js',
