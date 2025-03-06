@@ -26,6 +26,7 @@ import * as detailingFuncs from './modules/details/legacy';
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
         new successHandlers.KingsGiveawayAjaxHandler(logger, submitEventConvertible),
+        new successHandlers.CheesyPipePartyAjaxHandler(logger, submitEventConvertible),
         new successHandlers.SBFactoryAjaxHandler(logger, submitEventConvertible),
         new successHandlers.SEHAjaxHandler(logger, submitEventConvertible),
         new successHandlers.SpookyShuffleAjaxHandler(logger, submitEventConvertible),
