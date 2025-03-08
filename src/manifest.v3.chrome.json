@@ -36,7 +36,8 @@
                 "scripts/main.js",
                 "third_party/tsitu/*",
                 "third_party/potatosalad/*",
-                "images/*"
+                "images/*",
+                "sounds/bell.mp3"
             ],
             "matches": ["https://www.mousehuntgame.com/*"]
         }
