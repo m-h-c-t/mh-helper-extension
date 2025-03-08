@@ -15,6 +15,10 @@ chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
 
+// Chrome 120, shortest allowed is 30 seconds
+// So we will find out how soon the alarm fired and re-create the alarm if needed
+const alarm_set_time = Date.now();
+let alarm_time_checked = false;
 chrome.alarms.create('updateBadge', {periodInMinutes: 1/60});
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === 'updateBadge') {
@@ -163,9 +167,22 @@ function icon_timer_updateBadge(tab_id) {
                             ++minutes;
                         }
                         response = minutes + 'm';
+                        if (!alarm_time_checked) {
+                            console.log('Checking alarm time');
+                            const current_ts = Date.now();
+                            console.log(`Now: ${current_ts} Then: ${alarm_set_time} Diff ${current_ts - alarm_set_time}`);
+                            if (current_ts - alarm_set_time > 2000) {
+                                // We are in chrome and cannot set a timer for 1s refresh, set it for 30s.
+                                const offset = response_int % 100 % 30;
+                                console.log(`Setting alarm to 30s delay with offset of ${offset/60 + 0.5}`);
+                                chrome.alarms.create('updateBadge', {periodInMinutes: 0.5, delayInMinutes: offset/60 + 0.5});
+                            }
+                            alarm_time_checked = true;
+                        }
                     } else {
-                        response = response_int + 's';
+                        response = '<' + response_int + 's';
                     }
+                    console.log(`Badge updated ${Date.now()}`);
                 }
             } else { // reset in case user turns icon_timer off
                 response = "";
