@@ -183,7 +183,6 @@ import * as detailingFuncs from './modules/details/legacy';
                 const volume = ev.data.volume;
                 if (volume > 0) {
                     myAudio.volume = (volume/100).toFixed(2);
-                    console.log(myAudio);
                     myAudio.play();
                 }
             }
