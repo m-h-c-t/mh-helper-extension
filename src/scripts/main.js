@@ -176,6 +176,18 @@ import * as detailingFuncs from './modules/details/legacy';
                 return;
             }
 
+            if (ev.data.mhct_message === 'makenoise') {
+                // settings.debug_logging is a place to get our settings and handle them here.
+                const sound_url = ev.data.sound_url;
+                const myAudio = new Audio(sound_url);
+                const volume = ev.data.volume;
+                if (volume > 0) {
+                    myAudio.volume = (volume/100).toFixed(2);
+                    console.log(myAudio);
+                    myAudio.play();
+                }
+            }
+
             // Crown submission results in either the boolean `false`, or the total submitted crowns.
             if (ev.data.mhct_message === 'crownSubmissionStatus') {
                 const counts = ev.data.submitted;
