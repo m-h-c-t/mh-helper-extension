@@ -15,7 +15,13 @@ chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
 
-chrome.alarms.create('updateBadge', {periodInMinutes: 1/60});
+// Chrome 120, shortest allowed is 30 seconds
+// So we will find out how soon the alarm fired and re-create the alarm if needed
+let last_alarm_time = Date.now();
+let update_badge_period = 1/60;
+chrome.alarms.create('updateBadge', {periodInMinutes: update_badge_period});
+// Below simulates chrome's 30s alarm period minimum
+// chrome.alarms.create('updateBadge', {periodInMinutes: 0.5});
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === 'updateBadge') {
         updateIcon();
@@ -167,8 +173,19 @@ function icon_timer_updateBadge(tab_id) {
                             ++minutes;
                         }
                         response = minutes + 'm';
+                        const current_ts = Date.now();
+                        const offset = response_int % 100 % 30;
+                        if ((current_ts - last_alarm_time > 8000) && (offset > 30)) {
+                            // 8s was chosen because testing showed it could take up to 4s for the extension to load. 
+                            // Since chrome caps at 30s we could make this much higher to be safe
+                            // We are in chrome and cannot set a timer for 1s refresh, set it for 30s.
+                            update_badge_period = 0.5;
+                            // This might not be an alarm so much as a setTimeout now
+                            chrome.alarms.create('updateBadge', {periodInMinutes: update_badge_period, delayInMinutes: offset/60 + 0.5});
+                        }
+                        last_alarm_time = current_ts;
                     } else {
-                        response = response_int + 's';
+                        response = `${update_badge_period > 1/60 ? '>' : ''}${response_int}s`;
                     }
                 }
             } else { // reset in case user turns icon_timer off
