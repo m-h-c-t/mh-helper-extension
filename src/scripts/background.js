@@ -126,15 +126,19 @@ function icon_timer_updateBadge(tab_id) {
             }
             // If we haven't yet sent a notification about the horn, do so if warranted.
             if (!notification_done) {
+                let alertUrl = default_sound;
                 const volume = userSettings["notification-volume"];
                 if (userSettings["notification-sound"] && volume > 0) {
-                    let myAudio = new Audio(default_sound);
                     if (userSettings["notification-custom"]) {
-                        myAudio = new Audio(userSettings["notification-custom-url"]);
+                        alertUrl = userSettings["notification-custom-url"];
                     }
 
-                    myAudio.volume = (volume / 100).toFixed(2);
-                    myAudio.play();
+                    const message = {
+                        mhct_link: "makenoise",
+                        volume: volume,
+                        sound_url: alertUrl,
+                    };
+                    chrome.tabs.sendMessage(tab_id, message);
                 }
 
                 if (userSettings["notification-desktop"]) {
