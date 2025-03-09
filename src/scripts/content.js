@@ -102,6 +102,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         window.postMessage({"mhct_message": request.mhct_link}, "*");
     } else if (request.mhct_link === "tsitu_loader") {
         showTsituLoader(true);
+    } else if (request.mhct_link === "makenoise") {
+        window.postMessage({"mhct_message": request.mhct_link, "volume": request.volume, "sound_url": request.sound_url}, "*");
     }
 });
 
