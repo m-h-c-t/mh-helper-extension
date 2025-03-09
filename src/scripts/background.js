@@ -15,9 +15,29 @@ chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
 
-chrome.alarms.create('updateBadge', {periodInMinutes: 1/60});
+const alarm_names = [];
+for (let i = 0; i < 30; i++) {
+    const name = `updateBadge${i}`;
+    chrome.alarms.create(name, {periodInMinutes: 0.5, delayInMinutes: i/60});
+    alarm_names.push(name);
+}
+
+// Make sure we have 30 happy updateBadge alarms
+chrome.alarms.getAll((alarms) => {
+    let alarm_count = 0;
+
+    alarms.forEach((alarm) => {
+        if (alarm_names.includes(alarm.name)) {
+            alarm_count++;
+        }
+    });
+    if (alarm_count !== 30) {
+        console.log(`Alarm count, expected 30 but got ${alarm_count}`);
+    }
+});
+
 chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === 'updateBadge') {
+    if (alarm_names.includes(alarm.name)) {
         updateIcon();
     }
 });
