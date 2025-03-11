@@ -15,10 +15,20 @@ chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
 
-chrome.alarms.create('updateBadge', {periodInMinutes: 1/60});
+// Chrome service workers can only have 30s alarms, none faster.
+chrome.alarms.create('updateBadge', {periodInMinutes: 0.5});
+const alarm_times = [];
+alarm_times.push(Date.now());
+// Solution: Use an interval. Like we used to. Thanks v3!
+setInterval(updateIcon, 1000);
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === 'updateBadge') {
-        updateIcon();
+        alarm_times.push(Date.now());
+        if (alarm_times[1] - alarm_times[0] > 35*1000) {
+            console.log('That alarm took more than 35s to fire');
+        }
+        alarm_times.shift();
+        // This could be a place to re-start the interval if we decided that had to be done
     }
 });
 
