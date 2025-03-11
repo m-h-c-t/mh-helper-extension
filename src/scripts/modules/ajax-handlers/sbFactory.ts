@@ -34,6 +34,8 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
         }
 
         this.recordSnackPack(responseJSON);
+
+        return Promise.resolve();
     }
 
     /**

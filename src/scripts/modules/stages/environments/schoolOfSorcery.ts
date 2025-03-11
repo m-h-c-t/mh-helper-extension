@@ -14,23 +14,26 @@ export class SchoolOfSorceryStager implements IStager {
             throw new Error('QuestSchoolOfSorcery is undefined');
         }
 
+        let stage = '';
         if (!quest.in_course) {
-            message.stage = 'Hallway';
+            stage = 'Hallway';
         } else {
             const currentCourse = quest.current_course;
-            message.stage = this.getCourseName(quest.course_selections, currentCourse.course_type);
+            stage = this.getCourseName(quest.course_selections, currentCourse.course_type);
 
             if (currentCourse.is_boss_encounter) {
-                message.stage += " Boss";
+                stage += " Boss";
             } else if (currentCourse.course_type === 'exam_course') {
                 // Final Exam gets current powertype appended
 
                 let powerType: string = currentCourse.power_type;
                 // Capitalize first letter
                 powerType = powerType.charAt(0).toUpperCase() + powerType.slice(1);
-                message.stage += ` - ${powerType}`;
+                stage += ` - ${powerType}`;
             }
         }
+
+        message.stage = stage;
     }
 
     private getCourseName(courseSelections: CourseSelection[], currentCourseType: CourseType): string {

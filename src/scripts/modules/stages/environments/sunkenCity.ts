@@ -18,17 +18,19 @@ export class SunkenCityStager implements IStager {
         }
 
         const depth = quest.distance;
-        message.stage = quest.zone_name;
+        let stage = quest.zone_name;
         if (depth < 2000) {
-            message.stage += " 0-2km";
+            stage += " 0-2km";
         } else if (depth < 10000) {
-            message.stage += " 2-10km";
+            stage += " 2-10km";
         } else if (depth < 15000) {
-            message.stage += " 10-15km";
+            stage += " 10-15km";
         } else if (depth < 25000) {
-            message.stage += " 15-25km";
+            stage += " 15-25km";
         } else if (depth >= 25000) {
-            message.stage += " 25km+";
+            stage += " 25km+";
         }
+
+        message.stage = stage;
     }
 }

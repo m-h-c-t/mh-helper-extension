@@ -19,6 +19,7 @@ export function zodRecordWithEnum<
     return z.object(
         // TODO: Why is this explicit generic parameter needed / `enumSchema.options` typed as `any`?
         _zodShapeWithKeysAndValue<EnumType, ValueSchema>(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             enumSchema.options,
             valueSchema
         )
@@ -34,7 +35,5 @@ function _zodShapeWithKeysAndValue<
         // HACK: This explicit cast is needed bc `Object.fromEntries()` loses precise typing of keys
         // (even with `as [keyof PropsType, ValueType][]` on the `Object.keys(...).map(...)` above).
         // Wish Zod had a helper for mapped types similar to TypeScript.
-    ) as {
-        [Key in KeyType]: ValueSchema;
-    };
+    ) as Record<KeyType, ValueSchema>;
 }

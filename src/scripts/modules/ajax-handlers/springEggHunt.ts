@@ -28,6 +28,8 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
 
     async execute(responseJSON: HgResponse): Promise<void> {
         this.recordEgg(responseJSON as HgResponseWithEggContents);
+
+        return Promise.resolve();
     }
 
     /**

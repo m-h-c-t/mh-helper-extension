@@ -34,7 +34,7 @@ export class BountifulBeanstalkStager implements IStager {
             message.stage = "Beanstalk";
 
             if (quest.beanstalk.is_boss_encounter) {
-                message.stage += " Boss";
+                message.stage = "Beanstalk Boss";
             }
         }
     }

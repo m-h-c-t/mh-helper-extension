@@ -39,8 +39,8 @@ describe("KingsGiveawayAjaxHandler", () => {
     });
 
     describe("execute", () => {
-        it('logs if KGA response is not a mini prize pack opening', () => {
-            handler.execute({} as unknown as HgResponse);
+        it('logs if KGA response is not a mini prize pack opening', async () => {
+            await handler.execute({} as unknown as HgResponse);
 
             expect(logger.debug).toBeCalledWith("Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.");
             expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
