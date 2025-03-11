@@ -15,12 +15,10 @@ chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
     tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
 ));
 
-chrome.alarms.create('updateBadge', {periodInMinutes: 1/60});
-chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === 'updateBadge') {
-        updateIcon();
-    }
-});
+const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+chrome.runtime.onStartup.addListener(keepAlive);
+keepAlive();
+setInterval(updateIcon, 1000);
 
 const userSettingsDefault = {
     version: 1,
