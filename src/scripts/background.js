@@ -124,7 +124,7 @@ function icon_timer_updateBadge(tab_id) {
                         "MHCT Horn",
                         {
                             type: "basic",
-                            iconUrl: "images/icon128.png",
+                            iconUrl: chrome.runtime.getURL("images/icon128.png"),
                             title: "MHCT Tools",
                             message: "MouseHunt Horn is ready!!! Good luck!",
                         }
