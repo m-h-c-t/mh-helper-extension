@@ -104,6 +104,8 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
 
         this.logger.debug("Prizepack: ", {convertible, items});
         this.submitConvertibleCallback(convertible, items);
+
+        return Promise.resolve();
     }
 
     async recordVault(responseJSON: KingsGiveawayResponse) {
@@ -136,6 +138,8 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
         });
 
         this.submitConvertibleCallback(convertible, items);
+
+        return Promise.resolve();
     }
 
     /**

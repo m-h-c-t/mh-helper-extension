@@ -86,6 +86,7 @@ export class HornHud {
             }
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         countdown.addEventListener('click', removeMessage);
         messageView.appendChild(countdown);
 
@@ -106,7 +107,7 @@ export class HornHud {
      * Get the horn timer text.
      * @returns 'Ready' if the horn is ready or the timer if not ready. Null if the user is logged out.
      */
-    public static getTimerText(): 'Ready' | string | null {
+    public static getTimerText(): string | null {
         // The ready text is held in a different node
         if (this.canSoundHorn()) {
             return 'Ready';

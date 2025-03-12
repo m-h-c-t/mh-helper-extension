@@ -24,7 +24,7 @@ export class SuperBrieFactoryStager implements IStager {
             message.stage = "Boss";
         } else {
             message.stage = this.roomTypeToStage[quest.factory_atts.current_room];
-            if (!message.stage || !/Coggy Colby/.test(userPre.bait_name) ) {
+            if (!message.stage || !userPre.bait_name.includes('Coggy Colby') ) {
                 message.stage = "Any Room";
             }
         }

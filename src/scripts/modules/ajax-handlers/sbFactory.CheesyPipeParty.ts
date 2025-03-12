@@ -39,6 +39,8 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
         }
 
         this.recordCheesyPipeParty(responseJSON);
+
+        return Promise.resolve();
     }
 
     /**

@@ -125,7 +125,7 @@ export class BountifulBeanstalkRoomTrackerAjaxHandler extends AjaxSuccessHandler
         }
 
         const markup = journalMarkup[0];
-        return markup.render_data.css_class.indexOf('bountifulBeanstalk-plantedVine') > -1;
+        return markup.render_data.css_class.includes('bountifulBeanstalk-plantedVine');
     }
 
     private isStartingNewRoom(quest: CastleAttributes): boolean {

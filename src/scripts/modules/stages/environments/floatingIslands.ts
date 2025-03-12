@@ -20,21 +20,21 @@ export class FloatingIslandsStager implements IStager {
             return hsa.activated_island_mod_types.filter(t => t == type).length;
         };
 
-        const matcher = hsa.island_name.match(/^(Launch Pad|\w+).*$/);
+        const matcher = /^(Launch Pad|\w+).*$/.exec(hsa.island_name);
         if (!matcher) {
             throw new Error('Failed to match Floating Island\'s island name.');
         }
 
         const powerType = matcher[1];
-
+        let stage = '';
         if (hsa.is_low_tier_island) {
-            message.stage = `${powerType} Low`;
+            stage = `${powerType} Low`;
         } else if (hsa.is_high_tier_island) {
-            message.stage = `${powerType} High`;
+            stage = `${powerType} High`;
         } else if (hsa.is_vault_island) {
-            message.stage = `${powerType} Palace`;
+            stage = `${powerType} Palace`;
         } else if (powerType == "Launch Pad") {
-            message.stage = 'Launch Pad';
+            stage = 'Launch Pad';
         } else {
             throw new Error('Unknown Floating Island stage');
         }
@@ -43,21 +43,21 @@ export class FloatingIslandsStager implements IStager {
 
         if (hsa.is_enemy_encounter) {
             if (hsa.is_low_tier_island)
-                message.stage = "Warden";
+                stage = "Warden";
             else if (hsa.is_high_tier_island)
-                message.stage = `${powerType} Paragon`;
+                stage = `${powerType} Paragon`;
             else if (hsa.is_vault_island)
-                message.stage = "Empress";
+                stage = "Empress";
             else
-                message.stage += " Enemy Encounter";
+                stage += " Enemy Encounter";
         }
         else if (userPre.bait_name === "Sky Pirate Swiss Cheese") {
             const numActivePirates = getCountOfActiveModType('sky_pirates');
-            message.stage = hsa.is_vault_island ? "Palace" : "Low|High";
-            message.stage += ` - ${numActivePirates}x Pirates`;
+            stage = hsa.is_vault_island ? "Palace" : "Low|High";
+            stage += ` - ${numActivePirates}x Pirates`;
         }
         else if (userPre.bait_name?.endsWith("Cloud Cheesecake") && numActiveLootCaches >= 2) {
-            message.stage += ` - ${numActiveLootCaches}x Loot`;
+            stage += ` - ${numActiveLootCaches}x Loot`;
         }
         // If a vault run has 3 or more active mods of the same type, add it to the stage name
         else if (hsa.is_vault_island && Array.isArray(hsa.activated_island_mod_types)) {
@@ -88,8 +88,10 @@ export class FloatingIslandsStager implements IStager {
                     mod_type = shortMod[mod_type];
                 }
 
-                message.stage += ` - ${count}x ${mod_type}`;
+                stage += ` - ${count}x ${mod_type}`;
             }
         }
+
+        message.stage = stage;
     }
 }

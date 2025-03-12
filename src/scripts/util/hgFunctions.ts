@@ -6,6 +6,7 @@ export async function getItemsByClass(itemClassifications: string[], forceRefres
 }[]> {
     return await new Promise((resolve, reject) => {
         // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         return hg.utils.UserInventory.getItemsByClass(itemClassifications, forceRefresh, resolve, reject);
     });
 }

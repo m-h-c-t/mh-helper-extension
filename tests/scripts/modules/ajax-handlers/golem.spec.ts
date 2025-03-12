@@ -28,16 +28,16 @@ describe('GWHGolemAjaxHandler', () => {
     });
 
     describe('execute', () => {
-        it('does not call submitGolems with unhandled json', () => {
+        it('does not call submitGolems with unhandled json', async () => {
             handler.submitGolems = jest.fn();
 
-            handler.execute({} as unknown as HgResponse);
+            await handler.execute({} as unknown as HgResponse);
 
             expect(logger.debug).toHaveBeenCalledWith('Skipped GWH golem submission since there are no golem rewards.', expect.anything());
             expect(handler.submitGolems).not.toHaveBeenCalled();
         });
 
-        it('calls submitGolems with expected data', () => {
+        it('calls submitGolems with expected data', async () => {
 
             const builder = new HgResponseBuilder()
                 .withJournalMarkup(testResponses.prologuePondResponse.journal_markup);
@@ -49,7 +49,7 @@ describe('GWHGolemAjaxHandler', () => {
             Date.now = jest.fn(() => 12345);
             handler.submitGolems = jest.fn();
 
-            handler.execute(response);
+            await handler.execute(response);
 
             const expectedPayload: GolemPayload[] = [
                 {

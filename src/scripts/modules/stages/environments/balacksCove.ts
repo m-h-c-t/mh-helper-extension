@@ -23,11 +23,11 @@ export class BalacksCoveStager implements IStager {
                 && !(tide === "low" && direction === "in")
                 && !(tide === "high" && direction === "out"));
         if (!imminent_state_change && tide) {
-            message.stage = tide.charAt(0).toUpperCase() + tide.substr(1);
-            if (message.stage === "Med") {
-                message.stage = "Medium";
+            let tideStage = tide.charAt(0).toUpperCase() + tide.substr(1);
+            if (tideStage === "Med") {
+                tideStage = "Medium";
             }
-            message.stage += " Tide";
+            message.stage = `${tideStage} Tide`;
         } else {
             throw new Error('Skipping hunt due to imminent tide change');
         }

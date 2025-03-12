@@ -48,7 +48,7 @@ describe('Valour Rift stages', () => {
                 active_augmentations: {
                     tu: false,
                 },
-            },
+            };
             preUser.quests.QuestRiftValour!.state = 'tower';
         });
 
