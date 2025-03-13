@@ -13,7 +13,6 @@
     },
 
     "permissions": [
-        "alarms",
         "notifications",
         "tabs",
         "storage"
