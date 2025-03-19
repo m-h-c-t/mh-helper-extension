@@ -1,7 +1,7 @@
 import {z} from "zod";
 
 export const ValourRiftStates = ['farming', 'tower'] as const;
-const valourRiftStatesSchema = z.enum(ValourRiftStates);
+export const valourRiftStatesSchema = z.enum(ValourRiftStates);
 
 const valourRiftFarmingEnvironmentAttributesSchema = z.object({
     phase: z.literal('farming'),

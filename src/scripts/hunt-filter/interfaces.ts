@@ -33,7 +33,7 @@ export interface IMessageExemption {
      */
     readonly description: string;
     /**
-     * When this property name is invalid on an intake message, 
+     * When this property name is invalid on an intake message,
      * this rule will try to provide exemptions.
      */
     readonly property: (keyof IntakeMessage);
@@ -41,7 +41,7 @@ export interface IMessageExemption {
      * Get exemptions for the given pre and post messages
      * @param pre The pre-hunt IntakeMessage
      * @param post The post-hunt IntakeMessage
-     * @returns An array of keys (of IntakeMessage) for which properties has been exempted or null. 
+     * @returns An array of keys (of IntakeMessage) for which properties has been exempted or null.
      */
     getExemptions(pre: IntakeMessage, post: IntakeMessage): (keyof IntakeMessage)[] | null;
 }
