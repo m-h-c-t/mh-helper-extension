@@ -3,13 +3,10 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginJest from 'eslint-plugin-jest';
+import globals from 'globals';
 
 export default tseslint.config(
-    {
-        ignores: ['**/*.js']
-    },
     eslint.configs.recommended,
-
     // https://typescript-eslint.io/getting-started/typed-linting
     tseslint.configs.recommendedTypeChecked,
     tseslint.configs.stylisticTypeChecked,
@@ -17,18 +14,43 @@ export default tseslint.config(
         languageOptions: {
             parserOptions: {
                 projectService: {
-                    // https://typescript-eslint.io/packages/parser#allowdefaultproject
-                    allowDefaultProject: ['*.?(m)js'],
+                    allowDefaultProject: ['eslint.config.mjs']
                 },
                 tsconfigRootDir: import.meta.dirname,
+            },
+            globals: {
+                ...globals.browser,
+                ...globals.webextensions,
+            }
+        }
+    },
+    {
+        files: ['**/main.js'],
+        languageOptions: {
+            globals: {
+                $: 'readonly',
+                user: 'readonly',
+                lastReadJournalEntryId: 'readonly',
             }
         }
     },
 
-    // Rules
     {
+        // This projects preferred rules
+        files: ['**/*.{ts,js}'],
         rules: {
-            '@typescript-eslint/no-unused-vars': 'off',
+            'array-bracket-newline': ['error', 'consistent'],
+            'comma-dangle': ['error', 'only-multiline'],
+            'indent': ['error', 4, { SwitchCase: 1, outerIIFEBody: 'off', }],
+            'no-constant-binary-expression': ['error'],
+            'no-unneeded-ternary': ['error'],
+            'no-var': ['warn'],
+            'no-unused-vars': 'off',
+            'object-curly-spacing': ['error', 'never'],
+            'object-curly-newline': ['error'],
+            'prefer-const': ['error'],
+            'semi': ['error', 'always'],
+            '@typescript-eslint/no-unused-vars': ['error', { args: 'none' }],
         }
     },
 
@@ -50,5 +72,24 @@ export default tseslint.config(
             '@typescript-eslint/unbound-method': 'off',
             'jest/unbound-method': 'error'
         }
-    }
+    },
+
+    {
+        files: ['**/*.js'],
+        extends: [tseslint.configs.disableTypeChecked]
+    },
+
+    // Keep ignores at the end
+    {
+        ignores: [
+            '**/coverage/**',
+            '**/dist/**',
+            '**/node_modules/**',
+            '**/third_party/**',
+            '**/webpack/**',
+
+            '**/webpack.*.js',
+            '**/jest.config.js',
+        ]
+    },
 );

@@ -246,7 +246,7 @@ async function submitCrowns(crowns) {
     // Cache when we've successfully posted to the endpoint.
     try {
         window.sessionStorage.setItem(crowns.user, hash);
-    } catch (error) {
+    } catch {
         window.console.warn('Unable to cache crown request');
     }
     setTimeout(() => window.sessionStorage.removeItem(crowns.user), 300 * 1000);

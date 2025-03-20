@@ -129,8 +129,8 @@ export function calcFieryWarpathHuntDetails(message, user, user_post, hunt) {
         const asType = name => name.replace(/desert_|_weak|_epic|_strong/g, "");
 
         if (attrs.streak_quantity > 0) {
-            fw.streak_count = parseInt(attrs.streak_quantity, 10),
-            fw.streak_type = asType(attrs.streak_type),
+            fw.streak_count = parseInt(attrs.streak_quantity, 10);
+            fw.streak_type = asType(attrs.streak_type);
             fw.streak_increased_on_hunt = (message.caught === 1 &&
                 fw.streak_type === asType(user_post.viewing_atts.desert_warpath.streak_type));
         }
