@@ -87,6 +87,8 @@ module.exports = (env) => {
                                 return content;
                             }
 
+                            // The reason we replace for chrome at compile time is the extension review for MV3 rejects
+                            // it otherwise. Even when we were replacing at runtime.
                             return content.toString().replace(/EXTENSION_URL/g, 'chrome-extension://ghfmjkamilolkalibpmokjigalmncfek');
                         },
                     },
