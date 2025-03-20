@@ -210,6 +210,9 @@ import * as detailingFuncs from './modules/details/legacy';
 
     function openBookmarklet(menuURL) {
         fetch(menuURL).then(response => response.text()).then((data) => {
+            const url = new URL(menuURL);
+            // FireFox will still have EXTENSION_URL in the code, so replace with origin of URL (moz-extension://<internal_uuid>/)
+            data = data.replace("EXTENSION_URL", url.origin);
             document.location.href = "javascript:void function(){" + data + "%0A}();";
         });
     }

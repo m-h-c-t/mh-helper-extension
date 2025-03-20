@@ -6,9 +6,14 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');
 const RemoteDownloadFileWebpackPlugin = require('./webpack/RemoteDownloadFileWebpackPlugin.js');
 
+/**
+ * @param {Object} env - Environment configuration
+ * @param {('firefox'| undefined)} env.browser - Target browser
+ * @param {('production'| undefined )} env.mode - Build mode
+ */
 module.exports = (env) => {
     const manifest = env.browser === 'firefox' ? 'manifest.v3.firefox.json' : 'manifest.v3.chrome.json';
-    const devtool = env.mode === 'development' ? 'inline-cheap-module-source-map' : 'inline-source-map';
+    const devtool = env.mode === 'production' ? 'inline-source-map' : 'inline-cheap-module-source-map';
     /**
      * @type {import('webpack').Configuration}
      */
@@ -76,7 +81,13 @@ module.exports = (env) => {
                         from: './src/third_party/tsitu/bm-menu.min.js',
                         to: 'third_party/tsitu/bm-menu.min.js',
                         transform(content, path) {
-                            return content.toString().replace(/EXTENSION_URL/g, env.browser == 'firefox' ? 'moz-extension://2821c798-d296-4e14-bf5b-e35400b58efc' : 'chrome-extension://ghfmjkamilolkalibpmokjigalmncfek');
+                            // Replace EXTENSION_URL with the appropriate extension URL iff Chrome
+                            // Firefox will be replaced at runtime due to unique internal extension ID
+                            if (env.browser == 'firefox') {
+                                return content;
+                            }
+
+                            return content.toString().replace(/EXTENSION_URL/g, 'chrome-extension://ghfmjkamilolkalibpmokjigalmncfek');
                         },
                     },
                 ],
