@@ -39,9 +39,7 @@ export class HgResponseBuilder {
     }
 
     public build(): HgResponse {
-        if (this.user == null) {
-            this.user = new UserBuilder().build();
-        }
+        this.user ??= new UserBuilder().build();
 
         return {
             success: 1,
