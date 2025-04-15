@@ -348,7 +348,7 @@ import * as detailingFuncs from './modules/details/legacy';
 
         $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
             const url = ajaxOptions.url;
-            if (url.includes("mousehuntgame.com/managers/ajax/users/treasuremap.php")) {
+            if (url.includes("mousehuntgame.com/managers/ajax/users/treasuremap_v2.php")) {
                 if (userSettings['tracking-convertibles']) {
                     recordMap(xhr);
                 }
