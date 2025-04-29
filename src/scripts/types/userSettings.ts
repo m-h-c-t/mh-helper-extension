@@ -1,0 +1,22 @@
+
+export interface UserSettings {
+    'tracking-hunts': boolean,
+    'tracking-crowns': boolean,
+    'tracking-convertibles': boolean,
+    'tracking-events': boolean,
+    'notification-sound': boolean,
+    'notification-volume': number,
+    'notification-custom': boolean,
+    'notification-custom-url': string,
+    'notification-desktop': boolean,
+    'notification-alert-type': 'none' | 'instrusive' | 'background',
+    'notification-message-display': 'hud' | 'toast' | 'banner',
+    'notification-success-messages': boolean,
+    'notification-error-messages': boolean,
+    'enhancement-icon-timer': boolean,
+    'enhancement-tsitu-loader': boolean,
+    'enhancement-tsitu-loader-offset': number,
+    'enhancement-escape-dismiss': boolean,
+    'enhancement-dark-mode': boolean,
+    'general-log-level': 'debug' | 'info' | 'warn' | 'error',
+}
