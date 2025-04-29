@@ -39,6 +39,7 @@ import * as detailingFuncs from './modules/details/legacy';
         new successHandlers.SBFactoryAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
         new successHandlers.SEHAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
         new successHandlers.SpookyShuffleAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
+        new successHandlers.TreasureMapHandler(logger, submissionService),
     ];
 
     async function main() {
@@ -365,11 +366,7 @@ import * as detailingFuncs from './modules/details/legacy';
 
         $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
             const url = ajaxOptions.url;
-            if (url.includes("mousehuntgame.com/managers/ajax/users/treasuremap_v2.php")) {
-                if (userSettings['tracking-convertibles']) {
-                    recordMap(xhr);
-                }
-            } else if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
+            if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
                 // Calls submitItemConvertible which checks if tracking-convertibles is on
                 recordConvertible(xhr);
             } else if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
@@ -467,32 +464,6 @@ import * as detailingFuncs from './modules/details/legacy';
             "mhct_crown_update": 1,
             "crowns": payload,
         }, window.origin);
-    }
-
-    // Record map mice
-    function recordMap(xhr) {
-        const resp = xhr.responseJSON;
-        if (resp.treasure_map_inventory?.relic_hunter_hint) {
-            sendMessageToServer(environmentService.getRhIntakeUrl(), {
-                hint: resp.treasure_map_inventory.relic_hunter_hint,
-            });
-        }
-
-        const {map_id, name} = resp.treasure_map ?? {};
-        if (!map_id || !name) {
-            return;
-        }
-        const map = {
-            mice: getMapMice(resp),
-            id: map_id,
-            name: name.replace(/ treasure/i, '')
-                .replace(/rare /i, '')
-                .replace(/common /i, '')
-                .replace(/Ardouous/i, 'Arduous'),
-        };
-
-        // Send to database
-        sendMessageToServer(environmentService.getMainIntakeUrl(), map);
     }
 
     /**
