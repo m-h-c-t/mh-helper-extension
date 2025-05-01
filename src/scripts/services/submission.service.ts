@@ -1,4 +1,4 @@
-import {HgItem, hgItemSchema, MhctResponseSchema} from "@scripts/types/mhct";
+import {HgItem, hgItemSchema, IntakeMessage, MhctResponseSchema} from "@scripts/types/mhct";
 import {UserSettings} from "@scripts/types/userSettings";
 import {LoggerService} from "@scripts/util/logger";
 import {getUnixTimestamp} from "@scripts/util/time";
@@ -30,12 +30,29 @@ export class SubmissionService {
         await this.submitConvertible(convertible, items);
     }
 
+    async submitHunt(hunt: IntakeMessage): Promise<void> {
+        if (this.userSettings['tracking-hunts'] === false) {
+            return;
+        }
+
+        // @ts-expect-error No index signature
+        await this.postData(this.environmentService.getMainIntakeUrl(), hunt);
+    }
+
     async submitItemConvertible(convertible: HgItem, items: HgItem[]): Promise<void> {
         if (this.userSettings['tracking-convertibles'] === false) {
             return;
         }
 
         await this.submitConvertible(convertible, items);
+    }
+
+    async submitRejection(rejection: Record<string, unknown>): Promise<void> {
+        if (this.userSettings['tracking-hunts'] === false) {
+            return;
+        }
+
+        await this.postData(this.environmentService.getRejectionIntakeUrl(), rejection);
     }
 
     async submitRelicHunterHint(hint: string): Promise<void> {

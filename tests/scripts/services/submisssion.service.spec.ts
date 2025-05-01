@@ -2,7 +2,7 @@ import {SubmissionService} from '@scripts/services/submission.service';
 import {LoggerService} from '@scripts/util/logger';
 import {EnvironmentService} from '@scripts/services/environment.service';
 import {ApiService} from '@scripts/services/api.service';
-import {HgItem} from '@scripts/types/mhct';
+import {HgItem, IntakeMessage} from '@scripts/types/mhct';
 import * as timeUtils from '@scripts/util/time';
 
 // Mock dependencies
@@ -41,6 +41,8 @@ describe('SubmissionService', () => {
 
         mockEnvironmentService = {
             getConvertibleIntakeUrl: jest.fn().mockReturnValue('convert-url'),
+            getMainIntakeUrl: jest.fn().mockReturnValue('main-url'),
+            getRejectionIntakeUrl: jest.fn().mockReturnValue('rejection-url'),
             getRhIntakeUrl: jest.fn().mockReturnValue('rh-url'),
             getMapIntakeUrl: jest.fn().mockReturnValue('map-url'),
             getUuidUrl: jest.fn().mockReturnValue('uuid-url')
@@ -275,6 +277,143 @@ describe('SubmissionService', () => {
             await service.submitTreasureMap(map);
 
             expect(mockApiService.send).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('submitHunt', () => {
+        const hunt = {
+            mouse: 'Test Mouse',
+            location: 'Test Location',
+            timestamp: testTimestamp,
+            loot: 'Test Loot'
+        } as unknown as IntakeMessage;
+
+        it('submits hunt data when tracking-hunts is enabled', async () => {
+            await service.submitHunt(hunt);
+
+            expect(mockEnvironmentService.getUuidUrl).toHaveBeenCalled();
+            expect(mockEnvironmentService.getMainIntakeUrl).toHaveBeenCalled();
+            expect(mockApiService.send).toHaveBeenCalledTimes(2);
+
+            // Verify first API call (UUID)
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                1,
+                'POST',
+                'uuid-url',
+                expect.objectContaining({
+                    hunter_id_hash: mockHunterInfo.hunter_id_hash,
+                    extension_version: mockHunterInfo.mhhh_version,
+                    entry_timestamp: testTimestamp
+                })
+            );
+
+            // Verify second API call (submission)
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                2,
+                'POST',
+                'main-url',
+                expect.objectContaining({
+                    ...hunt,
+                    uuid: 'test-uuid',
+                    hunter_id_hash: mockHunterInfo.hunter_id_hash,
+                    extension_version: mockHunterInfo.mhhh_version,
+                    entry_timestamp: testTimestamp
+                })
+            );
+
+            expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
+        });
+
+        it('does not submit when tracking-hunts is disabled', async () => {
+            mockUserSettings['tracking-hunts'] = false;
+
+            service = new SubmissionService(
+                mockLogger,
+                mockEnvironmentService,
+                mockApiService,
+                jest.fn().mockResolvedValue(mockUserSettings),
+                mockGetBasicInfo,
+                mockShowFlashMessage
+            );
+
+            // Wait for settings to be applied
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            await service.submitHunt(hunt);
+
+            expect(mockApiService.send).not.toHaveBeenCalled();
+            expect(mockShowFlashMessage).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('submitRejection', () => {
+        const rejection = {
+            reason: 'Test Rejection',
+            data: {
+                mouse: 'Test Mouse',
+                timestamp: testTimestamp
+            }
+        };
+
+        beforeEach(() => {
+            mockEnvironmentService.getRejectionIntakeUrl = jest.fn().mockReturnValue('rejection-url');
+        });
+
+        it('submits rejection data when tracking-hunts is enabled', async () => {
+            await service.submitRejection(rejection);
+
+            expect(mockEnvironmentService.getUuidUrl).toHaveBeenCalled();
+            expect(mockEnvironmentService.getRejectionIntakeUrl).toHaveBeenCalled();
+            expect(mockApiService.send).toHaveBeenCalledTimes(2);
+
+            // Verify first API call (UUID)
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                1,
+                'POST',
+                'uuid-url',
+                expect.objectContaining({
+                    hunter_id_hash: mockHunterInfo.hunter_id_hash,
+                    extension_version: mockHunterInfo.mhhh_version,
+                    entry_timestamp: testTimestamp
+                })
+            );
+
+            // Verify second API call (submission)
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                2,
+                'POST',
+                'rejection-url',
+                expect.objectContaining({
+                    ...rejection,
+                    uuid: 'test-uuid',
+                    hunter_id_hash: mockHunterInfo.hunter_id_hash,
+                    extension_version: mockHunterInfo.mhhh_version,
+                    entry_timestamp: testTimestamp
+                })
+            );
+
+            expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
+        });
+
+        it('does not submit when tracking-hunts is disabled', async () => {
+            mockUserSettings['tracking-hunts'] = false;
+
+            service = new SubmissionService(
+                mockLogger,
+                mockEnvironmentService,
+                mockApiService,
+                jest.fn().mockResolvedValue(mockUserSettings),
+                mockGetBasicInfo,
+                mockShowFlashMessage
+            );
+
+            // Wait for settings to be applied
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            await service.submitRejection(rejection);
+
+            expect(mockApiService.send).not.toHaveBeenCalled();
+            expect(mockShowFlashMessage).not.toHaveBeenCalled();
         });
     });
 
