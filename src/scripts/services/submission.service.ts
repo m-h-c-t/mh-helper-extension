@@ -72,11 +72,12 @@ export class SubmissionService {
 
     private async postData(url: string, message: Record<string, unknown>): Promise<void> {
         const basicInfo = this.getBasicInfo();
+        const timestamp = message.entry_timestamp ?? getUnixTimestamp();
 
         const uuidRequestBody: Record<string, unknown> = {};
         uuidRequestBody.extension_version = basicInfo.mhhh_version;
         uuidRequestBody.hunter_id_hash = basicInfo.hunter_id_hash;
-        uuidRequestBody.entry_timestamp = message.entry_timestamp ?? getUnixTimestamp();
+        uuidRequestBody.entry_timestamp = timestamp;
 
         const uuidResponse = await this.apiService.send('POST', this.environmentService.getUuidUrl(), uuidRequestBody);
 
@@ -87,8 +88,7 @@ export class SubmissionService {
 
         const submissionBody: Record<string, unknown> = message;
         submissionBody.uuid = await uuidResponse.text();
-        submissionBody.extension_version = basicInfo.mhhh_version;
-        submissionBody.hunter_id_hash = basicInfo.hunter_id_hash;
+        Object.assign(submissionBody, uuidRequestBody);
 
         const submissionResponse = await this.apiService.send('POST', url, submissionBody);
 

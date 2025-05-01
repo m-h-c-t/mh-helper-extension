@@ -125,7 +125,8 @@ describe('SubmissionService', () => {
                     items: expect.arrayContaining(items),
                     uuid: 'test-uuid',
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
-                    extension_version: mockHunterInfo.mhhh_version
+                    extension_version: mockHunterInfo.mhhh_version,
+                    entry_timestamp: testTimestamp,
                 })
             );
 
@@ -203,7 +204,10 @@ describe('SubmissionService', () => {
                 'rh-url',
                 expect.objectContaining({
                     hint,
-                    uuid: 'test-uuid'
+                    uuid: 'test-uuid',
+                    hunter_id_hash: mockHunterInfo.hunter_id_hash,
+                    extension_version: mockHunterInfo.mhhh_version,
+                    entry_timestamp: testTimestamp
                 })
             );
         });
@@ -246,7 +250,10 @@ describe('SubmissionService', () => {
                 'map-url',
                 expect.objectContaining({
                     ...map,
-                    uuid: 'test-uuid'
+                    uuid: 'test-uuid',
+                    hunter_id_hash: mockHunterInfo.hunter_id_hash,
+                    extension_version: mockHunterInfo.mhhh_version,
+                    entry_timestamp: testTimestamp
                 })
             );
         });
