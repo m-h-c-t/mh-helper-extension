@@ -86,7 +86,7 @@ import * as detailingFuncs from './modules/details/legacy';
         // 0.0.0 -> 000000
         // 1.0.1 -> 100001
 
-        const [major, minor, patch] = version.split('.').map(Number);
+        const [major, minor, patch] = version.split('.');
 
         return Number(
             (major?.padStart(2, '0') || '00') +
