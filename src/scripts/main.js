@@ -2,6 +2,9 @@
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
 import {getUnixTimestamp} from "./util/time";
+import {EnvironmentService} from "./services/environment.service";
+import {SubmissionService} from "./services/submission.service";
+import {ApiService} from "./services/api.service";
 import {hgResponseSchema} from "./types/hg";
 import {HornHud} from './util/hornHud';
 import {parseHgInt} from "./util/number";
@@ -13,23 +16,29 @@ import * as detailingFuncs from './modules/details/legacy';
 (function () {
     'use strict';
 
-    let base_domain_url = "https://www.mhct.win";
-    let main_intake_url, map_intake_url, convertible_intake_url, map_helper_url, rh_intake_url, rejection_intake_url;
-
     let mhhh_version = 0;
     let hunter_id_hash = '0';
     let userSettings = {};
 
     const logger = new ConsoleLogger();
+    const apiService = new ApiService();
+    const environmentService = new EnvironmentService(getExtensionVersion);
     const rejectionEngine = new IntakeRejectionEngine(logger);
+    const submissionService = new SubmissionService(logger, environmentService, apiService, getSettingsAsync,
+        () => ({
+            hunter_id_hash,
+            mhhh_version,
+        }),
+        showFlashMessage
+    );
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
-        new successHandlers.KingsGiveawayAjaxHandler(logger, submitEventConvertible),
-        new successHandlers.CheesyPipePartyAjaxHandler(logger, submitEventConvertible),
-        new successHandlers.SBFactoryAjaxHandler(logger, submitEventConvertible),
-        new successHandlers.SEHAjaxHandler(logger, submitEventConvertible),
-        new successHandlers.SpookyShuffleAjaxHandler(logger, submitEventConvertible),
+        new successHandlers.KingsGiveawayAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
+        new successHandlers.CheesyPipePartyAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
+        new successHandlers.SBFactoryAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
+        new successHandlers.SEHAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
+        new successHandlers.SpookyShuffleAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
     ];
 
     async function main() {
@@ -70,6 +79,22 @@ import * as detailingFuncs from './modules/details/legacy';
         return new Promise(resolve => getSettings(resolve));
     }
 
+    function getExtensionVersion() {
+        const version = $("#mhhh_version").val();
+
+        // split version and convert to padded number number format
+        // 0.0.0 -> 000000
+        // 1.0.1 -> 100001
+
+        const [major, minor, patch] = version.split('.');
+
+        return Number(
+            (major?.padStart(2, '0') || '00') +
+            (minor?.padStart(2, '0') || '00') +
+            (patch?.padStart(2, '0') || '00')
+        );
+    }
+
     // Create hunter id hash using Crypto Web API
     // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
     async function createHunterIdHash() {
@@ -93,10 +118,9 @@ import * as detailingFuncs from './modules/details/legacy';
     }
 
     async function initialLoad() {
-        mhhh_version = formatVersion($("#mhhh_version").val());
+        mhhh_version = getExtensionVersion();
         if (mhhh_version == 0) {
             logger.info("Test version detected, turning on debug mode and pointing to server on localhost");
-            base_domain_url = 'http://localhost';
         }
 
         switch (userSettings['general-log-level']) {
@@ -123,13 +147,6 @@ import * as detailingFuncs from './modules/details/legacy';
 
         logger.debug("initialLoad ran with settings", {userSettings});
 
-        main_intake_url = base_domain_url + "/intake.php";
-        map_intake_url = base_domain_url + "/map_intake.php";
-        convertible_intake_url = base_domain_url + "/convertible_intake.php";
-        map_helper_url = base_domain_url + "/maphelper.php";
-        rh_intake_url = base_domain_url + "/rh_intake.php";
-        rejection_intake_url = base_domain_url + "/rejection_intake.php";
-
         await createHunterIdHash();
     }
 
@@ -141,7 +158,7 @@ import * as detailingFuncs from './modules/details/legacy';
             }
 
             if (ev.data.mhct_message === 'userhistory') {
-                window.open(`${base_domain_url}/searchByUser.php?hunter_id=${hunter_id_hash}`);
+                window.open(`${environmentService.getBaseUrl()}/searchByUser.php?hunter_id=${hunter_id_hash}`);
                 return;
             }
 
@@ -224,7 +241,7 @@ import * as detailingFuncs from './modules/details/legacy';
         let method = '';
         let input_name ='';
         if (solver === 'mhmh') {
-            url = map_helper_url;
+            url = environmentService.getMapHelperUrl();
             glue = '\n';
             method = 'POST';
             input_name = 'mice';
@@ -456,7 +473,7 @@ import * as detailingFuncs from './modules/details/legacy';
     function recordMap(xhr) {
         const resp = xhr.responseJSON;
         if (resp.treasure_map_inventory?.relic_hunter_hint) {
-            sendMessageToServer(rh_intake_url, {
+            sendMessageToServer(environmentService.getRhIntakeUrl(), {
                 hint: resp.treasure_map_inventory.relic_hunter_hint,
             });
         }
@@ -475,7 +492,7 @@ import * as detailingFuncs from './modules/details/legacy';
         };
 
         // Send to database
-        sendMessageToServer(map_intake_url, map);
+        sendMessageToServer(environmentService.getMainIntakeUrl(), map);
     }
 
     /**
@@ -634,7 +651,7 @@ import * as detailingFuncs from './modules/details/legacy';
             const invalidProperties = rejectionEngine.getInvalidIntakeMessageProperties(message_pre, message_post);
             if (invalidProperties.has('stage') || invalidProperties.has('location')) {
                 const rejection_message = createRejectionMessage(message_pre, message_post);
-                sendMessageToServer(rejection_intake_url, rejection_message);
+                sendMessageToServer(environmentService.getRejectionIntakeUrl(), rejection_message);
             }
 
             return;
@@ -642,7 +659,7 @@ import * as detailingFuncs from './modules/details/legacy';
 
         logger.debug("Recording hunt", {message_var:message_pre, user_pre, user_post, hunt});
         // Upload the hunt record.
-        sendMessageToServer(main_intake_url, message_pre);
+        sendMessageToServer(environmentService.getMainIntakeUrl(), message_pre);
     }
 
     // Add bonus journal entry stuff to the hunt_details
@@ -703,45 +720,7 @@ import * as detailingFuncs from './modules/details/legacy';
             return;
         }
 
-        submitItemConvertible(convertible, items);
-    }
-
-    /**
-     * @typedef {Object} HgItem
-     * @property {number} id HitGrab's ID for this item
-     * @property {string} name HitGrab's display name for this item
-     * @property {number} quantity the number of this item received or opened
-     */
-
-    function submitEventConvertible(convertible, items) {
-        if (userSettings['tracking-events'] === false) {
-            return;
-        }
-
-        submitConvertible(convertible, items);
-    }
-
-    function submitItemConvertible(convertible, items) {
-        if (userSettings['tracking-convertibles'] === false) {
-            return;
-        }
-
-        submitConvertible(convertible, items);
-    }
-
-    /**
-     * @deprecated Use `submitEventConvertible` or `submitItemConvertible` instead.
-     */
-    function submitConvertible(convertible, items) {
-        const record = {
-            convertible: getItem(convertible),
-            items: items.map(getItem),
-            asset_package_hash: Date.now(),
-        };
-
-        // Send to database
-        logger.debug("submitting convertible", {record});
-        sendMessageToServer(convertible_intake_url, record);
+        submissionService.submitItemConvertible(convertible, items);
     }
 
     function sendMessageToServer(url, final_message) {
@@ -757,7 +736,7 @@ import * as detailingFuncs from './modules/details/legacy';
         };
 
         // Get UUID
-        $.post(base_domain_url + "/uuid.php", basic_info).done(data => {
+        $.post(`${environmentService.getBaseUrl()}/uuid.php`, basic_info).done(data => {
             if (data) {
                 final_message.uuid = data;
                 final_message.hunter_id_hash = hunter_id_hash;
@@ -815,7 +794,7 @@ import * as detailingFuncs from './modules/details/legacy';
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
                     if (userSettings['tracking-events']) {
-                        sendMessageToServer(main_intake_url, rh_message);
+                        submissionService.submitRelicHunterHint(rh_message);
                         logger.debug(`Found the Relic Hunter in ${rh_message.rh_environment}`);
                     }
                 }
@@ -864,7 +843,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
                         logger.debug("Desert Heater Base proc", {desert_heater_loot: items});
 
-                        submitItemConvertible(convertible, items);
+                        submissionService.submitItemConvertible(convertible, items);
                     }
                 } else {
                     window.postMessage({
@@ -895,7 +874,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         }];
                         logger.debug("Submitting Unstable Charm: ", {unstable_charm_loot: items});
 
-                        submitItemConvertible(convertible, items);
+                        submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -918,7 +897,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         }];
                         logger.debug("Submitting Gift Wrapped Charm: ", {gift_wrapped_charm_loot: items});
 
-                        submitItemConvertible(convertible, items);
+                        submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -941,7 +920,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         }];
                         logger.debug("Submitting Torch Charm: ", {torch_charm_loot: items});
 
-                        submitItemConvertible(convertible, items);
+                        submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -966,7 +945,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         }];
                         logger.debug("Submitting Queso Cannonstorm Base: ", {queso_cannonstorm_base_loot: items});
 
-                        submitItemConvertible(convertible, items);
+                        submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -995,7 +974,7 @@ import * as detailingFuncs from './modules/details/legacy';
                             }];
                             logger.debug("Boiling Cauldron Trap proc", {boiling_cauldron_trap: items});
 
-                            submitItemConvertible(convertible, items);
+                            submissionService.submitItemConvertible(convertible, items);
                         }
                     }
                 }
@@ -1029,7 +1008,7 @@ import * as detailingFuncs from './modules/details/legacy';
                         const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
                         logger.debug("Guilded Charm proc", {gilded_charm: items});
 
-                        submitItemConvertible(convertible, items);
+                        submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -1315,34 +1294,6 @@ import * as detailingFuncs from './modules/details/legacy';
 
             return loot_object;
         }).filter(loot => loot);
-    }
-
-    /**
-     *
-     * @param {Object} item An object that looks like an item for convertibles. Has an id (or item_id), name, and quantity
-     * @returns {Object} An item with an id, name, and quantity
-     */
-    function getItem(item) {
-        return {
-            id: item.item_id || item.id,
-            name: item.name,
-            // type: item.type,
-            quantity: item.quantity,
-            // class: item.class || item.classification
-        };
-    }
-
-    function pad(num, size) {
-        let s = String(num);
-        while (s.length < (size || 2)) {s = "0" + s;}
-        return s;
-    }
-
-    function formatVersion(version) {
-        version = version.split('.');
-        version = version[0] + pad(version[1], 2) + pad(version[2], 2);
-        version = Number(version);
-        return version;
     }
 
     function escapeButtonClose() {

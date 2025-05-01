@@ -1,3 +1,5 @@
+import {z} from "zod";
+
 export interface IntakeMessage {
     extension_version: number;
     user_id: number;
@@ -39,11 +41,35 @@ interface Loot {
 /**
  * An object opened (convertible) or recieved (convertible contents)
  */
-export interface HgItem {
+export const hgItemSchema = z.object({
     /** HitGrab's ID for the id */
-    id: number
+    id: z.coerce.number().optional(),
+    item_id: z.coerce.number().optional(),
     /** HitGrab's display name for the item */
-    name: string;
+    name: z.string(),
     /** The number of items opened or recieved */
-    quantity: number;
-}
+    quantity: z.coerce.number(),
+})
+    .transform((val, ctx) => {
+        // Make sure that either id or item_id is set
+        const id = val.id ?? val.item_id;
+        if (id === undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Either id or item_id must be set",
+            });
+            return z.NEVER;
+        }
+        return {
+            id: id,
+            name: val.name,
+            quantity: val.quantity,
+        };
+    });
+export type HgItem = z.infer<typeof hgItemSchema>;
+
+export const MhctResponseSchema = z.object({
+    status: z.string(),
+    message: z.string(),
+});
+export type MhctResponse = z.infer<typeof MhctResponseSchema>;
