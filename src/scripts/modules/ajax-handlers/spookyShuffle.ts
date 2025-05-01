@@ -1,4 +1,5 @@
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
+import {SubmissionService} from "@scripts/services/submission.service";
 import {HgItem} from "@scripts/types/mhct";
 import {LoggerService} from "@scripts/util/logger";
 import {SpookyShuffleResponse, spookyShuffleResponseSchema, TitleRange} from "./spookyShuffle.types";
@@ -13,11 +14,9 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
      * @param submitConvertibleCallback delegate to submit convertibles to mhct
      */
     constructor(
-        private logger: LoggerService,
-        private submitConvertibleCallback: (convertible: HgItem, items: HgItem[]) => void) {
+        private readonly logger: LoggerService,
+        private readonly submissionService: SubmissionService) {
         super();
-        this.logger = logger;
-        this.submitConvertibleCallback = submitConvertibleCallback;
     }
 
     match(url: string): boolean {
@@ -104,7 +103,7 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
         };
 
         this.logger.debug("Shuffle Board: ", {convertible, items: convertibleContent});
-        this.submitConvertibleCallback(convertible, convertibleContent);
+        await this.submissionService.submitEventConvertible(convertible, convertibleContent);
     }
 
     async fetchItemNameToIdMap(): Promise<Record<string, number>> {

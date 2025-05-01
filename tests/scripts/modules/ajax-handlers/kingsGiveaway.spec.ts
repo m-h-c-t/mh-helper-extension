@@ -1,22 +1,24 @@
 import {KingsGiveawayAjaxHandler} from "@scripts/modules/ajax-handlers/kingsGiveaway";
 import {KingsGiveawayResponse} from "@scripts/modules/ajax-handlers/kingsGiveaway.types";
 import {HgResponse} from "@scripts/types/hg";
-import {HgItem} from "@scripts/types/mhct";
+import {SubmissionService} from "@scripts/services/submission.service";
 import {CustomConvertibleIds, EventDates} from "@scripts/util/constants";
+import {LoggerService} from "@scripts/util/logger";
 import {addDays} from "@scripts/util/time";
+import {mock} from "jest-mock-extended";
 
-jest.mock("@scripts/util/logger");
-import {ConsoleLogger} from "@scripts/util/logger";
-
-const logger = new ConsoleLogger();
-const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>;
-const handler = new KingsGiveawayAjaxHandler(logger, submitConvertibleCallback);
+const logger = mock<LoggerService>();
+const submissionService = mock<SubmissionService>();
 
 const kga_url = "mousehuntgame.com/managers/ajax/events/kings_giveaway.php";
 
 describe("KingsGiveawayAjaxHandler", () => {
+    let handler: KingsGiveawayAjaxHandler;
+
     beforeEach(() => {
         jest.clearAllMocks();
+
+        handler = new KingsGiveawayAjaxHandler(logger, submissionService);
     });
 
     describe("match", () => {
@@ -43,11 +45,10 @@ describe("KingsGiveawayAjaxHandler", () => {
             await handler.execute({} as unknown as HgResponse);
 
             expect(logger.debug).toBeCalledWith("Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.");
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it("submits expected response one", async () => {
-
             await handler.execute(testResponses.responseOne);
 
             const expectedConvertible = {
@@ -64,14 +65,13 @@ describe("KingsGiveawayAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
+            expect(submissionService.submitEventConvertible).toBeCalledWith(
                 expect.objectContaining(expectedConvertible),
                 expect.arrayContaining(expectedItems)
             );
         });
 
         it("submits expected response two", async () => {
-
             await handler.execute(testResponses.responseTwo);
 
             const expectedConvertible = {
@@ -88,15 +88,13 @@ describe("KingsGiveawayAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
+            expect(submissionService.submitEventConvertible).toBeCalledWith(
                 expect.objectContaining(expectedConvertible),
                 expect.arrayContaining(expectedItems)
             );
         });
 
-
         it("submits expected upon opening 10th pack", async () => {
-
             await handler.execute(testResponses.responseOfTenthKey);
 
             const expectedPrizeConvertible = {
@@ -113,7 +111,7 @@ describe("KingsGiveawayAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toHaveBeenNthCalledWith(1,
+            expect(submissionService.submitEventConvertible).toHaveBeenNthCalledWith(1,
                 expect.objectContaining(expectedPrizeConvertible),
                 expect.arrayContaining(expectedPrizeItems)
             );
@@ -142,18 +140,17 @@ describe("KingsGiveawayAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toHaveBeenNthCalledWith(2,
+            expect(submissionService.submitEventConvertible).toHaveBeenNthCalledWith(2,
                 expect.objectContaining(expectedVaultConvertible),
                 expect.arrayContaining(expectedVaultItems)
             );
         });
 
         it("errors out on response three", async () => {
-
             await handler.execute(testResponses.responseWithInventoryError);
 
             expect(logger.warn).toBeCalledWith("Item (unknown_item_type) not found in inventory from King's Mini Prize Pack opening");
-            expect(submitConvertibleCallback).not.toBeCalled();
+            expect(submissionService.submitEventConvertible).not.toBeCalled();
         });
     });
 });

@@ -34,11 +34,11 @@ import * as detailingFuncs from './modules/details/legacy';
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
-        new successHandlers.KingsGiveawayAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
-        new successHandlers.CheesyPipePartyAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
-        new successHandlers.SBFactoryAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
-        new successHandlers.SEHAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
-        new successHandlers.SpookyShuffleAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
+        new successHandlers.KingsGiveawayAjaxHandler(logger, submissionService),
+        new successHandlers.CheesyPipePartyAjaxHandler(logger, submissionService),
+        new successHandlers.SBFactoryAjaxHandler(logger, submissionService),
+        new successHandlers.SEHAjaxHandler(logger, submissionService),
+        new successHandlers.SpookyShuffleAjaxHandler(logger, submissionService),
         new successHandlers.TreasureMapHandler(logger, submissionService),
     ];
 
