@@ -4,4 +4,5 @@ export * from "./kingsGiveaway";
 export * from "./springEggHunt";
 export * from "./sbFactory";
 export * from "./sbFactory.CheesyPipeParty";
+export * from "./treasureMap";
 export * from "./spookyShuffle";
