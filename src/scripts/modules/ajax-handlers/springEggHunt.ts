@@ -1,3 +1,4 @@
+import {SubmissionService} from "@scripts/services/submission.service";
 import type {HgResponse} from "@scripts/types/hg";
 import type {HgItem} from "@scripts/types/mhct";
 import type {LoggerService} from "@scripts/util/logger";
@@ -10,11 +11,9 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
      * @param submitConvertibleCallback delegate to submit convertibles to mhct
      */
     constructor(
-        private logger: LoggerService,
-        private submitConvertibleCallback: (convertible: HgItem, items: HgItem[]) => void) {
+        private readonly logger: LoggerService,
+        private readonly submissionService: SubmissionService) {
         super();
-        this.logger = logger;
-        this.submitConvertibleCallback = submitConvertibleCallback;
     }
 
     /**
@@ -27,16 +26,14 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
     }
 
     async execute(responseJSON: HgResponse): Promise<void> {
-        this.recordEgg(responseJSON as HgResponseWithEggContents);
-
-        return Promise.resolve();
+        await this.recordEgg(responseJSON as HgResponseWithEggContents);
     }
 
     /**
      * Record egg convertibles when opened from eggscavator
      * @param {import("@scripts/types/hg").HgResponse} responseJSON HitGrab ajax response.
      */
-    recordEgg(responseJSON: HgResponseWithEggContents) {
+    async recordEgg(responseJSON: HgResponseWithEggContents) {
         const purchase = responseJSON.egg_contents;
         const inventory = responseJSON.inventory;
 
@@ -92,7 +89,7 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
         }
 
         this.logger.debug('SEHAjaxHandler submitting egg convertible', {convertible, items});
-        this.submitConvertibleCallback(convertible, items);
+        await this.submissionService.submitEventConvertible(convertible, items);
     }
 }
 

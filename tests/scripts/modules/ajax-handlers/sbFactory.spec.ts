@@ -1,15 +1,14 @@
 import {SBFactoryAjaxHandler} from "@scripts/modules/ajax-handlers";
 import {VendingMachinePurchase, VendingMachineReponse} from "@scripts/modules/ajax-handlers/sbFactory.types";
+import {SubmissionService} from "@scripts/services/submission.service";
 import {InventoryItem} from "@scripts/types/hg";
-import {HgItem} from "@scripts/types/mhct";
-import {ConsoleLogger} from '@scripts/util/logger';
+import {LoggerService} from '@scripts/util/logger';
 import {HgResponseBuilder} from "@tests/utility/builders";
+import {mock} from "jest-mock-extended";
 
-jest.mock('@scripts/util/logger');
-
-const logger = new ConsoleLogger();
-const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>;
-const handler = new SBFactoryAjaxHandler(logger, submitConvertibleCallback);
+const logger = mock<LoggerService>();
+const submissionService = mock<SubmissionService>();
+const handler = new SBFactoryAjaxHandler(logger, submissionService);
 
 const sbfactory_url = "mousehuntgame.com/managers/ajax/events/birthday_factory.php";
 
@@ -39,7 +38,7 @@ describe("SBFactoryAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.warn).toHaveBeenCalledWith('Unexpected vending machine response object.', expect.anything());
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('submits expected response one', async () => {
@@ -78,7 +77,7 @@ describe("SBFactoryAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expect.objectContaining(expectedConvertible),
                 expect.objectContaining(expectedItems)
             );
@@ -120,7 +119,7 @@ describe("SBFactoryAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expect.objectContaining(expectedConvertible),
                 expect.objectContaining(expectedItems)
             );

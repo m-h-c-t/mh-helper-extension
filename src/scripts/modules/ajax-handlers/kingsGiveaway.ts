@@ -1,4 +1,5 @@
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
+import {SubmissionService} from "@scripts/services/submission.service";
 import {HgItem} from "@scripts/types/mhct";
 import {LoggerService} from "@scripts/util/logger";
 import {KingsGiveawayResponse} from "./kingsGiveaway.types";
@@ -13,11 +14,9 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
      * @param submitConvertibleCallback delegate to submit convertibles to mhct
      */
     constructor(
-        private logger: LoggerService,
-        private submitConvertibleCallback: (convertible: HgItem, items: HgItem[]) => void) {
+        private readonly logger: LoggerService,
+        private readonly submissionService: SubmissionService) {
         super();
-        this.logger = logger;
-        this.submitConvertibleCallback = submitConvertibleCallback;
     }
 
     match(url: string): boolean {
@@ -103,9 +102,7 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
         }
 
         this.logger.debug("Prizepack: ", {convertible, items});
-        this.submitConvertibleCallback(convertible, items);
-
-        return Promise.resolve();
+        await this.submissionService.submitEventConvertible(convertible, items);
     }
 
     async recordVault(responseJSON: KingsGiveawayResponse) {
@@ -137,9 +134,7 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
             };
         });
 
-        this.submitConvertibleCallback(convertible, items);
-
-        return Promise.resolve();
+        await this.submissionService.submitEventConvertible(convertible, items);
     }
 
     /**

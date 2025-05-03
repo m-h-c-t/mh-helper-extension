@@ -1,3 +1,4 @@
+import {SubmissionService} from "@scripts/services/submission.service";
 import type {HgResponse} from "@scripts/types/hg";
 import type {HgItem} from "@scripts/types/mhct";
 import type {LoggerService} from "@scripts/util/logger";
@@ -12,11 +13,9 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
      * @param submitConvertibleCallback delegate to submit convertibles to mhct
      */
     constructor(
-        private logger: LoggerService,
-        private submitConvertibleCallback: (convertible: HgItem, items: HgItem[]) => void) {
+        private readonly logger: LoggerService,
+        private readonly submissionService: SubmissionService) {
         super();
-        this.logger = logger;
-        this.submitConvertibleCallback = submitConvertibleCallback;
     }
 
     /**
@@ -33,16 +32,14 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
             return;
         }
 
-        this.recordSnackPack(responseJSON);
-
-        return Promise.resolve();
+        await this.recordSnackPack(responseJSON);
     }
 
     /**
      * Record Birthday snack pack submissions as convertibles in MHCT
      * @param {import("@scripts/types/hg").HgResponse} responseJSON HitGrab ajax response from vending machine.
      */
-    recordSnackPack(responseJSON: VendingMachineReponse) {
+    async recordSnackPack(responseJSON: VendingMachineReponse) {
         const purchase = responseJSON.vending_machine_purchase;
 
         if (!purchase) {
@@ -109,7 +106,7 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
         }
 
         this.logger.debug('SBFactoryAjaxHandler submitting snack pack', {convertible, items});
-        this.submitConvertibleCallback(convertible, items);
+        await this.submissionService.submitEventConvertible(convertible, items);
     }
 
     /**

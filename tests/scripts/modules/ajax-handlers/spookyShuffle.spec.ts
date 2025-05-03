@@ -1,18 +1,17 @@
 import {SpookyShuffleAjaxHandler} from "@scripts/modules/ajax-handlers";
 import {SpookyShuffleResponse, SpookyShuffleStatus} from "@scripts/modules/ajax-handlers/spookyShuffle.types";
-import {HgItem} from "@scripts/types/mhct";
+import {SubmissionService} from "@scripts/services/submission.service";
+import {LoggerService} from '@scripts/util/logger';
+import {CustomConvertibleIds} from "@scripts/util/constants";
+import {getItemsByClass} from "@scripts/util/hgFunctions";
+import {HgResponseBuilder} from "@tests/utility/builders";
+import {mock} from "jest-mock-extended";
 
-jest.mock('@scripts/util/logger');
 jest.mock('@scripts/util/hgFunctions');
 
-import {ConsoleLogger} from '@scripts/util/logger';
-import {getItemsByClass} from "@scripts/util/hgFunctions";
-import {CustomConvertibleIds} from "@scripts/util/constants";
-import {HgResponseBuilder} from "@tests/utility/builders";
-
-const logger = new ConsoleLogger();
-const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>;
-const handler = new SpookyShuffleAjaxHandler(logger, submitConvertibleCallback);
+const logger = mock<LoggerService>();
+const submissionService = mock<SubmissionService>();
+const handler = new SpookyShuffleAjaxHandler(logger, submissionService);
 const mockedGetItemsByClass = jest.mocked(getItemsByClass);
 
 const spookyShuffle_url = "mousehuntgame.com/managers/ajax/events/spooky_shuffle.php";
@@ -45,7 +44,7 @@ describe("SpookyShuffleAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.warn).toHaveBeenCalledWith('Unexpected spooky shuffle response object.', expect.anything());
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('debug logs if response is an incomplete game', async () => {
@@ -64,7 +63,7 @@ describe("SpookyShuffleAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.debug).toHaveBeenCalledWith('Spooky Shuffle board is not complete yet.');
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('debug logs if response is an complete game but no testing pair', async () => {
@@ -84,7 +83,7 @@ describe("SpookyShuffleAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.debug).toHaveBeenCalledWith('Spooky Shuffle board is not complete yet.');
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('submits regular novice board', async () => {
@@ -137,7 +136,7 @@ describe("SpookyShuffleAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expect.objectContaining(expectedConvertible),
                 expect.objectContaining(expectedItems)
             );
@@ -206,7 +205,7 @@ describe("SpookyShuffleAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expect.objectContaining(expectedConvertible),
                 expect.objectContaining(expectedItems)
             );
@@ -249,7 +248,7 @@ describe("SpookyShuffleAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.warn).toHaveBeenCalledWith(`Item 'Test Item' wasn't found in item map. Check its classification type`);
-            expect(submitConvertibleCallback).not.toHaveBeenCalled();
+            expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
         });
 
     });

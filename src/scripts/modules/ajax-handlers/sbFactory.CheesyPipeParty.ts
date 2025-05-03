@@ -4,6 +4,7 @@ import {LoggerService} from "@scripts/util/logger";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {CheesyPipePartyGame, CheesyPipePartyResponse, cheesyPipePartyResponseSchema, Region} from "./sbFactory.types";
 import {CustomConvertibleIds} from "@scripts/util/constants";
+import {SubmissionService} from "@scripts/services/submission.service";
 
 export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -12,11 +13,9 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
      * @param submitConvertibleCallback delegate to submit convertibles to mhct
      */
     constructor(
-        private logger: LoggerService,
-        private submitConvertibleCallback: (convertible: HgItem, items: HgItem[]) => void) {
+        private readonly logger: LoggerService,
+        private readonly submissionService: SubmissionService) {
         super();
-        this.logger = logger;
-        this.submitConvertibleCallback = submitConvertibleCallback;
     }
 
     /**
@@ -38,16 +37,14 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
             return;
         }
 
-        this.recordCheesyPipeParty(responseJSON);
-
-        return Promise.resolve();
+        await this.recordCheesyPipeParty(responseJSON);
     }
 
     /**
      * Submit the Cheesy Pipe Party game results to MHCT
      * @param responseJSON
      */
-    recordCheesyPipeParty(responseJSON: CheesyPipePartyResponse) {
+    async recordCheesyPipeParty(responseJSON: CheesyPipePartyResponse) {
         const game = responseJSON.cheesy_pipe_party_game;
 
         const revealedPrizeTiles = this.getTiles(game).filter(tile => tile.has_prize && tile.is_prize_unlocked);
@@ -108,7 +105,8 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
         }
 
         this.logger.debug('CheesyPipePartyAjaxHandler submitting game board', {convertible, items});
-        this.submitConvertibleCallback(convertible, items);
+
+        await this.submissionService.submitEventConvertible(convertible, items);
     }
 
     /**

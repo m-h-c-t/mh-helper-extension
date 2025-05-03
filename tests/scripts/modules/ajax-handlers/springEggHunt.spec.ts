@@ -1,13 +1,12 @@
 import {SEHAjaxHandler} from "@scripts/modules/ajax-handlers";
+import {SubmissionService} from "@scripts/services/submission.service";
 import {HgResponse} from "@scripts/types/hg";
-import {HgItem} from "@scripts/types/mhct";
+import {LoggerService} from '@scripts/util/logger';
+import {mock} from "jest-mock-extended";
 
-jest.mock('@scripts/util/logger');
-import {ConsoleLogger} from '@scripts/util/logger';
-
-const logger = new ConsoleLogger();
-const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>;
-const handler = new SEHAjaxHandler(logger, submitConvertibleCallback);
+const logger = mock<LoggerService>();
+const submissionService = mock<SubmissionService>();
+const handler = new SEHAjaxHandler(logger, submissionService);
 
 const sbfactory_url = "mousehuntgame.com/managers/ajax/events/spring_hunt.php";
 
@@ -31,7 +30,7 @@ describe("SEHAjaxHandler", () => {
             await handler.execute({} as unknown as HgResponse);
 
             expect(logger.debug).toBeCalledWith('Skipping SEH egg submission as this isn\'t an egg convertible');
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('warns if response is unexpected', async () => {
@@ -41,7 +40,7 @@ describe("SEHAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.warn).toBeCalledWith('Unable to parse SEH response', {responseJSON: response});
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('submits expected response one', async () => {
@@ -72,7 +71,7 @@ describe("SEHAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
+            expect(submissionService.submitEventConvertible).toBeCalledWith(
                 expectedConvertible,
                 expectedItems
             );
@@ -106,7 +105,7 @@ describe("SEHAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
+            expect(submissionService.submitEventConvertible).toBeCalledWith(
                 expectedConvertible,
                 expectedItems
             );
@@ -130,7 +129,7 @@ describe("SEHAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toBeCalledWith(
+            expect(submissionService.submitEventConvertible).toBeCalledWith(
                 expectedConvertible,
                 expectedItems
             );

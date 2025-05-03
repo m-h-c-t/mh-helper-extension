@@ -1,15 +1,14 @@
 import {CheesyPipePartyAjaxHandler} from "@scripts/modules/ajax-handlers";
 import {CheesyPipePartyGame, CheesyPipePartyResponse} from "@scripts/modules/ajax-handlers/sbFactory.types";
+import {SubmissionService} from "@scripts/services/submission.service";
 import {InventoryItem} from "@scripts/types/hg";
-import {HgItem} from "@scripts/types/mhct";
-import {ConsoleLogger} from '@scripts/util/logger';
+import {LoggerService} from '@scripts/util/logger';
 import {HgResponseBuilder} from "@tests/utility/builders";
+import {mock} from "jest-mock-extended";
 
-jest.mock('@scripts/util/logger');
-
-const logger = new ConsoleLogger();
-const submitConvertibleCallback = jest.fn() as jest.MockedFunction<(convertible: HgItem, items: HgItem[]) => void>;
-const handler = new CheesyPipePartyAjaxHandler(logger, submitConvertibleCallback);
+const logger = mock<LoggerService>();
+const submissionService = mock<SubmissionService>();
+const handler = new CheesyPipePartyAjaxHandler(logger, submissionService);
 
 const sbfactory_url = "mousehuntgame.com/managers/ajax/events/cheesy_pipe_party.php";
 
@@ -54,7 +53,7 @@ describe("CheesyPipePartyAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.warn).toHaveBeenCalledWith('Unexpected Cheesy Pipe Party response object.', expect.anything());
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('logs if pipe party response is not complete', async () => {
@@ -64,7 +63,7 @@ describe("CheesyPipePartyAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.debug).toHaveBeenCalledWith('Cheesy Pipe Party game is not complete.');
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('submits board with one prize', async () => {
@@ -87,7 +86,7 @@ describe("CheesyPipePartyAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expect.objectContaining(expectedConvertible),
                 expect.objectContaining(expectedItems)
             );
@@ -114,7 +113,7 @@ describe("CheesyPipePartyAjaxHandler", () => {
                 },
             ];
 
-            expect(submitConvertibleCallback).toHaveBeenCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expect.objectContaining(expectedConvertible),
                 expect.objectContaining(expectedItems)
             );
@@ -131,7 +130,7 @@ describe("CheesyPipePartyAjaxHandler", () => {
                 revealedPrizeTiles: expect.arrayContaining([expect.anything()]),
                 expectedPrizes: 2,
             }));
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
         it('logs when region is not found', async () => {
@@ -143,7 +142,7 @@ describe("CheesyPipePartyAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.warn).toHaveBeenCalledWith('Unexpected Cheesy Pipe Party response object.', expect.anything());
-            expect(submitConvertibleCallback).toHaveBeenCalledTimes(0);
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
     });
 });

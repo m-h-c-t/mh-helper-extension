@@ -1,7 +1,6 @@
 /*jslint browser:true */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
-import {getUnixTimestamp} from "./util/time";
 import {EnvironmentService} from "./services/environment.service";
 import {SubmissionService} from "./services/submission.service";
 import {ApiService} from "./services/api.service";
@@ -34,11 +33,11 @@ import * as detailingFuncs from './modules/details/legacy';
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
-        new successHandlers.KingsGiveawayAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
-        new successHandlers.CheesyPipePartyAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
-        new successHandlers.SBFactoryAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
-        new successHandlers.SEHAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
-        new successHandlers.SpookyShuffleAjaxHandler(logger, (...args) => submissionService.submitEventConvertible(...args)),
+        new successHandlers.KingsGiveawayAjaxHandler(logger, submissionService),
+        new successHandlers.CheesyPipePartyAjaxHandler(logger, submissionService),
+        new successHandlers.SBFactoryAjaxHandler(logger, submissionService),
+        new successHandlers.SEHAjaxHandler(logger, submissionService),
+        new successHandlers.SpookyShuffleAjaxHandler(logger, submissionService),
         new successHandlers.TreasureMapHandler(logger, submissionService),
     ];
 
@@ -622,7 +621,7 @@ import * as detailingFuncs from './modules/details/legacy';
             const invalidProperties = rejectionEngine.getInvalidIntakeMessageProperties(message_pre, message_post);
             if (invalidProperties.has('stage') || invalidProperties.has('location')) {
                 const rejection_message = createRejectionMessage(message_pre, message_post);
-                sendMessageToServer(environmentService.getRejectionIntakeUrl(), rejection_message);
+                submissionService.submitRejection(rejection_message);
             }
 
             return;
@@ -630,7 +629,7 @@ import * as detailingFuncs from './modules/details/legacy';
 
         logger.debug("Recording hunt", {message_var:message_pre, user_pre, user_post, hunt});
         // Upload the hunt record.
-        sendMessageToServer(environmentService.getMainIntakeUrl(), message_pre);
+        submissionService.submitHunt(message_pre);
     }
 
     // Add bonus journal entry stuff to the hunt_details
@@ -692,40 +691,6 @@ import * as detailingFuncs from './modules/details/legacy';
         }
 
         submissionService.submitItemConvertible(convertible, items);
-    }
-
-    function sendMessageToServer(url, final_message) {
-        if (final_message.entry_timestamp == null) {
-            final_message.entry_timestamp = getUnixTimestamp();
-        }
-
-        const basic_info = {
-            hunter_id_hash,
-            entry_timestamp: final_message.entry_timestamp,
-            extension_version: mhhh_version,
-            'X-Requested-By': `MHCT/${mhhh_version}`,
-        };
-
-        // Get UUID
-        $.post(`${environmentService.getBaseUrl()}/uuid.php`, basic_info).done(data => {
-            if (data) {
-                final_message.uuid = data;
-                final_message.hunter_id_hash = hunter_id_hash;
-                final_message.extension_version = mhhh_version;
-                sendAlready(url, final_message);
-            }
-        });
-    }
-
-    function sendAlready(url, fin_message) {
-        // Send to database
-        $.post(url, fin_message)
-            .done(data => {
-                if (data) {
-                    const response = JSON.parse(data);
-                    showFlashMessage(response.status, response.message);
-                }
-            });
     }
 
     /**
