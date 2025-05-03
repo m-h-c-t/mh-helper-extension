@@ -10,21 +10,24 @@ export abstract class AjaxSuccessHandler {
 export abstract class ValidatedAjaxSuccessHandler extends AjaxSuccessHandler {
     abstract readonly schema: z.ZodSchema;
 
-    constructor(private readonly logger: LoggerService) {
+    constructor(protected readonly logger: LoggerService) {
         super();
     }
 
     async execute(responseJSON: HgResponse): Promise<void> {
+        let data: z.infer<typeof this.schema>;
         try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const data = await this.schema.parseAsync(responseJSON);
-            await this.validatedExecute(data);
+            data = this.schema.parse(responseJSON);
         } catch (e) {
             if (e instanceof z.ZodError) {
                 this.logger.warn(`Couldn't validate JSON response`, e);
             }
-            throw e;
+
+            return;
         }
+
+        await this.validatedExecute(data);
     }
 
     protected abstract validatedExecute(data: z.infer<typeof this.schema>): Promise<void>;
