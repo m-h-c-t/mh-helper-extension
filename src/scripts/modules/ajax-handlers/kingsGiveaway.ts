@@ -1,22 +1,21 @@
-import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
+import {ValidatedAjaxSuccessHandler} from "./ajaxSuccessHandler";
+import {KingsGiveawayResponse, kingsGiveawayResponseSchema} from "./kingsGiveaway.types";
+import {ApiService} from "@scripts/services/api.service";
 import {SubmissionService} from "@scripts/services/submission.service";
 import {HgItem} from "@scripts/types/mhct";
 import {LoggerService} from "@scripts/util/logger";
-import {KingsGiveawayResponse} from "./kingsGiveaway.types";
-import {CustomConvertibleIds, EventDates} from "@scripts/util/constants";
-import {parseHgInt} from "@scripts/util/number";
-import {hasEventEnded} from "@scripts/util/time";
+import {CustomConvertibleIds} from "@scripts/util/constants";
+import {z} from "zod";
 
-export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
-    /**
-     * Create a new instance of KingsGiveawayAjaxHandler
-     * @param logger logger to log events
-     * @param submitConvertibleCallback delegate to submit convertibles to mhct
-     */
+export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
+    private itemCache: Record<string, number> | null = null;
+    readonly schema = kingsGiveawayResponseSchema;
+
     constructor(
-        private readonly logger: LoggerService,
-        private readonly submissionService: SubmissionService) {
-        super();
+        logger: LoggerService,
+        private readonly submissionService: SubmissionService,
+        private readonly apiService: ApiService) {
+        super(logger);
     }
 
     match(url: string): boolean {
@@ -24,22 +23,12 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
             return false;
         }
 
-        if (hasEventEnded(EventDates.KingsGiveawayEndDate)) {
-            return false;
-        }
-
         return true;
     }
 
-    async execute(responseJSON: unknown): Promise<void> {
-        if (!this.isKgaResponse(responseJSON)) {
-            this.logger.debug("Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.");
-            return;
-        }
-
-        // Both of these functions assume the result is mini prize pack opening response
-        await this.recordPrizePack(responseJSON);
-        await this.recordVault(responseJSON);
+    protected async validatedExecute(data: z.infer<typeof this.schema>): Promise<void> {
+        await this.recordPrizePack(data);
+        await this.recordVault(data);
     }
 
     /**
@@ -69,7 +58,7 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
         const convertible = {
             name: "King's Mini Prize Pack",
             id: CustomConvertibleIds.KingsMiniPrizePack,
-            quantity: parseHgInt(result.quantity),
+            quantity: result.quantity,
         };
 
         const inventoryWithExtraMap: Record<string, {name: string, item_id?: number} | undefined> = {
@@ -89,7 +78,7 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
 
                 const hgItem: HgItem = {
                     id: itemId,
-                    quantity: parseHgInt(item.quantity),
+                    quantity: item.quantity,
                     name: item.name,
                 };
                 items.push(hgItem);
@@ -106,6 +95,8 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
     }
 
     async recordVault(responseJSON: KingsGiveawayResponse) {
+        this.itemCache ??= await this.cacheMouseRipItems();
+
         const kga = responseJSON.kings_giveaway;
 
         // 10th opening response: remaining_openable_prize_packs turns null and vault_is_open is true
@@ -122,7 +113,7 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
         // vault_prizes don't have an id needed to submit with convertible
         // need to get them manually from the table below
         const items: HgItem[] = kga.vault_prizes.map(i => {
-            const id = KingsGiveawayAjaxHandler.KingsVaultItemTypeToId[i.type];
+            const id = this.itemCache![i.type];
             if (id == null) {
                 throw new Error(`Unknown item type '${i.type}' in King's Vault`);
             }
@@ -130,40 +121,32 @@ export class KingsGiveawayAjaxHandler extends AjaxSuccessHandler {
             return {
                 id: id,
                 name: i.name,
-                quantity: parseHgInt(i.quantity),
+                quantity: i.quantity,
             };
         });
 
         await this.submissionService.submitEventConvertible(convertible, items);
     }
 
-    /**
-     * Validates that the given object is a JSON response from opening a bonus mini prize pack
-     * @param responseJSON
-     * @returns
-     */
-    private isKgaResponse(responseJSON: unknown): responseJSON is KingsGiveawayResponse {
-        const resultKey: keyof KingsGiveawayResponse = 'kings_giveaway_result';
-        const kgaKey: keyof KingsGiveawayResponse = 'kings_giveaway';
-        return responseJSON != null &&
-            typeof responseJSON === 'object' &&
-            resultKey in responseJSON &&
-            kgaKey in responseJSON;
+    async cacheMouseRipItems(): Promise<Record<string, number>> {
+        const response = await this.apiService.send("GET", "https://api.mouse.rip/items", null);
+        if (!response.ok) {
+            throw new Error("Failed to fetch items from MouseRip");
+        }
+
+        const data: unknown = await response.json();
+        const parsedData = KingsGiveawayAjaxHandler.mouseRipItemsSchema.parse(data);
+        // Convert the parsed data to a record with item type as keys
+        const itemCache: Record<string, number> = {};
+        parsedData.forEach((item) => {
+            itemCache[item.type] = item.id;
+        });
+
+        return itemCache;
     }
 
-    private static KingsVaultItemTypeToId: Record<string, number | undefined> = {
-        'ancient_relic_collectible': 923,
-        'baitkeep_trinket': 1815,
-        'extreme_regal_trinket': 2542,
-        'gold_stat_item': 431,
-        'prize_credit_stat_item': 420,
-        'party_size_rainbow_scroll_case_convertible': 3243,
-        'rainbow_scroll_case_convertible': 1974,
-        'rainbow_luck_trinket': 1692,
-        'rare_map_dust_stat_item': 926,
-        'super_brie_cheese': 114,
-        'super_regal_trinket': 1982,
-        'ultimate_trinket': 1075,
-        'ultimate_regal_trinket': 3617,
-    };
+    private static mouseRipItemsSchema = z.array(z.object({
+        id: z.number(),
+        type: z.string(),
+    }));
 }

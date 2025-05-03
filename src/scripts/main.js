@@ -33,7 +33,7 @@ import * as detailingFuncs from './modules/details/legacy';
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
-        new successHandlers.KingsGiveawayAjaxHandler(logger, submissionService),
+        new successHandlers.KingsGiveawayAjaxHandler(logger, submissionService, apiService),
         new successHandlers.CheesyPipePartyAjaxHandler(logger, submissionService),
         new successHandlers.SBFactoryAjaxHandler(logger, submissionService),
         new successHandlers.SEHAjaxHandler(logger, submissionService),
