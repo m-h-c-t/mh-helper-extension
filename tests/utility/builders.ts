@@ -12,6 +12,7 @@ export class HgResponseBuilder {
     page?: unknown;
     journalMarkup?: JournalMarkup[];
     inventory?: Record<string, InventoryItem>;
+    unknown?: object;
 
     withActiveTurn(active: boolean) {
         this.activeTurn = active;
@@ -38,6 +39,12 @@ export class HgResponseBuilder {
         return this;
     }
 
+    // This is a placeholder for any other unknown data that may be needed
+    withUnknown(unknown: object) {
+        this.unknown = unknown;
+        return this;
+    }
+
     public build(): HgResponse {
         this.user ??= new UserBuilder().build();
 
@@ -48,6 +55,7 @@ export class HgResponseBuilder {
             page: this.page,
             journal_markup: this.journalMarkup,
             inventory: this.inventory,
+            ...this.unknown,
         };
     }
 }
