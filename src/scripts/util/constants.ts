@@ -54,13 +54,3 @@ export class CustomConvertibleIds {
     public static readonly HalloweenSpookyShuffleGrandDuke              = 130016;
     public static readonly HalloweenSpookyShuffleGrandDukeDusted        = 130017;
 }
-
-/**
- * Represents event vanishing dates at which point no more ajax requests will be processed.
- *
- * NOT the end date of the event.
- */
-export class EventDates {
-    // KGA
-    public static readonly KingsGiveawayEndDate: Date = new Date("2024-07-09T15:00:00Z");
-}
