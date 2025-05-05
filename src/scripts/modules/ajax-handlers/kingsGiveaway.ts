@@ -139,14 +139,14 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
         // Convert the parsed data to a record with item type as keys
         const itemCache: Record<string, number> = {};
         parsedData.forEach((item) => {
-            itemCache[item.type] = item.id;
+            itemCache[item.type] = item.item_id;
         });
 
         return itemCache;
     }
 
     private static mouseRipItemsSchema = z.array(z.object({
-        id: z.number(),
+        item_id: z.number(),
         type: z.string(),
     }));
 }

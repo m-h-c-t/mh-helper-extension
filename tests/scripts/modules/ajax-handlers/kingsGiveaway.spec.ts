@@ -18,10 +18,10 @@ describe("KingsGiveawayAjaxHandler", () => {
 
     // Mouse RIP item mock
     const knownVaultItems = [
-        //{type: 'extreme_regal_trinket', id: 2542},
-        {type: 'prize_credit_stat_item', id: 420},
-        {type: 'rainbow_scroll_case_convertible', id: 1974},
-        {type: 'rainbow_luck_trinket', id: 1692},
+        //{type: 'extreme_regal_trinket', item_id: 2542},
+        {type: 'prize_credit_stat_item', item_id: 420},
+        {type: 'rainbow_scroll_case_convertible', item_id: 1974},
+        {type: 'rainbow_luck_trinket', item_id: 1692},
     ];
 
     beforeEach(() => {
