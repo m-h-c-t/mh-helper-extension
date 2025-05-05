@@ -51,15 +51,9 @@ describe('SubmissionService', () => {
         mockApiService = {
             send: jest.fn().mockImplementation((method, url, body) => {
                 if (url === 'uuid-url') {
-                    return Promise.resolve({
-                        ok: true,
-                        text: () => Promise.resolve('test-uuid')
-                    }) as unknown as Promise<Response>;
+                    return Promise.resolve('test-uuid');
                 } else {
-                    return Promise.resolve({
-                        ok: true,
-                        json: () => Promise.resolve({success: true, message: 'Success', status: 'success'})
-                    }) as unknown as Promise<Response>;
+                    return Promise.resolve({success: true, message: 'Success', status: 'success'});
                 }
             })
         } as unknown as jest.Mocked<ApiService>;
@@ -114,7 +108,8 @@ describe('SubmissionService', () => {
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
                     entry_timestamp: testTimestamp
-                })
+                }),
+                true
             );
 
             // Verify second API call (submission)
@@ -129,7 +124,8 @@ describe('SubmissionService', () => {
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
                     entry_timestamp: testTimestamp,
-                })
+                }),
+                true
             );
 
             expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
@@ -210,7 +206,8 @@ describe('SubmissionService', () => {
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
                     entry_timestamp: testTimestamp
-                })
+                }),
+                true
             );
         });
 
@@ -256,7 +253,8 @@ describe('SubmissionService', () => {
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
                     entry_timestamp: testTimestamp
-                })
+                }),
+                true
             );
         });
 
@@ -304,7 +302,8 @@ describe('SubmissionService', () => {
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
                     entry_timestamp: testTimestamp
-                })
+                }),
+                true
             );
 
             // Verify second API call (submission)
@@ -318,7 +317,8 @@ describe('SubmissionService', () => {
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
                     entry_timestamp: testTimestamp
-                })
+                }),
+                true
             );
 
             expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
@@ -375,7 +375,8 @@ describe('SubmissionService', () => {
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
                     entry_timestamp: testTimestamp
-                })
+                }),
+                true
             );
 
             // Verify second API call (submission)
@@ -389,7 +390,8 @@ describe('SubmissionService', () => {
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
                     entry_timestamp: testTimestamp
-                })
+                }),
+                true
             );
 
             expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
@@ -424,20 +426,16 @@ describe('SubmissionService', () => {
         it('logs error when UUID request fails', async () => {
             mockApiService.send.mockImplementation((method, url, body) => {
                 if (url === 'uuid-url') {
-                    return Promise.resolve({
-                        ok: false,
-                        status: 500,
-                        statusText: 'Server Error'
-                    }) as unknown as Promise<Response>;
+                    return Promise.reject(new Error("UUID request failed"));
                 }
-                return Promise.resolve({}) as unknown as Promise<Response>;
+                return Promise.resolve({});
             });
 
             await service.submitEventConvertible(convertible, items);
 
             expect(mockLogger.error).toHaveBeenCalledWith(
-                "Failed to get UUID",
-                expect.objectContaining({ok: false})
+                "An error occurred while submitting to MHCT",
+                new Error("UUID request failed")
             );
             expect(mockApiService.send).toHaveBeenCalledTimes(1);
         });

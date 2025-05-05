@@ -96,23 +96,21 @@ export class SubmissionService {
         uuidRequestBody.hunter_id_hash = basicInfo.hunter_id_hash;
         uuidRequestBody.entry_timestamp = timestamp;
 
-        const uuidResponse = await this.apiService.send('POST', this.environmentService.getUuidUrl(), uuidRequestBody);
+        try {
+            const uuid = await this.apiService.send('POST', this.environmentService.getUuidUrl(), uuidRequestBody, true);
 
-        if (!uuidResponse.ok) {
-            this.logger.error("Failed to get UUID", uuidResponse);
-            return;
-        }
+            const submissionBody: Record<string, unknown> = message;
+            submissionBody.uuid = uuid;
+            Object.assign(submissionBody, uuidRequestBody);
 
-        const submissionBody: Record<string, unknown> = message;
-        submissionBody.uuid = await uuidResponse.text();
-        Object.assign(submissionBody, uuidRequestBody);
+            const submissionResponse = await this.apiService.send('POST', url, submissionBody, true);
+            const parsedResponse = MhctResponseSchema.safeParse(submissionResponse);
 
-        const submissionResponse = await this.apiService.send('POST', url, submissionBody);
-
-        const response: unknown = await submissionResponse.json();
-        const parsedResponse = MhctResponseSchema.safeParse(response);
-        if (parsedResponse.success) {
-            this.showFlashMessage(parsedResponse.data.message, parsedResponse.data.status);
+            if (parsedResponse.success) {
+                this.showFlashMessage(parsedResponse.data.message, parsedResponse.data.status);
+            }
+        } catch (e) {
+            this.logger.error('An error occurred while submitting to MHCT', e);
         }
     }
 }
