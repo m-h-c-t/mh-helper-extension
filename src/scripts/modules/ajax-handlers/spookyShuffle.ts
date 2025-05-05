@@ -1,22 +1,26 @@
-import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
+import {ValidatedAjaxSuccessHandler} from "./ajaxSuccessHandler";
+import {MouseRipApiService} from "@scripts/services/mouserip-api.service";
 import {SubmissionService} from "@scripts/services/submission.service";
 import {HgItem} from "@scripts/types/mhct";
 import {LoggerService} from "@scripts/util/logger";
-import {SpookyShuffleResponse, spookyShuffleResponseSchema, TitleRange} from "./spookyShuffle.types";
+import {spookyShuffleResponseSchema, TitleRange} from "./spookyShuffle.types";
 import {CustomConvertibleIds} from "@scripts/util/constants";
-import {parseHgInt} from "@scripts/util/number";
-import * as hgFuncs from "@scripts/util/hgFunctions";
+import {z} from "zod";
 
-export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
+export class SpookyShuffleAjaxHandler extends ValidatedAjaxSuccessHandler {
+    readonly schema = spookyShuffleResponseSchema;
+    private itemIdByNameCache: Record<string, number> | null = null;
+
     /**
      * Create a new instance of SpookyShuffleAjaxHandler
      * @param logger logger to log events
      * @param submitConvertibleCallback delegate to submit convertibles to mhct
      */
     constructor(
-        private readonly logger: LoggerService,
-        private readonly submissionService: SubmissionService) {
-        super();
+        logger: LoggerService,
+        private readonly submissionService: SubmissionService,
+        private readonly mouseRipApiService: MouseRipApiService) {
+        super(logger);
     }
 
     match(url: string): boolean {
@@ -27,20 +31,8 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
         return true;
     }
 
-    async execute(responseJSON: unknown): Promise<void> {
-        if (!this.isSpookyShuffleResponse(responseJSON)) {
-            return;
-        }
-
-        await this.recordBoard(responseJSON);
-    }
-
-    /**
-     * Record complete Spooky Shuffle Board as convertible in MHCT
-     * @param responseJSON
-     */
-    async recordBoard(responseJSON: SpookyShuffleResponse) {
-        const result = responseJSON.memory_game;
+    async validatedExecute(response: z.infer<typeof this.schema>): Promise<void> {
+        const result = response.memory_game;
 
         if (!result.is_complete || !result.has_selected_testing_pair) {
             this.logger.debug('Spooky Shuffle board is not complete yet.');
@@ -53,14 +45,14 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
         try {
             // We don't know the item id's of the cards. Hit MH inventory API to get the item names and ids
             // to convert the names to ids.
-            const itemMap = await this.fetchItemNameToIdMap();
+            this.itemIdByNameCache ??= await this.fetchItemNameToIdMap();
 
             result.cards.forEach(c => {
                 // All cards need to be revealed and also exist in name to id map.
                 // An error here typically means:
                 // 1. Didn't fetch the required item classification
                 // 2. The item isn't in the users inventory (unlikely unless the user used it between start and finish of the board).
-                if (!c.is_revealed || itemMap[c.name] == null) {
+                if (!c.is_revealed || this.itemIdByNameCache![c.name] == null) {
                     throw new Error(`Item '${c.name}' wasn't found in item map. Check its classification type`);
                 }
 
@@ -71,7 +63,7 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
                 processed.add(c.name);
 
                 convertibleContent.push({
-                    id: itemMap[c.name],
+                    id: this.itemIdByNameCache![c.name],
                     name: c.name,
                     quantity: c.quantity,
                 });
@@ -107,34 +99,14 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
     }
 
     async fetchItemNameToIdMap(): Promise<Record<string, number>> {
-        // async fetch of all items that are of the same classification of the rewards in spooky shuffle
-        const itemArray = await hgFuncs.getItemsByClass(['bait', 'stat', 'trinket', 'crafting_item', 'potion', 'convertible'], true);
+        const itemArray = await this.mouseRipApiService.getAllItems();
 
         const itemMap = itemArray.reduce((map: Record<string, number>, item) => {
-            map[item.name] = parseHgInt(item.item_id);
+            map[item.name] = item.item_id;
             return map;
         }, {});
 
-        // Gold is never returned as an item so need to add manually
-        itemMap.Gold = 431;
-
         return itemMap;
-    }
-
-    /**
-     * Validates that the given object is a JSON response from interacting with spooky shuffle board
-     * @param responseJSON
-     * @returns
-     */
-    private isSpookyShuffleResponse(responseJSON: unknown): responseJSON is SpookyShuffleResponse {
-        const response = spookyShuffleResponseSchema.safeParse(responseJSON);
-
-        if (!response.success) {
-            const errorMessage = response.error.message;
-            this.logger.warn("Unexpected spooky shuffle response object.", errorMessage);
-        }
-
-        return response.success;
     }
 
     static ShuffleConvertibleIds: Record<TitleRange, number> = {
