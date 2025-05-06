@@ -1,6 +1,6 @@
 import {ValidatedAjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {KingsGiveawayResponse, kingsGiveawayResponseSchema} from "./kingsGiveaway.types";
-import {ApiService} from "@scripts/services/api.service";
+import {MouseRipApiService} from "@scripts/services/mouserip-api.service";
 import {SubmissionService} from "@scripts/services/submission.service";
 import {HgItem} from "@scripts/types/mhct";
 import {LoggerService} from "@scripts/util/logger";
@@ -14,7 +14,7 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
     constructor(
         logger: LoggerService,
         private readonly submissionService: SubmissionService,
-        private readonly apiService: ApiService) {
+        private readonly mouseRipApiService: MouseRipApiService) {
         super(logger);
     }
 
@@ -95,14 +95,14 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
     }
 
     async recordVault(responseJSON: KingsGiveawayResponse) {
-        this.itemCache ??= await this.cacheMouseRipItems();
-
         const kga = responseJSON.kings_giveaway;
 
         // 10th opening response: remaining_openable_prize_packs turns null and vault_is_open is true
         if (kga.remaining_openable_prize_packs != null || !kga.vault_is_open || kga.vault_prizes.length == 0) {
             return;
         }
+
+        this.itemCache ??= await this.cacheMouseRipItems();
 
         const convertible = {
             id: CustomConvertibleIds.KingsGiveawayVault,
@@ -129,24 +129,14 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
     }
 
     async cacheMouseRipItems(): Promise<Record<string, number>> {
-        const response = await this.apiService.send("GET", "https://api.mouse.rip/items", null);
-        if (!response.ok) {
-            throw new Error("Failed to fetch items from MouseRip");
-        }
+        const parsedData = await this.mouseRipApiService.getAllItems();
 
-        const data: unknown = await response.json();
-        const parsedData = KingsGiveawayAjaxHandler.mouseRipItemsSchema.parse(data);
         // Convert the parsed data to a record with item type as keys
         const itemCache: Record<string, number> = {};
         parsedData.forEach((item) => {
-            itemCache[item.type] = item.item_id;
+            itemCache[item.type] = item.id;
         });
 
         return itemCache;
     }
-
-    private static mouseRipItemsSchema = z.array(z.object({
-        item_id: z.number(),
-        type: z.string(),
-    }));
 }

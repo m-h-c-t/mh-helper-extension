@@ -1,5 +1,5 @@
 import {KingsGiveawayAjaxHandler} from "@scripts/modules/ajax-handlers/kingsGiveaway";
-import {ApiService} from "@scripts/services/api.service";
+import {MouseRipApiService} from "@scripts/services/mouserip-api.service";
 import {SubmissionService} from "@scripts/services/submission.service";
 import {CustomConvertibleIds} from "@scripts/util/constants";
 import {LoggerService} from "@scripts/util/logger";
@@ -8,7 +8,7 @@ import {mock} from "jest-mock-extended";
 
 const logger = mock<LoggerService>();
 const submissionService = mock<SubmissionService>();
-const apiService = mock<ApiService>();
+const mouseRipApiService = mock<MouseRipApiService>();
 
 const kga_url = "mousehuntgame.com/managers/ajax/events/kings_giveaway.php";
 
@@ -18,32 +18,19 @@ describe("KingsGiveawayAjaxHandler", () => {
 
     // Mouse RIP item mock
     const knownVaultItems = [
-        //{type: 'extreme_regal_trinket', item_id: 2542},
-        {type: 'prize_credit_stat_item', item_id: 420},
-        {type: 'rainbow_scroll_case_convertible', item_id: 1974},
-        {type: 'rainbow_luck_trinket', item_id: 1692},
+        //{type: 'extreme_regal_trinket', id: 2542},
+        {type: 'prize_credit_stat_item', name: 'King\'s Credit', id: 420},
+        {type: 'rainbow_scroll_case_convertible', name: 'Rainbow Scroll Case', id: 1974},
+        {type: 'rainbow_luck_trinket', name: 'Rainbow Luck Charm', id: 1692},
     ];
 
     beforeEach(() => {
         jest.clearAllMocks();
 
-        apiService.send.mockImplementation((method, url, body) => {
-
-            if (url === "https://api.mouse.rip/items")
-            {
-                return Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve(knownVaultItems)
-                } as unknown as Promise<Response>);
-            }
-
-            return Promise.resolve({
-                ok: false
-            }) as unknown as Promise<Response>;
-        });
+        mouseRipApiService.getAllItems.mockResolvedValue(knownVaultItems);
 
         responseBuilder = new HgResponseBuilder();
-        handler = new KingsGiveawayAjaxHandler(logger, submissionService, apiService);
+        handler = new KingsGiveawayAjaxHandler(logger, submissionService, mouseRipApiService);
     });
 
     describe("match", () => {

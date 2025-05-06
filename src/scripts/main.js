@@ -2,6 +2,7 @@
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './util/logger';
 import {EnvironmentService} from "./services/environment.service";
+import {MouseRipApiService} from "./services/mouserip-api.service";
 import {SubmissionService} from "./services/submission.service";
 import {ApiService} from "./services/api.service";
 import {hgResponseSchema} from "./types/hg";
@@ -30,10 +31,11 @@ import * as detailingFuncs from './modules/details/legacy';
         }),
         showFlashMessage
     );
+    const mouseRipApiService = new MouseRipApiService(logger, apiService);
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
-        new successHandlers.KingsGiveawayAjaxHandler(logger, submissionService, apiService),
+        new successHandlers.KingsGiveawayAjaxHandler(logger, submissionService, mouseRipApiService),
         new successHandlers.CheesyPipePartyAjaxHandler(logger, submissionService),
         new successHandlers.SBFactoryAjaxHandler(logger, submissionService),
         new successHandlers.SEHAjaxHandler(logger, submissionService),
