@@ -41,6 +41,7 @@ import * as detailingFuncs from './modules/details/legacy';
         new successHandlers.SEHAjaxHandler(logger, submissionService),
         new successHandlers.SpookyShuffleAjaxHandler(logger, submissionService),
         new successHandlers.TreasureMapHandler(logger, submissionService),
+        new successHandlers.UseConvertibleAjaxHandler(logger, submissionService),
     ];
 
     async function main() {
@@ -367,10 +368,7 @@ import * as detailingFuncs from './modules/details/legacy';
 
         $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
             const url = ajaxOptions.url;
-            if (url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php")) {
-                // Calls submitItemConvertible which checks if tracking-convertibles is on
-                recordConvertible(xhr);
-            } else if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
+            if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
                 // This shouldn't be hit if tracking-crowns if off. See URLDiffCheck.
                 if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
                     recordCrowns(xhr, url);
@@ -641,58 +639,6 @@ import * as detailingFuncs from './modules/details/legacy';
             new_details = hunt.more_details;
         }
         return new_details;
-    }
-
-    // Record convertible items
-    function recordConvertible(xhr) {
-        const response = xhr?.responseJSON;
-
-        if (!response?.convertible_open?.items || !response.convertible_open.type) {
-            return;
-        }
-
-        let convertible;
-        const opened_key = response.convertible_open.type;
-        if (Object.prototype.hasOwnProperty.call(response.items, opened_key)) {
-            convertible = response.items[opened_key];
-        }
-
-        if (!convertible) {
-            logger.warn("Couldn't find any items from opened convertible");
-            return;
-        }
-
-        const results = response.convertible_open.items;
-        const our_map = {
-            gold_stat_item: 431,
-            point_stat_item: 644,
-        };
-        const items = [];
-        results.forEach(result => {
-            if  (Object.prototype.hasOwnProperty.call(response.inventory, result.type)) {
-                items.push({
-                    id: response.inventory[result.type].item_id,
-                    type: result.type,
-                    name: result.name,
-                    pluralized_name: result.pluralized_name || '',
-                    quantity: result.quantity,
-                });
-            }
-            else if (result.type in our_map) {
-                items.push({
-                    id: our_map[result.type],
-                    type: result.type,
-                    name: result.name,
-                    pluralized_name: result.pluralized_name || '',
-                    quantity: result.quantity,
-                });
-            }
-        });
-        if (items.length === 0) {
-            return;
-        }
-
-        submissionService.submitItemConvertible(convertible, items);
     }
 
     /**

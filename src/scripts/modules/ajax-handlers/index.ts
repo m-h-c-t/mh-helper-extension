@@ -6,3 +6,4 @@ export * from "./sbFactory";
 export * from "./sbFactory.CheesyPipeParty";
 export * from "./treasureMap";
 export * from "./spookyShuffle";
+export * from "./useConvertible";
