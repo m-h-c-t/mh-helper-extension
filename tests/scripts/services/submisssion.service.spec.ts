@@ -53,7 +53,7 @@ describe('SubmissionService', () => {
                 if (url === 'uuid-url') {
                     return Promise.resolve('test-uuid');
                 } else {
-                    return Promise.resolve({success: true, message: 'Success', status: 'success'});
+                    return Promise.resolve({success: true, message: 'Success message', status: 'success'});
                 }
             })
         } as unknown as jest.Mocked<ApiService>;
@@ -128,7 +128,7 @@ describe('SubmissionService', () => {
                 true
             );
 
-            expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
+            expect(mockShowFlashMessage).toHaveBeenCalledWith('success', 'Success message');
         });
 
         it('does not submit when tracking-events is disabled', async () => {
@@ -164,7 +164,7 @@ describe('SubmissionService', () => {
             expect(mockEnvironmentService.getUuidUrl).toHaveBeenCalled();
             expect(mockEnvironmentService.getConvertibleIntakeUrl).toHaveBeenCalled();
             expect(mockApiService.send).toHaveBeenCalledTimes(2);
-            expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
+            expect(mockShowFlashMessage).toHaveBeenCalledWith('success', 'Success message');
         });
 
         it('does not submit when tracking-convertibles is disabled', async () => {
@@ -321,7 +321,7 @@ describe('SubmissionService', () => {
                 true
             );
 
-            expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
+            expect(mockShowFlashMessage).toHaveBeenCalledWith('success', 'Success message');
         });
 
         it('does not submit when tracking-hunts is disabled', async () => {
@@ -394,7 +394,7 @@ describe('SubmissionService', () => {
                 true
             );
 
-            expect(mockShowFlashMessage).toHaveBeenCalledWith('Success', 'success');
+            expect(mockShowFlashMessage).toHaveBeenCalledWith('success', 'Success message');
         });
 
         it('does not submit when tracking-hunts is disabled', async () => {
