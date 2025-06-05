@@ -16,7 +16,7 @@ export class SubmissionService {
             hunter_id_hash: string;
             mhhh_version: number;
         },
-        private readonly showFlashMessage: (message: string, status: string) => void,
+        private readonly showFlashMessage: (type: "error" | "warning" | "success", message: string) => void,
     ) {
         void getSettings().then(settings => {
             this.userSettings = settings;
@@ -107,7 +107,7 @@ export class SubmissionService {
             const parsedResponse = MhctResponseSchema.safeParse(submissionResponse);
 
             if (parsedResponse.success) {
-                this.showFlashMessage(parsedResponse.data.message, parsedResponse.data.status);
+                this.showFlashMessage(parsedResponse.data.status, parsedResponse.data.message);
             }
         } catch (e) {
             this.logger.error('An error occurred while submitting to MHCT', e);

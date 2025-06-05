@@ -69,7 +69,7 @@ export const hgItemSchema = z.object({
 export type HgItem = z.infer<typeof hgItemSchema>;
 
 export const MhctResponseSchema = z.object({
-    status: z.string(),
+    status: z.enum(['error', 'warning', 'success']),
     message: z.string(),
 });
 export type MhctResponse = z.infer<typeof MhctResponseSchema>;
