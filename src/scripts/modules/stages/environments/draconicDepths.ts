@@ -1,8 +1,6 @@
 import type {User} from '@scripts/types/hg';
 import type {IStager} from '../stages.types';
 import type {IntakeMessage} from '@scripts/types/mhct';
-import {CavernTypes} from '@scripts/types/hg/quests/draconicDepths';
-
 
 export class DraconicDepthsStager implements IStager {
     readonly environment: string = 'Draconic Depths';
@@ -15,20 +13,6 @@ export class DraconicDepthsStager implements IStager {
         }
 
         if (quest.in_cavern) {
-            // Make a stage names similar to this format:
-            // Cavern - 2x Fire 0-99
-            // Cavern - 1x Poison 100-249
-            // Cavern - 3x Ice 750+
-            let multiplier: 1 | 2 | 3 | '?' = 1;
-            if (quest.cavern.type.startsWith('double')) {
-                multiplier = 2;
-            } else if (quest.cavern.type.startsWith('triple')) {
-                multiplier = 3;
-            } else if (!CavernTypes.includes(quest.cavern.type)) {
-                multiplier = '?';
-            }
-
-            // capitalize first letter of category: poison -> Poison
             const category = quest.cavern.category.charAt(0).toUpperCase() + quest.cavern.category.slice(1);
 
             const currentTier = quest.cavern.loot_tier.current_tier;
@@ -45,9 +29,9 @@ export class DraconicDepthsStager implements IStager {
             }
 
             if (quest.cavern.type === 'elemental_dragon_den') {
-                message.stage = `Cavern - Elemental ${range}`;
+                message.stage = `Cavern: Elemental ${range}`;
             } else {
-                message.stage = `Cavern - ${multiplier}x ${category} ${range}`;
+                message.stage = `Cavern: ${category} ${range}`;
             }
 
         } else {
