@@ -37,22 +37,3 @@ export function calcZokorHuntDetails(message, user, user_post, hunt) {
         };
     }
 }
-
-/**
- * Report the progress on Technic and Mystic pieces. Piece progress is reported as 0 - 16 for each
- * side, where 0-7 -> only Pawns, 8/9 -> Pawns + Knights, and 16 = means King caught (only Pawns + Rooks available)
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcZugzwangsTowerHuntDetails(message, user, user_post, hunt) {
-    const attrs = user.viewing_atts;
-    const zt = {
-        amplifier: parseInt(attrs.zzt_amplifier, 10),
-        technic: parseInt(attrs.zzt_tech_progress, 10),
-        mystic: parseInt(attrs.zzt_mage_progress, 10),
-    };
-    zt.cm_available = (zt.technic === 16 || zt.mystic === 16) && message.cheese.id === 371;
-    return zt;
-}

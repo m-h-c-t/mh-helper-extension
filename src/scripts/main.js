@@ -1088,7 +1088,6 @@ import * as detailingFuncs from './modules/details/legacy';
     const location_huntdetails_lookup = {
         "Claw Shot City": detailingFuncs.calcClawShotCityHuntDetails,
         "Zokor": detailingFuncs.calcZokorHuntDetails,
-        "Zugzwang's Tower": detailingFuncs.calcZugzwangsTowerHuntDetails,
     };
 
     /** @type { Object<string, import("./modules/details/details.types").IEnvironmentDetailer> } */
