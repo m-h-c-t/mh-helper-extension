@@ -1126,7 +1126,6 @@ import * as detailingFuncs from './modules/details/legacy';
         // Then, get any global hunt details (such as from ongoing events, auras, etc).
         const globalHuntDetails = [
             detailingFuncs.calcHalloweenHuntDetails,
-            detailingFuncs.calcLNYHuntDetails,
             detailingFuncs.calcLuckyCatchHuntDetails,
             detailingFuncs.calcPillageHuntDetails,
         ].map((details_func) => details_func(message, user, user_post, hunt))
