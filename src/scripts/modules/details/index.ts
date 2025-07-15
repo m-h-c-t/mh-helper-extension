@@ -2,6 +2,7 @@ import type {IDetailer, IEnvironmentDetailer} from './details.types';
 import {BristleWoodsRiftDetailer} from './environments/bristleWoodsRift';
 import {DraconicDepthsDetailer} from './environments/draconicDepths';
 import {FieryWarpathDetailer} from './environments/fieryWarpath';
+import {FortRoxDetailer} from './environments/fortRox';
 import {IceFortressDetailer} from './environments/iceFortress';
 import {HalloweenDetailer} from './global/halloween';
 import {LuckyCatchDetailer} from './global/luckyCatch';
@@ -13,6 +14,7 @@ const environmentDetailerModules: IEnvironmentDetailer[]  = [
     new BristleWoodsRiftDetailer(),
     new DraconicDepthsDetailer(),
     new FieryWarpathDetailer(),
+    new FortRoxDetailer(),
     new IceFortressDetailer(),
 ];
 

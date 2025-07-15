@@ -16,39 +16,6 @@ export function calcClawShotCityHuntDetails(message, user, user_post, hunt) {
 }
 
 /**
- * Categorize the available buffs that may be applied on the hunt, such as an active Tower's
- * auto-catch chance, or the innate ability to weaken all Weremice.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcFortRoxHuntDetails(message, user, user_post, hunt) {
-    const quest = user.quests.QuestFortRox;
-    const ballista_level = parseInt(quest.fort.b.level, 10);
-    const cannon_level = parseInt(quest.fort.c.level, 10);
-    const details = {};
-    if (quest.is_night) {
-        Object.assign(details, {
-            weakened_weremice:      (ballista_level >= 1),
-            can_autocatch_weremice: (ballista_level >= 2),
-            autocatch_nightmancer:  (ballista_level >= 3),
-
-            weakened_critters:      (cannon_level >= 1),
-            can_autocatch_critters: (cannon_level >= 2),
-            autocatch_nightfire:    (cannon_level >= 3),
-        });
-    }
-    // The mage tower's auto-catch can be applied during Day and Dawn phases, too.
-    const tower_state = quest.tower_status.includes("inactive")
-        ? 0
-        : parseInt(quest.fort.t.level, 10);
-    details.can_autocatch_any = (tower_state >= 2);
-
-    return details;
-}
-
-/**
  * Report whether certain mice were attractable on the hunt.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
