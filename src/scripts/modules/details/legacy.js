@@ -1,30 +1,4 @@
 /**
- * Track additional state for the Bristle Woods Rift
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcBristleWoodsRiftHuntDetails(message, user, user_post, hunt) {
-    const quest = user.quests.QuestRiftBristleWoods;
-    const details = {
-        has_hourglass: quest.items.rift_hourglass_stat_item.quantity >= 1,
-        chamber_status: quest.chamber_status,
-        cleaver_status: quest.cleaver_status,
-    };
-    // Buffs & debuffs are 'active', 'removed', or ""
-    for (const [key, value] of Object.entries(quest.status_effects)) {
-        details[`effect_${key}`] = value === 'active';
-    }
-
-    if (quest.chamber_name === 'Acolyte') {
-        details.obelisk_charged = quest.obelisk_percent === 100;
-        details.acolyte_sand_drained = details.obelisk_charged && quest.acolyte_sand === 0;
-    }
-    return details;
-}
-
-/**
  * Track the poster type. Specific available mice require information from `treasuremap.php`.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).

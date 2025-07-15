@@ -1086,7 +1086,6 @@ import * as detailingFuncs from './modules/details/legacy';
 
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
-        "Bristle Woods Rift": detailingFuncs.calcBristleWoodsRiftHuntDetails,
         "Claw Shot City": detailingFuncs.calcClawShotCityHuntDetails,
         "Fiery Warpath": detailingFuncs.calcFieryWarpathHuntDetails,
         "Fort Rox": detailingFuncs.calcFortRoxHuntDetails,

@@ -1,4 +1,5 @@
 import type {IDetailer, IEnvironmentDetailer} from './details.types';
+import {BristleWoodsRiftDetailer} from './environments/bristleWoodsRift';
 import {DraconicDepthsDetailer} from './environments/draconicDepths';
 import {IceFortressDetailer} from './environments/iceFortress';
 import {HalloweenDetailer} from './global/halloween';
@@ -8,6 +9,7 @@ import {PillageDetailer} from './global/pillage';
 
 // Detailer for specific location
 const environmentDetailerModules: IEnvironmentDetailer[]  = [
+    new BristleWoodsRiftDetailer(),
     new DraconicDepthsDetailer(),
     new IceFortressDetailer(),
 ];
