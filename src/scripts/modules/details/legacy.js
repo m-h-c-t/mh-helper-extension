@@ -16,30 +16,6 @@ export function calcClawShotCityHuntDetails(message, user, user_post, hunt) {
 }
 
 /**
- * For Lactrodectus hunts, if MBW can be attracted (and is not guaranteed), record the rage state.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt) {
-    if (message.cheese.id === 1646) {
-        const zones = user.quests.QuestRiftWhiskerWoods.zones;
-        const rage = {
-            clearing: parseInt(zones.clearing.level, 10),
-            tree: parseInt(zones.tree.level, 10),
-            lagoon: parseInt(zones.lagoon.level, 10),
-        };
-        const total_rage = rage.clearing + rage.tree + rage.lagoon;
-        if (total_rage < 150 && total_rage >= 75) {
-            if (rage.clearing > 24 && rage.tree > 24 && rage.lagoon > 24) {
-                return Object.assign(rage, {total_rage});
-            }
-        }
-    }
-}
-
-/**
  * For the level-3 districts, report whether the boss was defeated or not.
  * For the Minotaur lair, report the categorical label, number of catches, and meter width.
  * @param {Object <string, any>} message The message to be sent.

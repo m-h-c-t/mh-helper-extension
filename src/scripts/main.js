@@ -1087,7 +1087,6 @@ import * as detailingFuncs from './modules/details/legacy';
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
         "Claw Shot City": detailingFuncs.calcClawShotCityHuntDetails,
-        "Whisker Woods Rift": detailingFuncs.calcWhiskerWoodsRiftHuntDetails,
         "Zokor": detailingFuncs.calcZokorHuntDetails,
         "Zugzwang's Tower": detailingFuncs.calcZugzwangsTowerHuntDetails,
     };
