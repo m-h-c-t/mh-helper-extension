@@ -6,6 +6,7 @@ import {FortRoxDetailer} from './environments/fortRox';
 import {HarbourDetailer} from './environments/harbour';
 import {IceFortressDetailer} from './environments/iceFortress';
 import {SandCryptsDetailer} from './environments/sandCrypts';
+import {TableOfContentsDetailer} from './environments/tableOfContents';
 import {HalloweenDetailer} from './global/halloween';
 import {LuckyCatchDetailer} from './global/luckyCatch';
 import {LunarNewYearDetailer} from './global/lunarNewYear';
@@ -20,6 +21,7 @@ const environmentDetailerModules: IEnvironmentDetailer[]  = [
     new HarbourDetailer(),
     new IceFortressDetailer(),
     new SandCryptsDetailer(),
+    new TableOfContentsDetailer(),
 ];
 
 // Detailers that don't match on location (LNY, Halloween)

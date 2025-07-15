@@ -16,22 +16,6 @@ export function calcClawShotCityHuntDetails(message, user, user_post, hunt) {
 }
 
 /**
- * Track the current volume if we're in an Encyclopedia
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcTableofContentsHuntDetails(message, user, user_post, hunt) {
-    const quest = user.quests.QuestTableOfContents;
-    if (quest && quest.current_book.volume > 0) {
-        return {
-            volume: quest.current_book.volume,
-        };
-    }
-}
-
-/**
  * Report active augmentations and floor number
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
