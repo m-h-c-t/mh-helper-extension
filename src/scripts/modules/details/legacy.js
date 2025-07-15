@@ -16,27 +16,6 @@ export function calcClawShotCityHuntDetails(message, user, user_post, hunt) {
 }
 
 /**
- * Report active augmentations and floor number
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcValourRiftHuntDetails(message, user, user_post, hunt) {
-    const attrs = user.quests.QuestRiftValour;
-    // active_augmentations is undefined outside of the tower
-    if (attrs.state === "tower") {
-        return {
-            floor: attrs.floor, // exact floor number (can be used to derive prestige and floor_type)
-            // No compelling use case for the following 3 augments at the moment
-            // super_siphon: !!attrs.active_augmentations.ss, // active = true, inactive = false
-            // string_stepping: !!attrs.active_augmentations.sste,
-            // elixir_rain: !!attrs.active_augmentations.er,
-        };
-    }
-}
-
-/**
  * For Lactrodectus hunts, if MBW can be attracted (and is not guaranteed), record the rage state.
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
