@@ -12,7 +12,6 @@ import {z} from "zod";
 import * as successHandlers from './modules/ajax-handlers';
 import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
-import * as detailingFuncs from './modules/details/legacy';
 
 (function () {
     'use strict';
@@ -1084,10 +1083,6 @@ import * as detailingFuncs from './modules/details/legacy';
         }
     }
 
-    /** @type {Object <string, Function>} */
-    const location_huntdetails_lookup = {
-    };
-
     /** @type { Object<string, import("./modules/details/details.types").IEnvironmentDetailer> } */
     const location_detailer_lookup = {};
     for (const detailer of detailers.environmentDetailerModules) {
@@ -1104,22 +1099,16 @@ import * as detailingFuncs from './modules/details/legacy';
      */
     function addHuntDetails(message, user, user_post, hunt) {
         // First, get any location-specific details:
-        const details_func = location_huntdetails_lookup[user.environment_name];
-        let locationHuntDetails = details_func ? details_func(message, user, user_post, hunt) : undefined;
-
+        let locationHuntDetails = {};
         const detailer = location_detailer_lookup[user.environment_name];
         if (detailer) {
             locationHuntDetails = detailer.addDetails(message, user, user_post, hunt);
         }
 
         // Then, get any global hunt details (such as from ongoing events, auras, etc).
-        const globalHuntDetails = [
-        ].map((details_func) => details_func(message, user, user_post, hunt))
-            .filter(details => details);
-
-        globalHuntDetails.push(...detailers.globalDetailerModules
+        const globalHuntDetails = detailers.globalDetailerModules
             .map(detailer => detailer.addDetails(message, user, user_post, hunt))
-            .filter(details => details));
+            .filter(details => details);
 
         const otherJournalDetails = calcMoreDetails(hunt); // This is probably not needed and can use hunt.more_details below
 
