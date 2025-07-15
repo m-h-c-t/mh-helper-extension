@@ -9,6 +9,7 @@ import {SandCryptsDetailer} from './environments/sandCrypts';
 import {TableOfContentsDetailer} from './environments/tableOfContents';
 import {ValourRiftDetailer} from './environments/valourRift';
 import {WhiskerWoodsRiftDetailer} from './environments/whiskerWoodsRift';
+import {ZokorDetailer} from './environments/zokor';
 import {ZugzwangsTowerDetailer} from './environments/zugzwangsTower';
 import {HalloweenDetailer} from './global/halloween';
 import {LuckyCatchDetailer} from './global/luckyCatch';
@@ -27,6 +28,7 @@ const environmentDetailerModules: IEnvironmentDetailer[]  = [
     new TableOfContentsDetailer(),
     new ValourRiftDetailer(),
     new WhiskerWoodsRiftDetailer(),
+    new ZokorDetailer(),
     new ZugzwangsTowerDetailer(),
 ];
 

@@ -14,26 +14,3 @@ export function calcClawShotCityHuntDetails(message, user, user_post, hunt) {
         };
     }
 }
-
-/**
- * For the level-3 districts, report whether the boss was defeated or not.
- * For the Minotaur lair, report the categorical label, number of catches, and meter width.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcZokorHuntDetails(message, user, user_post, hunt) {
-    const quest = user.quests.QuestAncientCity;
-    if (quest.boss.includes("hiddenDistrict")) {
-        return {
-            minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
-            lair_catches: -(quest.countdown - 20),
-            minotaur_meter: parseFloat(quest.width),
-        };
-    } else if (quest.district_tier === 3) {
-        return {
-            boss_defeated: (quest.boss === "defeated"),
-        };
-    }
-}
