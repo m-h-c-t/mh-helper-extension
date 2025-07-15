@@ -1,14 +1,15 @@
-import {calcSandCryptsHuntDetails} from '@scripts/modules/details/legacy';
+import {SandCryptsDetailer} from '@scripts/modules/details/environments/sandCrypts';
 import {User, JournalMarkup} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 
-describe('calcSandCryptsHuntDetails', () => {
+describe('SandCryptsDetailer', () => {
     const message = mock<IntakeMessage>();
     const userPost = mock<User>();
     const journal = mock<JournalMarkup>();
     let user: User;
+    let detailer: SandCryptsDetailer;
 
     beforeEach(() => {
         user = new UserBuilder()
@@ -22,10 +23,11 @@ describe('calcSandCryptsHuntDetails', () => {
                 }
             })
             .build();
+        detailer = new SandCryptsDetailer();
     });
 
     it('should return undefined when quest is not available', () => {
-        const result = calcSandCryptsHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -38,7 +40,7 @@ describe('calcSandCryptsHuntDetails', () => {
             },
         };
 
-        const result = calcSandCryptsHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -50,7 +52,7 @@ describe('calcSandCryptsHuntDetails', () => {
             minigame: undefined,
         };
 
-        const result = calcSandCryptsHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -62,7 +64,7 @@ describe('calcSandCryptsHuntDetails', () => {
             minigame: {type: 'other'},
         };
 
-        const result = calcSandCryptsHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -77,7 +79,7 @@ describe('calcSandCryptsHuntDetails', () => {
         };
         message.mouse = 'Some Other Mouse';
 
-        const result = calcSandCryptsHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -92,7 +94,7 @@ describe('calcSandCryptsHuntDetails', () => {
         };
         message.mouse = 'King Grub';
 
-        const result = calcSandCryptsHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             salt: 7,
@@ -109,7 +111,7 @@ describe('calcSandCryptsHuntDetails', () => {
         };
         message.mouse = 'King Scarab';
 
-        const result = calcSandCryptsHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             salt: 12,
@@ -126,7 +128,7 @@ describe('calcSandCryptsHuntDetails', () => {
         };
         message.mouse = 'King Grub';
 
-        const result = calcSandCryptsHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             salt: 0,

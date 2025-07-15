@@ -16,24 +16,6 @@ export function calcClawShotCityHuntDetails(message, user, user_post, hunt) {
 }
 
 /**
- * Track the grub salt level
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcSandCryptsHuntDetails(message, user, user_post, hunt) {
-    const quest = user.quests.QuestSandDunes;
-    if (quest && !quest.is_normal && quest.minigame && quest.minigame.type === 'grubling') {
-        if (["King Grub", "King Scarab"].includes(message.mouse)) {
-            return {
-                salt: quest.minigame.salt_charms_used,
-            };
-        }
-    }
-}
-
-/**
  * Track the current volume if we're in an Encyclopedia
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
