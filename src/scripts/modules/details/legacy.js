@@ -16,24 +16,6 @@ export function calcClawShotCityHuntDetails(message, user, user_post, hunt) {
 }
 
 /**
- * Report whether certain mice were attractable on the hunt.
- * @param {Object <string, any>} message The message to be sent.
- * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
- * @param {Object <string, any>} user_post The user state object, after the hunt.
- * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
- */
-export function calcHarbourHuntDetails(message, user, user_post, hunt) {
-    const quest = user.quests.QuestHarbour;
-    const details = {
-        on_bounty: (quest.status === "searchStarted"),
-    };
-    quest.crew.forEach(mouse => {
-        details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
-    });
-    return details;
-}
-
-/**
  * Track the grub salt level
  * @param {Object <string, any>} message The message to be sent.
  * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).

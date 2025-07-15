@@ -1,14 +1,15 @@
-import {calcHarbourHuntDetails} from '@scripts/modules/details/legacy';
+import {HarbourDetailer} from '@scripts/modules/details/environments/harbour';
 import {User, JournalMarkup} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 
-describe('calcHarbourHuntDetails', () => {
+describe('HarbourDetailer', () => {
     const message = mock<IntakeMessage>();
     const userPost = mock<User>();
     const journal = mock<JournalMarkup>();
     let user: User;
+    let detailer: HarbourDetailer;
 
     beforeEach(() => {
         user = new UserBuilder()
@@ -20,13 +21,14 @@ describe('calcHarbourHuntDetails', () => {
                 }
             })
             .build();
+        detailer = new HarbourDetailer();
     });
 
     describe('bounty status', () => {
         it('should be on bounty when status is searchStarted', () => {
             user.quests.QuestHarbour!.status = 'searchStarted';
 
-            const result = calcHarbourHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 on_bounty: true,
@@ -36,7 +38,7 @@ describe('calcHarbourHuntDetails', () => {
         it('should not be on bounty when status is not searchStarted', () => {
             user.quests.QuestHarbour!.status = 'idle';
 
-            const result = calcHarbourHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 on_bounty: false,
@@ -51,7 +53,7 @@ describe('calcHarbourHuntDetails', () => {
                 {type: 'first_mate', status: 'caught'},
             ];
 
-            const result = calcHarbourHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 has_caught_captain: true,
@@ -65,7 +67,7 @@ describe('calcHarbourHuntDetails', () => {
                 {type: 'first_mate', status: 'uncaught'},
             ];
 
-            const result = calcHarbourHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 has_caught_captain: false,
@@ -81,7 +83,7 @@ describe('calcHarbourHuntDetails', () => {
                 {type: 'cook', status: 'uncaught'},
             ];
 
-            const result = calcHarbourHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 has_caught_captain: true,
@@ -94,13 +96,13 @@ describe('calcHarbourHuntDetails', () => {
         it('should handle empty crew array', () => {
             user.quests.QuestHarbour!.crew = [];
 
-            const result = calcHarbourHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 on_bounty: false,
             }));
             // Should not have any crew-specific properties
-            expect(Object.keys(result || {}).filter(key => key.startsWith('has_caught_'))).toHaveLength(0);
+            expect(Object.keys(result ?? {}).filter(key => key.startsWith('has_caught_'))).toHaveLength(0);
         });
     });
 
@@ -111,7 +113,7 @@ describe('calcHarbourHuntDetails', () => {
             {type: 'lookout', status: 'uncaught'},
         ];
 
-        const result = calcHarbourHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             on_bounty: true,
