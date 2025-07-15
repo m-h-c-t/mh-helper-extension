@@ -1,14 +1,15 @@
-import {calcClawShotCityHuntDetails} from '@scripts/modules/details/legacy';
+import {ClawShotCityDetailer} from '@scripts/modules/details/environments/clawShotCity';
 import {User, JournalMarkup} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 
-describe('calcClawShotCityHuntDetails', () => {
+describe('ClawShotCityDetailer', () => {
     const message = mock<IntakeMessage>();
     const userPost = mock<User>();
     const journal = mock<JournalMarkup>();
     let user: User;
+    let detailer: ClawShotCityDetailer;
 
     beforeEach(() => {
         user = new UserBuilder()
@@ -18,10 +19,11 @@ describe('calcClawShotCityHuntDetails', () => {
                 }
             })
             .build();
+        detailer = new ClawShotCityDetailer();
     });
 
     it('should return undefined when no maps exist', () => {
-        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -32,7 +34,7 @@ describe('calcClawShotCityHuntDetails', () => {
             {name: 'Another Map', is_complete: null, remaining: 3},
         ];
 
-        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -42,7 +44,7 @@ describe('calcClawShotCityHuntDetails', () => {
             {name: 'Bounty Hunter Wanted Poster', is_complete: true, remaining: 0},
         ];
 
-        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -52,7 +54,7 @@ describe('calcClawShotCityHuntDetails', () => {
             {name: 'Bounty Hunter Wanted Poster', is_complete: null, remaining: 5},
         ];
 
-        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             poster_type: 'Bounty Hunter',
@@ -65,7 +67,7 @@ describe('calcClawShotCityHuntDetails', () => {
             {name: 'Legendary Thief Wanted Poster', is_complete: null, remaining: 1},
         ];
 
-        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             poster_type: 'Legendary Thief',
@@ -78,7 +80,7 @@ describe('calcClawShotCityHuntDetails', () => {
             {name: 'Master Burglar Wanted Poster', is_complete: null, remaining: 10},
         ];
 
-        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             poster_type: 'Master Burglar',
@@ -91,7 +93,7 @@ describe('calcClawShotCityHuntDetails', () => {
             {name: '  Spaced Name  Wanted Poster', is_complete: null, remaining: 3},
         ];
 
-        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             poster_type: 'Spaced Name',

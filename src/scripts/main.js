@@ -1086,7 +1086,6 @@ import * as detailingFuncs from './modules/details/legacy';
 
     /** @type {Object <string, Function>} */
     const location_huntdetails_lookup = {
-        "Claw Shot City": detailingFuncs.calcClawShotCityHuntDetails,
     };
 
     /** @type { Object<string, import("./modules/details/details.types").IEnvironmentDetailer> } */
