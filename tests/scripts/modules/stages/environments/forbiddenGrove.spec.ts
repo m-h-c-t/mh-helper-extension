@@ -47,7 +47,7 @@ describe("ForbiddenGroveStager", () => {
         it("throws when quest is undefined", () => {
             delete defaultPre.quests.QuestForbiddenGrove;
 
-            expect(() => act()).toThrowError(
+            expect(() => act()).toThrow(
                 "User is missing Forbidden Grove quest"
             );
         });
@@ -60,7 +60,7 @@ describe("ForbiddenGroveStager", () => {
         it("throws on server side door change", () => {
             defaultPost.quests.QuestForbiddenGrove!.grove.is_open = false;
 
-            expect(() => act()).toThrowError(
+            expect(() => act()).toThrow(
                 "Skipping hunt during server side door change"
             );
         });

@@ -177,7 +177,7 @@ describe("KingsGiveawayAjaxHandler", () => {
             await handler.execute(response);
 
             expect(logger.warn).toHaveBeenCalledWith("Item (unknown_item_type) not found in inventory from King's Mini Prize Pack opening");
-            expect(submissionService.submitEventConvertible).not.toBeCalled();
+            expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
         });
     });
 });
