@@ -6,6 +6,7 @@ import {SpookyShuffleResponse, spookyShuffleResponseSchema, TitleRange} from "./
 import {CustomConvertibleIds} from "@scripts/util/constants";
 import {parseHgInt} from "@scripts/util/number";
 import * as hgFuncs from "@scripts/util/hgFunctions";
+import {z} from "zod";
 
 export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -130,8 +131,7 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
         const response = spookyShuffleResponseSchema.safeParse(responseJSON);
 
         if (!response.success) {
-            const errorMessage = response.error.message;
-            this.logger.warn("Unexpected spooky shuffle response object.", errorMessage);
+            this.logger.warn("Unexpected spooky shuffle response object.", z.prettifyError(response.error));
         }
 
         return response.success;

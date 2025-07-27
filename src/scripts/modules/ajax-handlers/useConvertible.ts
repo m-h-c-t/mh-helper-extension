@@ -16,7 +16,7 @@ export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
                 type: z.string(),
             })),
         }),
-        items: z.record(z.object({
+        items: z.record(z.string(), z.object({
             name: z.string(),
             item_id: z.coerce.number(),
             quantity: z.coerce.number(),

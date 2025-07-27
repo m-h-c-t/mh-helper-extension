@@ -1,4 +1,3 @@
-import {zodRecordWithEnum} from "@scripts/util/zod";
 import {z} from "zod";
 
 const zoneTypeSchema = z.enum(['clearing', 'tree', 'lagoon']);
@@ -9,7 +8,7 @@ const zoneStatusSchema = z.object({
 });
 
 export const questRiftWhiskerWoodsSchema = z.object({
-    zones: zodRecordWithEnum(zoneTypeSchema, zoneStatusSchema),
+    zones: z.record(zoneTypeSchema, zoneStatusSchema),
 });
 
 export type ZoneType = z.infer<typeof zoneTypeSchema>;

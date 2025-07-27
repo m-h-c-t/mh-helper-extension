@@ -8,6 +8,7 @@ import {ApiService} from "./services/api.service";
 import {hgResponseSchema} from "./types/hg";
 import {HornHud} from './util/hornHud';
 import {parseHgInt} from "./util/number";
+import {z} from "zod";
 import * as successHandlers from './modules/ajax-handlers';
 import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
@@ -384,7 +385,7 @@ import * as detailingFuncs from './modules/details/legacy';
                     const json = JSON.parse(xhr.responseText);
                     const parseResult = hgResponseSchema.safeParse(json);
                     if (!parseResult.success) {
-                        logger.warn("Unexpected response type received", parseResult.error?.message);
+                        logger.warn("Unexpected response type received", z.prettifyError(parseResult.error));
                     }
                 }
             } catch {

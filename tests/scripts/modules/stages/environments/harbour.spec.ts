@@ -45,6 +45,6 @@ describe('HarbourStager', () => {
         const journal = {};
         expect(() => {
             stager.addStage(message, userPre, userPost, journal);
-        }).toThrowError('QuestHarbour is undefined');
+        }).toThrow('QuestHarbour is undefined');
     });
 });

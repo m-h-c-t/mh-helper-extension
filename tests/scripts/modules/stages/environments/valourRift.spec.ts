@@ -98,7 +98,6 @@ describe('Valour Rift stages', () => {
 
     it('should throw when state is unknown', () => {
         message.location = {id: 0, name: ''};
-        // @ts-expect-error - testing invalid input
         preUser.enviroment_atts!.phase = 'foo' as 'tower' | 'farming';
 
         expect(() =>

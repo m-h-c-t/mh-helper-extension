@@ -34,6 +34,6 @@ describe('MousoleumStager', () => {
         const journal = {};
         expect(() => {
             stager.addStage(message, userPre, userPost, journal);
-        }).toThrowError('QuestMousoleum is undefined');
+        }).toThrow('QuestMousoleum is undefined');
     });
 });

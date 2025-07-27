@@ -29,7 +29,7 @@ describe("SEHAjaxHandler", () => {
         it('logs if SEH response is not egg opening', async () => {
             await handler.execute({} as unknown as HgResponse);
 
-            expect(logger.debug).toBeCalledWith('Skipping SEH egg submission as this isn\'t an egg convertible');
+            expect(logger.debug).toHaveBeenCalledWith('Skipping SEH egg submission as this isn\'t an egg convertible');
             expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
@@ -39,7 +39,7 @@ describe("SEHAjaxHandler", () => {
             const response = {user_id: 4, egg_contents: {}} as unknown as HgResponse;
             await handler.execute(response);
 
-            expect(logger.warn).toBeCalledWith('Unable to parse SEH response', {responseJSON: response});
+            expect(logger.warn).toHaveBeenCalledWith('Unable to parse SEH response', {responseJSON: response});
             expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
@@ -71,7 +71,7 @@ describe("SEHAjaxHandler", () => {
                 },
             ];
 
-            expect(submissionService.submitEventConvertible).toBeCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expectedConvertible,
                 expectedItems
             );
@@ -105,7 +105,7 @@ describe("SEHAjaxHandler", () => {
                 },
             ];
 
-            expect(submissionService.submitEventConvertible).toBeCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expectedConvertible,
                 expectedItems
             );
@@ -129,7 +129,7 @@ describe("SEHAjaxHandler", () => {
                 },
             ];
 
-            expect(submissionService.submitEventConvertible).toBeCalledWith(
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
                 expectedConvertible,
                 expectedItems
             );

@@ -29,7 +29,7 @@ describe("SuperBrieFactoryStager", () => {
 
         expect(() => {
             stager.addStage({} as IntakeMessage, user, user, defaultJournal);
-        }).toThrowError("User is in SB+ factory but quest wasn't found.");
+        }).toThrow("User is in SB+ factory but quest wasn't found.");
     });
 
     describe("boss", () => {

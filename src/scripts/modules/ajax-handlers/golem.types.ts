@@ -1,6 +1,5 @@
 import z from 'zod';
 import {hgResponseSchema} from '@scripts/types/hg';
-import {zodRecordWithEnum} from '@scripts/util/zod';
 
 /**
  * An item brought back back a golem
@@ -19,7 +18,7 @@ export type Rarity = z.infer<typeof raritySchema>;
  * Golem Response from HG, previewed by CBS
  */
 const golemRewardsSchema = z.object({
-    items: zodRecordWithEnum(raritySchema, z.array(golemItemSchema)),
+    items: z.record(raritySchema, z.array(golemItemSchema)),
 });
 
 export type GolemRewards = z.infer<typeof golemRewardsSchema>;
