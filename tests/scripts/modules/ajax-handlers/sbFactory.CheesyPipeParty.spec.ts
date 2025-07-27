@@ -87,8 +87,8 @@ describe("CheesyPipePartyAjaxHandler", () => {
             ];
 
             expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
-                expect.objectContaining(expectedConvertible),
-                expect.objectContaining(expectedItems)
+                expectedConvertible,
+                expectedItems
             );
         });
 
@@ -114,8 +114,8 @@ describe("CheesyPipePartyAjaxHandler", () => {
             ];
 
             expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
-                expect.objectContaining(expectedConvertible),
-                expect.objectContaining(expectedItems)
+                expectedConvertible,
+                expectedItems
             );
         });
 
