@@ -1,4 +1,3 @@
-import {zodRecordWithEnum} from "@scripts/util/zod";
 import {z} from "zod";
 
 const cannonTypeSchema = z.enum(['snow_cannon', 'cinnamon_cannon', 'charm_cannon']);
@@ -11,7 +10,7 @@ const cannonSchema = z.object({
 });
 
 export const questIceFortressSchema = z.object({
-    cannons: zodRecordWithEnum(cannonTypeSchema, cannonSchema),
+    cannons: z.record(cannonTypeSchema, cannonSchema),
     shield: z.object({
         is_broken: z.boolean(),
     }),

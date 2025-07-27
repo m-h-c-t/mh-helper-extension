@@ -5,6 +5,7 @@ import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {CheesyPipePartyGame, CheesyPipePartyResponse, cheesyPipePartyResponseSchema, Region} from "./sbFactory.types";
 import {CustomConvertibleIds} from "@scripts/util/constants";
 import {SubmissionService} from "@scripts/services/submission.service";
+import {z} from "zod";
 
 export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -118,8 +119,7 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
         const response = cheesyPipePartyResponseSchema.safeParse(responseJSON);
 
         if (!response.success) {
-            const errorMessage = response.error.message;
-            this.logger.warn("Unexpected Cheesy Pipe Party response object.", errorMessage);
+            this.logger.warn("Unexpected Cheesy Pipe Party response object.", z.prettifyError(response.error));
         }
 
         return response.success;

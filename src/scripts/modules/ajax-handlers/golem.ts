@@ -2,6 +2,7 @@ import {LoggerService} from "@scripts/util/logger";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {GolemPayload, GolemResponse, golemResponseSchema} from "./golem.types";
 import {HgResponse, JournalMarkup} from "@scripts/types/hg";
+import {z} from "zod";
 
 const rarities = ["area", "hat", "scarf"] as const;
 
@@ -134,8 +135,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
         const response = golemResponseSchema.safeParse(responseJSON);
 
         if (!response.success) {
-            const errorMessage = response.error.message;
-            this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", errorMessage);
+            this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", z.prettifyError(response.error));
         }
 
         return response.success;

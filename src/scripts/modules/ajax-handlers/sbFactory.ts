@@ -5,6 +5,7 @@ import type {LoggerService} from "@scripts/util/logger";
 import {CustomConvertibleIds as Ids} from "@scripts/util/constants";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {type VendingMachineReponse, type VendingMachinePurchaseType, vendingMachineResponseSchema} from "./sbFactory.types";
+import {z} from "zod";
 
 export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -118,8 +119,7 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
         const response = vendingMachineResponseSchema.safeParse(responseJSON);
 
         if (!response.success) {
-            const errorMessage = response.error.message;
-            this.logger.warn("Unexpected vending machine response object.", errorMessage);
+            this.logger.warn("Unexpected vending machine response object.", z.prettifyError(response.error));
         }
 
         return response.success;

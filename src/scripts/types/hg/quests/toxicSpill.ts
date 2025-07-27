@@ -1,4 +1,3 @@
-import {zodRecordWithEnum} from "@scripts/util/zod";
 import {z} from "zod";
 
 export const PollutionTitles = [
@@ -18,7 +17,7 @@ const pollutionTitlesStatusSchema = z.object({
 });
 
 export const questPollutionOutbreakSchema = z.object({
-    titles: zodRecordWithEnum(pollutionTitlesSchema, pollutionTitlesStatusSchema),
+    titles: z.record(pollutionTitlesSchema, pollutionTitlesStatusSchema),
 });
 
 export type PollutionTitle = z.infer<typeof pollutionTitlesSchema>;
