@@ -1,4 +1,4 @@
-name: CI Lint, Build & Test
+name: CI Lint & Test
 
 on:
   workflow_dispatch:
@@ -15,6 +15,7 @@ on:
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
 
     strategy:
@@ -34,8 +35,16 @@ jobs:
     - name: Lint
       run: npm run lint
 
+    - name: Build Firefox package for web-ext lint
+      run: npm run build:firefox
+
+    - name: "web-ext lint"
+      run: |
+        cd dist/firefox
+        npm exec web-ext lint --verbose
+
   test:
-    name: Build and test
+    name: Test
     runs-on: ubuntu-latest
 
     strategy:
@@ -44,7 +53,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
     - uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
@@ -53,21 +61,14 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Test
+      run: npm test
+
     - name: Build Chrome package
       run: npm run build
 
     - name: Build Firefox package
       run: npm run build:firefox
-
-    - name: "web-ext lint"
-      run: |
-        cd dist/firefox
-        npm exec web-ext lint --verbose
-
-    - name: Run tests
-      env:
-        CI: true
-      run: npm test
 
     - name: Upload Chrome artifact
       uses: actions/upload-artifact@v4
