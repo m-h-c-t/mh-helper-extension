@@ -22,11 +22,9 @@ export const userSchema = z.object({
     trap_luck: z.coerce.number(),
     trap_attraction_bonus: z.coerce.number(),
     has_shield: z.boolean(),
-    environment_name: z.string(),
     environment_id: z.coerce.number(),
     quests: questsSchema,
     enviroment_atts: environmentAttributesSchema.optional(),
-    viewing_atts: viewingAttributesSchema,
-});
+}).and(viewingAttributesSchema);
 
 export type User = z.infer<typeof userSchema>;

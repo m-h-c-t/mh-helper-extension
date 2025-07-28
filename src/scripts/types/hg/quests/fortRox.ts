@@ -9,6 +9,29 @@ export const questFortRoxSchema = z.object({
     is_dawn: z.literal(true).nullable(),
     is_lair: z.literal(true).nullable(),
     current_stage: fortRoxStageSchema.nullable(),
+    tower_status: z.string(),
+    fort: z.object({
+        w: z.object({
+            level: z.coerce.number(),
+            status: z.string(),
+        }),
+        b: z.object({
+            level: z.coerce.number(),
+            status: z.string(),
+        }),
+        c: z.object({
+            level: z.coerce.number(),
+            status: z.string(),
+        }),
+        m: z.object({
+            level: z.coerce.number(),
+            status: z.string(),
+        }),
+        t: z.object({
+            level: z.coerce.number(),
+            status: z.string(),
+        }),
+    }),
 });
 
 export type FortRoxStage = z.infer<typeof fortRoxStageSchema>;

@@ -68,6 +68,7 @@ type UserWeapon = Pick<User, 'weapon_name' | 'weapon_item_id'>;
 type UserBase = Pick<User, 'base_name' | 'base_item_id'>;
 type UserBait = Pick<User, 'bait_name' | 'bait_item_id'>;
 type UserTrinket = Pick<User, 'trinket_name' | 'trinket_item_id'>;
+type UserViewingAttributes = Pick<User, 'viewing_atts'>;
 
 export class UserBuilder {
     identification: UserIdentification = {
@@ -114,8 +115,11 @@ export class UserBuilder {
         trinket_item_id: 4444,
     };
 
-    quests = {
+    quests: Quests = {
+    };
 
+    viewing_atts: UserViewingAttributes = {
+        viewing_atts: {},
     };
 
     public withIdentification(id: UserIdentification) {
@@ -163,6 +167,11 @@ export class UserBuilder {
         return this;
     }
 
+    public withViewingAttributes(viewing_atts: UserViewingAttributes) {
+        this.viewing_atts = viewing_atts;
+        return this;
+    }
+
     public build(): User {
         return {
             ...this.identification,
@@ -174,7 +183,7 @@ export class UserBuilder {
             ...this.bait,
             ...this.trinket,
             quests: this.quests,
-            viewing_atts: {},
+            ...this.viewing_atts,
         };
     }
 }
