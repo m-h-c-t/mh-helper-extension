@@ -1,0 +1,101 @@
+import {calcClawShotCityHuntDetails} from '@scripts/modules/details/legacy';
+import {User, JournalMarkup} from '@scripts/types/hg';
+import {IntakeMessage} from '@scripts/types/mhct';
+import {UserBuilder} from '@tests/utility/builders';
+import {mock} from 'jest-mock-extended';
+
+describe('calcClawShotCityHuntDetails', () => {
+    const message = mock<IntakeMessage>();
+    const userPost = mock<User>();
+    const journal = mock<JournalMarkup>();
+    let user: User;
+
+    beforeEach(() => {
+        user = new UserBuilder()
+            .withQuests({
+                QuestRelicHunter: {
+                    maps: []
+                }
+            })
+            .build();
+    });
+
+    it('should return undefined when no maps exist', () => {
+        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+
+        expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when no wanted poster maps exist', () => {
+        user.quests.QuestRelicHunter!.maps = [
+            {name: 'Some Other Map', is_complete: null, remaining: 5},
+            {name: 'Another Map', is_complete: null, remaining: 3},
+        ];
+
+        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+
+        expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when wanted poster map is complete', () => {
+        user.quests.QuestRelicHunter!.maps = [
+            {name: 'Bounty Hunter Wanted Poster', is_complete: true, remaining: 0},
+        ];
+
+        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+
+        expect(result).toBeUndefined();
+    });
+
+    it('should return poster type and boss status for incomplete wanted poster', () => {
+        user.quests.QuestRelicHunter!.maps = [
+            {name: 'Bounty Hunter Wanted Poster', is_complete: null, remaining: 5},
+        ];
+
+        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+
+        expect(result).toEqual({
+            poster_type: 'Bounty Hunter',
+            at_boss: false,
+        });
+    });
+
+    it('should detect boss when remaining is 1', () => {
+        user.quests.QuestRelicHunter!.maps = [
+            {name: 'Legendary Thief Wanted Poster', is_complete: null, remaining: 1},
+        ];
+
+        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+
+        expect(result).toEqual({
+            poster_type: 'Legendary Thief',
+            at_boss: true,
+        });
+    });
+
+    it('should handle different poster types', () => {
+        user.quests.QuestRelicHunter!.maps = [
+            {name: 'Master Burglar Wanted Poster', is_complete: null, remaining: 10},
+        ];
+
+        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+
+        expect(result).toEqual({
+            poster_type: 'Master Burglar',
+            at_boss: false,
+        });
+    });
+
+    it('should trim whitespace from poster type', () => {
+        user.quests.QuestRelicHunter!.maps = [
+            {name: '  Spaced Name  Wanted Poster', is_complete: null, remaining: 3},
+        ];
+
+        const result = calcClawShotCityHuntDetails(message, user, userPost, journal);
+
+        expect(result).toEqual({
+            poster_type: 'Spaced Name',
+            at_boss: false,
+        });
+    });
+});
