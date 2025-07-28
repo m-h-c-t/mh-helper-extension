@@ -1,25 +1,44 @@
 import {FortRoxStager} from "@scripts/modules/stages/environments/fortRox";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
+import {JournalMarkup, User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 import {QuestFortRox} from "@scripts/types/hg/quests";
+import {UserBuilder} from "@tests/utility/builders";
+import {mock} from "jest-mock-extended";
 
 describe('Fort Rox stages', () => {
-    let stager: IStager;
-    let message: IntakeMessage;
-    let preUser: User;
-    let postUser: User;
-    const journal = {};
+    const message = mock<IntakeMessage>();
+    const postUser = mock<User>();
+    const journal = mock<JournalMarkup>();
+
+
+    let preUser: User & { quests: { QuestFortRox: QuestFortRox } };
+    let stager: FortRoxStager;
 
     beforeEach(() => {
         stager = new FortRoxStager();
-        message = {} as IntakeMessage;
-        preUser = {quests: {
-            QuestFortRox: getDefaultFortRoxQuest(),
-        }} as User;
-        postUser = {quests: {
-            QuestFortRox: getDefaultFortRoxQuest(),
-        }} as User;
+
+        const quest: QuestFortRox = {
+            is_day: null,
+            is_night: null,
+            is_dawn: null,
+            is_lair: null,
+            current_stage: null,
+            tower_status: "",
+            fort: {
+                w: {level: 0, status: 'inactive'},
+                b: {level: 0, status: 'inactive'},
+                c: {level: 0, status: 'inactive'},
+                m: {level: 0, status: 'inactive'},
+                t: {level: 0, status: 'inactive'}
+            }
+        };
+        preUser = new UserBuilder()
+            .withEnvironment({
+                environment_id: 0,
+                environment_name: 'Fort Rox',
+            })
+            .withQuests({QuestFortRox: quest})
+            .build() as User & { quests: { QuestFortRox: QuestFortRox } };
     });
 
     it('should be for the Fort Rox environment', () => {
@@ -27,6 +46,7 @@ describe('Fort Rox stages', () => {
     });
 
     it('should throw when QuestFortRox is undefined', () => {
+        // @ts-expect-error - testing nullish input
         preUser.quests.QuestFortRox = undefined;
 
         expect(() => stager.addStage(message, preUser, postUser, journal))
@@ -41,8 +61,8 @@ describe('Fort Rox stages', () => {
         ${'stage_four'}     | ${'Utter Darkness'}
         ${'stage_five'}     | ${'First Light'}
     `('should set stage to $expected during night when in $nightStage', ({nightStage, expected}) => {
-        preUser.quests.QuestFortRox!.is_night = true;
-        preUser.quests.QuestFortRox!.current_stage = nightStage;
+        preUser.quests.QuestFortRox.is_night = true;
+        preUser.quests.QuestFortRox.current_stage = nightStage;
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -50,16 +70,16 @@ describe('Fort Rox stages', () => {
     });
 
     it('should throw when night stage is unknown', () => {
-        preUser.quests.QuestFortRox!.is_night = true;
+        preUser.quests.QuestFortRox.is_night = true;
         // @ts-expect-error - testing invalid input
-        preUser.quests.QuestFortRox!.current_stage = 'stage_foo';
+        preUser.quests.QuestFortRox.current_stage = 'stage_foo';
 
         expect(() => stager.addStage(message, preUser, postUser, journal))
             .toThrow('Skipping unknown Fort Rox stage');
     });
 
     it('should set stage to Day when is day', () => {
-        preUser.quests.QuestFortRox!.is_day = true;
+        preUser.quests.QuestFortRox.is_day = true;
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -67,7 +87,7 @@ describe('Fort Rox stages', () => {
     });
 
     it('should set stage to Dawn when in dawn', () => {
-        preUser.quests.QuestFortRox!.is_dawn = true;
+        preUser.quests.QuestFortRox.is_dawn = true;
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -75,7 +95,7 @@ describe('Fort Rox stages', () => {
     });
 
     it('should set stage to Heart of the Meteor when in lair', () => {
-        preUser.quests.QuestFortRox!.is_lair = true;
+        preUser.quests.QuestFortRox.is_lair = true;
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -83,18 +103,8 @@ describe('Fort Rox stages', () => {
     });
 
     it('should throw when there is an unhandled state', () => {
-        expect(() => stager.addStage(message, preUser, postUser, journal))
-            .toThrow('Skipping unknown Fort Rox stage');
+        expect(() => {
+            stager.addStage(message, preUser, postUser, journal);
+        }).toThrow('Skipping unknown Fort Rox stage');
     });
-
-    function getDefaultFortRoxQuest(): QuestFortRox {
-        // is_xxx: null, when not active
-        return {
-            is_day: null,
-            is_lair: null,
-            is_night: null,
-            is_dawn: null,
-            current_stage: null,
-        };
-    }
 });

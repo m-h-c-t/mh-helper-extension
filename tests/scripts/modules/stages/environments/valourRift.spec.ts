@@ -1,24 +1,25 @@
 import {ValourRiftStager} from "@scripts/modules/stages/environments/valourRift";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
+import {JournalMarkup, User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 import {QuestRiftValour} from "@scripts/types/hg/quests";
+import {mock} from "jest-mock-extended";
+import {UserBuilder} from "@tests/utility/builders";
 
 describe('Valour Rift stages', () => {
-    let stager: IStager;
-    let message: IntakeMessage;
-    let preUser: User;
-    let postUser: User;
-    const journal = {};
+    const message = mock<IntakeMessage>();
+    const postUser = mock<User>();
+    const journal = mock<JournalMarkup>();
+
+    let stager: ValourRiftStager;
+    let preUser: User & { quests: { QuestRiftValour: QuestRiftValour } };
 
     beforeEach(() => {
         stager = new ValourRiftStager();
-        message = {} as IntakeMessage;
-        preUser = {
-            quests: {QuestRiftValour: getDefaultQuest()},
-            enviroment_atts: getDefaultAttributes(),
-        } as User;
-        postUser = {} as User;
+        preUser = new UserBuilder()
+            .withQuests({
+                QuestRiftValour: getDefaultQuest()
+            })
+            .build() as User & { quests: { QuestRiftValour: QuestRiftValour } };
     });
 
     it('should be for the Valour Rift environment', () => {
@@ -26,6 +27,7 @@ describe('Valour Rift stages', () => {
     });
 
     it('should throw when QuestRiftValour is undefined', () => {
+        // @ts-expect-error - testing nullish input
         preUser.quests.QuestRiftValour = undefined;
 
         expect(() =>
@@ -34,7 +36,7 @@ describe('Valour Rift stages', () => {
     });
 
     it('should set stage to Outside when farming', () => {
-        preUser.quests.QuestRiftValour!.state = 'farming';
+        preUser.quests.QuestRiftValour.state = 'farming';
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -42,16 +44,6 @@ describe('Valour Rift stages', () => {
     });
 
     describe('Tower State', () => {
-        beforeEach(() => {
-            preUser.enviroment_atts = {
-                phase: 'tower',
-                active_augmentations: {
-                    tu: false,
-                },
-            };
-            preUser.quests.QuestRiftValour!.state = 'tower';
-        });
-
         it.each`
             floorMin | floorMax | expected
             ${1}     | ${7}     | ${'Floors 1-7'}
@@ -62,9 +54,11 @@ describe('Valour Rift stages', () => {
             'should set stage to $expected for floors $floorMin to $floorMax',
             ({floorMin, floorMax, expected}) => {
                 for (let floor = floorMin; floor <= floorMax; floor++) {
-                    preUser.quests.QuestRiftValour!.floor = floor;
-                    message.stage = null;
-
+                    preUser.quests.QuestRiftValour = {
+                        state: 'tower',
+                        floor: floor,
+                        active_augmentations: {},
+                    };
                     stager.addStage(message, preUser, postUser, journal);
 
                     expect(message.stage).toBe(expected);
@@ -74,8 +68,11 @@ describe('Valour Rift stages', () => {
 
         it('should set stage to Eclipse for every 8th floor', () => {
             for (let floor = 8; floor < 150; floor += 8) {
-                preUser.quests.QuestRiftValour!.floor = floor;
-                message.stage = null;
+                preUser.quests.QuestRiftValour = {
+                    state: 'tower',
+                    floor: floor,
+                    active_augmentations: {},
+                };
 
                 stager.addStage(message, preUser, postUser, journal);
 
@@ -84,11 +81,11 @@ describe('Valour Rift stages', () => {
         });
 
         it('should prepend UU to stage when in ultimate umbra run', () => {
-            preUser.enviroment_atts = {
-                phase: 'tower',
+            preUser.quests.QuestRiftValour = {
+                state: 'tower',
+                floor: 100,
                 active_augmentations: {tu: true},
             };
-            preUser.quests.QuestRiftValour!.floor = 100;
 
             stager.addStage(message, preUser, postUser, journal);
 
@@ -97,34 +94,16 @@ describe('Valour Rift stages', () => {
     });
 
     it('should throw when state is unknown', () => {
-        message.location = {id: 0, name: ''};
-        preUser.enviroment_atts!.phase = 'foo' as 'tower' | 'farming';
+        preUser.quests.QuestRiftValour.state = 'foo' as 'tower' | 'farming';
 
         expect(() =>
             stager.addStage(message, preUser, postUser, journal)
         ).toThrow('Skipping hunt due to unknown Valour Rift state');
     });
 
-    it('should throw if known valour rift environment attributes are missing', () => {
-        preUser = {
-            quests: {QuestRiftValour: getDefaultQuest()},
-        } as User;
-
-        expect(() =>
-            stager.addStage(message, preUser, postUser, journal)
-        ).toThrow('Valour Rift environment attributes not found');
-    });
-
-    function getDefaultAttributes(): unknown {
-        return {
-            phase: '',
-        };
-    }
-
     function getDefaultQuest(): QuestRiftValour {
         return {
-            state: '',
-            floor: 0,
+            state: 'farming',
         };
     }
 });

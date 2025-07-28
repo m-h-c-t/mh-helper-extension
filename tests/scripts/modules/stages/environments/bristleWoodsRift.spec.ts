@@ -61,7 +61,18 @@ describe('Bristle Woods Rift stages', () => {
 
     function getDefaultQuest(): QuestRiftBristleWoods {
         return {
-            chamber_name: '',
+            chamber_name: "",
+            items: {
+                rift_hourglass_stat_item: {
+                    quantity: 0,
+                },
+            },
+            chamber_status: "",
+            cleaver_status: "",
+            status_effects: {
+            },
+            obelisk_percent: 0,
+            acolyte_sand: 0
         };
     }
 });
