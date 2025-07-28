@@ -11,6 +11,14 @@ export class SandDunesStager implements IStager {
             throw new Error('QuestSandDunes is undefined');
         }
 
+        this.assertIsNormalQuestSandDunes(quest);
+
         message.stage = (quest.minigame.has_stampede) ? "Stampede" : "No Stampede";
+    }
+
+    private assertIsNormalQuestSandDunes(quest: hg.QuestSandDunes): asserts quest is hg.QuestSandDunes & { is_normal: true } {
+        if (!quest.is_normal) {
+            throw new Error('This stager is only for Sand Dunes and not the Sand Crypts');
+        }
     }
 }

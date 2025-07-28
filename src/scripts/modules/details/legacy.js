@@ -279,7 +279,7 @@ export function calcTableofContentsHuntDetails(message, user, user_post, hunt) {
  * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
  */
 export function calcValourRiftHuntDetails(message, user, user_post, hunt) {
-    const attrs = user.environment_atts || user.enviroment_atts;
+    const attrs = user.quests.QuestRiftValour;
     // active_augmentations is undefined outside of the tower
     if (attrs.state === "tower") {
         return {

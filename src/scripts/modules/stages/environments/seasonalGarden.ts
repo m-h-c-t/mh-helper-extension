@@ -1,4 +1,4 @@
-import type {SeasonalGardenViewingAttributes, ViewingAttributes, User} from '@scripts/types/hg';
+import type {SeasonalGardenViewingAttributes, User} from '@scripts/types/hg';
 import {type IntakeMessage} from '@scripts/types/mhct';
 import {type IStager} from '../stages.types';
 
@@ -19,14 +19,11 @@ export class SeasonalGardenStager implements IStager {
      * Read the viewing attributes to determine the season. Reject hunts where the season changed.
      */
     addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {
-        const pre_viewing_atts = userPre.viewing_atts;
-        const post_viewing_atts = userPost.viewing_atts;
-        if (!this.hasGardenAttributes(pre_viewing_atts) || !this.hasGardenAttributes(post_viewing_atts)) {
-            throw new Error('Seasonal Garden season not found in user viewing_attributes');
-        }
+        this.isSeasonalGarden(userPre);
+        this.isSeasonalGarden(userPost);
 
-        const season = pre_viewing_atts.season;
-        const final_season = post_viewing_atts.season;
+        const season = userPre.viewing_atts.season;
+        const final_season = userPost.viewing_atts.season;
 
         if (!season || !final_season || season !== final_season) {
             throw new Error('Skipping hunt due to server side season change');
@@ -40,8 +37,10 @@ export class SeasonalGardenStager implements IStager {
 
     }
 
-    private hasGardenAttributes(object: ViewingAttributes): object is SeasonalGardenViewingAttributes {
-        return (object as SeasonalGardenViewingAttributes).season != null;
+    private isSeasonalGarden(user: User): asserts user is User & { viewing_atts: SeasonalGardenViewingAttributes } {
+        if (!('season' in user.viewing_atts) || user.viewing_atts.season == null) {
+            throw new Error('Seasonal Garden season not found in user viewing_attributes');
+        }
     }
 
     private isGardenSeason(value: string): value is SeasonShort {
