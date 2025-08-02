@@ -76,14 +76,14 @@
     "ts-jest": "^29.4.0",
     "ts-loader": "^9.5.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
-    "typescript": "^5.9.2",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "web-ext": "^8.9.0",
-    "webpack": "^5.101.0",
+    "webpack": "^5.100.2",
     "webpack-cli": "^6.0.1",
     "webpack-merge": "^6.0.1"
   },
   "dependencies": {
-    "zod": "^4.0.14"
+    "zod": "^4.0.10"
   }
 }
