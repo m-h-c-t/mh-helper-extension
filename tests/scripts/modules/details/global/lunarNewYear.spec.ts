@@ -1,16 +1,18 @@
-import {calcLNYHuntDetails} from '@scripts/modules/details/legacy';
+import {LunarNewYearDetailer} from '@scripts/modules/details/global/lunarNewYear';
 import {JournalMarkup, QuestLunarNewYearLantern, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 
-describe('lunarNewYearDetailer', () => {
+describe('LunarNewYearDetailer', () => {
     const message = mock<IntakeMessage>();
     const journal = mock<JournalMarkup>();
 
+    let stager: LunarNewYearDetailer;
     let preUser: User & { quests: { QuestLunarNewYearLantern: QuestLunarNewYearLantern } };
     let postUser: User & { quests: { QuestLunarNewYearLantern: QuestLunarNewYearLantern } };
     beforeEach(() => {
+        stager = new LunarNewYearDetailer();
         preUser = new UserBuilder()
             .withQuests({
                 QuestLunarNewYearLantern: {
@@ -36,7 +38,7 @@ describe('lunarNewYearDetailer', () => {
             // @ts-expect-error - testing nullish input
             postUser.quests.QuestLunarNewYearLantern = undefined;
 
-            expect(calcLNYHuntDetails(message, preUser, postUser, journal)).toBe(undefined);
+            expect(stager.addDetails(message, preUser, postUser, journal)).toBe(undefined);
         });
 
         it('calculates luck using pre hunt quest', () => {
@@ -48,7 +50,7 @@ describe('lunarNewYearDetailer', () => {
                 lny_luck: 14
             };
 
-            expect(calcLNYHuntDetails(message, preUser, postUser, journal)).toStrictEqual(expected);
+            expect(stager.addDetails(message, preUser, postUser, journal)).toStrictEqual(expected);
         });
 
         it('sets luck to 0 when latern is not active', () => {
@@ -61,7 +63,7 @@ describe('lunarNewYearDetailer', () => {
                 lny_luck: 0
             };
 
-            expect(calcLNYHuntDetails(message, preUser, postUser, journal)).toStrictEqual(expected);
+            expect(stager.addDetails(message, preUser, postUser, journal)).toStrictEqual(expected);
         });
 
         it('sets max luck to 50', () => {
@@ -71,7 +73,7 @@ describe('lunarNewYearDetailer', () => {
                 is_lny_hunt: true,
                 lny_luck: 50
             };
-            expect(calcLNYHuntDetails(message, preUser, postUser, journal)).toStrictEqual(expected);
+            expect(stager.addDetails(message, preUser, postUser, journal)).toStrictEqual(expected);
         });
     });
 });

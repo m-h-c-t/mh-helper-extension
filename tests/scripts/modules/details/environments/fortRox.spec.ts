@@ -1,14 +1,15 @@
-import {calcFortRoxHuntDetails} from '@scripts/modules/details/legacy';
+import {FortRoxDetailer} from '@scripts/modules/details/environments/fortRox';
 import {User, JournalMarkup} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 
-describe('calcFortRoxHuntDetails', () => {
+describe('FortRoxDetailer', () => {
     const message = mock<IntakeMessage>();
     const userPost = mock<User>();
     const journal = mock<JournalMarkup>();
     let user: User;
+    let detailer: FortRoxDetailer;
 
     beforeEach(() => {
         user = new UserBuilder()
@@ -45,6 +46,7 @@ describe('calcFortRoxHuntDetails', () => {
                 }
             })
             .build();
+        detailer = new FortRoxDetailer();
     });
 
     describe('during night phase', () => {
@@ -56,7 +58,7 @@ describe('calcFortRoxHuntDetails', () => {
             it('should enable weakened weremice at level 1+', () => {
                 user.quests.QuestFortRox!.fort.b.level = 1;
 
-                const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+                const result = detailer.addDetails(message, user, userPost, journal);
 
                 expect(result).toEqual(expect.objectContaining({
                     weakened_weremice: true,
@@ -68,7 +70,7 @@ describe('calcFortRoxHuntDetails', () => {
             it('should enable autocatch weremice at level 2+', () => {
                 user.quests.QuestFortRox!.fort.b.level = 2;
 
-                const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+                const result = detailer.addDetails(message, user, userPost, journal);
 
                 expect(result).toEqual(expect.objectContaining({
                     weakened_weremice: true,
@@ -80,7 +82,7 @@ describe('calcFortRoxHuntDetails', () => {
             it('should enable autocatch nightmancer at level 3+', () => {
                 user.quests.QuestFortRox!.fort.b.level = 3;
 
-                const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+                const result = detailer.addDetails(message, user, userPost, journal);
 
                 expect(result).toEqual(expect.objectContaining({
                     weakened_weremice: true,
@@ -94,7 +96,7 @@ describe('calcFortRoxHuntDetails', () => {
             it('should enable weakened critters at level 1+', () => {
                 user.quests.QuestFortRox!.fort.c.level = 1;
 
-                const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+                const result = detailer.addDetails(message, user, userPost, journal);
 
                 expect(result).toEqual(expect.objectContaining({
                     weakened_critters: true,
@@ -106,7 +108,7 @@ describe('calcFortRoxHuntDetails', () => {
             it('should enable autocatch critters at level 2+', () => {
                 user.quests.QuestFortRox!.fort.c.level = 2;
 
-                const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+                const result = detailer.addDetails(message, user, userPost, journal);
 
                 expect(result).toEqual(expect.objectContaining({
                     weakened_critters: true,
@@ -118,7 +120,7 @@ describe('calcFortRoxHuntDetails', () => {
             it('should enable autocatch nightfire at level 3+', () => {
                 user.quests.QuestFortRox!.fort.c.level = 3;
 
-                const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+                const result = detailer.addDetails(message, user, userPost, journal);
 
                 expect(result).toEqual(expect.objectContaining({
                     weakened_critters: true,
@@ -132,7 +134,7 @@ describe('calcFortRoxHuntDetails', () => {
             user.quests.QuestFortRox!.fort.b.level = 3;
             user.quests.QuestFortRox!.fort.c.level = 2;
 
-            const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 weakened_weremice: true,
@@ -154,7 +156,7 @@ describe('calcFortRoxHuntDetails', () => {
             user.quests.QuestFortRox!.fort.b.level = 3;
             user.quests.QuestFortRox!.fort.c.level = 3;
 
-            const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).not.toHaveProperty('weakened_weremice');
             expect(result).not.toHaveProperty('can_autocatch_weremice');
@@ -170,7 +172,7 @@ describe('calcFortRoxHuntDetails', () => {
             user.quests.QuestFortRox!.tower_status = 'active level 2';
             user.quests.QuestFortRox!.fort.t.level = 2;
 
-            const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 can_autocatch_any: true,
@@ -181,7 +183,7 @@ describe('calcFortRoxHuntDetails', () => {
             user.quests.QuestFortRox!.tower_status = 'active level 3';
             user.quests.QuestFortRox!.fort.t.level = 3;
 
-            const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 can_autocatch_any: true,
@@ -192,7 +194,7 @@ describe('calcFortRoxHuntDetails', () => {
             user.quests.QuestFortRox!.tower_status = 'inactive';
             user.quests.QuestFortRox!.fort.t.level = 3;
 
-            const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 can_autocatch_any: false,
@@ -203,7 +205,7 @@ describe('calcFortRoxHuntDetails', () => {
             user.quests.QuestFortRox!.tower_status = 'active level 1';
             user.quests.QuestFortRox!.fort.t.level = 1;
 
-            const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 can_autocatch_any: false,
@@ -218,7 +220,7 @@ describe('calcFortRoxHuntDetails', () => {
         user.quests.QuestFortRox!.tower_status = 'active';
         user.quests.QuestFortRox!.fort.t.level = 3;
 
-        const result = calcFortRoxHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             weakened_weremice: true,
