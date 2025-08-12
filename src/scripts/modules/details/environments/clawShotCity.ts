@@ -19,7 +19,7 @@ export class ClawShotCityDetailer implements IEnvironmentDetailer {
         if (map && !map.is_complete) {
             return {
                 poster_type: map.name.replace(/Wanted Poster/i, "").trim(),
-                at_boss: (map.remaining === 1),
+                at_boss: ((map.num_total - map.num_found) === 1),
             };
         }
     }

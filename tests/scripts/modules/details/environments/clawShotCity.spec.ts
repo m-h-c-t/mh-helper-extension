@@ -30,8 +30,8 @@ describe('ClawShotCityDetailer', () => {
 
     it('should return undefined when no wanted poster maps exist', () => {
         user.quests.QuestRelicHunter!.maps = [
-            {name: 'Some Other Map', is_complete: null, remaining: 5},
-            {name: 'Another Map', is_complete: null, remaining: 3},
+            {name: 'Some Other Map', is_complete: null, num_found: 5, num_total: 10},
+            {name: 'Another Map', is_complete: null, num_found: 3, num_total: 8},
         ];
 
         const result = detailer.addDetails(message, user, userPost, journal);
@@ -41,7 +41,7 @@ describe('ClawShotCityDetailer', () => {
 
     it('should return undefined when wanted poster map is complete', () => {
         user.quests.QuestRelicHunter!.maps = [
-            {name: 'Bounty Hunter Wanted Poster', is_complete: true, remaining: 0},
+            {name: 'Bounty Hunter Wanted Poster', is_complete: true, num_found: 5, num_total: 5},
         ];
 
         const result = detailer.addDetails(message, user, userPost, journal);
@@ -51,7 +51,7 @@ describe('ClawShotCityDetailer', () => {
 
     it('should return poster type and boss status for incomplete wanted poster', () => {
         user.quests.QuestRelicHunter!.maps = [
-            {name: 'Bounty Hunter Wanted Poster', is_complete: null, remaining: 5},
+            {name: 'Bounty Hunter Wanted Poster', is_complete: null, num_found: 1, num_total: 5},
         ];
 
         const result = detailer.addDetails(message, user, userPost, journal);
@@ -64,7 +64,7 @@ describe('ClawShotCityDetailer', () => {
 
     it('should detect boss when remaining is 1', () => {
         user.quests.QuestRelicHunter!.maps = [
-            {name: 'Legendary Thief Wanted Poster', is_complete: null, remaining: 1},
+            {name: 'Legendary Thief Wanted Poster', is_complete: null, num_found: 4, num_total: 5},
         ];
 
         const result = detailer.addDetails(message, user, userPost, journal);
@@ -77,7 +77,7 @@ describe('ClawShotCityDetailer', () => {
 
     it('should handle different poster types', () => {
         user.quests.QuestRelicHunter!.maps = [
-            {name: 'Master Burglar Wanted Poster', is_complete: null, remaining: 10},
+            {name: 'Master Burglar Wanted Poster', is_complete: null, num_found: 3, num_total: 5},
         ];
 
         const result = detailer.addDetails(message, user, userPost, journal);
@@ -90,7 +90,7 @@ describe('ClawShotCityDetailer', () => {
 
     it('should trim whitespace from poster type', () => {
         user.quests.QuestRelicHunter!.maps = [
-            {name: '  Spaced Name  Wanted Poster', is_complete: null, remaining: 3},
+            {name: '  Spaced Name  Wanted Poster', is_complete: null, num_found: 3, num_total: 5},
         ];
 
         const result = detailer.addDetails(message, user, userPost, journal);
