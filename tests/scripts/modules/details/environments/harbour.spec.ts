@@ -15,7 +15,7 @@ describe('HarbourDetailer', () => {
         user = new UserBuilder()
             .withQuests({
                 QuestHarbour: {
-                    status: '',
+                    status: 'noShip',
                     can_claim: false,
                     crew: []
                 }
@@ -36,7 +36,7 @@ describe('HarbourDetailer', () => {
         });
 
         it('should not be on bounty when status is not searchStarted', () => {
-            user.quests.QuestHarbour!.status = 'idle';
+            user.quests.QuestHarbour!.status = 'noShip';
 
             const result = detailer.addDetails(message, user, userPost, journal);
 
