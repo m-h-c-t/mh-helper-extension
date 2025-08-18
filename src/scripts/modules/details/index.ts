@@ -14,7 +14,6 @@ import {ZokorDetailer} from './environments/zokor';
 import {ZugzwangsTowerDetailer} from './environments/zugzwangsTower';
 import {HalloweenDetailer} from './global/halloween';
 import {LuckyCatchDetailer} from './global/luckyCatch';
-import {LunarNewYearDetailer} from './global/lunarNewYear';
 import {PillageDetailer} from './global/pillage';
 
 // Detailer for specific location
@@ -38,7 +37,6 @@ const environmentDetailerModules: IEnvironmentDetailer[]  = [
 const globalDetailerModules: IDetailer[] = [
     new HalloweenDetailer(),
     new LuckyCatchDetailer(),
-    new LunarNewYearDetailer(),
     new PillageDetailer(),
 ];
 
