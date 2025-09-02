@@ -1,8 +1,8 @@
-import {calcPillageHuntDetails} from '@scripts/modules/details/legacy';
+import {PillageDetailer} from '@scripts/modules/details/global/pillage';
 import {JournalMarkup} from '@scripts/types/hg';
 import {HgResponseBuilder, IntakeMessageBuilder, UserBuilder} from '@tests/utility/builders';
 
-describe('calcPillageHuntDetails', () => {
+describe('PillageDetailer', () => {
     const hgResponseBuilder = new HgResponseBuilder();
     const messageBuilder = new IntakeMessageBuilder();
     const userBuilder = new UserBuilder();
@@ -33,12 +33,18 @@ describe('calcPillageHuntDetails', () => {
         return {message, preUser, postUser};
     };
 
+    let detailer: PillageDetailer;
+
+    beforeEach(() => {
+        detailer = new PillageDetailer();
+    });
+
     describe('when mouse is not attracted', () => {
         it('should return undefined', () => {
             const {message, preUser, postUser} = setupHuntTest();
             message.attracted = 0;
 
-            const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+            const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
             expect(result).toBeUndefined();
         });
@@ -49,7 +55,7 @@ describe('calcPillageHuntDetails', () => {
             const {message, preUser, postUser} = setupHuntTest();
             message.caught = 1;
 
-            const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+            const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
             expect(result).toBeUndefined();
         });
@@ -60,7 +66,7 @@ describe('calcPillageHuntDetails', () => {
             defaultJournalMarkupEntry.render_data.css_class = 'some-other-class';
             const {message, preUser, postUser} = setupHuntTest();
 
-            const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+            const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
             expect(result).toBeUndefined();
         });
@@ -74,7 +80,7 @@ describe('calcPillageHuntDetails', () => {
                 defaultJournalMarkupEntry.render_data.text = 'Additionally, the mouse stole 1,500 gold from you!';
                 const {message, preUser, postUser} = setupHuntTest();
 
-                const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+                const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
                 expect(result).toEqual({
                     pillage_amount: 1500,
@@ -86,7 +92,7 @@ describe('calcPillageHuntDetails', () => {
                 defaultJournalMarkupEntry.render_data.text = 'Additionally, the mouse took 10 bait from your trap!';
                 const {message, preUser, postUser} = setupHuntTest();
 
-                const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+                const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
                 expect(result).toEqual({
                     pillage_amount: 10,
@@ -98,7 +104,7 @@ describe('calcPillageHuntDetails', () => {
                 defaultJournalMarkupEntry.render_data.text = 'Additionally, you lost 2,000 points in the encounter!';
                 const {message, preUser, postUser} = setupHuntTest();
 
-                const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+                const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
                 expect(result).toEqual({
                     pillage_amount: 2000,
@@ -110,7 +116,7 @@ describe('calcPillageHuntDetails', () => {
                 defaultJournalMarkupEntry.render_data.text = 'Additionally, the mouse stole 1,234,567 gold from you!';
                 const {message, preUser, postUser} = setupHuntTest();
 
-                const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+                const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
                 expect(result).toEqual({
                     pillage_amount: 1234567,
@@ -122,7 +128,7 @@ describe('calcPillageHuntDetails', () => {
                 defaultJournalMarkupEntry.render_data.text = 'Some other failure message';
                 const {message, preUser, postUser} = setupHuntTest();
 
-                const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+                const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
                 expect(result).toBeUndefined();
             });
@@ -131,7 +137,7 @@ describe('calcPillageHuntDetails', () => {
                 defaultJournalMarkupEntry.render_data.text = 'Additionally, something happened';
                 const {message, preUser, postUser} = setupHuntTest();
 
-                const result = calcPillageHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+                const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
                 expect(result).toBeUndefined();
             });

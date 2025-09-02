@@ -1,14 +1,15 @@
-import {calcBristleWoodsRiftHuntDetails} from '@scripts/modules/details/legacy';
+import {BristleWoodsRiftDetailer} from '@scripts/modules/details/environments/bristleWoodsRift';
 import {JournalMarkup, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 
-describe('calcBristleWoodsRiftHuntDetails', () => {
+describe('BristleWoodsRiftDetailer', () => {
     const message = mock<IntakeMessage>();
     const userPost = mock<User>();
     const journal = mock<JournalMarkup>();
     let user: User;
+    let detailer: BristleWoodsRiftDetailer;
 
     beforeEach(() => {
         user = new UserBuilder()
@@ -26,12 +27,13 @@ describe('calcBristleWoodsRiftHuntDetails', () => {
                 }
             })
             .build();
+        detailer = new BristleWoodsRiftDetailer();
     });
 
     it('should track hourglass status when quantity >= 1', () => {
         user.quests.QuestRiftBristleWoods!.items.rift_hourglass_stat_item.quantity = 2;
 
-        const result = calcBristleWoodsRiftHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual(expect.objectContaining({
             has_hourglass: true,
@@ -41,7 +43,7 @@ describe('calcBristleWoodsRiftHuntDetails', () => {
     it('should track hourglass status when quantity < 1', () => {
         user.quests.QuestRiftBristleWoods!.items.rift_hourglass_stat_item.quantity = 0;
 
-        const result = calcBristleWoodsRiftHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual(expect.objectContaining({
             has_hourglass: false,
@@ -52,7 +54,7 @@ describe('calcBristleWoodsRiftHuntDetails', () => {
         user.quests.QuestRiftBristleWoods!.chamber_status = 'active';
         user.quests.QuestRiftBristleWoods!.cleaver_status = 'ready';
 
-        const result = calcBristleWoodsRiftHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual(expect.objectContaining({
             chamber_status: 'active',
@@ -67,7 +69,7 @@ describe('calcBristleWoodsRiftHuntDetails', () => {
             effect3: '',
         };
 
-        const result = calcBristleWoodsRiftHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual(expect.objectContaining({
             effect_effect1: true,
@@ -85,7 +87,7 @@ describe('calcBristleWoodsRiftHuntDetails', () => {
             user.quests.QuestRiftBristleWoods!.obelisk_percent = 100;
             user.quests.QuestRiftBristleWoods!.acolyte_sand = 10;
 
-            const result = calcBristleWoodsRiftHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 obelisk_charged: true,
@@ -97,7 +99,7 @@ describe('calcBristleWoodsRiftHuntDetails', () => {
             user.quests.QuestRiftBristleWoods!.obelisk_percent = 100;
             user.quests.QuestRiftBristleWoods!.acolyte_sand = 0;
 
-            const result = calcBristleWoodsRiftHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 obelisk_charged: true,
@@ -109,7 +111,7 @@ describe('calcBristleWoodsRiftHuntDetails', () => {
             user.quests.QuestRiftBristleWoods!.obelisk_percent = 50;
             user.quests.QuestRiftBristleWoods!.acolyte_sand = 0;
 
-            const result = calcBristleWoodsRiftHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 obelisk_charged: false,
@@ -122,7 +124,7 @@ describe('calcBristleWoodsRiftHuntDetails', () => {
         it('should not include acolyte-specific properties', () => {
             user.quests.QuestRiftBristleWoods!.chamber_name = 'Other';
 
-            const result = calcBristleWoodsRiftHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).not.toHaveProperty('obelisk_charged');
             expect(result).not.toHaveProperty('acolyte_sand_drained');

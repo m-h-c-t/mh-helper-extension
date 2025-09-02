@@ -7,6 +7,7 @@ import {clawShotCityExemptions} from './environments/clawShotCity';
 import {draconicDepthsExemptions} from './environments/draconicDepth';
 import {floatingIslandsExemptions} from './environments/floatingIslands';
 import {gnawnianExpressStationExemptions} from './environments/gnawnianExpressStation';
+import {harbourExemptions} from './environments/harbour';
 import {icebergExemptions} from './environments/iceberg';
 import {iceFortressExemptions} from './environments/iceFortress';
 import {schoolOfSorceryExemptions} from './environments/schoolOfSorcery';
@@ -22,6 +23,7 @@ export const MessageExemptions: IMessageExemption[] = [
     ...draconicDepthsExemptions,
     ...floatingIslandsExemptions,
     ...gnawnianExpressStationExemptions,
+    ...harbourExemptions,
     ...icebergExemptions,
     ...iceFortressExemptions,
     ...schoolOfSorceryExemptions,

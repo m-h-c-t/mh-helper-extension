@@ -1,8 +1,8 @@
-import {calcLuckyCatchHuntDetails} from '@scripts/modules/details/legacy';
+import {LuckyCatchDetailer} from '@scripts/modules/details/global/luckyCatch';
 import {JournalMarkup} from '@scripts/types/hg';
 import {HgResponseBuilder, IntakeMessageBuilder, UserBuilder} from '@tests/utility/builders';
 
-describe('calcLuckyCatchHuntDetails', () => {
+describe('LuckyCatchDetailer', () => {
     const hgResponseBuilder = new HgResponseBuilder();
     const messageBuilder = new IntakeMessageBuilder();
     const userBuilder = new UserBuilder();
@@ -31,12 +31,18 @@ describe('calcLuckyCatchHuntDetails', () => {
         return {message, preUser, postUser};
     };
 
+    let detailer: LuckyCatchDetailer;
+
+    beforeEach(() => {
+        detailer = new LuckyCatchDetailer();
+    });
+
     describe('when mouse is not caught', () => {
         it('should return undefined', () => {
             const {message, preUser, postUser} = setupHuntTest();
             message.caught = 0;
 
-            const result = calcLuckyCatchHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+            const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
             expect(result).toBeUndefined();
         });
@@ -48,7 +54,7 @@ describe('calcLuckyCatchHuntDetails', () => {
             defaultJournalMarkupEntry.render_data.css_class = 'some-class luckycatchsuccess another-class';
             const {message, preUser, postUser} = setupHuntTest();
 
-            const result = calcLuckyCatchHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+            const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
             expect(result).toEqual({
                 is_lucky_catch: true,
@@ -59,7 +65,7 @@ describe('calcLuckyCatchHuntDetails', () => {
             defaultJournalMarkupEntry.render_data.css_class = 'some-class other-success another-class';
             const {message, preUser, postUser} = setupHuntTest();
 
-            const result = calcLuckyCatchHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+            const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
             expect(result).toEqual({
                 is_lucky_catch: false,
@@ -70,7 +76,7 @@ describe('calcLuckyCatchHuntDetails', () => {
             defaultJournalMarkupEntry.render_data.css_class = '';
             const {message, preUser, postUser} = setupHuntTest();
 
-            const result = calcLuckyCatchHuntDetails(message, preUser, postUser, defaultJournalMarkupEntry);
+            const result = detailer.addDetails(message, preUser, postUser, defaultJournalMarkupEntry);
 
             expect(result).toEqual({
                 is_lucky_catch: false,
