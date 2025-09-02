@@ -8,14 +8,7 @@ const farmingSchema = z.object({
 
 const towerSchema = z.object({
     floor: z.coerce.number(),
-    active_augmentations: z.object({
-        hr: z.boolean(),
-        sr: z.boolean(),
-        ss: z.boolean(),
-        tu: z.boolean(),
-        er: z.boolean(),
-        sste: z.boolean(),
-    }).partial(),
+    is_eclipse_mode: z.boolean().or(z.null()),
 });
 
 export const questRiftValourSchema = z.discriminatedUnion('state', [

@@ -36,7 +36,7 @@ export class ValourRiftStager implements IStager {
                 stageName = "Floors 25-31+";
             }
 
-            if ('tu' in quest.active_augmentations && quest.active_augmentations.tu) {
+            if (quest.is_eclipse_mode) {
                 stageName = "UU " + stageName;
             }
 

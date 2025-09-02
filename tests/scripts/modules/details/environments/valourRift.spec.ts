@@ -28,8 +28,7 @@ describe('calcValourRiftHuntDetails', () => {
         user.quests.QuestRiftValour = {
             state: 'tower',
             floor: 15,
-            active_augmentations: {
-            },
+            is_eclipse_mode: null,
         };
 
         const result = calcValourRiftHuntDetails(message, user, userPost, journal);
@@ -43,8 +42,7 @@ describe('calcValourRiftHuntDetails', () => {
         user.quests.QuestRiftValour = {
             state: 'tower',
             floor: 42,
-            active_augmentations: {
-            },
+            is_eclipse_mode: null,
         };
 
         const result = calcValourRiftHuntDetails(message, user, userPost, journal);
@@ -58,8 +56,7 @@ describe('calcValourRiftHuntDetails', () => {
         user.quests.QuestRiftValour = {
             state: 'tower',
             floor: 8,
-            active_augmentations: {
-            },
+            is_eclipse_mode: null,
         };
 
         const result = calcValourRiftHuntDetails(message, user, userPost, journal);
@@ -67,28 +64,5 @@ describe('calcValourRiftHuntDetails', () => {
         expect(result).toEqual({
             floor: 8,
         });
-    });
-
-    // Note: The commented out augmentation tests are not implemented
-    // as per the original code comment "No compelling use case for the following 3 augments at the moment"
-    it('should not include augmentation data', () => {
-        user.quests.QuestRiftValour = {
-            state: 'tower',
-            floor: 5,
-            active_augmentations: {
-                ss: true,
-                sste: false,
-                er: true,
-            },
-        };
-
-        const result = calcValourRiftHuntDetails(message, user, userPost, journal);
-
-        expect(result).toEqual({
-            floor: 5,
-        });
-        expect(result).not.toHaveProperty('super_siphon');
-        expect(result).not.toHaveProperty('string_stepping');
-        expect(result).not.toHaveProperty('elixir_rain');
     });
 });

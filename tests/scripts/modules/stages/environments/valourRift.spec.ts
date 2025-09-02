@@ -57,7 +57,7 @@ describe('Valour Rift stages', () => {
                     preUser.quests.QuestRiftValour = {
                         state: 'tower',
                         floor: floor,
-                        active_augmentations: {},
+                        is_eclipse_mode: null,
                     };
                     stager.addStage(message, preUser, postUser, journal);
 
@@ -71,7 +71,7 @@ describe('Valour Rift stages', () => {
                 preUser.quests.QuestRiftValour = {
                     state: 'tower',
                     floor: floor,
-                    active_augmentations: {},
+                    is_eclipse_mode: null,
                 };
 
                 stager.addStage(message, preUser, postUser, journal);
@@ -84,7 +84,7 @@ describe('Valour Rift stages', () => {
             preUser.quests.QuestRiftValour = {
                 state: 'tower',
                 floor: 100,
-                active_augmentations: {tu: true},
+                is_eclipse_mode: true,
             };
 
             stager.addStage(message, preUser, postUser, journal);
