@@ -1,9 +1,11 @@
 import {z} from "zod";
+import {questAfterwordAcresSchema} from "./afterwordAcres";
 import {questAncientCitySchema} from "./zokor";
 import {questBalacksCoveSchema} from "./balacksCove";
 import {questBountifulBeanstalkSchema} from "./bountifulBeanstalk";
 import {questClawShotCitySchema} from "./clawShotCity";
 import {questDraconicDepthsSchema} from "./draconicDepths";
+import {questEpilogueFallsSchema} from "./epilogueFalls";
 import {questFloatingIslandsSchema} from "./floatingIslands";
 import {questForbiddenGroveSchema} from "./forbiddenGrove";
 import {questForewordFarmSchema} from "./forewordFarm";
@@ -35,11 +37,13 @@ import {questTableOfContentsSchema} from "./tableOfContents";
 import {questTrainStationSchema} from "./gnawnianExpressStation";
 
 export const questsSchema = z.object({
+    QuestAfterwordAcres: questAfterwordAcresSchema.optional(),
     QuestAncientCity: questAncientCitySchema.optional(),
     QuestBalacksCove: questBalacksCoveSchema.optional(),
     QuestBountifulBeanstalk: questBountifulBeanstalkSchema.optional(),
     QuestClawShotCity: questClawShotCitySchema.optional(),
     QuestDraconicDepths: questDraconicDepthsSchema.optional(),
+    QuestEpilogueFalls: questEpilogueFallsSchema.optional(),
     QuestFloatingIslands: questFloatingIslandsSchema.optional(),
     QuestForbiddenGrove: questForbiddenGroveSchema.optional(),
     QuestForewordFarm: questForewordFarmSchema.optional(),
