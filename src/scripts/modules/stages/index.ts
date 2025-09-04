@@ -1,4 +1,5 @@
 import {type IStager} from './stages.types';
+import {AfterwordAcresStager} from './environments/afterwordAcres';
 import {BalacksCoveStager} from './environments/balacksCove';
 import {BountifulBeanstalkStager} from './environments/bountifulBeanstalk';
 import {BristleWoodsRiftStager} from './environments/bristleWoodsRift';
@@ -38,6 +39,7 @@ import {ValourRiftStager} from './environments/valourRift';
 import {ZokorStager} from './environments/zokor';
 
 const stageModules: IStager[]  = [
+    new AfterwordAcresStager(),
     new BalacksCoveStager(),
     new BountifulBeanstalkStager(),
     new BristleWoodsRiftStager(),
