@@ -57,33 +57,33 @@
     "url": "git+https://github.com/mh-community-tools/mh-helper-extension.git"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@types/chrome": "^0.1.1",
+    "@eslint/js": "^9.34.0",
+    "@types/chrome": "^0.1.4",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.1.0",
-    "concurrently": "^9.2.0",
-    "copy-webpack-plugin": "^13.0.0",
-    "eslint": "^9.32.0",
+    "@types/node": "^24.3.0",
+    "concurrently": "^9.2.1",
+    "copy-webpack-plugin": "^13.0.1",
+    "eslint": "^9.34.0",
     "eslint-plugin-jest": "^29.0.1",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
     "globals": "^16.3.0",
     "got-cjs": "^12.5.4",
-    "html-webpack-plugin": "^5.6.3",
-    "jest": "^30.0.5",
-    "jest-environment-jsdom": "^30.0.5",
+    "html-webpack-plugin": "^5.6.4",
+    "jest": "^30.1.2",
+    "jest-environment-jsdom": "^30.1.2",
     "jest-mock-extended": "^4.0.0",
     "mergician": "^2.0.2",
-    "ts-jest": "^29.4.0",
-    "ts-loader": "^9.5.1",
+    "ts-jest": "^29.4.1",
+    "ts-loader": "^9.5.4",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0",
     "web-ext": "^8.9.0",
-    "webpack": "^5.100.2",
+    "webpack": "^5.101.3",
     "webpack-cli": "^6.0.1",
     "webpack-merge": "^6.0.1"
   },
   "dependencies": {
-    "zod": "^4.0.10"
+    "zod": "^4.1.5"
   }
 }
