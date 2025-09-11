@@ -7,6 +7,7 @@ import {BurroughsRiftStager} from './environments/burroughsRift';
 import {ClawShotCityStager} from './environments/clawShotCity';
 import {CursedCityStager} from './environments/cursedCity';
 import {DraconicDepthsStager} from './environments/draconicDepths';
+import {EpilogueFallsStager} from './environments/epilogueFalls';
 import {FieryWarpathStager} from './environments/fieryWarpath';
 import {FloatingIslandsStager} from './environments/floatingIslands';
 import {ForbiddenGroveStager} from './environments/forbiddenGrove';
@@ -47,6 +48,7 @@ const stageModules: IStager[]  = [
     new ClawShotCityStager(),
     new CursedCityStager(),
     new DraconicDepthsStager(),
+    new EpilogueFallsStager(),
     new FieryWarpathStager(),
     new FloatingIslandsStager(),
     new ForbiddenGroveStager(),
