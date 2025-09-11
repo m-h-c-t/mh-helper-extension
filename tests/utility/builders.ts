@@ -2,7 +2,7 @@ import {HgResponse, InventoryItem, JournalMarkup, Quests, User} from "@scripts/t
 import {IntakeMessage} from "@scripts/types/mhct";
 
 function clone<T>(obj: T): T {
-    if (obj === undefined) {
+    if (obj === undefined || obj === null) {
         return obj;
     }
 
