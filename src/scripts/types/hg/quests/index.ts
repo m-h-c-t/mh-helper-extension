@@ -77,12 +77,14 @@ export const questsSchema = z.object({
 
 export type Quests = z.infer<typeof questsSchema>;
 
+export * from "./afterwordAcres";
 export * from "./balacksCove";
 export * from "./bountifulBeanstalk";
 export * from "./bristleWoodsRift";
 export * from "./burroughsRift";
 export * from "./clawShotCity";
 export * from "./draconicDepths";
+export * from "./epilogueFalls";
 export * from "./floatingIslands";
 export * from "./forbiddenGrove";
 export * from "./forewordFarm";

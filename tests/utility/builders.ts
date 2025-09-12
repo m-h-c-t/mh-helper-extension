@@ -1,6 +1,15 @@
 import {HgResponse, InventoryItem, JournalMarkup, Quests, User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 
+function clone<T>(obj: T): T {
+    if (obj === undefined || obj === null) {
+        return obj;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return JSON.parse(JSON.stringify(obj));
+}
+
 /*
 * Builder pattern classes to help build test data with ease
 */
@@ -47,15 +56,26 @@ export class HgResponseBuilder {
 
     public build(): HgResponse {
         this.user ??= new UserBuilder().build();
+        this.journalMarkup ??= [{
+            render_data: {
+                entry_id: 0,
+                mouse_type: "",
+                css_class: "",
+                entry_date: "",
+                environment: "",
+                entry_timestamp: 0,
+                text: ""
+            }
+        }];
 
         return {
             success: 1,
             active_turn: this.activeTurn,
-            user: this.user,
-            page: this.page,
-            journal_markup: this.journalMarkup,
-            inventory: this.inventory,
-            ...this.unknown,
+            user: clone(this.user),
+            page: clone(this.page),
+            journal_markup: clone(this.journalMarkup),
+            inventory: clone(this.inventory),
+            ...clone(this.unknown),
         };
     }
 }
@@ -174,16 +194,16 @@ export class UserBuilder {
 
     public build(): User {
         return {
-            ...this.identification,
-            ...this.turn,
-            ...this.environment,
-            ...this.trap,
-            ...this.weapon,
-            ...this.base,
-            ...this.bait,
-            ...this.trinket,
-            quests: this.quests,
-            ...this.viewing_atts,
+            ...clone(this.identification),
+            ...clone(this.turn),
+            ...clone(this.environment),
+            ...clone(this.trap),
+            ...clone(this.weapon),
+            ...clone(this.base),
+            ...clone(this.bait),
+            ...clone(this.trinket),
+            quests: clone(this.quests),
+            ...clone(this.viewing_atts),
         };
     }
 }
