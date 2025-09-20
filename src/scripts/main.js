@@ -346,16 +346,18 @@ import * as stagers from './modules/stages';
                         'X-Requested-By': `MHCT/${mhhh_version}`,
                     },
                     dataType: "json",
-                }).done(userRqResponse => {
-                    logger.debug("Got user object, invoking huntSend", {userRqResponse});
+                }).done(preResponseText => {
+                    logger.debug("Got user object, invoking huntSend", {userRqResponse: preResponseText});
+
                     hunt_xhr.addEventListener("loadend", () => {
                         logger.debug("Overall 'Hunt Requested' Timing %i (ms)", performance.now() - huntRequestTimeStart);
                         // Call record hunt with the pre-hunt and hunt (post) user objects.
-                        recordHuntWithPrehuntUser(userRqResponse, JSON.parse(hunt_xhr.responseText));
+                        recordHuntWithPrehuntUser(preResponseText, JSON.parse(hunt_xhr.responseText));
                     }, false);
                     hunt_send.apply(hunt_xhr, huntArgs);
                 });
             };
+
             return hunt_xhr;
         };
     }
@@ -366,7 +368,7 @@ import * as stagers from './modules/stages';
             $(document).ajaxSend(getUserBeforeHunting);
         }
 
-        $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
+        $(document).ajaxSuccess(async (event, xhr, ajaxOptions) => {
             const url = ajaxOptions.url;
             if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
                 // This shouldn't be hit if tracking-crowns if off. See URLDiffCheck.
@@ -377,28 +379,47 @@ import * as stagers from './modules/stages';
                 createHunterIdHash();
             }
 
-            try {
-                const parsedUrl = new URL(url);
-                // mobile api calls are not checked
-                if (parsedUrl.hostname === "www.mousehuntgame.com" && !parsedUrl.pathname.startsWith("/api/")) {
-                    const json = JSON.parse(xhr.responseText);
-                    const parseResult = hgResponseSchema.safeParse(json);
-                    if (!parseResult.success) {
-                        logger.warn("Unexpected response type received", z.prettifyError(parseResult.error));
-                    }
-                }
-            } catch {
-                // Invalid url, JSON, or response is not JSON
+            const hgResponse = validateAndParseHgResponse(xhr.responseText, url);
+            if (!hgResponse) {
+                return;
             }
 
             if (userSettings['tracking-events']) {
                 for (const handler of ajaxSuccessHandlers) {
                     if (handler.match(url)) {
-                        handler.execute(xhr.responseJSON);
+                        await handler.execute(hgResponse);
                     }
                 }
             }
         });
+    }
+
+    /**
+     * Validates and parses an HG response, returning the parsed JSON if valid
+     * @param {string} responseText The raw response text from the XMLHttpRequest
+     * @param {string} url The request URL
+     * @returns {import("./types/hg").HgResponse|null} The parsed JSON object if valid, null otherwise
+     */
+    function validateAndParseHgResponse(responseText, url) {
+        try {
+            const parsedUrl = new URL(url);
+            // mobile api calls are not checked
+            if (parsedUrl.hostname === "www.mousehuntgame.com" && !parsedUrl.pathname.startsWith("/api/")) {
+                const json = JSON.parse(responseText);
+                const parseResult = hgResponseSchema.parse(json);
+
+                if (!parseResult.success) {
+                    logger.warn("Unexpected response received", z.prettifyError(parseResult.error));
+                    return null;
+                }
+
+                return parseResult.data;
+            }
+        } catch {
+            // Invalid url, JSON, or response is not JSON
+        }
+
+        return null;
     }
 
     /**
@@ -469,15 +490,26 @@ import * as stagers from './modules/stages';
      * @param {unknown} pre_response The object obtained prior to invoking `activeturn.php`.
      * @param {unknown} post_response Parsed JSON representation of the response from calling activeturn.php
      */
-    function recordHuntWithPrehuntUser(pre_response, post_response) {
-        logger.debug("In recordHuntWithPrehuntUser pre and post:", pre_response, post_response);
+    function recordHuntWithPrehuntUser(rawPreResponse, rawPostResponse) {
+        logger.debug("In recordHuntWithPrehuntUser pre and post:", rawPreResponse, rawPostResponse);
 
-        const safeParseResultPre = hgResponseSchema.safeParse(pre_response);
-        const safeParseResultPost = hgResponseSchema.safeParse(post_response);
+        const safeParseResultPre = hgResponseSchema.safeParse(rawPreResponse);
+        const safeParseResultPost = hgResponseSchema.safeParse(rawPostResponse);
 
         if (!safeParseResultPre.success || !safeParseResultPost.success) {
-            logger.warn("Unexpected response type received", safeParseResultPre.error?.message, safeParseResultPost.error?.message);
+            if (!safeParseResultPre.success) {
+                logger.warn("Unexpected response type received", z.prettifyError(safeParseResultPre.error));
+            }
+
+            if (!safeParseResultPost.success) {
+                logger.warn("Unexpected response type received", z.prettifyError(safeParseResultPost.error));
+            }
+
+            return;
         }
+
+        const pre_response = safeParseResultPre.data;
+        const post_response = safeParseResultPost.data;
 
         // General data flow
         // - Validate API response object

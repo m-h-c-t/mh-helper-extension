@@ -8,7 +8,7 @@ export const fieryWarpathViewingAttributesSchema = z.object({
         mice: z.record(z.string(), z.object({
             status: z.string(),
             quantity: z.coerce.number(),
-        })),
+        }).optional()),
         has_support_mice: z.union([z.literal('active'), z.string()]),
         morale_percent: z.coerce.number(),
         show_portal: z.string(),

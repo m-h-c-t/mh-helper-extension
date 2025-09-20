@@ -28,9 +28,9 @@ export class FieryWarpathDetailer implements IEnvironmentDetailer {
 
             if (preAttrs.streak_quantity && preAttrs.streak_quantity > 0) {
                 fw.streak_count = preAttrs.streak_quantity;
-                fw.streak_type = asType(String(preAttrs.streak_type));
+                fw.streak_type = asType(preAttrs.streak_type);
                 fw.streak_increased_on_hunt = (message.caught === 1 &&
-                    fw.streak_type === asType(String(postAttrs.streak_type ?? '')));
+                    fw.streak_type === asType(postAttrs.streak_type ?? ''));
             }
 
             // Track the mice remaining in the wave, per type and in total.
@@ -68,18 +68,18 @@ export class FieryWarpathDetailer implements IEnvironmentDetailer {
                 // Calculate the non-rounded `morale_percent` viewing attribute.
                 fw.support_morale = (wave_total - remaining) / (.9 * wave_total);
             }
-        } else if ([4, "4", "portal"].includes(String(preAttrs.wave))) {
+        } else if ([4, "portal"].includes(preAttrs.wave)) {
             // If the Warmonger or Artillery Commander was already caught (i.e. Ultimate Charm),
             // don't record any hunt details since there isn't anything to learn.
             const boss = (message.stage === "Portal")
-                ? preAttrs.mice?.desert_artillery_commander
-                : preAttrs.mice?.desert_boss;
+                ? preAttrs.mice.desert_artillery_commander
+                : preAttrs.mice.desert_boss;
             if (!boss || boss.quantity !== 1) {
                 return;
             }
             // Theurgy Wardens are "desert_elite_gaurd". Yes, "gaurd".
-            const warden = preAttrs.mice?.desert_elite_gaurd;
-            fw.num_warden = warden ? warden.quantity : 0;
+            const warden = preAttrs.mice.desert_elite_gaurd;
+            fw.num_warden = warden?.quantity ?? 0;
             fw.boss_invincible = !!fw.num_warden;
         } else {
             throw new Error(`Unknown FW Wave "${String(preAttrs.wave)}"`);

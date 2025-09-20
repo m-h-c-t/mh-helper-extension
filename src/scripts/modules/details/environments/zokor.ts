@@ -20,7 +20,7 @@ export class ZokorDetailer implements IEnvironmentDetailer {
             return {
                 minotaur_label: quest.boss.replace(/hiddenDistrict/i, "").trim(),
                 lair_catches: -(quest.countdown - 20),
-                minotaur_meter: parseFloat(String(quest.width)),
+                minotaur_meter: quest.width,
             };
         } else if (quest.district_tier === 3) {
             return {
