@@ -7,7 +7,7 @@ export class WhiskerWoodsRiftDetailer implements IEnvironmentDetailer {
 
     addDetails(message: IntakeMessage, userPre: User, userPost: User, journal: JournalMarkup): Record<PropertyKey, unknown> | undefined {
         // For Lactrodectus hunts, if MBW can be attracted (and is not guaranteed), record the rage state.
-        if (message.cheese.id != 1646) {
+        if (message.cheese.id !== 1646) {
             return;
         }
 

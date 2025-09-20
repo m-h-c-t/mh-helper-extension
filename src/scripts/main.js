@@ -406,7 +406,7 @@ import * as stagers from './modules/stages';
             // mobile api calls are not checked
             if (parsedUrl.hostname === "www.mousehuntgame.com" && !parsedUrl.pathname.startsWith("/api/")) {
                 const json = JSON.parse(responseText);
-                const parseResult = hgResponseSchema.parse(json);
+                const parseResult = hgResponseSchema.safeParse(json);
 
                 if (!parseResult.success) {
                     logger.warn("Unexpected response received", z.prettifyError(parseResult.error));
