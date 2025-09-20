@@ -270,6 +270,8 @@ export class IntakeMessageBuilder {
             hunt_details: {
                 hunt_count: '1',
             },
+            loot: [],
+            auras: []
         } as unknown as IntakeMessage;
 
         if (this.stage) {
