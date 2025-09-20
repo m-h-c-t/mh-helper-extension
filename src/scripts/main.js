@@ -901,6 +901,12 @@ import * as stagers from './modules/stages';
                 more_details.pirate_sleigh_trigger = true;
                 logger.debug("Pirate Sleigh proc", {procs: more_details});
             }
+            else if (css_class.search(/rainbowQuillSpecialEffect/) !== -1) {
+                if (user.environment_name == "Afterword Acres" || user.environment_name == "Epilogue Falls") {
+                    more_details.rainbow_quill_trigger = true;
+                }
+                logger.debug("Rainbow Quill proc", {procs: more_details});
+            }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
                 more_details.hunt_count++;
                 logger.debug("Got a hunt record ", {procs: more_details});

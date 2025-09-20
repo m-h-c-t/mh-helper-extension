@@ -1,4 +1,5 @@
 import {type IStager} from './stages.types';
+import {AfterwordAcresStager} from './environments/afterwordAcres';
 import {BalacksCoveStager} from './environments/balacksCove';
 import {BountifulBeanstalkStager} from './environments/bountifulBeanstalk';
 import {BristleWoodsRiftStager} from './environments/bristleWoodsRift';
@@ -6,6 +7,7 @@ import {BurroughsRiftStager} from './environments/burroughsRift';
 import {ClawShotCityStager} from './environments/clawShotCity';
 import {CursedCityStager} from './environments/cursedCity';
 import {DraconicDepthsStager} from './environments/draconicDepths';
+import {EpilogueFallsStager} from './environments/epilogueFalls';
 import {FieryWarpathStager} from './environments/fieryWarpath';
 import {FloatingIslandsStager} from './environments/floatingIslands';
 import {ForbiddenGroveStager} from './environments/forbiddenGrove';
@@ -38,6 +40,7 @@ import {ValourRiftStager} from './environments/valourRift';
 import {ZokorStager} from './environments/zokor';
 
 const stageModules: IStager[]  = [
+    new AfterwordAcresStager(),
     new BalacksCoveStager(),
     new BountifulBeanstalkStager(),
     new BristleWoodsRiftStager(),
@@ -45,6 +48,7 @@ const stageModules: IStager[]  = [
     new ClawShotCityStager(),
     new CursedCityStager(),
     new DraconicDepthsStager(),
+    new EpilogueFallsStager(),
     new FieryWarpathStager(),
     new FloatingIslandsStager(),
     new ForbiddenGroveStager(),
