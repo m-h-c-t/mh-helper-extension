@@ -12,7 +12,6 @@ import {z} from "zod";
 import * as successHandlers from './modules/ajax-handlers';
 import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
-import * as detailingFuncs from './modules/details/legacy';
 
 (function () {
     'use strict';
@@ -347,16 +346,18 @@ import * as detailingFuncs from './modules/details/legacy';
                         'X-Requested-By': `MHCT/${mhhh_version}`,
                     },
                     dataType: "json",
-                }).done(userRqResponse => {
-                    logger.debug("Got user object, invoking huntSend", {userRqResponse});
+                }).done(preResponseText => {
+                    logger.debug("Got user object, invoking huntSend", {userRqResponse: preResponseText});
+
                     hunt_xhr.addEventListener("loadend", () => {
                         logger.debug("Overall 'Hunt Requested' Timing %i (ms)", performance.now() - huntRequestTimeStart);
                         // Call record hunt with the pre-hunt and hunt (post) user objects.
-                        recordHuntWithPrehuntUser(userRqResponse, JSON.parse(hunt_xhr.responseText));
+                        recordHuntWithPrehuntUser(preResponseText, JSON.parse(hunt_xhr.responseText));
                     }, false);
                     hunt_send.apply(hunt_xhr, huntArgs);
                 });
             };
+
             return hunt_xhr;
         };
     }
@@ -367,7 +368,7 @@ import * as detailingFuncs from './modules/details/legacy';
             $(document).ajaxSend(getUserBeforeHunting);
         }
 
-        $(document).ajaxSuccess((event, xhr, ajaxOptions) => {
+        $(document).ajaxSuccess(async (event, xhr, ajaxOptions) => {
             const url = ajaxOptions.url;
             if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
                 // This shouldn't be hit if tracking-crowns if off. See URLDiffCheck.
@@ -378,28 +379,47 @@ import * as detailingFuncs from './modules/details/legacy';
                 createHunterIdHash();
             }
 
-            try {
-                const parsedUrl = new URL(url);
-                // mobile api calls are not checked
-                if (parsedUrl.hostname === "www.mousehuntgame.com" && !parsedUrl.pathname.startsWith("/api/")) {
-                    const json = JSON.parse(xhr.responseText);
-                    const parseResult = hgResponseSchema.safeParse(json);
-                    if (!parseResult.success) {
-                        logger.warn("Unexpected response type received", z.prettifyError(parseResult.error));
-                    }
-                }
-            } catch {
-                // Invalid url, JSON, or response is not JSON
+            const hgResponse = validateAndParseHgResponse(xhr.responseText, url);
+            if (!hgResponse) {
+                return;
             }
 
             if (userSettings['tracking-events']) {
                 for (const handler of ajaxSuccessHandlers) {
                     if (handler.match(url)) {
-                        handler.execute(xhr.responseJSON);
+                        await handler.execute(hgResponse);
                     }
                 }
             }
         });
+    }
+
+    /**
+     * Validates and parses an HG response, returning the parsed JSON if valid
+     * @param {string} responseText The raw response text from the XMLHttpRequest
+     * @param {string} url The request URL
+     * @returns {import("./types/hg").HgResponse|null} The parsed JSON object if valid, null otherwise
+     */
+    function validateAndParseHgResponse(responseText, url) {
+        try {
+            const parsedUrl = new URL(url);
+            // mobile api calls are not checked
+            if (parsedUrl.hostname === "www.mousehuntgame.com" && !parsedUrl.pathname.startsWith("/api/")) {
+                const json = JSON.parse(responseText);
+                const parseResult = hgResponseSchema.safeParse(json);
+
+                if (!parseResult.success) {
+                    logger.warn("Unexpected response received", z.prettifyError(parseResult.error));
+                    return null;
+                }
+
+                return parseResult.data;
+            }
+        } catch {
+            // Invalid url, JSON, or response is not JSON
+        }
+
+        return null;
     }
 
     /**
@@ -470,15 +490,26 @@ import * as detailingFuncs from './modules/details/legacy';
      * @param {unknown} pre_response The object obtained prior to invoking `activeturn.php`.
      * @param {unknown} post_response Parsed JSON representation of the response from calling activeturn.php
      */
-    function recordHuntWithPrehuntUser(pre_response, post_response) {
-        logger.debug("In recordHuntWithPrehuntUser pre and post:", pre_response, post_response);
+    function recordHuntWithPrehuntUser(rawPreResponse, rawPostResponse) {
+        logger.debug("In recordHuntWithPrehuntUser pre and post:", rawPreResponse, rawPostResponse);
 
-        const safeParseResultPre = hgResponseSchema.safeParse(pre_response);
-        const safeParseResultPost = hgResponseSchema.safeParse(post_response);
+        const safeParseResultPre = hgResponseSchema.safeParse(rawPreResponse);
+        const safeParseResultPost = hgResponseSchema.safeParse(rawPostResponse);
 
         if (!safeParseResultPre.success || !safeParseResultPost.success) {
-            logger.warn("Unexpected response type received", safeParseResultPre.error?.message, safeParseResultPost.error?.message);
+            if (!safeParseResultPre.success) {
+                logger.warn("Unexpected response type received", z.prettifyError(safeParseResultPre.error));
+            }
+
+            if (!safeParseResultPost.success) {
+                logger.warn("Unexpected response type received", z.prettifyError(safeParseResultPost.error));
+            }
+
+            return;
         }
+
+        const pre_response = safeParseResultPre.data;
+        const post_response = safeParseResultPost.data;
 
         // General data flow
         // - Validate API response object
@@ -1090,21 +1121,6 @@ import * as detailingFuncs from './modules/details/legacy';
         }
     }
 
-    /** @type {Object <string, Function>} */
-    const location_huntdetails_lookup = {
-        "Bristle Woods Rift": detailingFuncs.calcBristleWoodsRiftHuntDetails,
-        "Claw Shot City": detailingFuncs.calcClawShotCityHuntDetails,
-        "Fiery Warpath": detailingFuncs.calcFieryWarpathHuntDetails,
-        "Fort Rox": detailingFuncs.calcFortRoxHuntDetails,
-        "Harbour": detailingFuncs.calcHarbourHuntDetails,
-        "Sand Crypts": detailingFuncs.calcSandCryptsHuntDetails,
-        "Table of Contents": detailingFuncs.calcTableofContentsHuntDetails,
-        "Valour Rift": detailingFuncs.calcValourRiftHuntDetails,
-        "Whisker Woods Rift": detailingFuncs.calcWhiskerWoodsRiftHuntDetails,
-        "Zokor": detailingFuncs.calcZokorHuntDetails,
-        "Zugzwang's Tower": detailingFuncs.calcZugzwangsTowerHuntDetails,
-    };
-
     /** @type { Object<string, import("./modules/details/details.types").IEnvironmentDetailer> } */
     const location_detailer_lookup = {};
     for (const detailer of detailers.environmentDetailerModules) {
@@ -1121,26 +1137,16 @@ import * as detailingFuncs from './modules/details/legacy';
      */
     function addHuntDetails(message, user, user_post, hunt) {
         // First, get any location-specific details:
-        const details_func = location_huntdetails_lookup[user.environment_name];
-        let locationHuntDetails = details_func ? details_func(message, user, user_post, hunt) : undefined;
-
+        let locationHuntDetails = {};
         const detailer = location_detailer_lookup[user.environment_name];
         if (detailer) {
             locationHuntDetails = detailer.addDetails(message, user, user_post, hunt);
         }
 
         // Then, get any global hunt details (such as from ongoing events, auras, etc).
-        const globalHuntDetails = [
-            detailingFuncs.calcHalloweenHuntDetails,
-            detailingFuncs.calcLNYHuntDetails,
-            detailingFuncs.calcLuckyCatchHuntDetails,
-            detailingFuncs.calcPillageHuntDetails,
-        ].map((details_func) => details_func(message, user, user_post, hunt))
-            .filter(details => details);
-
-        globalHuntDetails.push(...detailers.globalDetailerModules
+        const globalHuntDetails = detailers.globalDetailerModules
             .map(detailer => detailer.addDetails(message, user, user_post, hunt))
-            .filter(details => details));
+            .filter(details => details);
 
         const otherJournalDetails = calcMoreDetails(hunt); // This is probably not needed and can use hunt.more_details below
 

@@ -1,36 +1,39 @@
-import {calcZugzwangsTowerHuntDetails} from '@scripts/modules/details/legacy';
+import {ZugzwangsTowerDetailer} from "@scripts/modules/details/environments/zugzwangsTower";
+import {JournalMarkup, User, ZugzwangsTowerViewingAttributes} from "@scripts/types/hg";
+import {IntakeMessage} from "@scripts/types/mhct";
+import {UserBuilder} from "@tests/utility/builders";
+import {mock} from "jest-mock-extended";
 
-describe('calcZugzwangsTowerHuntDetails', () => {
-    let message: {cheese: {id: number}};
-    let user: {viewing_atts: {
-        zzt_amplifier: string;
-        zzt_tech_progress: string;
-        zzt_mage_progress: string;
-    }};
-    let user_post: Record<string, unknown>;
-    let hunt: Record<string, unknown>;
+describe('ZugzwangsTowerDetailer', () => {
+    const message = mock<IntakeMessage>();
+    const user_post = mock<User>();
+    const hunt = mock<JournalMarkup>();
+
+    let user: User & { viewing_atts: ZugzwangsTowerViewingAttributes };
+    let detailer: ZugzwangsTowerDetailer;
 
     beforeEach(() => {
-        message = {
-            cheese: {id: 0},
-        };
-        user = {
-            viewing_atts: {
-                zzt_amplifier: '0',
-                zzt_tech_progress: '0',
-                zzt_mage_progress: '0',
-            },
-        };
-        user_post = {};
-        hunt = {};
+        detailer = new ZugzwangsTowerDetailer();
+
+        user = new UserBuilder()
+            .withEnvironment({
+                environment_id: 0,
+                environment_name: "Zugzwang's Tower",
+            })
+            .withViewingAttributes({viewing_atts: {
+                zzt_amplifier: 0,
+                zzt_tech_progress: 0,
+                zzt_mage_progress: 0,
+            }})
+            .build() as User & { viewing_atts: ZugzwangsTowerViewingAttributes };
     });
 
     it('should parse and return basic tower data', () => {
-        user.viewing_atts.zzt_amplifier = '5';
-        user.viewing_atts.zzt_tech_progress = '8';
-        user.viewing_atts.zzt_mage_progress = '12';
+        user.viewing_atts.zzt_amplifier = 5;
+        user.viewing_atts.zzt_tech_progress = 8;
+        user.viewing_atts.zzt_mage_progress = 12;
 
-        const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+        const result = detailer.addDetails(message, user, user_post, hunt);
 
         expect(result).toEqual({
             amplifier: 5,
@@ -46,10 +49,10 @@ describe('calcZugzwangsTowerHuntDetails', () => {
         });
 
         it('should be available when technic progress is 16', () => {
-            user.viewing_atts.zzt_tech_progress = '16';
-            user.viewing_atts.zzt_mage_progress = '8';
+            user.viewing_atts.zzt_tech_progress = 16;
+            user.viewing_atts.zzt_mage_progress = 8;
 
-            const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toEqual(expect.objectContaining({
                 cm_available: true,
@@ -57,10 +60,10 @@ describe('calcZugzwangsTowerHuntDetails', () => {
         });
 
         it('should be available when mystic progress is 16', () => {
-            user.viewing_atts.zzt_tech_progress = '8';
-            user.viewing_atts.zzt_mage_progress = '16';
+            user.viewing_atts.zzt_tech_progress = 8;
+            user.viewing_atts.zzt_mage_progress = 16;
 
-            const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toEqual(expect.objectContaining({
                 cm_available: true,
@@ -68,10 +71,10 @@ describe('calcZugzwangsTowerHuntDetails', () => {
         });
 
         it('should be available when both progress are 16', () => {
-            user.viewing_atts.zzt_tech_progress = '16';
-            user.viewing_atts.zzt_mage_progress = '16';
+            user.viewing_atts.zzt_tech_progress = 16;
+            user.viewing_atts.zzt_mage_progress = 16;
 
-            const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toEqual(expect.objectContaining({
                 cm_available: true,
@@ -79,10 +82,10 @@ describe('calcZugzwangsTowerHuntDetails', () => {
         });
 
         it('should not be available when neither progress is 16', () => {
-            user.viewing_atts.zzt_tech_progress = '15';
-            user.viewing_atts.zzt_mage_progress = '15';
+            user.viewing_atts.zzt_tech_progress = 15;
+            user.viewing_atts.zzt_mage_progress = 15;
 
-            const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toEqual(expect.objectContaining({
                 cm_available: false,
@@ -91,10 +94,10 @@ describe('calcZugzwangsTowerHuntDetails', () => {
 
         it('should not be available with wrong cheese even if conditions met', () => {
             message.cheese.id = 999; // Not Checkmate cheese
-            user.viewing_atts.zzt_tech_progress = '16';
-            user.viewing_atts.zzt_mage_progress = '8';
+            user.viewing_atts.zzt_tech_progress = 16;
+            user.viewing_atts.zzt_mage_progress = 8;
 
-            const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toEqual(expect.objectContaining({
                 cm_available: false,
@@ -103,12 +106,12 @@ describe('calcZugzwangsTowerHuntDetails', () => {
     });
 
     it('should handle all string values correctly', () => {
-        user.viewing_atts.zzt_amplifier = '15';
-        user.viewing_atts.zzt_tech_progress = '7';
-        user.viewing_atts.zzt_mage_progress = '9';
+        user.viewing_atts.zzt_amplifier = 15;
+        user.viewing_atts.zzt_tech_progress = 7;
+        user.viewing_atts.zzt_mage_progress = 9;
         message.cheese.id = 371;
 
-        const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+        const result = detailer.addDetails(message, user, user_post, hunt);
 
         expect(result).toEqual({
             amplifier: 15,
@@ -119,11 +122,11 @@ describe('calcZugzwangsTowerHuntDetails', () => {
     });
 
     it('should handle zero values', () => {
-        user.viewing_atts.zzt_amplifier = '0';
-        user.viewing_atts.zzt_tech_progress = '0';
-        user.viewing_atts.zzt_mage_progress = '0';
+        user.viewing_atts.zzt_amplifier = 0;
+        user.viewing_atts.zzt_tech_progress = 0;
+        user.viewing_atts.zzt_mage_progress = 0;
 
-        const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+        const result = detailer.addDetails(message, user, user_post, hunt);
 
         expect(result).toEqual({
             amplifier: 0,
@@ -134,12 +137,12 @@ describe('calcZugzwangsTowerHuntDetails', () => {
     });
 
     it('should handle maximum progress values', () => {
-        user.viewing_atts.zzt_amplifier = '10';
-        user.viewing_atts.zzt_tech_progress = '16';
-        user.viewing_atts.zzt_mage_progress = '16';
+        user.viewing_atts.zzt_amplifier = 10;
+        user.viewing_atts.zzt_tech_progress = 16;
+        user.viewing_atts.zzt_mage_progress = 16;
         message.cheese.id = 371;
 
-        const result = calcZugzwangsTowerHuntDetails(message, user, user_post, hunt);
+        const result = detailer.addDetails(message, user, user_post, hunt);
 
         expect(result).toEqual({
             amplifier: 10,

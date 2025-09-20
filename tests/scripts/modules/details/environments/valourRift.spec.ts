@@ -1,17 +1,19 @@
-import {calcValourRiftHuntDetails} from '@scripts/modules/details/legacy';
+import {ValourRiftDetailer} from '@scripts/modules/details/environments/valourRift';
 import {User, JournalMarkup} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 
-describe('calcValourRiftHuntDetails', () => {
+describe('ValourRiftDetailer', () => {
     const message = mock<IntakeMessage>();
     const userPost = mock<User>();
     const journal = mock<JournalMarkup>();
     let user: User;
+    let detailer: ValourRiftDetailer;
 
     beforeEach(() => {
         user = new UserBuilder().build();
+        detailer = new ValourRiftDetailer();
     });
 
     it('should return undefined when not in tower state', () => {
@@ -19,7 +21,7 @@ describe('calcValourRiftHuntDetails', () => {
             state: 'farming',
         };
 
-        const result = calcValourRiftHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toBeUndefined();
     });
@@ -31,7 +33,7 @@ describe('calcValourRiftHuntDetails', () => {
             is_eclipse_mode: null,
         };
 
-        const result = calcValourRiftHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             floor: 15,
@@ -45,7 +47,7 @@ describe('calcValourRiftHuntDetails', () => {
             is_eclipse_mode: null,
         };
 
-        const result = calcValourRiftHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             floor: 42,
@@ -59,7 +61,7 @@ describe('calcValourRiftHuntDetails', () => {
             is_eclipse_mode: null,
         };
 
-        const result = calcValourRiftHuntDetails(message, user, userPost, journal);
+        const result = detailer.addDetails(message, user, userPost, journal);
 
         expect(result).toEqual({
             floor: 8,

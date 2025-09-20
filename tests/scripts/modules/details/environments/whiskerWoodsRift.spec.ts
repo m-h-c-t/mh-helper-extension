@@ -1,40 +1,36 @@
-import {calcWhiskerWoodsRiftHuntDetails} from '@scripts/modules/details/legacy';
+import {WhiskerWoodsRiftDetailer} from "@scripts/modules/details/environments/whiskerWoodsRift";
+import {JournalMarkup, QuestRiftWhiskerWoods, User} from "@scripts/types/hg";
+import {IntakeMessage} from "@scripts/types/mhct";
+import {UserBuilder} from "@tests/utility/builders";
+import {mock} from "jest-mock-extended";
 
 describe('calcWhiskerWoodsRiftHuntDetails', () => {
-    let message: {cheese: {id: number}};
-    let user: {quests: {QuestRiftWhiskerWoods: {
-        zones: {
-            clearing: {level: string};
-            tree: {level: string};
-            lagoon: {level: string};
-        };
-    }}};
-    let user_post: Record<string, unknown>;
-    let hunt: Record<string, unknown>;
+    const message = mock<IntakeMessage>();
+    const user_post = mock<User>();
+    const hunt = mock<JournalMarkup>();
+    let user: User & { quests: { QuestRiftWhiskerWoods: QuestRiftWhiskerWoods } };
+    let detailer: WhiskerWoodsRiftDetailer;
 
     beforeEach(() => {
-        message = {
-            cheese: {id: 0},
-        };
-        user = {
-            quests: {
+        user = new UserBuilder()
+            .withQuests({
                 QuestRiftWhiskerWoods: {
                     zones: {
-                        clearing: {level: '0'},
-                        tree: {level: '0'},
-                        lagoon: {level: '0'},
+                        clearing: {level: 0},
+                        tree: {level: 0},
+                        lagoon: {level: 0},
                     },
                 },
-            },
-        };
-        user_post = {};
-        hunt = {};
+            })
+            .build() as User & { quests: { QuestRiftWhiskerWoods: QuestRiftWhiskerWoods } };
+
+        detailer = new WhiskerWoodsRiftDetailer();
     });
 
     it('should return undefined when not using Lactrodectus cheese', () => {
         message.cheese.id = 1234; // Not Lactrodectus (1646)
 
-        const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+        const result = detailer.addDetails(message, user, user_post, hunt);
 
         expect(result).toBeUndefined();
     });
@@ -46,52 +42,52 @@ describe('calcWhiskerWoodsRiftHuntDetails', () => {
 
         it('should return undefined when total rage < 75', () => {
             user.quests.QuestRiftWhiskerWoods.zones = {
-                clearing: {level: '20'},
-                tree: {level: '25'},
-                lagoon: {level: '25'},
+                clearing: {level: 20},
+                tree: {level: 25},
+                lagoon: {level: 25},
             };
             // Total: 70 < 75
 
-            const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toBeUndefined();
         });
 
         it('should return undefined when total rage >= 150', () => {
             user.quests.QuestRiftWhiskerWoods.zones = {
-                clearing: {level: '50'},
-                tree: {level: '50'},
-                lagoon: {level: '50'},
+                clearing: {level: 50},
+                tree: {level: 50},
+                lagoon: {level: 50},
             };
             // Total: 150 >= 150
 
-            const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toBeUndefined();
         });
 
         it('should return undefined when any zone <= 24', () => {
             user.quests.QuestRiftWhiskerWoods.zones = {
-                clearing: {level: '24'}, // <= 24
-                tree: {level: '30'},
-                lagoon: {level: '30'},
+                clearing: {level: 24}, // <= 24
+                tree: {level: 30},
+                lagoon: {level: 30},
             };
             // Total: 84, but clearing <= 24
 
-            const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toBeUndefined();
         });
 
         it('should return rage data when conditions are met', () => {
             user.quests.QuestRiftWhiskerWoods.zones = {
-                clearing: {level: '30'},
-                tree: {level: '25'},
-                lagoon: {level: '35'},
+                clearing: {level: 30},
+                tree: {level: 25},
+                lagoon: {level: 35},
             };
             // Total: 90 (75 <= 90 < 150, all > 24)
 
-            const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toEqual({
                 clearing: 30,
@@ -103,13 +99,13 @@ describe('calcWhiskerWoodsRiftHuntDetails', () => {
 
         it('should handle minimum valid values', () => {
             user.quests.QuestRiftWhiskerWoods.zones = {
-                clearing: {level: '25'},
-                tree: {level: '25'},
-                lagoon: {level: '25'},
+                clearing: {level: 25},
+                tree: {level: 25},
+                lagoon: {level: 25},
             };
             // Total: 75 (exactly at minimum, all > 24)
 
-            const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toEqual({
                 clearing: 25,
@@ -121,13 +117,13 @@ describe('calcWhiskerWoodsRiftHuntDetails', () => {
 
         it('should handle maximum valid values', () => {
             user.quests.QuestRiftWhiskerWoods.zones = {
-                clearing: {level: '49'},
-                tree: {level: '50'},
-                lagoon: {level: '50'},
+                clearing: {level: 49},
+                tree: {level: 50},
+                lagoon: {level: 50},
             };
             // Total: 149 (< 150, all > 24)
 
-            const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toEqual({
                 clearing: 49,
@@ -139,26 +135,26 @@ describe('calcWhiskerWoodsRiftHuntDetails', () => {
 
         it('should fail when tree level is exactly 24', () => {
             user.quests.QuestRiftWhiskerWoods.zones = {
-                clearing: {level: '30'},
-                tree: {level: '24'}, // exactly 24
-                lagoon: {level: '50'},
+                clearing: {level: 30},
+                tree: {level: 24}, // exactly 24
+                lagoon: {level: 50},
             };
             // Total: 104, but tree == 24
 
-            const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toBeUndefined();
         });
 
         it('should fail when lagoon level is exactly 24', () => {
             user.quests.QuestRiftWhiskerWoods.zones = {
-                clearing: {level: '30'},
-                tree: {level: '50'},
-                lagoon: {level: '24'}, // exactly 24
+                clearing: {level: 30},
+                tree: {level: 50},
+                lagoon: {level: 24}, // exactly 24
             };
             // Total: 104, but lagoon == 24
 
-            const result = calcWhiskerWoodsRiftHuntDetails(message, user, user_post, hunt);
+            const result = detailer.addDetails(message, user, user_post, hunt);
 
             expect(result).toBeUndefined();
         });

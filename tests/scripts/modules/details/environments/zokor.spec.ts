@@ -1,14 +1,15 @@
-import {calcZokorHuntDetails} from '@scripts/modules/details/legacy';
+import {ZokorDetailer} from '@scripts/modules/details/environments/zokor';
 import {User, JournalMarkup} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 
-describe('calcZokorHuntDetails', () => {
+describe('ZokorDetailer', () => {
     const message = mock<IntakeMessage>();
     const userPost = mock<User>();
     const journal = mock<JournalMarkup>();
     let user: User;
+    let detailer: ZokorDetailer;
 
     beforeEach(() => {
         user = new UserBuilder()
@@ -22,6 +23,7 @@ describe('calcZokorHuntDetails', () => {
                 }
             })
             .build();
+        detailer = new ZokorDetailer();
     });
 
     describe('when in Minotaur lair (hiddenDistrict)', () => {
@@ -32,7 +34,7 @@ describe('calcZokorHuntDetails', () => {
         });
 
         it('should return minotaur lair details', () => {
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual({
                 minotaur_label: 'napping',
@@ -44,7 +46,7 @@ describe('calcZokorHuntDetails', () => {
         it('should handle different district names', () => {
             user.quests.QuestAncientCity!.boss = 'hiddenDistrict awake';
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 minotaur_label: 'awake',
@@ -54,7 +56,7 @@ describe('calcZokorHuntDetails', () => {
         it('should calculate lair catches correctly', () => {
             user.quests.QuestAncientCity!.countdown = 18;
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 lair_catches: 2, // -(18 - 20) = 2
@@ -64,7 +66,7 @@ describe('calcZokorHuntDetails', () => {
         it('should handle zero catches', () => {
             user.quests.QuestAncientCity!.countdown = 20;
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             // -0 needs weird case with jest
             expect(result?.lair_catches).toBeCloseTo(0, 0);
@@ -73,7 +75,7 @@ describe('calcZokorHuntDetails', () => {
         it('should parse width as float', () => {
             user.quests.QuestAncientCity!.width = 42.75;
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual(expect.objectContaining({
                 minotaur_meter: 42.75,
@@ -89,7 +91,7 @@ describe('calcZokorHuntDetails', () => {
         it('should return boss defeated status when boss is defeated', () => {
             user.quests.QuestAncientCity!.boss = 'defeated';
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual({
                 boss_defeated: true,
@@ -99,7 +101,7 @@ describe('calcZokorHuntDetails', () => {
         it('should return boss not defeated when boss is not defeated', () => {
             user.quests.QuestAncientCity!.boss = 'active';
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual({
                 boss_defeated: false,
@@ -109,7 +111,7 @@ describe('calcZokorHuntDetails', () => {
         it('should handle empty boss string', () => {
             user.quests.QuestAncientCity!.boss = '';
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual({
                 boss_defeated: false,
@@ -122,7 +124,7 @@ describe('calcZokorHuntDetails', () => {
             user.quests.QuestAncientCity!.district_tier = 1;
             user.quests.QuestAncientCity!.boss = 'some boss';
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toBeUndefined();
         });
@@ -131,7 +133,7 @@ describe('calcZokorHuntDetails', () => {
             user.quests.QuestAncientCity!.district_tier = 2;
             user.quests.QuestAncientCity!.boss = 'some boss';
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toBeUndefined();
         });
@@ -139,7 +141,7 @@ describe('calcZokorHuntDetails', () => {
         it('should return undefined for normal boss state', () => {
             user.quests.QuestAncientCity!.boss = 'normalBoss';
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toBeUndefined();
         });
@@ -152,7 +154,7 @@ describe('calcZokorHuntDetails', () => {
             user.quests.QuestAncientCity!.countdown = 16;
             user.quests.QuestAncientCity!.width = 88.0;
 
-            const result = calcZokorHuntDetails(message, user, userPost, journal);
+            const result = detailer.addDetails(message, user, userPost, journal);
 
             expect(result).toEqual({
                 minotaur_label: 'enraged',
