@@ -2,8 +2,7 @@ import z from "zod";
 
 const mapSchema = z.object({
     name: z.string(),
-    is_complete: z.literal(true).or(z.null()),
-    remaining: z.coerce.number(),
+    is_complete: z.literal(true).or(z.null())
 });
 
 export const questRelicHunterSchema = z.object({
