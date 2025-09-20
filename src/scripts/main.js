@@ -487,8 +487,8 @@ import * as stagers from './modules/stages';
     }
 
     /**
-     * @param {unknown} pre_response The object obtained prior to invoking `activeturn.php`.
-     * @param {unknown} post_response Parsed JSON representation of the response from calling activeturn.php
+     * @param {string} rawPreResponse String representation of the response from calling page.php
+     * @param {string} rawPostResponse String representation of the response from calling activeturn.php
      */
     function recordHuntWithPrehuntUser(rawPreResponse, rawPostResponse) {
         logger.debug("In recordHuntWithPrehuntUser pre and post:", rawPreResponse, rawPostResponse);
@@ -608,14 +608,16 @@ import * as stagers from './modules/stages';
 
         /**
          *
-         * @param {import("./types/hg").User} user A the main user object (pre or post) used to populate the message
-         * @param {import("./types/hg").User} user_post The post-hunt user object
+         * @param {import("./types/hg").HgResponse} before The pre-hunt object
+         * @param {import("./types/hg").HgResponse} after The post-hunt object
          * @param {import("./types/hg").JournalMarkup} hunt Journal entry corresponding with the hunt
          * @returns {import("./types/mhct").IntakeMessage | undefined}
          */
-        function createIntakeMessage(user, user_post, hunt) {
+        function createIntakeMessage(before, after, hunt) {
+            const user = before.user;
+            const user_post = after.user;
             // Obtain the main hunt information from the journal entry and user objects.
-            const message = createMessageFromHunt(hunt, user, user_post);
+            const message = createMessageFromHunt(hunt, before, after);
             if (!message) {
                 logger.info("Missing Info (will try better next hunt)(1)");
                 return;
@@ -626,7 +628,7 @@ import * as stagers from './modules/stages';
 
             addStage(message, user, user_post, hunt);
             addHuntDetails(message, user, user_post, hunt);
-            addLoot(message, hunt, post_response.inventory);
+            addLoot(message, hunt, after.inventory);
 
             return message;
         }
@@ -635,14 +637,14 @@ import * as stagers from './modules/stages';
         let message_post;
         try {
             // Create two intake messages. One based on pre-response. The other based on post-response.
-            message_pre = createIntakeMessage(user_pre, user_post, hunt);
-            message_post = createIntakeMessage(user_post, user_post, hunt);
+            message_pre = createIntakeMessage(pre_response, post_response, hunt);
+            message_post = createIntakeMessage(post_response, post_response, hunt);
         } catch (error) {
             logger.error("Something went wrong creating message", error);
         }
 
         if (message_pre === null || message_post === null) {
-            logger.log("Missing Info (will try better next hunt)(2)");
+            logger.warn("Missing Info (will try better next hunt)(2)");
             return;
         }
 
@@ -961,11 +963,14 @@ import * as stagers from './modules/stages';
     /**
      * Initialize the message with main hunt details.
      * @param {import("./types/hg").JournalMarkup} journal The journal entry corresponding to the active hunt.
-     * @param {import("./types/hg").User} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {import("./types/hg").User} user_post The user state object, after the hunt.
+     * @param {import("./types/hg").HgResponse} before The pre-hunt object
+     * @param {import("./types/hg").HgResponse} after The post-hunt object
      * @returns {import("@scripts/types/mhct").IntakeMessage | null} The message object, or `null` if an error occurred.
      */
-    function createMessageFromHunt(journal, user, user_post) {
+    function createMessageFromHunt(journal, before, after) {
+        const user = before.user;
+        const user_post = after.user;
+
         /** @type {import("./types/mhct").IntakeMessage} */
         const message = {};
 
@@ -974,7 +979,7 @@ import * as stagers from './modules/stages';
 
         // Location
         if (!user.environment_name || !user_post.environment_name) {
-            window.console.error('MHCT: Missing Location');
+            logger.error('Missing Location');
             return null;
         }
         message.location = {
@@ -1000,7 +1005,7 @@ import * as stagers from './modules/stages';
             && !Object.prototype.hasOwnProperty.call(user, `${component.prop}_name`)
         );
         if (missing.length) {
-            window.console.error(`MHCT: Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
+            logger.error(`Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
             return null;
         }
         // Assign component values to the message.
@@ -1041,6 +1046,9 @@ import * as stagers from './modules/stages';
                 .replace(/<\/a>.*/i, '')    // Remove text after the first <a href>'s closing tag </a>
                 .replace(/ mouse$/i, '');  // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
+
+        // Auras
+        message.auras = Object.keys(before.trap_image.auras).filter(codename => before.trap_image.auras[codename].status === 'active');
 
         return message;
     }

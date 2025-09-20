@@ -57,6 +57,15 @@ class IntakeMessageSameStage implements IPropertyRule<IntakeMessage> {
     }
 }
 
+class IntakeMessageSameAuras implements IPropertyRule<IntakeMessage> {
+    readonly description = "Auras should not change";
+    readonly property = "auras";
+    isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
+        return pre.auras.length === post.auras.length
+            && pre.auras.every(a => post.auras.includes(a));
+    }
+}
+
 export const MessageRules: IPropertyRule<IntakeMessage>[] = [
     new IntakeMessageSameCheese,
     new IntakeMessageSameWeapon,
@@ -64,4 +73,5 @@ export const MessageRules: IPropertyRule<IntakeMessage>[] = [
     new IntakeMessageSameBase,
     new IntakeMessageSameLocation,
     new IntakeMessageSameStage,
+    new IntakeMessageSameAuras,
 ];

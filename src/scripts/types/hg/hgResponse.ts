@@ -2,6 +2,7 @@ import {z} from "zod";
 import {userSchema} from "./user";
 import {journalMarkupSchema} from "./journalMarkup";
 import {inventoryItemSchema} from "./inventoryItem";
+import {trapImageSchema} from "./trapImage";
 
 export const hgResponseSchema = z.object({
     user: userSchema,
@@ -13,6 +14,7 @@ export const hgResponseSchema = z.object({
         z.record(z.string(), inventoryItemSchema),
         z.array(z.unknown()),
     ]).optional(),
+    trap_image: trapImageSchema
 });
 
 export type HgResponse = z.infer<typeof hgResponseSchema>;
