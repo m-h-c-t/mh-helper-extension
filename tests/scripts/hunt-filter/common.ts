@@ -6,6 +6,9 @@ export function getValidPreResponse(): HgResponse {
         user: {} as User, // User is not validated here so we dont need it
         page: {},
         success: 1,
+        trap_image: {
+            auras: {}
+        }
     };
 }
 
@@ -79,5 +82,6 @@ export function getDefaultIntakeMessage(): IntakeMessage {
         attracted: 0,
         mouse: '',
         loot: [],
+        auras: [],
     };
 }

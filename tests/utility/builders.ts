@@ -21,6 +21,7 @@ export class HgResponseBuilder {
     page?: unknown;
     journalMarkup?: JournalMarkup[];
     inventory?: Record<string, InventoryItem>;
+    trapImage?: { auras: Record<string, {status: 'active' | 'hidden'}> };
     unknown?: object;
 
     withActiveTurn(active: boolean) {
@@ -48,6 +49,11 @@ export class HgResponseBuilder {
         return this;
     }
 
+    withAuras(auras: Record<string, {status: 'active' | 'hidden'}>) {
+        this.trapImage = {auras};
+        return this;
+    }
+
     // This is a placeholder for any other unknown data that may be needed
     withUnknown(unknown: object) {
         this.unknown = unknown;
@@ -68,6 +74,8 @@ export class HgResponseBuilder {
             }
         }];
 
+        this.trapImage ??= {auras: {}};
+
         return {
             success: 1,
             active_turn: this.activeTurn,
@@ -75,6 +83,7 @@ export class HgResponseBuilder {
             page: clone(this.page),
             journal_markup: clone(this.journalMarkup),
             inventory: clone(this.inventory),
+            trap_image: clone(this.trapImage),
             ...clone(this.unknown),
         };
     }
@@ -260,6 +269,8 @@ export class IntakeMessageBuilder {
             attracted: '1',
             hunt_details: {
             },
+            loot: [],
+            auras: []
         } as unknown as IntakeMessage;
 
         if (this.stage) {

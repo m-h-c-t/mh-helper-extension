@@ -19,6 +19,7 @@ export interface IntakeMessage {
     attracted: number;
     mouse: string;
     loot: Loot[];
+    auras: string[];
 }
 
 /**
