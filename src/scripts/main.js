@@ -685,7 +685,6 @@ import * as stagers from './modules/stages';
         /** @type {import("./types/hg").JournalMarkup & Object<string, unknown>} */
         let journal = {};
         const more_details = {};
-        more_details.hunt_count = 0;
         let journal_entries = hunt_response.journal_markup;
         if (!journal_entries) { return null; }
 
@@ -942,7 +941,6 @@ import * as stagers from './modules/stages';
                 logger.debug("Rainbow Quill proc", {procs: more_details});
             }
             else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
-                more_details.hunt_count++;
                 logger.debug("Got a hunt record ", {procs: more_details});
                 if (css_class.includes('active')) {
                     journal = markup;

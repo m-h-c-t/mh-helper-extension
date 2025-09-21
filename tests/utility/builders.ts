@@ -268,7 +268,6 @@ export class IntakeMessageBuilder {
             caught: '1',
             attracted: '1',
             hunt_details: {
-                hunt_count: '1',
             },
             loot: [],
             auras: []
