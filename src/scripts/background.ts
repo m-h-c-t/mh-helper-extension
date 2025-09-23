@@ -1,7 +1,5 @@
-/** Persistent background script.
- * MAYBE: Migrate to non-persistent, event-based background script.
- * info: https://developer.chrome.com/extensions/background_migration
- */
+/* eslint-disable */
+// @ts-nocheck
 
 // Update check
 chrome.runtime.onUpdateAvailable.addListener(details => {

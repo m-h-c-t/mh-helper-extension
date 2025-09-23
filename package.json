@@ -1,5 +1,5 @@
 {
-  "name": "mhct-extension-env",
+  "name": "mhct-helper-extension",
   "version": "1.0.0",
   "description": "Dev environment for the MHCT browser extension",
   "homepage": "https://github.com/mh-community-tools/mh-helper-extension#readme",
