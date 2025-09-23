@@ -4,16 +4,17 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');
-const RemoteDownloadFileWebpackPlugin = require('./webpack/RemoteDownloadFileWebpackPlugin.js');
+const RemoteDownloadFileWebpackPlugin = require('./webpack/RemoteDownloadFileWebpackPlugin');
+const manifest = require('./webpack/manifest');
 
 /**
- * @param {Object} env - Environment configuration
- * @param {('firefox'| undefined)} env.browser - Target browser
- * @param {('production'| undefined )} env.mode - Build mode
+ * Webpack configuration function
+ * @returns {import('webpack').Configuration}
  */
-module.exports = (env) => {
-    const manifest = env.browser === 'firefox' ? 'manifest.v3.firefox.json' : 'manifest.v3.chrome.json';
-    const devtool = env.mode === 'production' ? 'inline-source-map' : 'inline-cheap-module-source-map';
+module.exports = () => {
+    const ENV = (process.env.ENV = process.env.NODE_ENV);
+    const browser = process.env.BROWSER ?? 'chrome';
+    const devtool = ENV === 'production' ? 'inline-source-map' : 'inline-cheap-module-source-map';
     /**
      * @type {import('webpack').Configuration}
      */
@@ -27,7 +28,7 @@ module.exports = (env) => {
             theme: './src/scripts/theme.js',
         },
         output: {
-            path: path.resolve(__dirname, 'dist', env.browser ?? 'chrome'),
+            path: path.resolve(__dirname, 'dist', browser),
             filename: 'scripts/[name].js',
             clean: true,
         },
@@ -69,7 +70,7 @@ module.exports = (env) => {
             }),
             new CopyWebpackPlugin({
                 patterns: [
-                    { from: `./src/${manifest}`, to: 'manifest.json' },
+                    { from: `./src/manifest.json`, to: 'manifest.json', transform: manifest.transform(browser) },
                     { from: './src/images', to: 'images' },
                     { from: './src/css', to: 'css' },
                     { from: './src/sounds', to: 'sounds' },
@@ -83,7 +84,7 @@ module.exports = (env) => {
                         transform(content, path) {
                             // Replace EXTENSION_URL with the appropriate extension URL iff Chrome
                             // Firefox will be replaced at runtime due to unique internal extension ID
-                            if (env.browser == 'firefox') {
+                            if (browser == 'firefox') {
                                 return content;
                             }
 

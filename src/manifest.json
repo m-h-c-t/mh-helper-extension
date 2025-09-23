@@ -1,5 +1,8 @@
 {
     "$schema": "https://json.schemastore.org/chrome-manifest",
+    "__chrome__$schema": null,
+    "__firefox__$schema": null,
+
     "manifest_version": 3,
     "author": "MHCT",
     "name": "MHCT MouseHunt Helper",
@@ -47,6 +50,10 @@
         "type": "module"
     },
 
+    "__firefox__background": {
+        "scripts": ["background.js"]
+    },
+
     "options_ui": {
         "page": "options.html",
         "open_in_tab": true
@@ -59,5 +66,11 @@
             "128": "images/icon128.png"
         },
         "default_popup": "popup.html"
+    },
+
+    "__firefox__browser_specific_settings": {
+        "gecko": {
+            "id": "{801e5516-3311-4ee7-8185-7da12ffab807}"
+        }
     }
 }

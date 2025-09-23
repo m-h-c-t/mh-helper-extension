@@ -81,16 +81,14 @@ jobs:
       - name: Update manifests
         run: |
           echo "New Version: ${{ env.EXT_VERSION }}"
-          jq --arg version ${{ env.EXT_VERSION }} '.version = $version' src/manifest.v3.chrome.json > src/manifest.v3.chrome.json.tmp
-          jq --arg version ${{ env.EXT_VERSION }} '.version = $version' src/manifest.v3.firefox.json > src/manifest.v3.firefox.json.tmp
-          mv src/manifest.v3.chrome.json.tmp src/manifest.v3.chrome.json
-          mv src/manifest.v3.firefox.json.tmp src/manifest.v3.firefox.json
+          jq --arg version ${{ env.EXT_VERSION }} '.version = $version' src/manifest.json > src/manifest.json.tmp
+          mv src/manifest.json.tmp src/manifest.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build Chrome
-        run: npm run build:prod
+        run: npm run build:prod:chrome
 
       - name: Build Firefox
         run: npm run build:prod:firefox

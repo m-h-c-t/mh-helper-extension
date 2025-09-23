@@ -1,0 +1,20 @@
+name: "Show Versions File"
+on:
+  workflow_dispatch:
+
+jobs:
+  ssh-test:
+    name: Echo file contents on server
+    env:
+      VERSIONS_FILE: '/var/www/mh-hunt-helper/src/versions.txt'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Allow new version if not already
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DO_IP }}
+          username: ${{ secrets.DO_USER }}
+          port: ${{ secrets.DO_PORT }}
+          key: ${{ secrets.DO_KEY }}
+          script: |
+            cat ${{ env.VERSIONS_FILE }}
