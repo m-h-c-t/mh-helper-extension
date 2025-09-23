@@ -52,6 +52,7 @@
     "start:chrome": "web-ext run --start-url https://www.mousehuntgame.com -t chromium --source-dir dist/chrome",
     "start:firefox": "web-ext run --start-url https://www.mousehuntgame.com --source-dir dist/firefox",
     "lint": "eslint .",
+    "lint:webext": "web-ext lint --source-dir dist/firefox --verbose",
     "test": "jest"
   },
   "private": true,

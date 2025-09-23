@@ -39,9 +39,7 @@ jobs:
       run: npm run build:firefox
 
     - name: "web-ext lint"
-      run: |
-        cd dist/firefox
-        npm exec web-ext lint --verbose
+      run: npm run lint:webext
 
   test:
     name: Test

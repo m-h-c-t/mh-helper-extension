@@ -141,24 +141,15 @@ jobs:
       VERSIONS_FILE: '/var/www/mh-hunt-helper/src/versions.txt'
     runs-on: ubuntu-latest
     steps:
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh/
-          echo "${{ secrets.DO_KEY }}" > ~/.ssh/do.key
-          chmod 600 ~/.ssh/do.key
-          cat >>~/.ssh/config <<END
-          Host do
-            HostName ${{ secrets.DO_IP }}
-            User ${{ secrets.DO_USER }}
-            Port ${{ secrets.DO_PORT }}
-            IdentityFile ~/.ssh/do.key
-            StrictHostKeyChecking no
-          END
       - name: Allow new version if not already
-        run: |
-          echo "Setting version on server to ${{ env.EXT_VERSION_NUM }}"
-          ssh do 'grep -qxF "${{ env.EXT_VERSION_NUM }}" ${{ ENV.VERSIONS_FILE }} || echo "${{ env.EXT_VERSION_NUM }}" >> ${{ ENV.VERSIONS_FILE }}'
-
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DO_IP }}
+          username: ${{ secrets.DO_USER }}
+          port: ${{ secrets.DO_PORT }}
+          key: ${{ secrets.DO_KEY }}
+          script: |
+            grep -qxF "${{ env.EXT_VERSION_NUM }}" ${{ ENV.VERSIONS_FILE }} || echo "${{ env.EXT_VERSION_NUM }}" >> ${{ ENV.VERSIONS_FILE }}
 
   chrome-submit:
     name: Submit to Chrome
