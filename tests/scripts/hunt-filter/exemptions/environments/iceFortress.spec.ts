@@ -2,7 +2,7 @@ import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {IceFortressStager} from '@scripts/modules/stages/environments/iceFortress';
 import {User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
 
 describe('Ice Fortress exemptions', () => {

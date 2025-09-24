@@ -1,12 +1,12 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {HgResponse, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {ConsoleLogger} from '@scripts/util/logger';
+import {LoggerService} from '@scripts/services/logging';
 import {getValidPreResponse, getValidPostResponse, getDefaultUser, getDefaultIntakeMessage} from './common';
-jest.mock('@scripts/util/logger');
+import {mock} from 'jest-mock-extended';
 
 // Mock logger won't actually call console.log
-const logger = new ConsoleLogger();
+const logger = mock<LoggerService>();
 const engine = new IntakeRejectionEngine(logger);
 
 describe('validateResponse', () => {

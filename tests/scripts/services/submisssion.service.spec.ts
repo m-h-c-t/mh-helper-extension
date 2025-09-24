@@ -1,19 +1,19 @@
 import {SubmissionService} from '@scripts/services/submission.service';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {EnvironmentService} from '@scripts/services/environment.service';
 import {ApiService} from '@scripts/services/api.service';
 import {HgItem, IntakeMessage} from '@scripts/types/mhct';
 import * as timeUtils from '@scripts/util/time';
+import {mock} from 'jest-mock-extended';
 
 // Mock dependencies
-jest.mock('@scripts/util/logger');
 jest.mock('@scripts/services/environment.service');
 jest.mock('@scripts/services/api.service');
 jest.mock('@scripts/util/time');
 
 describe('SubmissionService', () => {
+    const mockLogger = mock<LoggerService>();
     let service: SubmissionService;
-    let mockLogger: jest.Mocked<LoggerService>;
     let mockEnvironmentService: jest.Mocked<EnvironmentService>;
     let mockApiService: jest.Mocked<ApiService>;
     let mockGetSettings: jest.Mock;
@@ -30,14 +30,6 @@ describe('SubmissionService', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-
-        // Setup mocks
-        mockLogger = {
-            debug: jest.fn(),
-            info: jest.fn(),
-            warn: jest.fn(),
-            error: jest.fn(),
-        } as unknown as jest.Mocked<LoggerService>;
 
         mockEnvironmentService = {
             getConvertibleIntakeUrl: jest.fn().mockReturnValue('convert-url'),

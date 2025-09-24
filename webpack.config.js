@@ -1,5 +1,5 @@
 const path = require('path');
-
+const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -7,20 +7,31 @@ const { TsconfigPathsPlugin } = require('tsconfig-paths-webpack-plugin');
 const RemoteDownloadFileWebpackPlugin = require('./webpack/RemoteDownloadFileWebpackPlugin');
 const manifest = require('./webpack/manifest');
 
+function getEnv() {
+  const ENV = (process.env.ENV = process.env.NODE_ENV);
+  const manifestVersion = process.env.MANIFEST_VERSION == 3 ? 3 : 2;
+  const browser = process.env.BROWSER ?? "chrome";
+
+  return { ENV, manifestVersion, browser };
+};
+
 /**
  * Webpack configuration function
  * @returns {import('webpack').Configuration}
  */
 module.exports = () => {
-    const ENV = (process.env.ENV = process.env.NODE_ENV);
-    const browser = process.env.BROWSER ?? 'chrome';
-    const devtool = ENV === 'production' ? 'inline-source-map' : 'inline-cheap-module-source-map';
+    if (process.env.NODE_ENV == null) {
+        process.env.NODE_ENV = "development";
+    }
+
+    const { ENV, browser } = getEnv();
+
     /**
      * @type {import('webpack').Configuration}
      */
     return {
         entry: {
-            background: './src/scripts/background.js',
+            background: './src/scripts/background.ts',
             content: './src/scripts/content.js',
             main: './src/scripts/main.js',
             options: './src/scripts/options.js',
@@ -32,8 +43,18 @@ module.exports = () => {
             filename: 'scripts/[name].js',
             clean: true,
         },
-        mode: 'development',
-        devtool: devtool,
+        cache:
+            ENV !== "development"
+                ? false
+                : {
+                    type: "filesystem",
+                    name: "main-cache",
+                },
+        mode: ENV,
+        devtool:
+            ENV !== 'development'
+                ? 'source-map'
+                : 'inline-source-map', // Changed from 'eval' to 'inline-source-map' for CSP compatibility
         module: {
             rules: [
                 {
@@ -51,6 +72,11 @@ module.exports = () => {
             plugins: [new TsconfigPathsPlugin()],
         },
         plugins: [
+            new webpack.DefinePlugin({
+                "process.env": {
+                    ENV: JSON.stringify(ENV),
+                },
+            }),
             new ForkTsCheckerWebpackPlugin(),
             new HtmlWebpackPlugin({
                 template: './src/options.html',

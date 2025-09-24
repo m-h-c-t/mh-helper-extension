@@ -1,6 +1,6 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {getDefaultIntakeMessage} from '../common';
 
 

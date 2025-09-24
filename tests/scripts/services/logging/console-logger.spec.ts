@@ -1,4 +1,4 @@
-import {LogLevel, ConsoleLogger} from "@scripts/util/logger";
+import {ConsoleLogger, LogLevel} from "@scripts/services/logging";
 
 mockConsole();
 
@@ -7,18 +7,8 @@ describe('ConsoleLogger', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        logger = new ConsoleLogger(LogLevel.Debug);
-    });
-
-    it('defaults to info log level', () => {
-        logger = new ConsoleLogger();
-        expect(logger.getLevel()).toBe(LogLevel.Info);
-    });
-
-    it('sets and gets log level', () => {
-        expect(logger.getLevel()).toBe(LogLevel.Debug);
-        logger.setLevel(LogLevel.Error);
-        expect(logger.getLevel()).toBe(LogLevel.Error);
+        const isDev = true;
+        logger = new ConsoleLogger(isDev);
     });
 
     describe('log to console with correct level', () => {
@@ -44,7 +34,7 @@ describe('ConsoleLogger', () => {
     });
 
     it('skips logging when level is high enough', () => {
-        logger = new ConsoleLogger(LogLevel.Warn);
+        logger = new ConsoleLogger(false, (level) => level >= LogLevel.Warn);
 
         logger.debug();
         logger.info();

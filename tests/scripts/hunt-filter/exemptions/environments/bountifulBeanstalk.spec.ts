@@ -2,7 +2,7 @@ import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {BountifulBeanstalkStager} from '@scripts/modules/stages/environments/bountifulBeanstalk';
 import {User} from '@scripts/types/hg';
 import {ComponentEntry, IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
 import * as stageTest from '@tests/scripts/modules/stages/environments/bountifulBeanstalk.spec';
 

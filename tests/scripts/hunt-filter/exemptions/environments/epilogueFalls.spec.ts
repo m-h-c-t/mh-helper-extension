@@ -3,7 +3,7 @@ import {EpilogueFallsStager} from '@scripts/modules/stages/environments/epilogue
 import {IStager} from '@scripts/modules/stages/stages.types';
 import {RapidZoneType, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {HgResponseBuilder, IntakeMessageBuilder, UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';
 

@@ -2,7 +2,7 @@ import {hgResponseSchema} from "@scripts/types/hg";
 import {ValidatedAjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {z} from "zod";
 import {SubmissionService} from "@scripts/services/submission.service";
-import {LoggerService} from "@scripts/util/logger";
+import {LoggerService} from "@scripts/services/logging";
 
 
 export class TreasureMapHandler extends ValidatedAjaxSuccessHandler {

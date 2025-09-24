@@ -1,5 +1,5 @@
-import {LoggerService} from "@scripts/util/logger";
 import {ApiService} from "./api.service";
+import {LoggerService} from "./logging";
 import {z} from "zod";
 
 export class MouseRipApiService {

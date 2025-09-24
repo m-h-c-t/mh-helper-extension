@@ -1,6 +1,6 @@
 /*jslint browser:true */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
-import {ConsoleLogger, LogLevel} from './util/logger';
+import {ConsoleLogger, LogLevel} from './services/logging';
 import {EnvironmentService} from "./services/environment.service";
 import {MouseRipApiService} from "./services/mouserip-api.service";
 import {SubmissionService} from "./services/submission.service";
@@ -20,7 +20,9 @@ import * as stagers from './modules/stages';
     let hunter_id_hash = '0';
     let userSettings = {};
 
-    const logger = new ConsoleLogger();
+    // eslint-disable-next-line no-undef
+    const isDev = process.env.ENV === 'development';
+    const logger = new ConsoleLogger(isDev, logFilter);
     const apiService = new ApiService();
     const environmentService = new EnvironmentService(getExtensionVersion);
     const rejectionEngine = new IntakeRejectionEngine(logger);
@@ -60,26 +62,23 @@ import * as stagers from './modules/stages';
         }
     }
 
-    // Define Get settings function
-    function getSettings(callback) {
-        window.addEventListener("message", function listenSettings(event) {
-            if (event.data.mhct_settings_response !== 1) {
-                return;
-            }
-            const settings = event.data.settings;
-
-            logger.setLevel(settings.debug_logging ? LogLevel.Debug : LogLevel.Info);
-
-            if (callback && typeof(callback) === "function") {
-                window.removeEventListener("message", listenSettings);
-                callback(settings);
-            }
-        }, false);
-        window.postMessage({mhct_settings_request: 1}, "*");
-    }
-
     async function getSettingsAsync() {
-        return new Promise(resolve => getSettings(resolve));
+        return Promise.race([
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for settings.")), 5000)),
+            new Promise((resolve) => {
+                window.addEventListener("message", function listenSettings(event) {
+                    if (event.data.mhct_settings_response !== 1) {
+                        return;
+                    }
+
+                    const settings = event.data.settings;
+                    window.removeEventListener("message", listenSettings);
+                    resolve(settings);
+                }, false);
+
+                window.postMessage({mhct_settings_request: 1}, "*");
+            })
+        ]);
     }
 
     function getExtensionVersion() {
@@ -121,37 +120,37 @@ import * as stagers from './modules/stages';
     }
 
     async function initialLoad() {
-        mhhh_version = getExtensionVersion();
-        if (mhhh_version == 0) {
-            logger.info("Test version detected, turning on debug mode and pointing to server on localhost");
-        }
-
-        switch (userSettings['general-log-level']) {
-            case 'debug':
-                logger.setLevel(LogLevel.Debug);
-                break;
-            case 'info':
-                logger.setLevel(LogLevel.Info);
-                break;
-            case 'warn':
-                logger.setLevel(LogLevel.Warn);
-                break;
-            case 'error':
-                logger.setLevel(LogLevel.Error);
-                break;
-            default:
-                logger.setLevel(LogLevel.Info);
-        }
-
-        if (mhhh_version === 0) {
-            logger.setLevel(LogLevel.Debug);
+        if (isDev) {
             logger.debug("Debug mode activated");
+            logger.info("Test version detected, turning on debug mode and pointing to server on localhost");
         }
 
         logger.debug("initialLoad ran with settings", {userSettings});
 
+        mhhh_version = getExtensionVersion();
         await createHunterIdHash();
     }
+
+    function logFilter(logLevel) {
+        let userLogLevelSetting;
+        switch (userSettings['general-log-level'] ?? '') {
+            case 'debug':
+                userLogLevelSetting = LogLevel.Debug;
+                break;
+            case 'info':
+                userLogLevelSetting = LogLevel.Info;
+                break;
+            case 'warn':
+                userLogLevelSetting = LogLevel.Warn;
+                break;
+            case 'error':
+                userLogLevelSetting = LogLevel.Error;
+                break;
+            default:
+                userLogLevelSetting = LogLevel.Info;
+        }
+        return isDev || userLogLevelSetting >= logLevel;
+    };
 
     // Listening for calls
     function addWindowMessageListeners() {
@@ -582,12 +581,13 @@ import * as stagers from './modules/stages';
                 .forEach(key => {
                     result[key] = {in: "post", val: obj_post[key]};
                 });
+
+            return result;
         }
-        if (logger.getLevel() === LogLevel.Debug) {
-            const differences = {};
-            diffUserObjects(differences, new Set(), new Set(Object.keys(user_post)), user_pre, user_post);
-            logger.debug("User object diff", differences);
-        }
+
+        logger.debug("User object diff",
+            diffUserObjects({}, new Set(), new Set(Object.keys(user_post)), user_pre, user_post)
+        );
 
         // Find maximum entry id from pre_response
         let max_old_entry_id = pre_response.page.journal.entries_string.match(/data-entry-id='(\d+)'/g);
@@ -718,13 +718,13 @@ import * as stagers from './modules/stages';
             }
             else if (css_class.search(/prizemouse/) !== -1) {
                 // Handle a prize mouse attraction.
-                if (logger.getLevel() === LogLevel.Debug) {
+                // TODO: Implement data submission
+                if (isDev) {
                     window.postMessage({
                         "mhct_log_request": 1,
                         "prize mouse journal": markup,
                     }, window.origin);
                 }
-                // TODO: Implement data submission
             }
             else if (css_class.search(/desert_heater_base_trigger/) !== -1 && css_class.search(/fail/) === -1) {
                 // Handle a Desert Heater Base loot proc.
@@ -1255,17 +1255,12 @@ import * as stagers from './modules/stages';
             $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
         }
 
-        let versionInfo = "version " + mhhh_version;
-        if (Number(mhhh_version) == 0) {
-            versionInfo = "TEST version";
-        }
-
         // Tell content script we are done loading
         window.postMessage({
             mhct_finish_load: 1,
         });
 
-        logger.info(`${versionInfo} loaded! Good luck!`);
+        logger.info(`Helper Extension version ${isDev ? "DEV" : mhhh_version} loaded! Good luck!`);
     }
 
     main();

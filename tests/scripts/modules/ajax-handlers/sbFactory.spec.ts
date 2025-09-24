@@ -2,7 +2,7 @@ import {SBFactoryAjaxHandler} from "@scripts/modules/ajax-handlers";
 import {VendingMachinePurchase, VendingMachineReponse} from "@scripts/modules/ajax-handlers/sbFactory.types";
 import {SubmissionService} from "@scripts/services/submission.service";
 import {InventoryItem} from "@scripts/types/hg";
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {HgResponseBuilder} from "@tests/utility/builders";
 import {mock} from "jest-mock-extended";
 

@@ -1,4 +1,4 @@
-import {LoggerService} from "@scripts/util/logger";
+import {LoggerService} from "@scripts/services/logging";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {HgResponse, JournalMarkup} from "@scripts/types/hg";
 import {BeanstalkRarityPayload} from "./beanstalkRoomTracker.types";

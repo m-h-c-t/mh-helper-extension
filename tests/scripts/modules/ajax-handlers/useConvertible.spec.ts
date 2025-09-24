@@ -1,5 +1,5 @@
 import {mock} from 'jest-mock-extended';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {SubmissionService} from '@scripts/services/submission.service';
 import {UseConvertibleAjaxHandler} from '@scripts/modules/ajax-handlers/useConvertible';
 import {HgResponseBuilder} from '@tests/utility/builders';

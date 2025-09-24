@@ -3,7 +3,7 @@ import {SchoolOfSorceryStager} from "@scripts/modules/stages/environments/school
 import {User} from "@scripts/types/hg";
 import {ComponentEntry, IntakeMessage} from "@scripts/types/mhct";
 import {CourseType} from "@scripts/types/hg/quests/schoolOfSorcery";
-import {LoggerService} from "@scripts/util/logger";
+import {LoggerService} from "@scripts/services/logging";
 import {
     getDefaultIntakeMessage,
     getDefaultUser

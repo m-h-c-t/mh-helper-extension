@@ -1,23 +1,29 @@
-/** Persistent background script.
- * MAYBE: Migrate to non-persistent, event-based background script.
- * info: https://developer.chrome.com/extensions/background_migration
+/* eslint-disable */
+// @ts-nocheck
+
+import browser from 'webextension-polyfill';
+import {ConsoleLogger} from './services/logging';
+
+import MainBackground from './background/main.background';
+
+const logger = new ConsoleLogger(false);
+const mhctMain = ((self as any).mhctMain = new MainBackground());
+mhctMain.bootstrap().then(startHeartbeat)
+    .catch((error) => logger.error(error));
+
+async function runHeartbeat() {
+  await chrome.runtime.getPlatformInfo();
+}
+
+/**
+ * Starts the heartbeat interval which keeps the service worker alive.
  */
+async function startHeartbeat() {
+    await runHeartbeat();
+    setInterval(runHeartbeat, 20 * 1000);
+}
 
-// Update check
-chrome.runtime.onUpdateAvailable.addListener(details => {
-    console.log(`MHHH: updating to version ${details.version}`);
-    chrome.runtime.reload();
-});
-
-// Refreshes MH pages when new version is installed, to inject the latest extension code.
-chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
-    {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
-    tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
-));
-
-const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
-chrome.runtime.onStartup.addListener(keepAlive);
-keepAlive();
+// Old background script for the extension.
 setInterval(updateIcon, 1000);
 
 const userSettingsDefault = {
