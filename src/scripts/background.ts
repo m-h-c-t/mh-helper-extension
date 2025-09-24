@@ -1,21 +1,29 @@
 /* eslint-disable */
 // @ts-nocheck
 
-// Update check
-chrome.runtime.onUpdateAvailable.addListener(details => {
-    console.log(`MHHH: updating to version ${details.version}`);
-    chrome.runtime.reload();
-});
+import browser from 'webextension-polyfill';
+import {ConsoleLogger} from './services/logging';
 
-// Refreshes MH pages when new version is installed, to inject the latest extension code.
-chrome.runtime.onInstalled.addListener(() => chrome.tabs.query(
-    {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
-    tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
-));
+import MainBackground from './background/main.background';
 
-const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
-chrome.runtime.onStartup.addListener(keepAlive);
-keepAlive();
+const logger = new ConsoleLogger(false);
+const mhctMain = ((self as any).mhctMain = new MainBackground());
+mhctMain.bootstrap().then(startHeartbeat)
+    .catch((error) => logger.error(error));
+
+async function runHeartbeat() {
+  await chrome.runtime.getPlatformInfo();
+}
+
+/**
+ * Starts the heartbeat interval which keeps the service worker alive.
+ */
+async function startHeartbeat() {
+    await runHeartbeat();
+    setInterval(runHeartbeat, 20 * 1000);
+}
+
+// Old background script for the extension.
 setInterval(updateIcon, 1000);
 
 const userSettingsDefault = {

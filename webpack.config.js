@@ -1,5 +1,5 @@
 const path = require('path');
-
+const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -72,6 +72,11 @@ module.exports = () => {
             plugins: [new TsconfigPathsPlugin()],
         },
         plugins: [
+            new webpack.DefinePlugin({
+                "process.env": {
+                    ENV: JSON.stringify(ENV),
+                },
+            }),
             new ForkTsCheckerWebpackPlugin(),
             new HtmlWebpackPlugin({
                 template: './src/options.html',
