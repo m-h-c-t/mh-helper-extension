@@ -48,7 +48,7 @@ describe("KingsGiveawayAjaxHandler", () => {
             const response = responseBuilder.build();
             await handler.execute(response);
 
-            expect(logger.warn).toHaveBeenCalledWith("Couldn't validate JSON response", expect.anything());
+            expect(logger.warn).toHaveBeenCalledWith("ValidatedAjaxSuccessHandler: Invalid response for King's Giveaway", expect.anything(), expect.anything());
             expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
