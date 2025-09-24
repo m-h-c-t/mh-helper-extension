@@ -1,7 +1,7 @@
 import {SpookyShuffleAjaxHandler} from "@scripts/modules/ajax-handlers";
 import {SpookyShuffleResponse, SpookyShuffleStatus} from "@scripts/modules/ajax-handlers/spookyShuffle.types";
 import {SubmissionService} from "@scripts/services/submission.service";
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {CustomConvertibleIds} from "@scripts/util/constants";
 import {getItemsByClass} from "@scripts/util/hgFunctions";
 import {HgResponseBuilder} from "@tests/utility/builders";

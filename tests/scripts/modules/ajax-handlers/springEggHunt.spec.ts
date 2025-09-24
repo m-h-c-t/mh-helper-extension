@@ -1,7 +1,7 @@
 import {SEHAjaxHandler} from "@scripts/modules/ajax-handlers";
 import {SubmissionService} from "@scripts/services/submission.service";
 import {HgResponse} from "@scripts/types/hg";
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {mock} from "jest-mock-extended";
 
 const logger = mock<LoggerService>();

@@ -1,6 +1,6 @@
 /*jslint browser:true */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
-import {ConsoleLogger, LogLevel} from './util/logger';
+import {ConsoleLogger, LogLevel} from './services/logging';
 import {EnvironmentService} from "./services/environment.service";
 import {MouseRipApiService} from "./services/mouserip-api.service";
 import {SubmissionService} from "./services/submission.service";
@@ -20,7 +20,8 @@ import * as stagers from './modules/stages';
     let hunter_id_hash = '0';
     let userSettings = {};
 
-    const logger = new ConsoleLogger();
+    const isDev = false;
+    const logger = new ConsoleLogger(isDev, logFilter);
     const apiService = new ApiService();
     const environmentService = new EnvironmentService(getExtensionVersion);
     const rejectionEngine = new IntakeRejectionEngine(logger);
@@ -60,26 +61,23 @@ import * as stagers from './modules/stages';
         }
     }
 
-    // Define Get settings function
-    function getSettings(callback) {
-        window.addEventListener("message", function listenSettings(event) {
-            if (event.data.mhct_settings_response !== 1) {
-                return;
-            }
-            const settings = event.data.settings;
-
-            logger.setLevel(settings.debug_logging ? LogLevel.Debug : LogLevel.Info);
-
-            if (callback && typeof(callback) === "function") {
-                window.removeEventListener("message", listenSettings);
-                callback(settings);
-            }
-        }, false);
-        window.postMessage({mhct_settings_request: 1}, "*");
-    }
-
     async function getSettingsAsync() {
-        return new Promise(resolve => getSettings(resolve));
+        return Promise.race([
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for settings.")), 5000)),
+            new Promise((resolve) => {
+                window.addEventListener("message", function listenSettings(event) {
+                    if (event.data.mhct_settings_response !== 1) {
+                        return;
+                    }
+
+                    const settings = event.data.settings;
+                    window.removeEventListener("message", listenSettings);
+                    resolve(settings);
+                }, false);
+
+                window.postMessage({mhct_settings_request: 1}, "*");
+            })
+        ]);
     }
 
     function getExtensionVersion() {
@@ -126,25 +124,7 @@ import * as stagers from './modules/stages';
             logger.info("Test version detected, turning on debug mode and pointing to server on localhost");
         }
 
-        switch (userSettings['general-log-level']) {
-            case 'debug':
-                logger.setLevel(LogLevel.Debug);
-                break;
-            case 'info':
-                logger.setLevel(LogLevel.Info);
-                break;
-            case 'warn':
-                logger.setLevel(LogLevel.Warn);
-                break;
-            case 'error':
-                logger.setLevel(LogLevel.Error);
-                break;
-            default:
-                logger.setLevel(LogLevel.Info);
-        }
-
         if (mhhh_version === 0) {
-            logger.setLevel(LogLevel.Debug);
             logger.debug("Debug mode activated");
         }
 
@@ -152,6 +132,27 @@ import * as stagers from './modules/stages';
 
         await createHunterIdHash();
     }
+
+    function logFilter(logLevel) {
+        let userLogLevelSetting;
+        switch (userSettings['general-log-level'] ?? '') {
+            case 'debug':
+                userLogLevelSetting = LogLevel.Debug;
+                break;
+            case 'info':
+                userLogLevelSetting = LogLevel.Info;
+                break;
+            case 'warn':
+                userLogLevelSetting = LogLevel.Warn;
+                break;
+            case 'error':
+                userLogLevelSetting = LogLevel.Error;
+                break;
+            default:
+                userLogLevelSetting = LogLevel.Info;
+        }
+        return isDev || userLogLevelSetting >= logLevel;
+    };
 
     // Listening for calls
     function addWindowMessageListeners() {

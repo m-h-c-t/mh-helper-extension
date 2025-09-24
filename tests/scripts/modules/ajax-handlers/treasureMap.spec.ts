@@ -3,7 +3,7 @@ import {SubmissionService} from "@scripts/services/submission.service";
 import {TreasureMap, TreasureMapInventory} from "@scripts/types/hg/treasureMap";
 import {HgResponse} from "@scripts/types/hg";
 import {HgResponseBuilder} from "@tests/utility/builders";
-import {LoggerService} from "@scripts/util/logger";
+import {LoggerService} from "@scripts/services/logging";
 import {mock} from "jest-mock-extended";
 
 class TreasureMapResponseBuilder extends HgResponseBuilder {

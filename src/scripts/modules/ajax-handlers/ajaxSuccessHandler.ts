@@ -1,5 +1,5 @@
 import type {HgResponse} from "@scripts/types/hg";
-import {LoggerService} from "@scripts/util/logger";
+import {LoggerService} from "@scripts/services/logging";
 import {z} from "zod";
 
 export abstract class AjaxSuccessHandler {

@@ -3,7 +3,7 @@ import {FloatingIslandsStager} from '@scripts/modules/stages/environments/floati
 import {User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {FloatingIslandHuntingSiteAtts} from '@scripts/types/hg/quests/floatingIslands';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
 import * as stageTest from '@tests/scripts/modules/stages/environments/floatingIslands.spec';
 

@@ -1,6 +1,6 @@
+import {LoggerService} from "@scripts/services/logging";
 import {HgResponse, User} from "../types/hg";
 import {IntakeMessage} from "../types/mhct";
-import {LoggerService} from "../util/logger";
 import {IRule, IPropertyRule, IMessageExemption} from "./interfaces";
 import {ResponseRules} from "./responseRules";
 import {UserRules} from "./userRules";

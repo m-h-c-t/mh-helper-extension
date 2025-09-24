@@ -1,17 +1,17 @@
 import {mergician} from "mergician";
 import {BountifulBeanstalkRoomTrackerAjaxHandler} from "@scripts/modules/ajax-handlers";
 import {HgResponse} from "@scripts/types/hg";
-import {ConsoleLogger} from "@scripts/util/logger";
+import {LoggerService} from "@scripts/services/logging";
 import type {BeanstalkRarityPayload} from "@scripts/modules/ajax-handlers/beanstalkRoomTracker.types";
+import {mock} from "jest-mock-extended";
 
-jest.mock("@scripts/util/logger");
 global.fetch = jest.fn(() =>
     Promise.resolve({
         ok: true,
     })
 ) as jest.Mock;
 
-const logger = new ConsoleLogger();
+const logger = mock<LoggerService>();
 const showFlashMessage = jest.fn();
 const handler = new BountifulBeanstalkRoomTrackerAjaxHandler(
     logger,

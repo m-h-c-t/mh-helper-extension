@@ -1,7 +1,7 @@
 import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
 import {NormalFloorStages, FloorStage, UmbraFloorStages} from '@scripts/hunt-filter/exemptions/environments/valourRift';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {getDefaultIntakeMessage} from '../../common';
 
 

@@ -4,7 +4,7 @@ import {IStager} from '@scripts/modules/stages/stages.types';
 import {User} from '@scripts/types/hg';
 import {BlightTier} from '@scripts/types/hg/quests/afterwordAcres';
 import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from '@scripts/util/logger';
+import {LoggerService} from "@scripts/services/logging";
 import {getDefaultIntakeMessage} from '@tests/scripts/hunt-filter/common';
 import {UserBuilder} from '@tests/utility/builders';
 import {mock} from 'jest-mock-extended';

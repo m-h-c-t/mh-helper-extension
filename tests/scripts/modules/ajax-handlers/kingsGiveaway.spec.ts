@@ -2,7 +2,7 @@ import {KingsGiveawayAjaxHandler} from "@scripts/modules/ajax-handlers/kingsGive
 import {MouseRipApiService} from "@scripts/services/mouserip-api.service";
 import {SubmissionService} from "@scripts/services/submission.service";
 import {CustomConvertibleIds} from "@scripts/util/constants";
-import {LoggerService} from "@scripts/util/logger";
+import {LoggerService} from "@scripts/services/logging";
 import {HgResponseBuilder} from "@tests/utility/builders";
 import {mock} from "jest-mock-extended";
 

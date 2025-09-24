@@ -1,6 +1,6 @@
 import {HgResponse} from "@scripts/types/hg";
 import {HgItem} from "@scripts/types/mhct";
-import {LoggerService} from "@scripts/util/logger";
+import {LoggerService} from "@scripts/services/logging";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {CheesyPipePartyGame, CheesyPipePartyResponse, cheesyPipePartyResponseSchema, Region} from "./sbFactory.types";
 import {CustomConvertibleIds} from "@scripts/util/constants";

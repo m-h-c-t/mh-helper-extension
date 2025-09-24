@@ -1,7 +1,7 @@
 import {SubmissionService} from "@scripts/services/submission.service";
 import type {HgResponse} from "@scripts/types/hg";
 import type {HgItem} from "@scripts/types/mhct";
-import type {LoggerService} from "@scripts/util/logger";
+import type {LoggerService} from "@scripts/services/logging";
 import {CustomConvertibleIds as Ids} from "@scripts/util/constants";
 import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
 import {type VendingMachineReponse, type VendingMachinePurchaseType, vendingMachineResponseSchema} from "./sbFactory.types";
