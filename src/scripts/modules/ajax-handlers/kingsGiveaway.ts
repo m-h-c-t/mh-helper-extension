@@ -9,6 +9,7 @@ import {z} from "zod";
 
 export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
     private itemCache: Record<string, number> | null = null;
+    readonly name = "King's Giveaway";
     readonly schema = kingsGiveawayResponseSchema;
 
     constructor(

@@ -12,7 +12,8 @@ export class TreasureMapHandler extends ValidatedAjaxSuccessHandler {
         super(logger);
     }
 
-    schema = hgResponseSchema.extend({
+    readonly name = "Treasure Map";
+    readonly schema = hgResponseSchema.extend({
         treasure_map_inventory: z.object({
             relic_hunter_hint: z.string(),
         }).optional(),

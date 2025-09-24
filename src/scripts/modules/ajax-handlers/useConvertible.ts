@@ -6,7 +6,8 @@ import {LoggerService} from "@scripts/services/logging";
 import {z} from "zod";
 
 export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
-    schema = hgResponseSchema.extend({
+    readonly name = "Use Convertible";
+    readonly schema = hgResponseSchema.extend({
         convertible_open: z.object({
             type: z.string(),
             items: z.array(z.object({

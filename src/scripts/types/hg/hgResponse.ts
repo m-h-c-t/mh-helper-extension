@@ -15,6 +15,6 @@ export const hgResponseSchema = z.object({
         z.array(z.unknown()),
     ]).optional(),
     trap_image: trapImageSchema
-});
+}).loose(); // Allow other unknown keys since many responses have extra data used elsewhere (e.g. ajax success handlers)
 
 export type HgResponse = z.infer<typeof hgResponseSchema>;

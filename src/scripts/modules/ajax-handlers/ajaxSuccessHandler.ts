@@ -8,6 +8,7 @@ export abstract class AjaxSuccessHandler {
 }
 
 export abstract class ValidatedAjaxSuccessHandler extends AjaxSuccessHandler {
+    abstract readonly name: string;
     abstract readonly schema: z.ZodSchema;
 
     constructor(protected readonly logger: LoggerService) {
@@ -20,7 +21,9 @@ export abstract class ValidatedAjaxSuccessHandler extends AjaxSuccessHandler {
             data = this.schema.parse(responseJSON);
         } catch (e) {
             if (e instanceof z.ZodError) {
-                this.logger.warn(`Couldn't validate JSON response`, z.prettifyError(e));
+                this.logger.warn(`ValidatedAjaxSuccessHandler: Invalid response for ${this.name}`, z.prettifyError(e), {
+                    response: responseJSON,
+                });
             }
 
             return;

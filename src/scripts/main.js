@@ -408,7 +408,10 @@ import * as stagers from './modules/stages';
                 const parseResult = hgResponseSchema.safeParse(json);
 
                 if (!parseResult.success) {
-                    logger.warn("Unexpected response received", z.prettifyError(parseResult.error));
+                    logger.warn(`Unexpected HG response received\n\n${z.prettifyError(parseResult.error)}`, {
+                        url: url,
+                        response: json
+                    });
                     return null;
                 }
 
