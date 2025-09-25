@@ -1,9 +1,9 @@
 import {HgItem, hgItemSchema, IntakeMessage, MhctResponseSchema} from "@scripts/types/mhct";
-import {UserSettings} from "@scripts/types/userSettings";
 import {getUnixTimestamp} from "@scripts/util/time";
 import {ApiService} from "./api.service";
 import {EnvironmentService} from "./environment.service";
 import {LoggerService} from "./logging";
+import {UserSettings} from "./settings/settings.service";
 
 export class SubmissionService {
     private userSettings!: UserSettings;

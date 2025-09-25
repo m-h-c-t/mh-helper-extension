@@ -68,6 +68,27 @@ export class BrowserApi {
         }
     }
 
+    /**
+     * Removes a callback from the given chrome event in a cross-browser platform manner.
+     * @param event - The event in which to remove the listener from.
+     * @param callback - The callback you want removed from the event.
+     */
+    static removeListener<T extends (...args: readonly unknown[]) => unknown>(
+        event: chrome.events.Event<T>,
+        callback: T,
+    ) {
+        event.removeListener(callback);
+
+        if (BrowserApi.isSafariApi && !BrowserApi.isBackgroundPage(self)) {
+            const index = BrowserApi.trackedChromeEventListeners.findIndex(([_event, eventListener]) => {
+                return eventListener == callback;
+            });
+            if (index !== -1) {
+                BrowserApi.trackedChromeEventListeners.splice(index, 1);
+            }
+        }
+    }
+
     // Setup the event to destroy all the listeners when the popup gets unloaded in Safari, otherwise we get a memory leak
     private static setupUnloadListeners() {
         // The MDN recommend using 'visibilitychange' but that event is fired any time the popup window is obscured as well

@@ -1,10 +1,15 @@
-/* eslint-disable */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import browser from 'webextension-polyfill';
 import {ConsoleLogger} from './services/logging';
-
 import MainBackground from './background/main.background';
+import {UserSettings} from './services/settings/settings.service';
 
 const logger = new ConsoleLogger(false);
 const mhctMain = ((self as any).mhctMain = new MainBackground());
@@ -12,7 +17,7 @@ mhctMain.bootstrap().then(startHeartbeat)
     .catch((error) => logger.error(error));
 
 async function runHeartbeat() {
-  await chrome.runtime.getPlatformInfo();
+    await chrome.runtime.getPlatformInfo();
 }
 
 /**
@@ -20,47 +25,21 @@ async function runHeartbeat() {
  */
 async function startHeartbeat() {
     await runHeartbeat();
-    setInterval(runHeartbeat, 20 * 1000);
+    setInterval(() => { void runHeartbeat(); }, 20 * 1000);
 }
 
 // Old background script for the extension.
-setInterval(updateIcon, 1000);
+setInterval(() => { void updateIcon(); }, 1000);
 
-const userSettingsDefault = {
-    version: 1,
-    'tracking-hunts': true,
-    'tracking-crowns': true,
-    'tracking-convertibles': true,
-    'tracking-events': true,
-    'notification-sound': false,
-    'notification-volume': 100,
-    'notification-custom': false,
-    'notification-custom-url': '',
-    'notification-desktop': false,
-    'notification-alert-type': 'none',
-    'notification-message-display': 'hud',
-    'notification-success-messages': true,
-    'notification-error-messages': true,
-    'enhancement-icon-timer': true,
-    'enhancement-tsitu-loader': false,
-    'enhancement-tsitu-loader-offset': 80,
-    'enhancement-escape-dismiss': false,
-    'enhancement-dark-mode': false,
-    'general-log-level': 'info',
-};
-let userSettings = Object.assign({}, userSettingsDefault);
-
-function updateIcon() {
-    chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
-        (found_tabs) => {
-            const [mhTab] = found_tabs;
-            if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
-                icon_timer_updateBadge(mhTab.id);
-            } else {
-                // The tab was either not found, or is still loading.
-                icon_timer_updateBadge(false);
-            }
-        });
+async function updateIcon() {
+    const found_tabs = await chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']});
+    const [mhTab] = found_tabs;
+    if (mhTab && (!mhTab.status || mhTab.status === "complete")) {
+        await icon_timer_updateBadge(mhTab.id);
+    } else {
+        // The tab was either not found, or is still loading.
+        await icon_timer_updateBadge(false);
+    }
 }
 
 // Notifications
@@ -71,120 +50,127 @@ let notification_done = false;
  * Modifies the global `notification_done` as appropriate.
  * @param {number|boolean} tab_id The MH tab's ID, or `false` if no MH page is open & loaded.
  */
-function icon_timer_updateBadge(tab_id) {
-    if (tab_id === false) {
-        chrome.action.setBadgeText({text: ''});
+async function icon_timer_updateBadge(tab_id: number | false | undefined) {
+    if (tab_id === false || tab_id === undefined) {
+        await chrome.action.setBadgeText({text: ''});
         return;
     }
 
     // Query the MH page and update the badge based on the response.
     const request = {mhct_link: "huntTimer"};
-    chrome.tabs.sendMessage(tab_id, request, response => {
+    let response: any;
+    try {
+        response = await chrome.tabs.sendMessage(tab_id, request);
+    } catch (error) {
+        logger.error('Error while updating badge icon timer.', {
+            tab_id, request, response, time: new Date(), error
+        });
+        notification_done = true;
+    }
 
-        async function showIntrusiveAlert() {
-            await new Promise(r => setTimeout(r, 1000));
-            chrome.tabs.update(tab_id, {'active': true});
-            chrome.tabs.sendMessage(tab_id, {mhct_link: "show_horn_alert"});
+    async function showIntrusiveAlert(tabId: number) {
+        await new Promise(r => setTimeout(r, 1000));
+        await chrome.tabs.update(tabId, {'active': true});
+        await chrome.tabs.sendMessage(tabId, {mhct_link: "show_horn_alert"});
+    }
+
+    async function showBackgroundAlert(tabId: number) {
+        await new Promise(r => setTimeout(r, 1000));
+        if (confirm("MouseHunt Horn is Ready! Sound it now?")) {
+            await chrome.tabs.sendMessage(tabId, {mhct_link: "horn"});
         }
+    }
 
-        async function showBackgroundAlert() {
-            await new Promise(r => setTimeout(r, 1000));
-            if (confirm("MouseHunt Horn is Ready! Sound it now?")) {
-                chrome.tabs.sendMessage(tab_id, {mhct_link: "horn"});
-            }
+    if (chrome.runtime.lastError ?? !response) {
+        const logInfo = {tab_id, request, response, time: new Date(),
+            message: "Error occurred while updating badge icon timer."};
+        if (chrome.runtime.lastError) {
+            logInfo.message += `\n${chrome.runtime.lastError.message}`;
         }
+        console.log(logInfo);
+        await chrome.action.setBadgeText({text: ''});
+        notification_done = true;
+    } else if (response === "Ready") {
+        if (await mhctMain.settingsService.get("enhancement-icon-timer")) {
+            await chrome.action.setBadgeBackgroundColor({color: '#9b7617'});
+            await chrome.action.setBadgeText({text: '🎺'});
+        }
+        // If we haven't yet sent a notification about the horn, do so if warranted.
+        if (!notification_done) {
+            let alertUrl = default_sound;
+            const volume = await mhctMain.settingsService.get("notification-volume");
+            if (await mhctMain.settingsService.get("notification-sound") && volume > 0) {
+                if (await mhctMain.settingsService.get("notification-custom")) {
+                    alertUrl = await mhctMain.settingsService.get("notification-custom-url");
+                }
 
-        if (chrome.runtime.lastError ?? !response) {
-            const logInfo = {tab_id, request, response, time: new Date(),
-                message: "Error occurred while updating badge icon timer."};
-            if (chrome.runtime.lastError) {
-                logInfo.message += `\n${chrome.runtime.lastError.message}`;
+                const message = {
+                    mhct_link: "makenoise",
+                    volume: volume,
+                    sound_url: alertUrl,
+                };
+                await chrome.tabs.sendMessage(tab_id, message);
             }
-            console.log(logInfo);
-            chrome.action.setBadgeText({text: ''});
-            notification_done = true;
-        } else if (response === "Ready") {
-            if (userSettings["enhancement-icon-timer"]) {
-                chrome.action.setBadgeBackgroundColor({color: '#9b7617'});
-                chrome.action.setBadgeText({text: '🎺'});
-            }
-            // If we haven't yet sent a notification about the horn, do so if warranted.
-            if (!notification_done) {
-                let alertUrl = default_sound;
-                const volume = userSettings["notification-volume"];
-                if (userSettings["notification-sound"] && volume > 0) {
-                    if (userSettings["notification-custom"]) {
-                        alertUrl = userSettings["notification-custom-url"];
+
+            if (await mhctMain.settingsService.get("notification-desktop")) {
+                await chrome.notifications.create(
+                    "MHCT Horn",
+                    {
+                        type: "basic",
+                        iconUrl: chrome.runtime.getURL("images/icon128.png"),
+                        title: "MHCT Tools",
+                        message: "MouseHunt Horn is ready!!! Good luck!",
                     }
-
-                    const message = {
-                        mhct_link: "makenoise",
-                        volume: volume,
-                        sound_url: alertUrl,
-                    };
-                    chrome.tabs.sendMessage(tab_id, message);
-                }
-
-                if (userSettings["notification-desktop"]) {
-                    chrome.notifications.create(
-                        "MHCT Horn",
-                        {
-                            type: "basic",
-                            iconUrl: chrome.runtime.getURL("images/icon128.png"),
-                            title: "MHCT Tools",
-                            message: "MouseHunt Horn is ready!!! Good luck!",
-                        }
-                    );
-                }
-
-                switch (userSettings["notification-alert-type"]) {
-                    case "background":
-                        showBackgroundAlert();
-                        break;
-                    case "intrusive":
-                        showIntrusiveAlert();
-                        break;
-                }
+                );
             }
-            notification_done = true;
-        } else if (["King's Reward", "Logged out"].includes(response)) {
-            if (userSettings["enhancement-icon-timer"]) {
-                chrome.action.setBadgeBackgroundColor({color: '#F00'});
-                chrome.action.setBadgeText({text: 'RRRRRRR'});
+
+            switch (await mhctMain.settingsService.get("notification-alert-type")) {
+                case "background":
+                    await showBackgroundAlert(tab_id);
+                    break;
+                case "intrusive":
+                    await showIntrusiveAlert(tab_id);
+                    break;
             }
-            notification_done = true;
-        } else {
-            // The user is logged in, has no KR, and the horn isn't ready yet. Set
-            // the badge text to the remaining time before the next horn.
-            notification_done = false;
-            if (userSettings["enhancement-icon-timer"]) {
-                chrome.action.setBadgeBackgroundColor({color: '#222'});
-                response = response.replace(':', '');
-                const response_int = parseInt(response, 10);
-                if (response.includes('min')) {
-                    response = response_int + 'm';
+        }
+        notification_done = true;
+    } else if (["King's Reward", "Logged out"].includes(response)) {
+        if (await mhctMain.settingsService.get("enhancement-icon-timer")) {
+            await chrome.action.setBadgeBackgroundColor({color: '#F00'});
+            await chrome.action.setBadgeText({text: 'RRRRRRR'});
+        }
+        notification_done = true;
+    } else {
+        // The user is logged in, has no KR, and the horn isn't ready yet. Set
+        // the badge text to the remaining time before the next horn.
+        notification_done = false;
+        if (await mhctMain.settingsService.get("enhancement-icon-timer")) {
+            await chrome.action.setBadgeBackgroundColor({color: '#222'});
+            response = response.replace(':', '');
+            const response_int = parseInt(response, 10);
+            if (response.includes('min')) {
+                response = response_int + 'm';
+            } else {
+                if (response_int > 59) {
+                    let minutes = Math.floor(response_int / 100);
+                    const seconds = response_int % 100;
+                    if (seconds > 30) {
+                        ++minutes;
+                    }
+                    response = minutes + 'm';
                 } else {
-                    if (response_int > 59) {
-                        let minutes = Math.floor(response_int / 100);
-                        const seconds = response_int % 100;
-                        if (seconds > 30) {
-                            ++minutes;
-                        }
-                        response = minutes + 'm';
-                    } else {
-                        response = response_int + 's';
-                    }
+                    response = response_int + 's';
                 }
-            } else { // reset in case user turns icon_timer off
-                response = "";
             }
-            chrome.action.setBadgeText({text: response});
+        } else { // reset in case user turns icon_timer off
+            response = "";
         }
-    });
+        await chrome.action.setBadgeText({text: response});
+    }
 }
 
 // Handle messages sent by the extension to the runtime.
-function onMessage(msg, sender, sendResponse) {
+function onMessage(msg: any, sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void) {
     // Check the message for something to log in the background's console.
     if (msg.log) {
         let fn = console.log;
@@ -200,7 +186,7 @@ function onMessage(msg, sender, sendResponse) {
 
     // If responding asynchronously, return `true` to keep the port open.
     if (msg.mhct_crown_update === 1) {
-        submitCrowns(msg.crowns).then(sendResponse);
+        void submitCrowns(msg.crowns).then(sendResponse);
         return true;
     }
 
@@ -221,7 +207,7 @@ chrome.runtime.onMessage.addListener(onMessage);
  * @param {Object <string, any>} crowns Crown counts for the given user
  * @returns {Promise <number | boolean>} A promise that resolves with the submitted crowns, or `false` otherwise.
  */
-async function submitCrowns(crowns) {
+async function submitCrowns(crowns: Record<string, any>): Promise<number | boolean | null> {
     if (!crowns?.user || (crowns.bronze + crowns.silver + crowns.gold + crowns.platinum + crowns.diamond) === 0) {
         return false;
     }
@@ -233,7 +219,7 @@ async function submitCrowns(crowns) {
     }
 
     const endpoint = 'https://script.google.com/macros/s/AKfycbztymdfhwOe4hpLIdVLYCbOTB66PWNDtnNRghg-vFx5u2ogHmU/exec';
-    const options = {
+    const options: RequestInit = {
         mode: 'cors',
         method: 'POST',
         credentials: 'omit',
@@ -260,148 +246,13 @@ async function submitCrowns(crowns) {
 }
 
 /** Settings */
-// TODO: Clean up into a separate file
-// Promisify storage API. TODO: Not needed in mv3.
-const storageAPI = {
-    get(key) {
-        return new Promise(resolve => chrome.storage.sync.get(key, resolve));
-    },
-    set(data) {
-        return new Promise(resolve => chrome.storage.sync.set(data, resolve));
-    },
-    remove(data) {
-        return new Promise(resolve => chrome.storage.sync.remove(data, resolve));
-    },
-    clear() {
-        return new Promise(resolve => chrome.storage.sync.clear(resolve));
-    },
-};
-
-function changeUserSettings(settings) {
-    let shouldSave = false;
-
-    // Update user settings with the new values.
-    if (settings.value) {
-        // Only update settings that are already in the user settings.
-        for (const key in settings.value) {
-            if (Object.prototype.hasOwnProperty.call(userSettings, key) && userSettings[key] !== settings.value[key]) {
-                userSettings[key] = settings.value[key];
-                shouldSave = true;
-            }
-        }
-    }
-
-    if (shouldSave) {
-        saveUserSettings();
-    }
-
-    return userSettings;
-}
-
-/**
- * Migrate user settings from the old format to the new format.
- *
- * Only modifies the sync storage, and only if the old settings are found.
- */
-async function migrateUserSettings() {
-    const defaults = userSettingsDefault;
-
-    const results = await storageAPI.get(null);
-    if (!(results instanceof Object)) {
+async function changeUserSettings(settings: {value: Partial<UserSettings>}) {
+    if (!settings?.value) {
         return;
     }
 
-    const version = results.version || 0;
-
-    // settings didn't have version field, so it's likely the old format
-    if (version === 0 && Object.keys(results).length > 0) {
-        // tracking
-        defaults['tracking-hunts'] = results.tracking_enabled;
-        defaults['tracking-crowns'] = results.tracking_enabled;
-
-        // notification
-        defaults['notification-sound'] = results.horn_sound;
-        defaults['notification-volume'] = results.horn_volume;
-        defaults['notification-custom'] = results.custom_sound !== '';
-        defaults['notification-custom-url'] = results.custom_sound;
-        defaults['notification-desktop'] = results.horn_alert;
-        const instrusive = results.horn_webalert;
-        const background = results.horn_popalert;
-
-        if (!instrusive && !background) {
-            defaults['notification-alert-type'] = 'none';
-        } else if (instrusive) {
-            defaults['notification-alert-type'] = 'intrusive';
-        } else if (background) {
-            defaults['notification-alert-type'] = 'background';
-        }
-
-        defaults['notification-message-display'] = results.message_display;
-        defaults['notification-success-messages'] = results.success_messages;
-        defaults['notification-error-messages'] = results.error_messages;
-
-        // enhancement
-        defaults['enhancement-icon-timer'] = results.icon_timer;
-        defaults['enhancement-tsitu-loader'] = results.tsitu_loader_on;
-        defaults['enhancement-tsitu-loader-offset'] = results.tsitu_loader_offset;
-        defaults['enhancement-escape-dismiss'] = results.escape_button_close;
-        defaults['enhancement-dark-mode'] = results.dark_mode;
-
-        await storageAPI.clear();
-        await storageAPI.set(defaults);
-    }
-
-    const currentVersion = userSettingsDefault.version;
-    if (version < currentVersion) {
-        await storageAPI.set({version: currentVersion});
+    for (const [key, value] of Object.entries(settings.value)) {
+        await mhctMain.settingsService.set(key as keyof UserSettings, value);
     }
 }
 
-async function loadUserSettings() {
-    await migrateUserSettings();
-
-    const results = await storageAPI.get(Object.assign(userSettingsDefault));
-    const newSettings = results instanceof Object && results || Object.assign(userSettingsDefault);
-
-    userSettings = newSettings;
-}
-
-async function saveUserSettings() {
-    const hasOwnProperty = (o, p) => Object.prototype.hasOwnProperty.call(o, p);
-    const getModifiedSettings = (edit, orig = {}) => {
-        const out = {};
-        for ( const prop in edit ) {
-            if ( hasOwnProperty(orig, prop) && edit[prop] !== orig[prop] ) {
-                out[prop] = edit[prop];
-            }
-        }
-        return out;
-    };
-
-    // Make sure to save keys that exist in the default settings.
-    const toSave = getModifiedSettings(userSettings, userSettingsDefault);
-
-    // Remove keys from settings that are now in the default settings.
-    const toRemove = [];
-    for (const key in userSettings) {
-        if ( key === 'version' ) { continue; }
-        if ( hasOwnProperty(userSettingsDefault, key) === false) { continue; }
-        if ( hasOwnProperty(toSave, key)) { continue; }
-        toRemove.push(key);
-    }
-    if (toRemove.length > 0) {
-        await storageAPI.remove(toRemove);
-    }
-
-    await storageAPI.set(toSave);
-}
-
-(async () => {
-
-    try {
-        await loadUserSettings();
-    } catch (e) {
-        console.trace(e);
-    }
-
-})();

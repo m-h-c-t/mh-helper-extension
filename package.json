@@ -91,6 +91,7 @@
     "webpack-merge": "^6.0.1"
   },
   "dependencies": {
+    "rxjs": "^7.8.2",
     "zod": "^4.1.5"
   }
 }

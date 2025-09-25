@@ -1,11 +1,22 @@
 import {HornHud} from './util/hornHud';
+import {ConsoleLogger} from './services/logging';
+import {MigrationRunnerService} from './services/settings/settings-migrations/migration-runner.service';
+import {SettingsService} from './services/settings/settings.service';
 
 (async function () {
 if (document.body == null) {
     return;
 }
 
-let userSettings = {};
+// eslint-disable-next-line no-undef
+const logger = new ConsoleLogger(process.env.ENV === 'development');
+const settingsService = new SettingsService(logger);
+
+// TODO: Remove when chrome.scripting is used to inject content script
+const migrationRunner = new MigrationRunnerService(logger);
+await migrationRunner.waitForCompletion(); // Browser background is responsible for migrations
+
+const userSettings = await settingsService.getAll();
 // Pass version # from manifest to injected script
 const extension_version = document.createElement("input");
 extension_version.setAttribute("id", "mhhh_version");
@@ -140,16 +151,6 @@ window.addEventListener("message",
 );
 
     /**
-     * Promise to get the extension's settings.
-     * @returns {Promise <Object <string, any>>} The extension's settings
-     */
-    async function getSettings() {
-        return new Promise(resolve => {
-            chrome.runtime.sendMessage({what: 'userSettings'}, resolve);
-        });
-    }
-
-    /**
      * Promise to show Tsitu's menu via the embedded script.
      * @param {boolean} forceShow Bypass settings and always show
      */
@@ -197,8 +198,6 @@ window.addEventListener("message",
         }
     }
 
-    // Initial page load setup
-    userSettings = await getSettings();
     createMessageDiv();
     injectMainScript();
     showDarkMode();
