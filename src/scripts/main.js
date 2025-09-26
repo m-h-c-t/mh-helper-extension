@@ -11,6 +11,7 @@ import {HornHud} from './util/hornHud';
 import {parseHgInt} from "./util/number";
 import {Messenger} from "./content/messaging/messenger";
 import {CrownTracker} from "./modules/crown-tracker/tracker";
+import {ExtensionLog} from "./modules/extension-log/extension-log";
 import {z} from "zod";
 import * as successHandlers from './modules/ajax-handlers';
 import * as detailers from './modules/details';
@@ -27,6 +28,7 @@ import * as stagers from './modules/stages';
     const isDev = process.env.ENV === 'development';
     const logger = new ConsoleLogger(isDev, logFilter);
     const messenger = Messenger.forDOMCommunication(globalThis.window);
+    const extensionLog = new ExtensionLog(messenger);
     const apiService = new ApiService();
     const interceptorService = new InterceptorService(logger);
     const environmentService = new EnvironmentService(getExtensionVersion);
@@ -50,7 +52,7 @@ import * as stagers from './modules/stages';
         new successHandlers.TreasureMapHandler(logger, submissionService),
         new successHandlers.UseConvertibleAjaxHandler(logger, submissionService),
     ];
-    const crownTracker = new CrownTracker(logger, interceptorService, apiService, messenger);
+    const crownTracker = new CrownTracker(logger, extensionLog, interceptorService, apiService, messenger);
 
     async function main() {
         try {
@@ -663,12 +665,9 @@ import * as stagers from './modules/stages';
             else if (css_class.search(/prizemouse/) !== -1) {
                 // Handle a prize mouse attraction.
                 // TODO: Implement data submission
-                if (isDev) {
-                    window.postMessage({
-                        "mhct_log_request": 1,
-                        "prize mouse journal": markup,
-                    }, window.origin);
-                }
+                extensionLog.log(LogLevel.Info, {
+                    prize_mouse_journal: markup,
+                });
             }
             else if (css_class.search(/desert_heater_base_trigger/) !== -1 && css_class.search(/fail/) === -1) {
                 // Handle a Desert Heater Base loot proc.
@@ -688,13 +687,11 @@ import * as stagers from './modules/stages';
                         .find(item => item.name === lootName);
 
                     if (!lootQty || !loot) {
-                        window.postMessage({
-                            "mhct_log_request": 1,
-                            "is_error": true,
-                            "desert heater journal": markup,
-                            "inventory": hunt_response.inventory,
-                            "reason": `Didn't find named loot "${lootName}" in inventory`,
-                        }, window.origin);
+                        extensionLog.log(LogLevel.Warn, `Failed to find inventory loot for Desert Heater Base`, {
+                            desert_heater_journal: markup,
+                            inventory: hunt_response.inventory,
+                            loot: lootName,
+                        });
                     } else {
                         const convertible = {
                             id: 2952, // Desert Heater Base's item ID
@@ -707,13 +704,10 @@ import * as stagers from './modules/stages';
                         submissionService.submitItemConvertible(convertible, items);
                     }
                 } else {
-                    window.postMessage({
-                        "mhct_log_request": 1,
-                        "is_error": true,
-                        "desert heater journal": markup,
-                        "inventory": hunt_response.inventory,
-                        "reason": "Didn't match quantity and loot name regex patterns",
-                    }, window.origin);
+                    extensionLog.log(LogLevel.Warn, `Regex quantity and loot name failed for Desert Heater Base`, {
+                        desert_heater_journal: markup,
+                        inventory: hunt_response.inventory,
+                    });
                 }
             }
             else if (css_class.search(/unstable_charm_trigger/) !== -1) {
@@ -853,13 +847,10 @@ import * as stagers from './modules/stages';
                     const lootQty = parseInt(strQuantity, 10);
 
                     if (!lootQty) {
-                        window.postMessage({
-                            "mhct_log_request": 1,
-                            "is_error": true,
-                            "gilded charm journal": markup,
-                            "inventory": hunt_response.inventory,
-                            "reason": "Unable to parse Gilded Charm proc quantity",
-                        }, window.origin);
+                        extensionLog.log(LogLevel.Warn, `Failed to parse Gilded Charm proc quantity`, {
+                            gilded_charm_journal: markup,
+                            inventory: hunt_response.inventory,
+                        });
                     } else {
                         const convertible = {
                             id: 2174, // Gilded Charm's item ID
@@ -1167,6 +1158,9 @@ import * as stagers from './modules/stages';
         });
 
         logger.info(`Helper Extension version ${isDev ? "DEV" : mhhh_version} loaded! Good luck!`);
+        extensionLog.log(LogLevel.Info, `MHCT version ${isDev ? "DEV" : mhhh_version} loaded`);
+        extensionLog.log(LogLevel.Warn, `MHCT version ${isDev ? "DEV" : mhhh_version} loaded`);
+        extensionLog.log(LogLevel.Error, `MHCT version ${isDev ? "DEV" : mhhh_version} loaded`);
     }
 
     main();

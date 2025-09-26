@@ -1,3 +1,5 @@
+import {MessageHandlerRegistry, MessageHandlerParams} from "@scripts/services/message-handler/background-message-handler";
+
 export const CrownTrackerMessages = {
     CrownTrackerSubmit: 'crownTrackerSubmit',
 } as const;
@@ -18,12 +20,6 @@ export type CrownTrackerExtensionMessage = {
     command: CrownTrackerMessageType;
 } & CrownData;
 
-export interface BackgroundOnMessageHandlerParams {
-    message: CrownTrackerExtensionMessage;
-    sender: chrome.runtime.MessageSender;
-}
-
-export interface CrownTrackerBackgroundExtensionMessageHandlers {
-    [key: string]: CallableFunction;
-    crownTrackerSubmit: ({message, sender}: BackgroundOnMessageHandlerParams) => Promise<void>;
+export interface CrownTrackerBackgroundExtensionMessageHandlers extends MessageHandlerRegistry<CrownTrackerExtensionMessage> {
+    [CrownTrackerMessages.CrownTrackerSubmit]: (params: MessageHandlerParams<CrownTrackerExtensionMessage>) => Promise<void>;
 }

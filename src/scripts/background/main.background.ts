@@ -3,6 +3,7 @@ import RuntimeBackground from "./runtime.background";
 import {MigrationRunnerService} from "@scripts/services/settings/settings-migrations/migration-runner.service";
 import {SettingsService} from "@scripts/services/settings/settings.service";
 import {CrownTrackerBackground} from "@scripts/modules/crown-tracker/tracker.background";
+import {ExtensionLogBackground} from "@scripts/modules/extension-log/extension-log.background";
 
 export default class MainBackground {
     logger: ConsoleLogger;
@@ -10,6 +11,7 @@ export default class MainBackground {
     settingsService: SettingsService;
     migrationService: MigrationRunnerService;
     crownTrackerBackground: CrownTrackerBackground;
+    extensionLogBackground: ExtensionLogBackground;
 
     constructor() {
         const isDev = process.env.ENV === "development";
@@ -18,6 +20,7 @@ export default class MainBackground {
         this.runtimeBackground = new RuntimeBackground(this.logger);
         this.settingsService = new SettingsService(this.logger);
         this.migrationService = new MigrationRunnerService(this.logger);
+        this.extensionLogBackground = new ExtensionLogBackground(this.logger);
         this.crownTrackerBackground = new CrownTrackerBackground(this.logger);
     }
 
@@ -26,6 +29,7 @@ export default class MainBackground {
 
         await this.migrationService.run();
         await this.runtimeBackground.init();
+        await this.extensionLogBackground.init();
         await this.crownTrackerBackground.init();
     }
 }

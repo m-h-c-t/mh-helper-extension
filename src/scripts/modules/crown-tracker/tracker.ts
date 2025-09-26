@@ -1,11 +1,12 @@
-import {MessageTypes} from '@scripts/content/messaging/message';
 import {Messenger} from '@scripts/content/messaging/messenger';
 import {ApiService} from '@scripts/services/api.service';
 import {InterceptorService, RequestBody} from '@scripts/services/interceptor.service';
-import {LoggerService} from '@scripts/services/logging';
+import {LoggerService, LogLevel} from '@scripts/services/logging';
+import {ForegroundMessageHandler} from '@scripts/services/message-handler/foreground-message-handler';
 import {HgResponse} from '@scripts/types/hg';
 import {z} from 'zod';
 import {CrownTrackerExtensionMessage, CrownTrackerMessages} from './tracker.types';
+import {ExtensionLog} from '../extension-log/extension-log';
 
 /**
  * Crown Tracker module to monitor and submit King's Crown data.
@@ -14,7 +15,7 @@ import {CrownTrackerExtensionMessage, CrownTrackerMessages} from './tracker.type
  * to the Hunter Profile page, specifically targeting the King's Crown data. It
  * submits the crown counts to the background script for further processing.
  */
-export class CrownTracker {
+export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtensionMessage> {
     private readonly requestHunterProfileSchema = z.object({
         sn: z.literal('Hitgrab'),
         hg_is_ajax: z.literal('1'),
@@ -59,11 +60,15 @@ export class CrownTracker {
     private lastSentRequestTime: Date = new Date();
     private lastSnuid: string | null = null;
 
-    constructor(private readonly logger: LoggerService,
+    constructor(
+        private readonly logger: LoggerService,
+        private readonly extensionLog: ExtensionLog,
         private readonly interceptorService: InterceptorService,
         private readonly apiService: ApiService,
-        private readonly messenger: Messenger
-    ) { }
+        messenger: Messenger
+    ) {
+        super(messenger);
+    }
 
     public init(): void {
         this.interceptorService.on('request', ({url, request}) => this.handleRequest(url, request));
@@ -143,13 +148,11 @@ export class CrownTracker {
                 response: response,
             });
 
-            // TODO: Post to background logging
-            // window.postMessage({
-            //     "mhct_log_request": 1,
-            //     "is_error": true,
-            //     "crown_submit_xhr_response": response,
-            //     "reason": "Unable to determine King's Crowns",
-            // }, window.origin);
+            void this.extensionLog.log(LogLevel.Warn, `Unhandled King's Crown response structure`, {
+                error: z.prettifyError(parsedResponse.error),
+                request: parsedRequest.data,
+                response: response,
+            });
 
             return;
         }
@@ -189,10 +192,7 @@ export class CrownTracker {
 
         // We need to create a forwarding message to prevent other extensions (e.g. Privacy Badger)
         // from blocking submissions by submitting from the background script.
-        void this.messenger.request({
-            type: MessageTypes.RuntimeMessage,
-            data: message,
-        });
+        void this.request(message);
 
         this.lastSnuid = parsedRequest.data.page_arguments.snuid;
     }

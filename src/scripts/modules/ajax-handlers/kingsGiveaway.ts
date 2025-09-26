@@ -47,12 +47,6 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
             result.slot !== "bonus"
         ) {
             this.logger.debug('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
-            window.postMessage({
-                "mhct_log_request": 1,
-                "is_error": true,
-                "kga_2021_response": responseJSON,
-                "reason": "Unable to parse kga 2021 response. This is normal if a pack wasn't opened",
-            }, window.origin);
             return;
         }
 

@@ -1,6 +1,7 @@
-import {BrowserApi} from "@scripts/services/browser/browser-api";
 import {LoggerService} from "@scripts/services/logging/logger.service";
-import {CrownTrackerBackgroundExtensionMessageHandlers, CrownData, CrownTrackerExtensionMessage, Crowns} from "./tracker.types";
+import {BackgroundMessageHandler} from "@scripts/services/message-handler/background-message-handler";
+import {BrowserApi} from "@scripts/services/browser/browser-api";
+import {CrownTrackerBackgroundExtensionMessageHandlers, CrownTrackerExtensionMessage, Crowns} from "./tracker.types";
 import {z} from "zod";
 
 /**
@@ -9,36 +10,34 @@ import {z} from "zod";
  * This class runs in the background listening for messages from the foreground
  * script to submit the crown counts to an external endpoint for storage.
  */
-export class CrownTrackerBackground {
+export class CrownTrackerBackground extends BackgroundMessageHandler<
+    CrownTrackerExtensionMessage,
+    CrownTrackerBackgroundExtensionMessageHandlers
+> {
+    protected readonly messageNamespace = "crownTracker";
+
     private readonly crownPayloadSchema = z.object({
         user: z.string().min(1),
         crowns: z.record(z.enum(Crowns), z.number())
     });
 
-    private readonly extensionMessageHandlers: CrownTrackerBackgroundExtensionMessageHandlers = {
-        crownTrackerSubmit: ({message, sender}) => this.crownTrackerSubmit(message, sender),
+    protected readonly messageHandlers: CrownTrackerBackgroundExtensionMessageHandlers = {
+        crownTrackerSubmit: ({message}) => this.crownTrackerSubmit(message),
     };
 
-    constructor(
-        private readonly logger: LoggerService
-    ) { }
-
-    async init(): Promise<void> {
-        BrowserApi.messageListener("crownTracker", this.handleExtensionMessage);
-
-        return Promise.resolve();
+    constructor(logger: LoggerService) {
+        super(logger);
     }
 
     /**
      * Promise to submit the given crowns for external storage (e.g. for MHCC or others)
-     * @param crowns Crown counts for the given user
-     * @returns A promise that resolves with the submitted crowns, or `false` otherwise.
+     * @param message Crown data message from foreground
+     * @returns A promise that resolves when submission is complete
      */
     private async crownTrackerSubmit(
-        data: CrownData,
-        sender: chrome.runtime.MessageSender
+        message: CrownTrackerExtensionMessage
     ): Promise<void> {
-        const crownPayloadParseResult = this.crownPayloadSchema.safeParse(data);
+        const crownPayloadParseResult = this.crownPayloadSchema.safeParse(message);
         if (!crownPayloadParseResult.success) {
             this.logger.warn("CrownTracker invalid payload", z.prettifyError(crownPayloadParseResult.error));
             return;
@@ -98,7 +97,7 @@ export class CrownTrackerBackground {
         }
 
         await chrome.alarms.create(`crownTracker-${crownPayload.user}`, {when: Date.now() + 5 * 60 * 1000}); // 5 minutes
-        BrowserApi.addListener(chrome.alarms.onAlarm, (alarm) => {
+        BrowserApi.addListener(chrome.alarms.onAlarm, (alarm: chrome.alarms.Alarm) => {
             if (alarm.name === `crownTracker-${crownPayload.user}`) {
                 void chrome.storage.session.remove([crownPayload.user]);
                 void chrome.alarms.clear(alarm.name);
@@ -107,28 +106,5 @@ export class CrownTrackerBackground {
 
         // Return total crowns submitted
         //return Object.values(crowns).reduce((a, b) => a + b, 0);
-    };
-
-    private handleExtensionMessage = (
-        message: CrownTrackerExtensionMessage,
-        sender: chrome.runtime.MessageSender,
-        sendResponse: (response?: unknown) => void
-    ) => {
-        const handler: CallableFunction | undefined = this.extensionMessageHandlers[message?.command];
-        if (!handler) {
-            return false;
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-        const messageResponse = handler({message, sender});
-        if (typeof messageResponse === "undefined") {
-            return false;
-        }
-
-        Promise.resolve(messageResponse)
-            .then((response) => sendResponse(response))
-            .catch((error) => this.logger.error("Error handling extension message", error));
-
-        return true;
-    };
+    }
 }

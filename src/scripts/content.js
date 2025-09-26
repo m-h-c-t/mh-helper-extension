@@ -139,8 +139,6 @@ window.addEventListener("message",
                 "mhct_message": "crownSubmissionStatus",
                 "submitted": wasSubmitted,
             }, event.origin));
-        } else if (data.mhct_log_request === 1) {
-            chrome.runtime.sendMessage({"log": data});
         } else if (data.mhct_finish_load === 1) {
             showTsituLoader();
         } else if (data.mhct_display_message === 1) {
