@@ -1,8 +1,24 @@
+import {ConsoleLogger} from "./services/logging";
+import {SettingsService} from "./services/settings/settings.service";
+
+// eslint-disable-next-line no-undef
+const isDev = process.env.ENV === 'development';
+const logger = new ConsoleLogger(isDev);
+const settingsService = new SettingsService(logger);
+
+let currentSettings;
+
+void settingsService.getAll().then(settings => {
+    currentSettings = settings;
+    onUserSettingsReceived(settings);
+});
+
 function qs$(a, b) {
     if ( typeof a === 'string') {
         return document.querySelector(a);
     }
     if ( a === null ) { return null; }
+    if ( b === null ) { return a; }
     return a.querySelector(b);
 }
 
@@ -13,8 +29,6 @@ function qsa$(a, b) {
     if ( a === null ) { return []; }
     return a.querySelectorAll(b);
 }
-
-let currentSettings = {};
 
 function onUserSettingsReceived(settings) {
     const checkboxes = qsa$('[data-setting-type="bool"]');
@@ -64,8 +78,11 @@ function synchronizeDOM() {
 }
 
 // Click "Save" -> store the extension's settings in chrome.storage.
-document.getElementById('save').addEventListener('click', () => {
-    chrome.runtime.sendMessage({what: 'userSettings', value: currentSettings});
+document.getElementById('save').addEventListener('click', async () => {
+    for (const [key, value] of Object.entries(currentSettings)) {
+        await settingsService.set(key, value);
+    }
+
     const save_button = document.getElementById('save');
     save_button.innerText = "Saved! (Refreshing MH Page)";
     save_button.classList.remove("btn-primary");
@@ -77,7 +94,7 @@ document.getElementById('save').addEventListener('click', () => {
     }, 2000);
 
     // Reload all open MH pages to apply these settings.
-    chrome.tabs.query(
+    void chrome.tabs.query(
         {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
         tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
     );
@@ -109,8 +126,3 @@ qs$("#play_sound").addEventListener('click', () => {
 if (navigator.userAgent.includes('Firefox')) {
     qs$('#alert-type').querySelector('option[value="background"]').style.display = 'none';
 }
-
-chrome.runtime.sendMessage({what: 'userSettings'}, result => {
-    currentSettings = result;
-    onUserSettingsReceived(result);
-});
