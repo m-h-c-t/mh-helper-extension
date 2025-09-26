@@ -56,12 +56,12 @@ export class InitialMigration extends Migrator<0, 1> {
         newSettings['notification-custom'] = old.custom_sound !== '';
         newSettings['notification-custom-url'] = old.custom_sound;
         newSettings['notification-desktop'] = old.horn_alert;
-        const instrusive = old.horn_webalert;
+        const intrusive = old.horn_webalert;
         const background = old.horn_popalert;
 
-        if (!instrusive && !background) {
+        if (!intrusive && !background) {
             newSettings['notification-alert-type'] = 'none';
-        } else if (instrusive) {
+        } else if (intrusive) {
             newSettings['notification-alert-type'] = 'intrusive';
         } else if (background) {
             newSettings['notification-alert-type'] = 'background';
