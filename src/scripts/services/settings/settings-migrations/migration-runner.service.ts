@@ -72,8 +72,8 @@ export class MigrationRunnerService {
         const version = (await chrome.storage.sync.get<{version?: number}>('version'))?.version;
         if (version == null) {
             // Old unversioned storage
-            const anyObject = await chrome.storage.sync.get(null);
-            return Object.keys(anyObject).length > 0
+            const existingStorage = await chrome.storage.sync.get(null);
+            return Object.keys(existingStorage).length > 0
                 ? 0 // Assume version 0 if there are any other keys
                 : -1; // if storage is empty (new install)
         }

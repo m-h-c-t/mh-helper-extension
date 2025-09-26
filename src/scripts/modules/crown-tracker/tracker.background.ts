@@ -45,7 +45,7 @@ export class CrownTrackerBackground {
         }
 
         const crownPayload = crownPayloadParseResult.data;
-        if (!Crowns.every((crown) => crownPayload.crowns[crown] === 0)) {
+        if (Crowns.every((crown) => crownPayload.crowns[crown] === 0)) {
             this.logger.debug("CrownTracker no crowns to submit", {user: crownPayload.user, crowns: crownPayload.crowns});
             return;
         }
