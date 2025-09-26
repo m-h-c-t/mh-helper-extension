@@ -32,6 +32,7 @@ module.exports = () => {
     return {
         entry: {
             background: './src/scripts/background.ts',
+            'content/content-message-handler': './src/scripts/content/content-message-handler.ts',
             content: './src/scripts/content.js',
             main: './src/scripts/main.js',
             options: './src/scripts/options.js',

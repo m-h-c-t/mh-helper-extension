@@ -3,39 +3,22 @@ import {EnvironmentService} from '@scripts/services/environment.service';
 
 describe('EnvironmentService', () => {
     let service: EnvironmentService;
-    let mockGetVersion: jest.Mock<number>;
+    process.env.ENV = 'development';
 
     beforeEach(() => {
         jest.clearAllMocks();
-        mockGetVersion = jest.fn<number, []>();
-    });
-
-    describe('initialization', () => {
-        it('calls getVersionAsync during initialization', () => {
-            mockGetVersion.mockReturnValue(1);
-            service = new EnvironmentService(mockGetVersion);
-            expect(mockGetVersion).toHaveBeenCalledTimes(1);
-        });
     });
 
     describe('getBaseUrl', () => {
-        it('returns localhost URL when version is undefined', () => {
-            mockGetVersion.mockReturnValue(undefined as unknown as number);
-            service = new EnvironmentService(mockGetVersion);
+        it('returns localhost URL when env is development', () => {
+            service = new EnvironmentService();
 
             expect(service.getBaseUrl()).toBe('http://localhost');
         });
 
-        it('returns localhost URL when version is 0', () => {
-            mockGetVersion.mockReturnValue(0);
-            service = new EnvironmentService(mockGetVersion);
-
-            expect(service.getBaseUrl()).toBe('http://localhost');
-        });
-
-        it('returns production URL when version is a positive number', () => {
-            mockGetVersion.mockReturnValue(123);
-            service = new EnvironmentService(mockGetVersion);
+        it('returns production URL when env is production', () => {
+            process.env.ENV = 'production';
+            service = new EnvironmentService();
 
             expect(service.getBaseUrl()).toBe('https://www.mhct.win');
         });
@@ -47,8 +30,8 @@ describe('EnvironmentService', () => {
     ])('URL generation', ({version, expectedBaseUrl}) => {
         beforeEach(() => {
             // Setup a service with a resolved version
-            mockGetVersion.mockReturnValue(version);
-            service = new EnvironmentService(mockGetVersion);
+            process.env.ENV = version === 0 ? 'development' : 'production';
+            service = new EnvironmentService();
         });
 
         it('getMainIntakeUrl returns correct endpoint', () => {

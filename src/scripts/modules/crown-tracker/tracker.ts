@@ -1,0 +1,199 @@
+import {MessageTypes} from '@scripts/content/messaging/message';
+import {Messenger} from '@scripts/content/messaging/messenger';
+import {ApiService} from '@scripts/services/api.service';
+import {InterceptorService, RequestBody} from '@scripts/services/interceptor.service';
+import {LoggerService} from '@scripts/services/logging';
+import {HgResponse} from '@scripts/types/hg';
+import {z} from 'zod';
+import {CrownTrackerExtensionMessage, CrownTrackerMessages} from './tracker.types';
+
+/**
+ * Crown Tracker module to monitor and submit King's Crown data.
+ *
+ * This class runs in the foreground listening for requests and responses related
+ * to the Hunter Profile page, specifically targeting the King's Crown data. It
+ * submits the crown counts to the background script for further processing.
+ */
+export class CrownTracker {
+    private readonly requestHunterProfileSchema = z.object({
+        sn: z.literal('Hitgrab'),
+        hg_is_ajax: z.literal('1'),
+        page_class: z.literal('HunterProfile'),
+        page_arguments: z.object({
+            snuid: z.coerce.string(),
+        }),
+        last_read_journal_entry_id: z.coerce.number(),
+        uh: z.string(),
+    }).strict(); // .strict() is used to ensure that no extra properties are present in the request
+    // to differentiate between a plain profile request and a King's Crown request
+    private readonly requestKingsCrownSchema = z.object({
+        page_class: z.literal('HunterProfile'),
+        page_arguments: z.object({
+            tab: z.literal('kings_crowns'),
+            snuid: z.coerce.string(),
+        }),
+        last_read_journal_entry_id: z.coerce.number(),
+        uh: z.string(),
+    });
+    private readonly responseKingsCrownSchema = z.object({
+        page: z.object({
+            tabs: z.object({
+                kings_crowns: z.object({
+                    subtabs: z.tuple([
+                        z.object({
+                            mouse_crowns: z.object({
+                                badge_groups: z.array(z.object({
+                                    name: z.string(),
+                                    type: z.literal('bronze').or(z.literal('silver')).or(z.literal('gold')).or(z.literal('platinum')).or(z.literal('diamond')),
+                                    count: z.coerce.number(),
+                                }).or(z.object({
+                                    type: z.literal('none'),
+                                })))
+                            })
+                        })
+                    ]).rest(z.unknown()),
+                }),
+            }),
+        }),
+    });
+    private lastSentRequestTime: Date = new Date();
+    private lastSnuid: string | null = null;
+
+    constructor(private readonly logger: LoggerService,
+        private readonly interceptorService: InterceptorService,
+        private readonly apiService: ApiService,
+        private readonly messenger: Messenger
+    ) { }
+
+    public init(): void {
+        this.interceptorService.on('request', ({url, request}) => this.handleRequest(url, request));
+
+        this.interceptorService.on('response', ({url, request, response}) => this.handleResponse(url, request, response));
+    }
+
+    private handleRequest(url: URL, request: RequestBody): void {
+        if (url.pathname !== '/managers/ajax/pages/page.php') {
+            return;
+        }
+
+        const parsedRequestResult = this.requestHunterProfileSchema.safeParse(request);
+        if (!parsedRequestResult.success) {
+            return;
+        }
+
+        if (this.requestKingsCrownSchema.safeParse(request).success) {
+            // This is a King's Crown request, let it pass
+            return;
+        }
+
+        const requestBody = parsedRequestResult.data;
+        if (this.lastSnuid === requestBody.page_arguments.snuid) {
+            this.logger.debug("Skipping King's Crown request (already requested for this user)");
+            return;
+        }
+
+        // Throttle safety check
+        const now = new Date();
+        const timeSinceLastRequest = now.getTime() - this.lastSentRequestTime.getTime();
+        if (timeSinceLastRequest < 5000) {
+            this.logger.debug("Skipping King's Crown request (throttled)");
+            return;
+        }
+
+        this.lastSentRequestTime = now;
+        // Request King's Crowns
+        this.apiService.send("POST",
+            "/managers/ajax/pages/page.php",
+            {
+                sn: "Hitgrab",
+                hg_is_ajax: "1",
+                page_class: "HunterProfile",
+                page_arguments: {
+                    legacyMode: "",
+                    tab: "kings_crowns",
+                    sub_tab: "false",
+                    snuid: requestBody.page_arguments.snuid,
+                },
+                last_read_journal_entry_id: requestBody.last_read_journal_entry_id,
+                uh: requestBody.uh,
+            },
+            false,
+        ).catch((error) => {
+            this.logger.error("Failed to send King's Crown request", error);
+        });
+    }
+
+    private handleResponse(url: URL, request: RequestBody, response: HgResponse): void {
+        if (url.pathname !== '/managers/ajax/pages/page.php') {
+            return;
+        }
+
+        const parsedRequest = this.requestKingsCrownSchema.safeParse(request);
+        if (!parsedRequest.success) {
+            return;
+        }
+
+        const parsedResponse = this.responseKingsCrownSchema.safeParse(response);
+        if (!parsedResponse.success) {
+            this.logger.debug('Skipped crown submission due to unhandled XHR structure');
+
+            this.logger.warn("Unhandled King's Crown response structure", {
+                error: z.prettifyError(parsedResponse.error),
+                request: parsedRequest.data,
+                response: response,
+            });
+
+            // TODO: Post to background logging
+            // window.postMessage({
+            //     "mhct_log_request": 1,
+            //     "is_error": true,
+            //     "crown_submit_xhr_response": response,
+            //     "reason": "Unable to determine King's Crowns",
+            // }, window.origin);
+
+            return;
+        }
+
+        // Craft a background message
+        const message: CrownTrackerExtensionMessage = {
+            command: CrownTrackerMessages.CrownTrackerSubmit,
+            user: parsedRequest.data.page_arguments.snuid,
+            crowns: {
+                bronze: 0,
+                silver: 0,
+                gold: 0,
+                platinum: 0,
+                diamond: 0,
+            },
+        };
+
+        /** Rather than compute counts ourselves, use the `badge` display data.
+         * badges: [
+         *     {
+         *         badge: (2500   | 1000     | 500  | 100    | 10),
+         *         type: (diamond | platinum | gold | silver | bronze),
+         *         mice: string[]
+         *     },
+         *     ...
+         * ]
+         */
+        const mouseCrowns = parsedResponse.data.page.tabs.kings_crowns.subtabs[0].mouse_crowns;
+        for (const badge of mouseCrowns.badge_groups) {
+            if (badge.type === 'none') {
+                continue;
+            }
+
+            message.crowns[badge.type] = badge.count;
+        }
+        this.logger.debug("Crowns payload: ", message);
+
+        // We need to create a forwarding message to prevent other extensions (e.g. Privacy Badger)
+        // from blocking submissions by submitting from the background script.
+        void this.messenger.request({
+            type: MessageTypes.RuntimeMessage,
+            data: message,
+        });
+
+        this.lastSnuid = parsedRequest.data.page_arguments.snuid;
+    }
+}

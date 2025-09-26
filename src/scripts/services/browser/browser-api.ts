@@ -46,6 +46,19 @@ export class BrowserApi {
         callback: (...args: unknown[]) => unknown,
     ][] = [];
 
+    static messageListener(
+        name: string,
+        callback: (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            message: any,
+            sender: chrome.runtime.MessageSender,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sendResponse: any,
+        ) => boolean | void,
+    ) {
+        BrowserApi.addListener(chrome.runtime.onMessage, callback);
+    }
+
     /**
      * Adds a callback to the given chrome event in a cross-browser platform manner.
      *

@@ -20,6 +20,11 @@ export class MigrationRunnerService {
     async run() {
         const currentVersion = await this.currentVersion();
 
+        if (currentVersion < 0) {
+            await chrome.storage.sync.set({version: CURRENT_VERSION});
+            return;
+        }
+
         await this.migrate({
             currentVersion: currentVersion,
             storage: chrome.storage.sync,
@@ -64,16 +69,16 @@ export class MigrationRunnerService {
     }
 
     private async currentVersion(): Promise<number> {
-        const result = await chrome.storage.sync.get<{version: number}>('version');
-        if (result == null) {
+        const version = (await chrome.storage.sync.get<{version?: number}>('version'))?.version;
+        if (version == null) {
             // Old unversioned storage
             const anyObject = await chrome.storage.sync.get(null);
-            return anyObject != null
+            return Object.keys(anyObject).length > 0
                 ? 0 // Assume version 0 if there are any other keys
                 : -1; // if storage is empty (new install)
         }
 
-        return result.version;
+        return version;
     }
 
     private async migrate(state: MigrationState): Promise<void> {
