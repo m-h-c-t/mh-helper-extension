@@ -16,6 +16,7 @@
     },
 
     "permissions": [
+        "alarms",
         "notifications",
         "tabs",
         "storage"
@@ -25,7 +26,10 @@
         "all_frames" : true,
         "matches": ["*://www.mousehuntgame.com/*"],
         "css": ["css/user-notify.css"],
-        "js": ["scripts/content.js"]
+        "js": [
+            "scripts/content/content-message-handler.js",
+            "scripts/content.js"
+        ]
     }],
 
     "host_permissions": [

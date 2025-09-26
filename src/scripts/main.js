@@ -3,11 +3,14 @@ import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './services/logging';
 import {EnvironmentService} from "./services/environment.service";
 import {MouseRipApiService} from "./services/mouserip-api.service";
+import {InterceptorService} from "./services/interceptor.service";
 import {SubmissionService} from "./services/submission.service";
 import {ApiService} from "./services/api.service";
 import {hgResponseSchema} from "./types/hg";
 import {HornHud} from './util/hornHud';
 import {parseHgInt} from "./util/number";
+import {Messenger} from "./content/messaging/messenger";
+import {CrownTracker} from "./modules/crown-tracker/tracker";
 import {z} from "zod";
 import * as successHandlers from './modules/ajax-handlers';
 import * as detailers from './modules/details';
@@ -23,7 +26,9 @@ import * as stagers from './modules/stages';
     // eslint-disable-next-line no-undef
     const isDev = process.env.ENV === 'development';
     const logger = new ConsoleLogger(isDev, logFilter);
+    const messenger = Messenger.forDOMCommunication(globalThis.window);
     const apiService = new ApiService();
+    const interceptorService = new InterceptorService(logger);
     const environmentService = new EnvironmentService(getExtensionVersion);
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const submissionService = new SubmissionService(logger, environmentService, apiService, getSettingsAsync,
@@ -45,6 +50,7 @@ import * as stagers from './modules/stages';
         new successHandlers.TreasureMapHandler(logger, submissionService),
         new successHandlers.UseConvertibleAjaxHandler(logger, submissionService),
     ];
+    const crownTracker = new CrownTracker(logger, interceptorService, apiService, messenger);
 
     async function main() {
         try {
@@ -57,6 +63,10 @@ import * as stagers from './modules/stages';
             addWindowMessageListeners();
             addAjaxHandlers();
             finalLoad();
+
+            if (userSettings['tracking-crowns']) {
+                crownTracker.init();
+            }
         } catch (error) {
             logger.error("Failed to initialize.", error);
         }
@@ -369,12 +379,7 @@ import * as stagers from './modules/stages';
 
         $(document).ajaxSuccess(async (event, xhr, ajaxOptions) => {
             const url = ajaxOptions.url;
-            if (url.includes("mousehuntgame.com/managers/ajax/pages/page.php")) {
-                // This shouldn't be hit if tracking-crowns if off. See URLDiffCheck.
-                if (url.includes("page_arguments%5Btab%5D=kings_crowns")) {
-                    recordCrowns(xhr, url);
-                }
-            } else if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
+            if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
                 createHunterIdHash();
             }
 
@@ -422,70 +427,6 @@ import * as stagers from './modules/stages';
         }
 
         return null;
-    }
-
-    /**
-     * Record Crowns. The xhr response data also includes a `mouseData` hash keyed by each mouse's
-     * HG identifier and with the associated relevant value properties of `name` and `num_catches`
-     * @param {JQuery.jqXHR} xhr jQuery-wrapped XMLHttpRequest object encapsulating the http request to the remote server (HG).
-     * @param {string} url The URL that invoked the function call.
-     */
-    function recordCrowns(xhr, url) {
-        const mouseCrowns = xhr.responseJSON?.page?.tabs?.kings_crowns?.subtabs?.[0]?.mouse_crowns;
-        if (!mouseCrowns) {
-            logger.debug('Skipped crown submission due to unhandled XHR structure');
-            window.postMessage({
-                "mhct_log_request": 1,
-                "is_error": true,
-                "crown_submit_xhr_response": xhr.responseJSON,
-                "reason": "Unable to determine King's Crowns",
-            }, window.origin);
-            return;
-        }
-
-        // Traditional snuids are digit-only, but new snuids are `hg_` plus a hash, e.g.
-        //    hg_0ffb7add4e6e14d8e1147cb3f12fe84d
-        const url_params = url.match(/snuid%5D=(\w+)/);
-        const badgeGroups = mouseCrowns.badge_groups;
-        if (!url_params || !badgeGroups) {
-            return;
-        }
-
-        const payload = {
-            user: url_params[1],
-            timestamp: Math.round(Date.now() / 1000),
-
-            bronze: 0,
-            silver: 0,
-            gold: 0,
-            platinum: 0,
-            diamond: 0,
-        };
-
-        /** Rather than compute counts ourselves, use the `badge` display data.
-         * badges: [
-         *     {
-         *         badge: (2500   | 1000     | 500  | 100    | 10),
-         *         type: (diamond | platinum | gold | silver | bronze),
-         *         mice: string[]
-         *     },
-         *     ...
-         * ]
-         */
-        badgeGroups.forEach(group => {
-            const type = group.type;
-            if (Object.prototype.hasOwnProperty.call(payload, type)) {
-                payload[type] = group.count;
-            }
-        });
-        logger.debug("MHCT: Crowns payload: ", payload);
-
-        // Prevent other extensions (e.g. Privacy Badger) from blocking the crown
-        // submission by submitting from the content script.
-        window.postMessage({
-            "mhct_crown_update": 1,
-            "crowns": payload,
-        }, window.origin);
     }
 
     /**
@@ -1219,44 +1160,6 @@ import * as stagers from './modules/stages';
     // Finish configuring the extension behavior.
     function finalLoad() {
         escapeButtonClose();
-
-        // If this page is a profile page, query the crown counts (if the user tracks crowns).
-        const profileAutoScan = () => {
-            const profile_RE = /profile.php\?snuid=(\w+)$/g; // "$" at regex end = only auto-fetch when AJAX route changing onto a plain profile page
-            const profile_RE_matches = document.URL.match(profile_RE);
-            if (profile_RE_matches?.length) {
-                const profile_snuid = profile_RE_matches[0].replace("profile.php?snuid=", "");
-
-                // Form data directly in URL to distinguish it from a profile "King's Crowns" tab click
-                const crownUrl = `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=HunterProfile&page_arguments%5Btab%5D=kings_crowns&page_arguments%5Bsub_tab%5D=false&page_arguments%5Bsnuid%5D=${profile_snuid}&uh=${user.unique_hash}`;
-
-                const payload = {
-                    sn: 'Hitgrab',
-                    hg_is_ajax: 1,
-                    'X-Requested-By': `MHCT/${mhhh_version}`,
-                };
-                $.post(crownUrl, payload, null, "json")
-                    .fail(err => {
-                        logger.debug(`Crown query failed for snuid=${profile_snuid}`, err);
-                    });
-            }
-        };
-
-        // Checks for route changes and then rescans for plain profiles
-        const URLDiffCheck = () => {
-            const cachedURL = localStorage.getItem("mhct-url-cache");
-            const currentURL = document.URL;
-
-            if (!cachedURL || (cachedURL && cachedURL !== currentURL)) {
-                localStorage.setItem("mhct-url-cache", currentURL);
-                profileAutoScan();
-            }
-        };
-
-        if (userSettings['tracking-crowns']) {
-            URLDiffCheck(); // Initial call on page load
-            $(document).ajaxStop(URLDiffCheck); // AJAX event listener for subsequent route changes
-        }
 
         // Tell content script we are done loading
         window.postMessage({

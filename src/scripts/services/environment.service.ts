@@ -1,10 +1,5 @@
 
 export class EnvironmentService {
-    private version: number | undefined;
-
-    constructor(getVersion: () => number) {
-        this.version = getVersion();
-    }
 
     getMainIntakeUrl(): string {
         return this.getBaseUrl() + "/intake.php";
@@ -35,7 +30,7 @@ export class EnvironmentService {
     }
 
     getBaseUrl(): string {
-        if (this.version === undefined || this.version === 0) {
+        if (process.env.ENV === 'development') {
             return "http://localhost";
         }
 
