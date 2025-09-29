@@ -1,27 +1,30 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */ // mswjs correctly handles promise listeners internally
 import {BatchInterceptor, type ExtractEventNames} from '@mswjs/interceptors';
 import {XMLHttpRequestInterceptor} from '@mswjs/interceptors/XMLHttpRequest';
 import {FetchInterceptor} from '@mswjs/interceptors/fetch';
 import {hgResponseSchema, type HgResponse} from '@scripts/types/hg';
-import qs from 'qs';
-import {Emitter, EventMap, Listener} from 'strict-event-emitter';
-import z from 'zod';
+import {Emitter} from 'strict-event-emitter';
 import {LoggerService} from './logging';
+import qs from 'qs';
+import z from 'zod';
 
-export interface InterceptorEventMap extends EventMap {
+export interface RequestEventParams {
+    url: URL;
+    requestId: string;
+    request: RequestBody;
+}
+
+export interface ResponseEventParams extends RequestEventParams {
+    response: HgResponse;
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type InterceptorEventMap = {
     request: [
-        args: {
-            url: URL;
-            requestId: string;
-            request: RequestBody;
-        }
+        args: RequestEventParams
     ],
     response: [
-        args: {
-            url: URL;
-            requestId: string;
-            request: RequestBody;
-            response: HgResponse;
-        }
+        args: ResponseEventParams
     ],
 }
 
@@ -29,6 +32,7 @@ export interface RequestBody {
     [key: string]: undefined | string | RequestBody | (string | RequestBody)[];
 }
 
+type PromiseLikeListener<Data extends unknown[]> = (...data: Data) => void | Promise<void>;
 
 /**
  * Service for intercepting HTTP requests and responses from MouseHunt game endpoints.
@@ -49,25 +53,44 @@ export class InterceptorService {
     private emitter: Emitter<InterceptorEventMap>;
 
     constructor(private readonly logger: LoggerService) {
-        this.emitter = new Emitter();
+        this.emitter = new Emitter<InterceptorEventMap>();
 
-        this.interceptor.on('request', ({request, requestId}) => void this.processRequest(request, requestId));
+        this.interceptor.on('request', async ({request, requestId}) => await this.processRequest(request, requestId));
         this.interceptor.on('response', ({response, request, requestId}) => void this.processResponse(response, request, requestId));
 
         this.interceptor.apply();
     }
 
-    public on<EventName extends ExtractEventNames<InterceptorEventMap>>(
+    on<EventName extends ExtractEventNames<InterceptorEventMap>>(
         eventName: EventName,
-        listener: Listener<InterceptorEventMap[EventName]>
+        listener: PromiseLikeListener<InterceptorEventMap[EventName]>,
     ): this {
         this.emitter.on(eventName, listener);
         return this;
     }
 
-    async emitEventAsync<EventName extends keyof InterceptorEventMap>(
+    once<EventName extends ExtractEventNames<InterceptorEventMap>>(
         eventName: EventName,
-        ...data: InterceptorEventMap[EventName]): Promise<void> {
+        listener: PromiseLikeListener<InterceptorEventMap[EventName]>,
+    ): this {
+        this.emitter.once(eventName, listener);
+        return this;
+    }
+
+    off<EventName extends ExtractEventNames<InterceptorEventMap>>(
+        eventName: EventName,
+        listener: PromiseLikeListener<InterceptorEventMap[EventName]>,
+    ): this {
+        this.emitter.off(eventName, listener);
+        return this;
+    }
+
+    private async emitAsync<
+        EventName extends keyof InterceptorEventMap,
+    >(
+        eventName: EventName,
+        ...data: InterceptorEventMap[EventName]
+    ): Promise<void> {
         const listeners = this.emitter.listeners(eventName);
 
         if (listeners.length === 0) {
@@ -80,7 +103,7 @@ export class InterceptorService {
         }
     }
 
-    async processRequest(request: Request, requestId: string): Promise<void> {
+    private async processRequest(request: Request, requestId: string): Promise<void> {
         if (!this.isSupportedRequest(request)) {
             return;
         }
@@ -93,21 +116,23 @@ export class InterceptorService {
             request: body,
         });
 
-        await this.emitEventAsync('request', {
+        const eventData: RequestEventParams = {
             url: new URL(request.url),
             requestId: requestId,
             request: body,
-        });
+        };
+
+        await this.emitAsync('request', eventData);
     }
 
-    async processResponse(response: Response, request: Request, requestId: string) {
+    private async processResponse(response: Response, request: Request, requestId: string) {
         if (!this.isSupportedRequest(request) || !this.isSupportedResponse(response)) {
             return;
         }
         const responseClone = response.clone();
         const responseParseResult = hgResponseSchema.safeParse(await responseClone.json());
         if (!responseParseResult.success) {
-            this.logger.warn(`Unhandled response structure\n\n ${z.prettifyError(responseParseResult.error)}`, {
+            this.logger.warn(`Interceptor encountered unexpected HG response\n\n ${z.prettifyError(responseParseResult.error)}`, {
                 url: response.url,
                 response: responseParseResult
             });
@@ -124,13 +149,14 @@ export class InterceptorService {
             response: responseParseResult.data,
         });
 
-        await this.emitEventAsync('response', {
+        const eventData: ResponseEventParams = {
             url: new URL(response.url),
             requestId: requestId,
             request: requestBody,
             response: responseParseResult.data,
-        });
+        };
 
+        await this.emitAsync('response', eventData);
     }
 
     private isSupportedRequest(request: Request): boolean {
@@ -163,7 +189,8 @@ export class InterceptorService {
         const parsedUrl = new URL(url);
 
         return parsedUrl.origin === 'https://www.mousehuntgame.com'
-            && !parsedUrl.pathname.endsWith('/managers/ajax/users/session.php') // Ignore sensitive session calls
+            // TODO: Enable when hunter_hash is supported
+            //&& !parsedUrl.pathname.endsWith('/managers/ajax/users/session.php') // Ignore sensitive session calls
             && !parsedUrl.pathname.startsWith('/api/'); // Ignore mobile API calls
     }
 }

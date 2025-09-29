@@ -48,10 +48,13 @@ export class ApiService {
         };
 
         const response = await fetch(new Request(url, requestInit));
-        const responseType = response.headers.get('Content-Type');
-        const responseIsJson = responseType?.includes('application/json');
         if (hasResponse && response.status === 200) {
-            return responseIsJson ? await response.json() : await response.text();
+            const data = await response.text();
+            try {
+                return JSON.parse(data);
+            } catch {
+                return data;
+            }
         } else if (response.status !== 200 && response.status !== 204) {
             return Promise.reject(new Error(`Request failed with status ${response.status}: ${response.statusText}`));
         }

@@ -1,37 +1,57 @@
-/*jslint browser:true */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {IntakeRejectionEngine} from "./hunt-filter/engine";
 import {ConsoleLogger, LogLevel} from './services/logging';
 import {EnvironmentService} from "./services/environment.service";
 import {MouseRipApiService} from "./services/mouserip-api.service";
-import {InterceptorService} from "./services/interceptor.service";
+import {InterceptorService, ResponseEventParams} from "./services/interceptor.service";
+import {UserSettings} from "./services/settings/settings.service";
 import {SubmissionService} from "./services/submission.service";
 import {ApiService} from "./services/api.service";
-import {hgResponseSchema} from "./types/hg";
+import {HgResponse, hgResponseSchema, Inventory, InventoryItem, JournalMarkup, User} from "./types/hg";
 import {HornHud} from './util/hornHud';
-import {parseHgInt} from "./util/number";
 import {Messenger} from "./content/messaging/messenger";
 import {CrownTracker} from "./modules/crown-tracker/tracker";
+import {IEnvironmentDetailer} from "./modules/details/details.types";
 import {ExtensionLog} from "./modules/extension-log/extension-log";
+import {IntakeMessage, IntakeMessageBase, intakeMessageBaseSchema, intakeMessageSchema} from "./types/mhct";
+import {parseHgInt} from "./util/number";
 import {z} from "zod";
 import * as successHandlers from './modules/ajax-handlers';
 import * as detailers from './modules/details';
 import * as stagers from './modules/stages';
 
-(function () {
-    'use strict';
+declare global {
+    interface Window {
+        user: any; // or proper User type if you have it
+        jQuery: JQueryStatic;
+        $: JQueryStatic;
+        lastReadJournalEntryId: number;
+        tsitu_loader_offset?: number;
+    }
 
+    // Direct globals (not on window)
+    var user: any;
+    var lastReadJournalEntryId: number;
+}
+
+(function () {
     let mhhh_version = 0;
     let hunter_id_hash = '0';
-    let userSettings = {};
+    let userSettings: UserSettings;
+    let settingsPromise: Promise<UserSettings> | null = null;
 
-    // eslint-disable-next-line no-undef
     const isDev = process.env.ENV === 'development';
-    const logger = new ConsoleLogger(isDev, logFilter);
+    const logger = new ConsoleLogger(isDev, shouldFilter);
     const messenger = Messenger.forDOMCommunication(globalThis.window);
     const extensionLog = new ExtensionLog(messenger);
     const apiService = new ApiService();
     const interceptorService = new InterceptorService(logger);
-    const environmentService = new EnvironmentService(getExtensionVersion);
+    const environmentService = new EnvironmentService();
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const submissionService = new SubmissionService(logger, environmentService, apiService, getSettingsAsync,
         () => ({
@@ -56,8 +76,9 @@ import * as stagers from './modules/stages';
 
     async function main() {
         try {
-            if (!window.jQuery) {
-                throw "Can't find jQuery.";
+
+            if (!(window as any).jQuery) {
+                throw new Error("Can't find jQuery.");
             }
 
             userSettings = await getSettingsAsync();
@@ -74,27 +95,47 @@ import * as stagers from './modules/stages';
         }
     }
 
-    async function getSettingsAsync() {
-        return Promise.race([
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for settings.")), 5000)),
-            new Promise((resolve) => {
-                window.addEventListener("message", function listenSettings(event) {
-                    if (event.data.mhct_settings_response !== 1) {
-                        return;
-                    }
+    async function getSettingsAsync(): Promise<UserSettings> {
+    // If there's already a promise in progress, return it
+        if (settingsPromise) {
+            return settingsPromise;
+        }
 
-                    const settings = event.data.settings;
-                    window.removeEventListener("message", listenSettings);
-                    resolve(settings);
-                }, false);
+        settingsPromise = new Promise<UserSettings>((resolve, reject) => {
+            const getSettingsTimeout = setTimeout(() => {
+                window.removeEventListener("message", listenSettings);
+                reject(new Error("Timeout waiting for settings."));
+            }, 60000);
 
-                window.postMessage({mhct_settings_request: 1}, "*");
-            })
-        ]);
+            // Set up message listener
+            function listenSettings(event: MessageEvent) {
+                if (event.data.mhct_settings_response !== 1) {
+                    return;
+                }
+
+                // Clean up
+                clearTimeout(getSettingsTimeout);
+                window.removeEventListener("message", listenSettings);
+
+                resolve(event.data.settings as UserSettings);
+            }
+
+            window.addEventListener("message", listenSettings);
+            window.postMessage({mhct_settings_request: 1}, "*");
+        });
+
+        try {
+            const result = await settingsPromise;
+            return result;
+        } catch (error) {
+        // Clear the promise on error so subsequent calls can retry
+            settingsPromise = null;
+            throw error;
+        }
     }
 
     function getExtensionVersion() {
-        const version = $("#mhhh_version").val();
+        const version = $("#mhhh_version").val() as string;
 
         // split version and convert to padded number number format
         // 0.0.0 -> 000000
@@ -143,25 +184,23 @@ import * as stagers from './modules/stages';
         await createHunterIdHash();
     }
 
-    function logFilter(logLevel) {
-        let userLogLevelSetting;
+    function shouldFilter(level: LogLevel) {
+        let filterLevel = LogLevel.Info;
         switch (userSettings['general-log-level'] ?? '') {
             case 'debug':
-                userLogLevelSetting = LogLevel.Debug;
+                filterLevel = LogLevel.Debug;
                 break;
             case 'info':
-                userLogLevelSetting = LogLevel.Info;
+                filterLevel = LogLevel.Info;
                 break;
             case 'warn':
-                userLogLevelSetting = LogLevel.Warn;
+                filterLevel = LogLevel.Warn;
                 break;
             case 'error':
-                userLogLevelSetting = LogLevel.Error;
+                filterLevel = LogLevel.Error;
                 break;
-            default:
-                userLogLevelSetting = LogLevel.Info;
         }
-        return isDev || userLogLevelSetting >= logLevel;
+        return !isDev && level <= filterLevel;
     };
 
     // Listening for calls
@@ -213,8 +252,8 @@ import * as stagers from './modules/stages';
                 const myAudio = new Audio(sound_url);
                 const volume = ev.data.volume;
                 if (volume > 0) {
-                    myAudio.volume = (volume/100).toFixed(2);
-                    myAudio.play();
+                    myAudio.volume = Number((volume/100).toFixed(2));
+                    void myAudio.play();
                 }
             }
 
@@ -236,11 +275,11 @@ import * as stagers from './modules/stages';
     }
 
     function sound_horn() {
-        HornHud.soundHorn();
+        void HornHud.soundHorn();
     }
 
-    function openBookmarklet(menuURL) {
-        fetch(menuURL).then(response => response.text()).then((data) => {
+    function openBookmarklet(menuURL: string) {
+        void fetch(menuURL).then(response => response.text()).then((data) => {
             const url = new URL(menuURL);
             // FireFox will still have EXTENSION_URL in the code, so replace with origin of URL (moz-extension://<internal_uuid>/)
             data = data.replace("EXTENSION_URL", url.origin);
@@ -249,7 +288,7 @@ import * as stagers from './modules/stages';
     }
 
     // Get map mice
-    function openMapMiceSolver(solver) {
+    function openMapMiceSolver(solver: string) {
         let url = '';
         let glue = '';
         let method = '';
@@ -295,8 +334,8 @@ import * as stagers from './modules/stages';
     }
 
     // Extract map mice from a map
-    function getMapMice(data, uncaught_only) {
-        const mice = {};
+    function getMapMice(data: any, uncaught_only: boolean) {
+        const mice: Record<string, string> = {};
         $.each(data.treasure_map.goals.mouse, (key, mouse) => {
             mice[mouse.unique_id] = mouse.name;
         });
@@ -317,7 +356,7 @@ import * as stagers from './modules/stages';
      * @param {"error"|"warning"|"success"} type The type of message being displayed, which controls the color and duration.
      * @param {string} message The message content to display.
      */
-    function showFlashMessage(type, message) {
+    function showFlashMessage(type: string, message: string) {
         window.postMessage({
             mhct_display_message: 1,
             type,
@@ -328,133 +367,84 @@ import * as stagers from './modules/stages';
     /**
      * Before allowing a hunt submission, first request an updated user object that reflects the effect
      * of any outside actions, such as setup changes from the mobile app, a different tab, or trap checks.
-     * @param {JQuery.TriggeredEvent<Document, undefined, Document, Document>} event The ajax event that triggered this listener
-     * @param {JQuery.jqXHR<any>} jqx The jQuery-wrapped XMLHttpRequest that was intercepted
-     * @param {JQuery.AjaxSettings<any>} ajaxOptions The ajax settings of the intercepted request.
      */
-    function getUserBeforeHunting(event, jqx, ajaxOptions) {
-        if (event.type !== "ajaxSend" || !ajaxOptions.url.includes("ajax/turns/activeturn.php"))
-            return;
-        const create_hunt_XHR = ajaxOptions.xhr;
-        const huntRequestTimeStart = performance.now();
-        // Override the XMLHttpRequest that will be used with our own.
-        ajaxOptions.xhr = function () {
-            // Create the original XMLHttpRequest, whose `send()` will sound the horn.
-            const hunt_xhr = create_hunt_XHR();
-            const hunt_send = hunt_xhr.send;
-            // Override the original send to first query the user object.
-            // Trigger trap check calculations by forcing non-memoized return.
-            hunt_xhr.send = (...huntArgs) => {
-                $.ajax({
-                    method: "post",
-                    url: "/managers/ajax/pages/page.php",
-                    data: {
-                        sn: "Hitgrab",
-                        page_class: "Camp",
-                        hg_is_ajax: 1,
-                        last_read_journal_entry_id: lastReadJournalEntryId,
-                        uh: user.unique_hash,
-                        'X-Requested-By': `MHCT/${mhhh_version}`,
-                    },
-                    dataType: "json",
-                }).done(preResponseText => {
-                    logger.debug("Got user object, invoking huntSend", {userRqResponse: preResponseText});
+    function setupPreHuntFetch() {
+        interceptorService.on('request', async (requestEvent) => {
+            if (requestEvent.url.pathname !== '/managers/ajax/turns/activeturn.php') {
+                return;
+            }
 
-                    hunt_xhr.addEventListener("loadend", () => {
-                        logger.debug("Overall 'Hunt Requested' Timing %i (ms)", performance.now() - huntRequestTimeStart);
-                        // Call record hunt with the pre-hunt and hunt (post) user objects.
-                        recordHuntWithPrehuntUser(preResponseText, JSON.parse(hunt_xhr.responseText));
-                    }, false);
-                    hunt_send.apply(hunt_xhr, huntArgs);
-                });
+            logger.debug("Fetching user object before hunting", performance.now());
+            const pageResponse = await apiService.send("POST",
+                "/managers/ajax/pages/page.php",
+                {
+                    sn: "Hitgrab",
+                    hg_is_ajax: 1,
+                    page_class: "Camp",
+                    last_read_journal_entry_id: lastReadJournalEntryId,
+                    uh: user.unique_hash
+                },
+                true
+            );
+
+            const handleResponse = (responseEvent: ResponseEventParams) => {
+                if (responseEvent.requestId !== requestEvent.requestId) {
+                    return;
+                }
+
+                interceptorService.off('response', handleResponse);
+                recordHuntWithPrehuntUser(pageResponse, responseEvent.response);
             };
 
-            return hunt_xhr;
-        };
+            interceptorService.on('response', handleResponse);
+        });
     }
 
     // Listening routers
     function addAjaxHandlers() {
         if (userSettings['tracking-hunts']) {
-            $(document).ajaxSend(getUserBeforeHunting);
+            setupPreHuntFetch();
         }
 
-        $(document).ajaxSuccess(async (event, xhr, ajaxOptions) => {
-            const url = ajaxOptions.url;
-            if (url.includes("mousehuntgame.com/managers/ajax/users/session.php")) {
-                createHunterIdHash();
-            }
-
-            const hgResponse = validateAndParseHgResponse(xhr.responseText, url);
-            if (!hgResponse) {
-                return;
-            }
-
-            if (userSettings['tracking-events']) {
-                for (const handler of ajaxSuccessHandlers) {
-                    if (handler.match(url)) {
-                        await handler.execute(hgResponse);
-                    }
-                }
+        interceptorService.on('request', async (details) => {
+            if (details.url.pathname === '/managers/ajax/users/session.php') {
+                await createHunterIdHash();
             }
         });
-    }
 
-    /**
-     * Validates and parses an HG response, returning the parsed JSON if valid
-     * @param {string} responseText The raw response text from the XMLHttpRequest
-     * @param {string} url The request URL
-     * @returns {import("./types/hg").HgResponse|null} The parsed JSON object if valid, null otherwise
-     */
-    function validateAndParseHgResponse(responseText, url) {
-        try {
-            const parsedUrl = new URL(url);
-            // mobile api calls are not checked
-            if (parsedUrl.hostname === "www.mousehuntgame.com" && !parsedUrl.pathname.startsWith("/api/")) {
-                const json = JSON.parse(responseText);
-                const parseResult = hgResponseSchema.safeParse(json);
-
-                if (!parseResult.success) {
-                    logger.warn(`Unexpected HG response received\n\n${z.prettifyError(parseResult.error)}`, {
-                        url: url,
-                        response: json
-                    });
-                    return null;
+        if (userSettings['tracking-events']) {
+            interceptorService.on('response', async (details) => {
+                for (const handler of ajaxSuccessHandlers) {
+                    if (handler.match(details.url.toString())) {
+                        try {
+                            await handler.execute(details.response);
+                        } catch (e) {
+                            logger.error(`AJAX handler failed for ${handler.constructor.name}`, {
+                                error: e,
+                                ...details
+                            });
+                        }
+                    }
                 }
-
-                return parseResult.data;
-            }
-        } catch {
-            // Invalid url, JSON, or response is not JSON
+            });
         }
-
-        return null;
     }
 
     /**
      * @param {string} rawPreResponse String representation of the response from calling page.php
      * @param {string} rawPostResponse String representation of the response from calling activeturn.php
      */
-    function recordHuntWithPrehuntUser(rawPreResponse, rawPostResponse) {
-        logger.debug("In recordHuntWithPrehuntUser pre and post:", rawPreResponse, rawPostResponse);
+    function recordHuntWithPrehuntUser(rawPreResponse: unknown, post_response: HgResponse) {
 
         const safeParseResultPre = hgResponseSchema.safeParse(rawPreResponse);
-        const safeParseResultPost = hgResponseSchema.safeParse(rawPostResponse);
 
-        if (!safeParseResultPre.success || !safeParseResultPost.success) {
-            if (!safeParseResultPre.success) {
-                logger.warn("Unexpected response type received", z.prettifyError(safeParseResultPre.error));
-            }
-
-            if (!safeParseResultPost.success) {
-                logger.warn("Unexpected response type received", z.prettifyError(safeParseResultPost.error));
-            }
+        if (!safeParseResultPre.success) {
+            logger.warn("Unexpected pre hunt response type received", z.prettifyError(safeParseResultPre.error));
 
             return;
         }
 
         const pre_response = safeParseResultPre.data;
-        const post_response = safeParseResultPost.data;
 
         // General data flow
         // - Validate API response object
@@ -485,7 +475,13 @@ import * as stagers from './modules/stages';
          * @param {Object <string, any>} obj_pre The pre-hunt user object (or associated nested object)
          * @param {Object <string, any>} obj_post The post-hunt user object (or associated nested object)
          */
-        function diffUserObjects(result, pre, post, obj_pre, obj_post) {
+        function diffUserObjects(
+            result: Record<string, any>,
+            pre: Set<string>,
+            post: Set<string>,
+            obj_pre: Record<string, any>,
+            obj_post: Record<string, any>
+        ) {
             const simple_diffs = new Set(['string', 'number', 'boolean']);
             for (const [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith("hash"))) {
                 pre.add(key);
@@ -536,17 +532,11 @@ import * as stagers from './modules/stages';
         );
 
         // Find maximum entry id from pre_response
-        let max_old_entry_id = pre_response.page.journal.entries_string.match(/data-entry-id='(\d+)'/g);
-        if (!max_old_entry_id.length) {
-            max_old_entry_id = 0;
-        } else {
-            max_old_entry_id = max_old_entry_id.map(x => x.replace(/^data-entry-id='/, ''));
-            max_old_entry_id = max_old_entry_id.map(x => Number(x.replace(/'/g, "")));
-            max_old_entry_id = Math.max(...max_old_entry_id);
-        }
-        logger.debug(`Pre (old) maximum entry id: ${max_old_entry_id}`);
+        const journalEntryIds = ((pre_response.page as any).journal.entries_string as string).matchAll(/data-entry-id='(\d+)'/g);
+        const maxEntryId = Math.max(...Array.from(journalEntryIds, x => Number(x[1])), 0);
+        logger.debug(`Pre (old) maximum entry id: ${maxEntryId}`);
 
-        const hunt = parseJournalEntries(post_response, max_old_entry_id);
+        const hunt = parseJournalEntries(post_response, maxEntryId);
         if (!hunt || Object.keys(hunt).length === 0) {
             logger.info("Missing Info (trap check or friend hunt)(2)");
             return;
@@ -554,43 +544,65 @@ import * as stagers from './modules/stages';
 
         /**
          *
-         * @param {import("./types/hg").HgResponse} before The pre-hunt object
-         * @param {import("./types/hg").HgResponse} after The post-hunt object
-         * @param {import("./types/hg").JournalMarkup} hunt Journal entry corresponding with the hunt
-         * @returns {import("./types/mhct").IntakeMessage | undefined}
+         * @param before The pre-hunt object
+         * @param after The post-hunt object
+         * @param hunt Journal entry corresponding with the hunt
+         * @returns
          */
-        function createIntakeMessage(before, after, hunt) {
-            const user = before.user;
-            const user_post = after.user;
-            // Obtain the main hunt information from the journal entry and user objects.
-            const message = createMessageFromHunt(hunt, before, after);
-            if (!message) {
-                logger.info("Missing Info (will try better next hunt)(1)");
-                return;
-            }
+        function createIntakeMessage(
+            before: HgResponse,
+            after: HgResponse,
+            hunt: JournalMarkup
+        ): {message_pre: IntakeMessage, message_post: IntakeMessage} {
+            const preMessageBase = createMessageFromHunt(hunt, before);
+            const postMessageBase = createMessageFromHunt(hunt, after);
+
+            const message_pre: IntakeMessage = preMessageBase as IntakeMessage;
+            const message_post: IntakeMessage = postMessageBase as IntakeMessage;
 
             // Perform validations and stage corrections.
-            fixLGLocations(message, user, user_post, hunt);
+            fixLGLocations(message_pre);
+            fixLGLocations(message_post);
 
-            addStage(message, user, user_post, hunt);
-            addHuntDetails(message, user, user_post, hunt);
-            addLoot(message, hunt, after.inventory);
+            addStage(message_pre, before.user, after.user, hunt);
+            addStage(message_post, after.user, after.user, hunt);
 
-            return message;
+            addHuntDetails(message_pre, before.user, after.user, hunt);
+            addHuntDetails(message_post, after.user, after.user, hunt);
+
+            addLoot(message_pre, hunt, after.inventory);
+            addLoot(message_post, hunt, after.inventory);
+
+            const checkPreResult = intakeMessageSchema.safeParse(message_pre);
+            const checkPostResult = intakeMessageSchema.safeParse(message_post);
+            if (!checkPreResult.success || !checkPostResult.success) {
+                const issues = [];
+                if (!checkPreResult.success) {
+                    issues.push(z.prettifyError(checkPreResult.error));
+                }
+                if (!checkPostResult.success) {
+                    issues.push(z.prettifyError(checkPostResult.error));
+                }
+                throw new Error(`Failed to create intake message. Issues:\n\n${issues.join("\n\n")}`);
+            }
+
+            return {
+                message_pre: checkPreResult.data,
+                message_post: checkPostResult.data,
+            };
         }
 
         let message_pre;
         let message_post;
         try {
             // Create two intake messages. One based on pre-response. The other based on post-response.
-            message_pre = createIntakeMessage(pre_response, post_response, hunt);
-            message_post = createIntakeMessage(post_response, post_response, hunt);
+            ({message_pre, message_post} = createIntakeMessage(pre_response, post_response, hunt));
         } catch (error) {
             logger.error("Something went wrong creating message", error);
         }
 
-        if (message_pre === null || message_post === null) {
-            logger.warn("Missing Info (will try better next hunt)(2)");
+        if (message_pre == null || message_post == null) {
+            logger.warn("Critical user data missing; cannot record hunt. See error log.");
             return;
         }
 
@@ -601,7 +613,7 @@ import * as stagers from './modules/stages';
             const invalidProperties = rejectionEngine.getInvalidIntakeMessageProperties(message_pre, message_post);
             if (invalidProperties.has('stage') || invalidProperties.has('location')) {
                 const rejection_message = createRejectionMessage(message_pre, message_post);
-                submissionService.submitRejection(rejection_message);
+                void submissionService.submitRejection(rejection_message);
             }
 
             return;
@@ -609,12 +621,12 @@ import * as stagers from './modules/stages';
 
         logger.debug("Recording hunt", {message_var:message_pre, user_pre, user_post, hunt});
         // Upload the hunt record.
-        submissionService.submitHunt(message_pre);
+        void submissionService.submitHunt(message_pre);
     }
 
     // Add bonus journal entry stuff to the hunt_details
-    function calcMoreDetails(hunt) {
-        let new_details = {};
+    function calcMoreDetails(hunt: JournalMarkup & { more_details?: Record<string, unknown> }): Record<string, unknown> | undefined {
+        let new_details: Record<string, unknown> | undefined = {};
         if ('more_details' in hunt) {
             new_details = hunt.more_details;
         }
@@ -627,16 +639,15 @@ import * as stagers from './modules/stages';
      * @param {number} max_old_entry_id
      * @returns {import("./types/hg").JournalMarkup | null} The journal entry corresponding to the active hunt.
      */
-    function parseJournalEntries(hunt_response, max_old_entry_id) {
-        /** @type {import("./types/hg").JournalMarkup & Object<string, unknown>} */
-        let journal = {};
-        const more_details = {};
+    function parseJournalEntries(hunt_response: HgResponse, max_old_entry_id: number): JournalMarkup | null {
+        let journal: (JournalMarkup & { more_details?: Record<string, unknown> }) | undefined;
+        const more_details: Record<string, unknown> = {};
         let journal_entries = hunt_response.journal_markup;
         if (!journal_entries) { return null; }
 
         // Filter out stale entries
         logger.debug(`Before filtering there's ${journal_entries.length} journal entries.`, {journal_entries, max_old_entry_id});
-        journal_entries = journal_entries.filter(x => Number(x.render_data.entry_id) > Number(max_old_entry_id));
+        journal_entries = journal_entries.filter(x => x.render_data.entry_id > max_old_entry_id);
         logger.debug(`After filtering there's ${journal_entries.length} journal entries left.`, {journal_entries, max_old_entry_id});
 
         // Cancel everything if there's trap check somewhere
@@ -644,6 +655,18 @@ import * as stagers from './modules/stages';
             logger.info("Found trap check too close to hunt. Aborting.");
             return null;
         }
+
+        const getItemFromInventoryByType = (itemType: string): InventoryItem | undefined => {
+            if (hunt_response.inventory != null && !Array.isArray(hunt_response.inventory)) {
+                return hunt_response.inventory[itemType];
+            }
+        };
+
+        const getItemFromInventoryByName = (itemName: string): InventoryItem | undefined => {
+            if (hunt_response.inventory != null && !Array.isArray(hunt_response.inventory)) {
+                return Object.values(hunt_response.inventory).find(item => item.name === itemName);
+            }
+        };
 
         journal_entries.forEach(markup => {
             const css_class = markup.render_data.css_class;
@@ -657,7 +680,7 @@ import * as stagers from './modules/stages';
                 // may appear and have been back-calculated as occurring before reset).
                 if (rh_message.entry_timestamp > Math.round(new Date().setUTCHours(0, 0, 0, 0) / 1000)) {
                     if (userSettings['tracking-events']) {
-                        submissionService.submitRelicHunterHint(rh_message);
+                        void submissionService.submitRelicHunterSighting(rh_message);
                         logger.debug(`Found the Relic Hunter in ${rh_message.rh_environment}`);
                     }
                 }
@@ -665,7 +688,7 @@ import * as stagers from './modules/stages';
             else if (css_class.search(/prizemouse/) !== -1) {
                 // Handle a prize mouse attraction.
                 // TODO: Implement data submission
-                extensionLog.log(LogLevel.Info, {
+                void extensionLog.log(LogLevel.Info, {
                     prize_mouse_journal: markup,
                 });
             }
@@ -674,20 +697,17 @@ import * as stagers from './modules/stages';
                 const data = markup.render_data.text;
                 const quantityRegex = /mouse dropped ([\d,]+) <a class/;
                 const nameRegex = />(.+?)<\/a>/g; // "g" flag used for stickiness
-                if (quantityRegex.test(data) && nameRegex.test(data)) {
-                    const quantityMatch = quantityRegex.exec(data);
+                const quantityMatch = quantityRegex.exec(data);
+                nameRegex.lastIndex = quantityMatch?.index ?? data.length; // Start searching for name where quantity was found.
+                const nameMatch = nameRegex.exec(data);
+                if (quantityMatch && nameMatch) {
                     const strQuantity = quantityMatch[1].replace(/,/g, '').trim();
                     const lootQty = parseInt(strQuantity, 10);
-
-                    // Update the loot name search to start where the loot quantity was found.
-                    nameRegex.lastIndex = quantityMatch.index;
-                    const lootName = nameRegex.exec(data)[1];
-
-                    const loot = Object.values(hunt_response.inventory)
-                        .find(item => item.name === lootName);
+                    const lootName = nameMatch[1];
+                    const loot = getItemFromInventoryByName(lootName);
 
                     if (!lootQty || !loot) {
-                        extensionLog.log(LogLevel.Warn, `Failed to find inventory loot for Desert Heater Base`, {
+                        void extensionLog.log(LogLevel.Warn, `Failed to find inventory loot for Desert Heater Base`, {
                             desert_heater_journal: markup,
                             inventory: hunt_response.inventory,
                             loot: lootName,
@@ -701,10 +721,10 @@ import * as stagers from './modules/stages';
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
                         logger.debug("Desert Heater Base proc", {desert_heater_loot: items});
 
-                        submissionService.submitItemConvertible(convertible, items);
+                        void submissionService.submitItemConvertible(convertible, items);
                     }
                 } else {
-                    extensionLog.log(LogLevel.Warn, `Regex quantity and loot name failed for Desert Heater Base`, {
+                    void extensionLog.log(LogLevel.Warn, `Regex quantity and loot name failed for Desert Heater Base`, {
                         desert_heater_journal: markup,
                         inventory: hunt_response.inventory,
                     });
@@ -712,10 +732,10 @@ import * as stagers from './modules/stages';
             }
             else if (css_class.search(/unstable_charm_trigger/) !== -1) {
                 const data = markup.render_data.text;
-                const trinketRegex = /item\.php\?item_type=(.*?)"/;
-                if (trinketRegex.test(data)) {
-                    const resultTrinket = data.match(trinketRegex)[1];
-                    if("inventory" in hunt_response && resultTrinket in hunt_response.inventory) {
+                const trinketRegex = /item\.php\?item_type=(.*?)"/.exec(data);
+                if (trinketRegex) {
+                    const resultTrinket = trinketRegex[1];
+                    if(hunt_response.inventory != null && !Array.isArray(hunt_response.inventory) && resultTrinket in hunt_response.inventory) {
                         const {name: trinketName, item_id: trinketId} = hunt_response.inventory[resultTrinket];
                         const convertible = {
                             id: 1478, // Unstable Charm's item ID
@@ -729,53 +749,53 @@ import * as stagers from './modules/stages';
                         }];
                         logger.debug("Submitting Unstable Charm: ", {unstable_charm_loot: items});
 
-                        submissionService.submitItemConvertible(convertible, items);
+                        void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
             else if (css_class.search(/gift_wrapped_charm_trigger/) !== -1) {
                 const data = markup.render_data.text;
-                const trinketRegex = /item\.php\?item_type=(.*?)"/;
-                if (trinketRegex.test(data)) {
-                    const resultTrinket = data.match(trinketRegex)[1];
-                    if("inventory" in hunt_response && resultTrinket in hunt_response.inventory) {
-                        const {name: trinketName, item_id: trinketId} = hunt_response.inventory[resultTrinket];
+                const trinketRegex = /item\.php\?item_type=(.*?)"/.exec(data);
+                if (trinketRegex) {
+                    const resultTrinket = trinketRegex[1];
+                    const trinket = getItemFromInventoryByType(resultTrinket);
+                    if (trinket) {
                         const convertible = {
                             id: 2525, // Gift Wrapped Charm's item ID
                             name: "Gift Wrapped Charm",
                             quantity: 1,
                         };
                         const items = [{
-                            id: trinketId,
-                            name: trinketName,
+                            id: trinket.item_id,
+                            name: trinket.name,
                             quantity: 1,
                         }];
                         logger.debug("Submitting Gift Wrapped Charm: ", {gift_wrapped_charm_loot: items});
 
-                        submissionService.submitItemConvertible(convertible, items);
+                        void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
             else if (css_class.search(/torch_charm_event/) !== -1) {
                 const data = markup.render_data.text;
-                const torchprocRegex = /item\.php\?item_type=(.*?)"/;
-                if (torchprocRegex.test(data)) {
-                    const resultItem = data.match(torchprocRegex)[1];
-                    if("inventory" in hunt_response && resultItem in hunt_response.inventory) {
-                        const {name: rItemName, item_id: rItemID} = hunt_response.inventory[resultItem];
+                const torchprocRegex = /item\.php\?item_type=(.*?)"/.exec(data);
+                if (torchprocRegex) {
+                    const resultItem = torchprocRegex[1];
+                    const torchItemResult = getItemFromInventoryByType(resultItem);
+                    if (torchItemResult) {
                         const convertible = {
                             id: 2180, // Torch Charm's item ID
                             name: "Torch Charm",
                             quantity: 1,
                         };
                         const items = [{
-                            id: rItemID,
-                            name: rItemName,
+                            id: torchItemResult.item_id,
+                            name: torchItemResult.name,
                             quantity: 1,
                         }];
                         logger.debug("Submitting Torch Charm: ", {torch_charm_loot: items});
 
-                        submissionService.submitItemConvertible(convertible, items);
+                        void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -786,21 +806,21 @@ import * as stagers from './modules/stages';
                 if (matchResults.length == 4){
                     // Get third match, then first capturing group
                     const resultItem = matchResults[2][1];
-                    if("inventory" in hunt_response && resultItem in hunt_response.inventory) {
-                        const {name: rItemName, item_id: rItemID} = hunt_response.inventory[resultItem];
+                    const baseResultItem = getItemFromInventoryByType(resultItem);
+                    if (baseResultItem) {
                         const convertible = {
                             id: 3526, // Queso Cannonstorm Base's item ID
                             name: "Queso Cannonstorm Base",
                             quantity: 1,
                         };
                         const items = [{
-                            id: rItemID,
-                            name: rItemName,
+                            id: baseResultItem.item_id,
+                            name: baseResultItem.name,
                             quantity: 1,
                         }];
                         logger.debug("Submitting Queso Cannonstorm Base: ", {queso_cannonstorm_base_loot: items});
 
-                        submissionService.submitItemConvertible(convertible, items);
+                        void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -811,26 +831,24 @@ import * as stagers from './modules/stages';
             }
             else if (css_class.search(/boiling_cauldron_potion_bonus/) !== -1) {
                 const data = markup.render_data.text;
-                const potionRegex = /item\.php\?item_type=(.*?)"/;
-                if (potionRegex.test(data)) {
-                    const resultPotion = data.match(potionRegex)[1];
-                    if ("inventory" in hunt_response && resultPotion in hunt_response.inventory) {
-                        const {name: potionName, item_id: potionId} = hunt_response.inventory[resultPotion];
-                        if (potionName && potionId) {
-                            const convertible = {
-                                id: 3304,
-                                name: "Boiling Cauldron Trap",
-                                quantity: 1,
-                            };
-                            const items = [{
-                                id: potionId,
-                                name: potionName,
-                                quantity: 1,
-                            }];
-                            logger.debug("Boiling Cauldron Trap proc", {boiling_cauldron_trap: items});
+                const potionRegex = /item\.php\?item_type=(.*?)"/.exec(data);
+                if (potionRegex) {
+                    const resultPotion = potionRegex[1];
+                    const potionItemResult = getItemFromInventoryByType(resultPotion);
+                    if (potionItemResult) {
+                        const convertible = {
+                            id: 3304,
+                            name: "Boiling Cauldron Trap",
+                            quantity: 1,
+                        };
+                        const items = [{
+                            id: potionItemResult.item_id,
+                            name: potionItemResult.name,
+                            quantity: 1,
+                        }];
+                        logger.debug("Boiling Cauldron Trap proc", {boiling_cauldron_trap: items});
 
-                            submissionService.submitItemConvertible(convertible, items);
-                        }
+                        void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
                 more_details.boiling_cauldron_trap_bonus = true;
@@ -839,15 +857,14 @@ import * as stagers from './modules/stages';
             else if (css_class.search(/chesla_trap_trigger/) !== -1) {
                 // Handle a potential Gilded Charm proc.
                 const data = markup.render_data.text;
-                const gildedRegex = /my Gilded Charm/;
-                const quantityRegex = /([\d]+)/;
-                if (gildedRegex.test(data) && quantityRegex.test(data)) {
-                    const quantityMatch = quantityRegex.exec(data);
-                    const strQuantity = quantityMatch[1].replace(/,/g, '').trim();
-                    const lootQty = parseInt(strQuantity, 10);
+                const gildedRegex = /my Gilded Charm/.exec(data);
+                const quantityRegex = /([\d]+)/.exec(data);
+                if (gildedRegex && quantityRegex) {
+                    const quantityMatch = quantityRegex[1].replace(/,/g, '').trim();
+                    const lootQty = parseInt(quantityMatch, 10);
 
                     if (!lootQty) {
-                        extensionLog.log(LogLevel.Warn, `Failed to parse Gilded Charm proc quantity`, {
+                        void extensionLog.log(LogLevel.Warn, `Failed to parse Gilded Charm proc quantity`, {
                             gilded_charm_journal: markup,
                             inventory: hunt_response.inventory,
                         });
@@ -860,7 +877,7 @@ import * as stagers from './modules/stages';
                         const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
                         logger.debug("Guilded Charm proc", {gilded_charm: items});
 
-                        submissionService.submitItemConvertible(convertible, items);
+                        void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
             }
@@ -886,35 +903,33 @@ import * as stagers from './modules/stages';
                 // Ignore any friend hunts, trap checks, or custom loot journal entries.
             }
         });
+
         if (journal && Object.keys(journal).length) {
             // Only assign if there's an active hunt
             journal.more_details = more_details;
         }
-        return journal;
+
+        return journal ?? null;
     }
 
     /**
      * Initialize the message with main hunt details.
-     * @param {import("./types/hg").JournalMarkup} journal The journal entry corresponding to the active hunt.
-     * @param {import("./types/hg").HgResponse} before The pre-hunt object
-     * @param {import("./types/hg").HgResponse} after The post-hunt object
-     * @returns {import("@scripts/types/mhct").IntakeMessage | null} The message object, or `null` if an error occurred.
+     * @param journal The journal entry corresponding to the active hunt.
+     * @param hgResponse The HG response containing user and inventory data.
+     * @returns The message object, or `null` if an error occurred.
      */
-    function createMessageFromHunt(journal, before, after) {
-        const user = before.user;
-        const user_post = after.user;
+    function createMessageFromHunt(journal: JournalMarkup, hgResponse: HgResponse): IntakeMessageBase {
+        const user = hgResponse.user;
 
-        /** @type {import("./types/mhct").IntakeMessage} */
-        const message = {};
+        const message: Partial<IntakeMessageBase> = {};
 
         message.entry_id = journal.render_data.entry_id;
         message.entry_timestamp = journal.render_data.entry_timestamp;
 
-        // Location
-        if (!user.environment_name || !user_post.environment_name) {
-            logger.error('Missing Location');
-            return null;
+        if (!user.environment_name) {
+            throw new Error('Missing user location');
         }
+
         message.location = {
             name: user.environment_name,
             id: user.environment_id,
@@ -925,38 +940,37 @@ import * as stagers from './modules/stages';
         message.total_luck = user.trap_luck;
         message.attraction_bonus = Math.round(user.trap_attraction_bonus * 100);
 
-        const components = [
+        type PropFields = 'weapon' | 'base' | 'trinket' | 'bait';
+        type ComponentFields = 'trap' | 'base' | 'cheese' | 'charm';
+        const components: {
+            prop: PropFields,
+            message_field: ComponentFields,
+            required: boolean,
+            replacer: RegExp,
+            [key: string]: unknown
+        }[] = [
             {prop: 'weapon', message_field: 'trap', required: true, replacer: / trap$/i},
             {prop: 'base', message_field: 'base', required: true, replacer: / base$/i},
             {prop: 'bait', message_field: 'cheese', required: true, replacer: / cheese$/i},
             {prop: 'trinket', message_field: 'charm', required: false, replacer: / charm$/i},
         ];
 
-        // Setup components
-        // All pre-hunt users must have a weapon, base, and cheese.
-        const missing = components.filter(component => component.required === true
-            && !Object.prototype.hasOwnProperty.call(user, `${component.prop}_name`)
-        );
-        if (missing.length) {
-            logger.error(`Missing required setup component: ${missing.map(c => c.message_field).join(', ')}`);
-            return null;
-        }
-        // Assign component values to the message.
-        components.forEach(component => {
-            const prop_name = `${component.prop}_name`;
-            const prop_id = `${component.prop}_item_id`;
+        for (const component of components) {
+            const prop_name: keyof User = `${component.prop}_name`;
+            const prop_id: keyof User = `${component.prop}_item_id`;
             const item_name = user[prop_name];
-            message[component.message_field] = (!item_name)
-                ? {
-                    id: 0,
-                    name: '',
+            const item_id = user[prop_id];
+            if (item_name == null || item_id == null) {
+                if (component.required) {
+                    throw new Error(`Missing required setup component: ${component.message_field}`);
                 }
-                : {
-                    // Make sure any strumbers are converted to actual numbers
-                    id: parseHgInt(user[prop_id]),
-                    name: item_name.replace(component.replacer, ''),
-                };
-        });
+            }
+
+            message[component.message_field] = {
+                id: item_id ?? 0,
+                name: item_name ? item_name.replace(component.replacer, '') : '',
+            };
+        }
 
         // Caught / Attracted / FTA'd
         const journal_css = journal.render_data.css_class;
@@ -970,8 +984,7 @@ import * as stagers from './modules/stages';
             } else if (journal_css.includes('catchfailure')) {
                 message.caught = 0;
             } else {
-                window.console.error(`MHCT: Unknown "catch" journal css: ${journal_css}`);
-                return null;
+                throw new Error(`Unknown "catch" journal css: ${journal_css}`);
             }
             // Remove HTML tags and other text around the mouse name.
             message.mouse = journal.render_data.text
@@ -981,24 +994,30 @@ import * as stagers from './modules/stages';
         }
 
         // Auras
-        message.auras = Object.keys(before.trap_image.auras).filter(codename => before.trap_image.auras[codename].status === 'active');
+        if (hgResponse.trap_image != null){
+            message.auras = Object.keys(hgResponse.trap_image.auras).filter(codename => hgResponse.trap_image!.auras[codename].status === 'active');
+        }
 
-        return message;
+        const baseMessageParseResult = intakeMessageBaseSchema.safeParse(message);
+        if (!baseMessageParseResult.success) {
+            throw new Error(`Base message failed validation:\n${z.prettifyError(baseMessageParseResult.error)}`);
+        }
+
+        return baseMessageParseResult.data;
     }
 
     /**
      * Creates rejection event info containing information about location, stage, and mouse
-     * @param {import('@scripts/types/mhct').IntakeMessage} pre
-     * @param {import('@scripts/types/mhct').IntakeMessage} post
+     * @param pre
+     * @param post
      */
-    function createRejectionMessage(pre, post) {
+    function createRejectionMessage(pre: IntakeMessage, post: IntakeMessage) {
         return {
             pre: createEventObject(pre),
             post: createEventObject(post),
         };
 
-        /** @param {import('@scripts/types/mhct').IntakeMessage} message */
-        function createEventObject(message) {
+        function createEventObject(message: IntakeMessage) {
             return {
                 location: message.location.name,
                 stage: message.stage,
@@ -1008,53 +1027,36 @@ import * as stagers from './modules/stages';
     }
 
     /**
-     * Living & Twisted Garden areas share the same HG environment ID, so use the quest data
-     * to assign the appropriate ID for our database.
-     * @param {Object <string, any>} message The message to be sent
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
+     * Fixes location IDs for Living & Twisted Garden areas.
+     * @param message The message to be sent
+     * @returns
      */
-    function fixLGLocations(message, user, user_post, hunt) {
-        const env_to_location = {
-            35: {"quest": "QuestLivingGarden",
-                "true": {id: 35, name: "Living Garden"},
-                "false": {id: 5002, name: "Twisted Garden"}},
-            41: {"quest": "QuestLostCity",
-                "true": {id: 5000, name: "Lost City"},
-                "false": {id: 41, name: "Cursed City"}},
-            42: {"quest": "QuestSandDunes",
-                "true": {id: 5001, name: "Sand Dunes"},
-                "false": {id: 42, name: "Sand Crypts"}},
+    function fixLGLocations(message: IntakeMessageBase) {
+        const environmentMap: Record<string, number> = {
+            "Cursed City": 5000,
+            "Sand Crypts": 5001,
+            "Twisted Garden": 5002,
         };
-        const env = env_to_location[message.location.id];
-        if (env) {
-            const is_normal = user.quests[env.quest].is_normal.toString();
-            Object.assign(message.location, env[is_normal]);
-        } else if ([
-            "Living Garden", "Twisted Garden",
-            "Lost City", "Cursed City",
-            "Sand Dunes", "Sand Crypts",
-        ].includes(message.location.name)) {
-            console.warn("Unexpected LG-area location", {record: message, user, user_post, hunt});
-            throw new Error(`Unexpected location id ${message.location.id} for LG-area location`);
+
+        if (message.location.name in environmentMap) {
+            message.location.id = environmentMap[message.location.name];
         }
     }
 
     /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */
-    const location_stager_lookup = {};
+    const location_stager_lookup: Record<string, import("./modules/stages/stages.types").IStager> = {};
     for (const stager of stagers.stageModules) {
         location_stager_lookup[stager.environment] = stager;
     }
 
     /**
      * Use `quests` or `viewing_atts` data to assign appropriate location-specific stage information.
-     * @param {Object <string, any>} message The message to be sent
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt
+     * @param message The message to be sent
+     * @param user The user state object, when the hunt was invoked (pre-hunt).
+     * @param user_post The user state object, after the hunt.
+     * @param hunt The journal entry corresponding to the active hunt
      */
-    function addStage(message, user, user_post, hunt) {
+    function addStage(message: IntakeMessage, user: User, user_post: User, hunt: JournalMarkup) {
         // IStagers
         const stager = location_stager_lookup[user.environment_name];
         if (stager) {
@@ -1062,8 +1064,7 @@ import * as stagers from './modules/stages';
         }
     }
 
-    /** @type { Object<string, import("./modules/details/details.types").IEnvironmentDetailer> } */
-    const location_detailer_lookup = {};
+    const location_detailer_lookup: Record<string, IEnvironmentDetailer> = {};
     for (const detailer of detailers.environmentDetailerModules) {
         location_detailer_lookup[detailer.environment] = detailer;
     }
@@ -1071,14 +1072,14 @@ import * as stagers from './modules/stages';
     /**
      * Determine additional detailed parameters that are otherwise only visible to db exports and custom views.
      * These details may eventually be migrated to help inform location-specific stages.
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} user The user state object, when the hunt was invoked (pre-hunt).
-     * @param {Object <string, any>} user_post The user state object, after the hunt.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
+     * @param message The message to be sent.
+     * @param user The user state object, when the hunt was invoked (pre-hunt).
+     * @param user_post The user state object, after the hunt.
+     * @param hunt The journal entry corresponding to the active hunt.
      */
-    function addHuntDetails(message, user, user_post, hunt) {
+    function addHuntDetails(message: IntakeMessage, user: User, user_post: User, hunt: JournalMarkup) {
         // First, get any location-specific details:
-        let locationHuntDetails = {};
+        let locationHuntDetails: Record<string, any> | undefined = {};
         const detailer = location_detailer_lookup[user.environment_name];
         if (detailer) {
             locationHuntDetails = detailer.addDetails(message, user, user_post, hunt);
@@ -1099,50 +1100,64 @@ import * as stagers from './modules/stages';
 
     /**
      * Extract loot information from the hunt's journal entry.
-     * @param {Object <string, any>} message The message to be sent.
-     * @param {Object <string, any>} hunt The journal entry corresponding to the active hunt.
-     * @param {Object <string, any>} inventory The inventory object in hg server response, has item info
+     * @param message The message to be sent.
+     * @param hunt The journal entry corresponding to the active hunt.
+     * @param inventory The inventory object in hg server response, has item info
      */
-    function addLoot(message, hunt, inventory) {
+    function addLoot(message: IntakeMessage, hunt: JournalMarkup, inventory: Inventory | undefined) {
+        const getItemFromInventoryByType = (itemType: string): InventoryItem | undefined => {
+            if (inventory != null && !Array.isArray(inventory)) {
+                return inventory[itemType];
+            }
+        };
+
         let hunt_description = hunt.render_data.text;
         if (!hunt_description.includes("following loot:")) { return; }
 
         hunt_description = hunt_description.substring(hunt_description.indexOf("following loot:") + 15);
-        const loot_array = hunt_description.split(/<\s*\/\s*a\s*>/g).filter(i => i);
-        message.loot = loot_array.map(item_text => {
-
-            let item_name = item_text.substring(item_text.indexOf("item_type=") + 10);
-            item_name = item_name.substring(0, item_name.indexOf('"'));
-            const item_amount = parseInt(item_text.match(/\d+[\d,]*/)[0].replace(/,/g, ''), 10);
+        // Use a stricter regex to split on closing anchor tags like </a> with optional whitespace
+        const loot_array = hunt_description.split(/<\/a\s*>/gi).filter(i => i.trim());
+        const lootList = [];
+        for (const item_text of loot_array) {
+            const item_name = /item\.php\?item_type=(.*?)"/.exec(item_text)?.[1];
+            const item_amount = parseHgInt(/\d+[\d,]*/.exec(item_text)?.[0] ?? '0');
             const plural_name = $($.parseHTML(item_text)).filter("a").text();
 
-            if (!Object.prototype.hasOwnProperty.call(inventory, item_name)) {
+            const inventory_item = getItemFromInventoryByType(item_name ?? '');
+            if (!inventory_item) {
                 logger.debug(`Looted "${item_name}", but it is not in user inventory`);
-                return null;
+                continue;
             }
+
             const loot_object = {
                 amount:      item_amount,
                 lucky:       item_text.includes('class="lucky"'),
-                id:          inventory[item_name].item_id,
-                name:        inventory[item_name].name,
+                id:          inventory_item.item_id,
+                name:        inventory_item.name,
                 plural_name: item_amount > 1 ? plural_name : '',
             };
 
             logger.debug("Loot object", {loot_object});
 
-            return loot_object;
-        }).filter(loot => loot);
+            lootList.push(loot_object);
+        }
+        message.loot = lootList;
     }
 
     function escapeButtonClose() {
-        if (userSettings['escape-button-close'] === false) {
+        if (userSettings['enhancement-escape-dismiss'] === false) {
             return;
         }
 
-        $(document).keyup(function (e) {
-            if (e.key === "Escape" && $('a[id*=jsDialogClose],input[class*=jsDialogClose],a[class*=messengerUINotificationClose],a[class*=closeButton],input[value*=Close]').length > 0) {
-                $('a[id*=jsDialogClose],input[class*=jsDialogClose],a[class*=messengerUINotificationClose],a[class*=closeButton],input[value*=Close]').each(function () {
-                    $(this).click();
+        $(document).on('keyup', (e: JQuery.KeyUpEvent) => {
+            const elements = $('a[id*=jsDialogClose],input[class*=jsDialogClose],a[class*=messengerUINotificationClose],a[class*=closeButton],input[value*=Close]');
+            if (elements.length === 0) {
+                return;
+            }
+
+            if (e.key === "Escape" && elements.length > 0) {
+                elements.each(function () {
+                    $(this).trigger('click');
                 });
             }
         });
@@ -1155,13 +1170,10 @@ import * as stagers from './modules/stages';
         // Tell content script we are done loading
         window.postMessage({
             mhct_finish_load: 1,
-        });
+        }, window.origin);
 
         logger.info(`Helper Extension version ${isDev ? "DEV" : mhhh_version} loaded! Good luck!`);
-        extensionLog.log(LogLevel.Info, `MHCT version ${isDev ? "DEV" : mhhh_version} loaded`);
-        extensionLog.log(LogLevel.Warn, `MHCT version ${isDev ? "DEV" : mhhh_version} loaded`);
-        extensionLog.log(LogLevel.Error, `MHCT version ${isDev ? "DEV" : mhhh_version} loaded`);
     }
 
-    main();
+    void main();
 }());

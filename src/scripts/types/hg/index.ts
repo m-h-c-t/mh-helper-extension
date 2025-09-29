@@ -1,6 +1,6 @@
 export * from './environmentAttributes';
 export * from './hgResponse';
-export * from './inventoryItem';
+export * from './inventory';
 export * from './journalMarkup';
 export * from './quests';
 export * from './renderData';

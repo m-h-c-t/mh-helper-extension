@@ -14,3 +14,10 @@ export const inventoryItemSchema = z.object({
 });
 
 export type InventoryItem = z.infer<typeof inventoryItemSchema>;
+
+export const inventorySchema = z.union([
+    z.record(z.string(), inventoryItemSchema),
+    z.tuple([]),
+]);
+
+export type Inventory = z.infer<typeof inventorySchema>;

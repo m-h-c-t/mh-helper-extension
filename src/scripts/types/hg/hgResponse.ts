@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {userSchema} from "./user";
 import {journalMarkupSchema} from "./journalMarkup";
-import {inventoryItemSchema} from "./inventoryItem";
+import {inventorySchema} from "./inventory";
 import {trapImageSchema} from "./trapImage";
 
 export const hgResponseSchema = z.object({
@@ -10,10 +10,7 @@ export const hgResponseSchema = z.object({
     success: z.union([z.literal(0), z.literal(1)]),
     active_turn: z.boolean().optional(),
     journal_markup: z.array(journalMarkupSchema).optional(),
-    inventory: z.union([
-        z.record(z.string(), inventoryItemSchema),
-        z.array(z.unknown()),
-    ]).optional(),
+    inventory: inventorySchema.optional(),
     trap_image: trapImageSchema.optional(),
 }).loose(); // Allow other unknown keys since many responses have extra data used elsewhere (e.g. ajax success handlers)
 

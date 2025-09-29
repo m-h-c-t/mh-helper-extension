@@ -14,12 +14,12 @@ describe('ConsoleLogger', () => {
     describe('log to console with correct level', () => {
         it('debug', () => {
             logger.debug();
-            expect(console.debug).toHaveBeenCalled();
+            expect(console.log).toHaveBeenCalled();
         });
 
         it('info', () => {
             logger.info();
-            expect(console.info).toHaveBeenCalled();
+            expect(console.log).toHaveBeenCalled();
         });
 
         it('warn', () => {
@@ -33,8 +33,8 @@ describe('ConsoleLogger', () => {
         });
     });
 
-    it('skips logging when level is high enough', () => {
-        logger = new ConsoleLogger(false, (level) => level >= LogLevel.Warn);
+    it('skips logging when level is too low', () => {
+        logger = new ConsoleLogger(false, (level) => level < LogLevel.Warn);
 
         logger.debug();
         logger.info();
@@ -49,7 +49,7 @@ describe('ConsoleLogger', () => {
 
     it('prefixes messages with MHCT:', () => {
         logger.info('snap!');
-        expect(console.info).toHaveBeenLastCalledWith('MHCT: snap!');
+        expect(console.log).toHaveBeenLastCalledWith('MHCT: snap!');
     });
 });
 

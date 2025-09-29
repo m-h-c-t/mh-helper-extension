@@ -78,7 +78,7 @@ describe('validateMessage', () => {
     });
 
     it('rejects different locations', () => {
-        post.location!.name = "Real Location";
+        post.location.name = "Real Location";
         expect(engine.validateMessage(pre, post)).toBe(false);
     });
 
@@ -112,10 +112,10 @@ describe('validateMessage', () => {
     });
 
     it('exempts location and stage if realm ripper was caught', () => {
-        pre.location!.name = "Forbidden Grove";
+        pre.location.name = "Forbidden Grove";
         pre.stage = "Open";
         pre.mouse = "Realm Ripper";
-        post.location!.name = "Acolyte Realm";
+        post.location.name = "Acolyte Realm";
         expect(engine.validateMessage(pre, post)).toBe(true);
     });
 
