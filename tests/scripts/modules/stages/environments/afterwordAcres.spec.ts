@@ -3,7 +3,7 @@ import {User} from '@scripts/types/hg';
 import {BlightTier} from '@scripts/types/hg/quests/afterwordAcres';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 describe('AfterwordAcresStager', () => {
     let stager: AfterwordAcresStager;

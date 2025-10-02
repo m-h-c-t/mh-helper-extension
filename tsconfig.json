@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
-    "target": "es6",
-    "module": "commonjs",
+    "target": "ES2020",
+    "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "dist/scripts",
     "strict": true,
@@ -21,7 +21,19 @@
     "paths": {
       "@scripts/*":["./src/scripts/*"],
       "@tests/*": ["./tests/*"]
-    }
+    },
+    "types": [
+      "chrome",
+      "jquery",
+      // TODO: Migrate tests away from globals
+      "vitest/globals"
+    ]
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

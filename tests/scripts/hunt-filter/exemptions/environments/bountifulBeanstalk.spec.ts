@@ -16,7 +16,7 @@ describe('Bountiful Beanstalk exemptions', () => {
         stager = new BountifulBeanstalkStager();
         target = new IntakeRejectionEngine(logger);
 
-        logger.debug = jest.fn();
+        logger.debug = vi.fn();
     });
 
     describe('validateMessage', () => {

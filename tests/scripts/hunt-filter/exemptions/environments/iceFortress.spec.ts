@@ -15,7 +15,7 @@ describe('Ice Fortress exemptions', () => {
         stager = new IceFortressStager();
         target = new IntakeRejectionEngine(logger);
 
-        logger.debug = jest.fn();
+        logger.debug = vi.fn();
     });
 
     describe('validateMessage', () => {

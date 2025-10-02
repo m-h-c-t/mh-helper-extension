@@ -15,7 +15,7 @@ describe('Claw Shot City exemptions', () => {
         stager = new ClawShotCityStager();
         target = new IntakeRejectionEngine(logger);
 
-        logger.debug = jest.fn();
+        logger.debug = vi.fn();
     });
 
     describe('validateMessage', () => {

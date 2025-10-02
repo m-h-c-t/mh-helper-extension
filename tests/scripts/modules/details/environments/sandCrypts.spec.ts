@@ -2,7 +2,7 @@ import {SandCryptsDetailer} from '@scripts/modules/details/environments/sandCryp
 import {User, JournalMarkup} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 describe('SandCryptsDetailer', () => {
     const message = mock<IntakeMessage>();

@@ -6,7 +6,7 @@ describe('EnvironmentService', () => {
     process.env.ENV = 'development';
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('getBaseUrl', () => {

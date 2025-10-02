@@ -2,16 +2,16 @@ import {getUnixTimestamp} from "@scripts/util/time";
 
 describe('getUnixTimetamp', () => {
     beforeEach(() => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
     });
 
     afterEach(() => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it('should return the number of seconds since epoch', () => {
         const millisecondsSinceEpoch = 42000;
-        jest.setSystemTime(millisecondsSinceEpoch);
+        vi.setSystemTime(millisecondsSinceEpoch);
 
         expect(getUnixTimestamp()).toBe(42);
     });

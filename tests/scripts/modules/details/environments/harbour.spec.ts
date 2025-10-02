@@ -2,7 +2,7 @@ import {HarbourDetailer} from '@scripts/modules/details/environments/harbour';
 import {User, JournalMarkup} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 describe('HarbourDetailer', () => {
     const message = mock<IntakeMessage>();

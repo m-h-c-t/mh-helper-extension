@@ -2,7 +2,7 @@ import {FieryWarpathDetailer} from '@scripts/modules/details/environments/fieryW
 import type {User, JournalMarkup, FieryWarpathViewingAttributes} from '@scripts/types/hg';
 import type {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 describe('FieryWarpathDetailer', () => {
     const message = mock<IntakeMessage>();

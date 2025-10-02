@@ -17,7 +17,7 @@ describe('Floating Islands exemptions', () => {
         stager = new FloatingIslandsStager();
         target = new IntakeRejectionEngine(logger);
 
-        logger.debug = jest.fn();
+        logger.debug = vi.fn();
     });
 
     describe('validateMessage', () => {

@@ -5,7 +5,7 @@ import {RapidZoneType, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {LoggerService} from "@scripts/services/logging";
 import {HgResponseBuilder, IntakeMessageBuilder, UserBuilder} from '@tests/utility/builders';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 describe('Epilogue Falls exemptions', () => {
     const logger: LoggerService = mock<LoggerService>();

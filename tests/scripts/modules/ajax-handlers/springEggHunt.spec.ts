@@ -2,7 +2,7 @@ import {SEHAjaxHandler} from "@scripts/modules/ajax-handlers";
 import {SubmissionService} from "@scripts/services/submission.service";
 import {HgResponse} from "@scripts/types/hg";
 import {LoggerService} from "@scripts/services/logging";
-import {mock} from "jest-mock-extended";
+import {mock} from "vitest-mock-extended";
 
 const logger = mock<LoggerService>();
 const submissionService = mock<SubmissionService>();
@@ -12,7 +12,7 @@ const sbfactory_url = "mousehuntgame.com/managers/ajax/events/spring_hunt.php";
 
 describe("SEHAjaxHandler", () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe("match", () => {

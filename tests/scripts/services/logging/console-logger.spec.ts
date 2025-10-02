@@ -6,7 +6,7 @@ describe('ConsoleLogger', () => {
     let logger: ConsoleLogger;
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         const isDev = true;
         logger = new ConsoleLogger(isDev);
     });
@@ -58,7 +58,7 @@ describe('ConsoleLogger', () => {
  */
 function mockConsole(): void {
     const consoleFuncsToMock: (keyof Console)[] = ['debug', 'info', 'log', 'warn', 'error'];
-    consoleFuncsToMock.map(v => {
-        global.console[v] = jest.fn();
+    consoleFuncsToMock.map(v => {;
+        global.console[v] = vi.fn();
     });
 }

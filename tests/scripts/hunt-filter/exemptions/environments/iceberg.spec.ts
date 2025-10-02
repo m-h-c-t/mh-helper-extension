@@ -16,7 +16,7 @@ describe('Iceberg exemptions', () => {
         stager = new IcebergStager();
         target = new IntakeRejectionEngine(logger);
 
-        logger.debug = jest.fn();
+        logger.debug = vi.fn();
     });
 
     describe('validateMessage', () => {
