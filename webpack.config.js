@@ -34,7 +34,7 @@ module.exports = () => {
             background: './src/scripts/background.ts',
             'content/content-message-handler': './src/scripts/content/content-message-handler.ts',
             content: './src/scripts/content.js',
-            main: './src/scripts/main.js',
+            main: './src/scripts/main.ts',
             options: './src/scripts/options.js',
             popup: './src/scripts/popup.js',
             theme: './src/scripts/theme.js',

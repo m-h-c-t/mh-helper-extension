@@ -1,43 +1,54 @@
+import {zodStrumber} from "@scripts/util/zod";
 import {z} from "zod";
 
-export interface IntakeMessage {
-    extension_version: number;
-    user_id: number;
-    entry_id: number;
-    entry_timestamp: number;
-    location: ComponentEntry | null;
-    shield: boolean;
-    total_power: number;
-    total_luck: number;
-    attraction_bonus: number;
-    stage?: unknown;
-    trap: ComponentEntry;
-    base: ComponentEntry;
-    cheese: ComponentEntry;
-    charm: ComponentEntry | null;
-    caught: number;
-    attracted: number;
-    mouse: string;
-    loot: Loot[];
-    auras: string[];
-}
+const componentEntrySchema = z.object({
+    id: zodStrumber,
+    name: z.string(),
+});
+
+const lootSchema = z.object({
+    id: zodStrumber,
+    name: z.string(),
+    amount: zodStrumber,
+    lucky: z.boolean(),
+    plural_name: z.string(),
+});
+
+// Things pulled directly from user and don't require transformation
+// i.e not stage, hunt, loot
+export const intakeMessageBaseSchema = z.object({
+    entry_timestamp: zodStrumber.optional(),
+    entry_id: zodStrumber,
+    location: componentEntrySchema,
+    shield: z.boolean(),
+    total_power: zodStrumber,
+    total_luck: zodStrumber,
+    attraction_bonus: zodStrumber,
+    trap: componentEntrySchema,
+    base: componentEntrySchema,
+    cheese: componentEntrySchema,
+    charm: componentEntrySchema.nullable(),
+    caught: zodStrumber,
+    attracted: zodStrumber,
+    mouse: z.string(),
+    auras: z.array(z.string()),
+});
+
+export type IntakeMessageBase = z.infer<typeof intakeMessageBaseSchema>;
+
+export const intakeMessageSchema = intakeMessageBaseSchema.extend({
+    stage: z.unknown().optional(),
+    hunt_details: z.record(z.string(), z.unknown()),
+    loot: z.array(lootSchema),
+});
+
+export type IntakeMessage = z.infer<typeof intakeMessageSchema>;
 
 /**
  * An object with an numbered id and string name.
  */
 // This may need to be ComponentEntry<TId, TName> if id needs to be not a number
-export interface ComponentEntry {
-    id: number;
-    name: string;
-}
-
-interface Loot {
-    id: number;
-    name: string;
-    amount: number;
-    lucky: boolean;
-    plural_name: string;
-}
+export type ComponentEntry = z.infer<typeof componentEntrySchema>;
 
 /**
  * An object opened (convertible) or recieved (convertible contents)

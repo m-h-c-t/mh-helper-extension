@@ -24,16 +24,6 @@ export default tseslint.config(
             }
         }
     },
-    {
-        files: ['**/main.js'],
-        languageOptions: {
-            globals: {
-                $: 'readonly',
-                user: 'readonly',
-                lastReadJournalEntryId: 'readonly',
-            }
-        }
-    },
 
     {
         // This projects preferred rules

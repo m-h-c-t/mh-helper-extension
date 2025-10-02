@@ -35,7 +35,6 @@ export class SubmissionService {
             return;
         }
 
-        // @ts-expect-error No index signature
         await this.postData(this.environmentService.getMainIntakeUrl(), hunt);
     }
 
@@ -63,6 +62,17 @@ export class SubmissionService {
         await this.postData(this.environmentService.getRhIntakeUrl(), {
             hint,
         });
+    }
+
+    async submitRelicHunterSighting(sighting:{
+        rh_environment: string;
+        entry_timestamp: number;
+    }): Promise<void> {
+        if (this.userSettings['tracking-events'] === false) {
+            return;
+        }
+
+        await this.postData(this.environmentService.getRhIntakeUrl(), sighting);
     }
 
     async submitTreasureMap(map: {

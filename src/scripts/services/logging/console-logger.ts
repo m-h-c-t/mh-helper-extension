@@ -3,6 +3,10 @@ import {LoggerService} from "./logger.service";
 
 export class ConsoleLogger implements LoggerService {
 
+    /**
+     * @param isDev Whether or not we're in a dev environment (enables debug logging)
+     * @param filter A function to filter log messages by level (return true to skip logging)
+     */
     public constructor(
         private isDev: boolean,
         private filter: ((level: LogLevel) => boolean) | null = null,
@@ -29,7 +33,7 @@ export class ConsoleLogger implements LoggerService {
     }
 
     log(level: LogLevel, message?: unknown, ...args: unknown[]): void {
-        if (this.filter != null && !this.filter(level)) {
+        if (this.filter?.(level)) {
             return;
         }
 
@@ -39,10 +43,10 @@ export class ConsoleLogger implements LoggerService {
 
         switch (level) {
             case LogLevel.Debug:
-                console.debug(message, ...args);
+                console.log(message, ...args);
                 break;
             case LogLevel.Info:
-                console.info(message, ...args);
+                console.log(message, ...args);
                 break;
             case LogLevel.Warn:
                 console.warn(message, ...args);
@@ -51,7 +55,6 @@ export class ConsoleLogger implements LoggerService {
                 console.error(message, ...args);
                 break;
             default:
-                console.log(message, ...args);
                 break;
         }
     }
@@ -77,7 +80,7 @@ export class ConsoleLogger implements LoggerService {
             },
         });
 
-        this.info(`${measureName} took ${measure.duration}`, properties);
+        this.debug(`${measureName} took ${measure.duration}`, properties);
         return measure;
     }
 
@@ -90,7 +93,7 @@ export class ConsoleLogger implements LoggerService {
             },
         });
 
-        this.info(mark.name, new Date().toISOString());
+        this.debug(mark.name, new Date().toISOString());
 
         return mark;
     }

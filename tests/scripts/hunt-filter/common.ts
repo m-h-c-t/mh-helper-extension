@@ -49,9 +49,7 @@ export function getDefaultUser(): User {
 
 export function getDefaultIntakeMessage(): IntakeMessage {
     return {
-        extension_version: 0,
         entry_timestamp: 0,
-        user_id: 0,
         entry_id: 0,
         location: {
             id: 0,
@@ -81,6 +79,7 @@ export function getDefaultIntakeMessage(): IntakeMessage {
         caught: 0,
         attracted: 0,
         mouse: '',
+        hunt_details: {},
         loot: [],
         auras: [],
     };
