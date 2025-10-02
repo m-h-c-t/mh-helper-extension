@@ -5,14 +5,14 @@ import {LoggerService} from "@scripts/services/logging";
 import {CustomConvertibleIds} from "@scripts/util/constants";
 import {getItemsByClass} from "@scripts/util/hgFunctions";
 import {HgResponseBuilder} from "@tests/utility/builders";
-import {mock} from "jest-mock-extended";
+import {mock} from "vitest-mock-extended";
 
-jest.mock('@scripts/util/hgFunctions');
+vi.mock('@scripts/util/hgFunctions');
 
 const logger = mock<LoggerService>();
 const submissionService = mock<SubmissionService>();
 const handler = new SpookyShuffleAjaxHandler(logger, submissionService);
-const mockedGetItemsByClass = jest.mocked(getItemsByClass);
+const mockedGetItemsByClass = vi.mocked(getItemsByClass);
 
 const spookyShuffle_url = "mousehuntgame.com/managers/ajax/events/spooky_shuffle.php";
 
@@ -21,8 +21,8 @@ describe("SpookyShuffleAjaxHandler", () => {
     const responseBuilder = new HgResponseBuilder();
 
     beforeEach(() => {
-        jest.clearAllMocks();
-        jest.resetModules();
+        vi.clearAllMocks();
+        vi.resetModules();
     });
 
     describe("match", () => {

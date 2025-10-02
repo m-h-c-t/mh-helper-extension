@@ -1,4 +1,4 @@
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 import {LoggerService} from "@scripts/services/logging";
 import {SubmissionService} from '@scripts/services/submission.service';
 import {UseConvertibleAjaxHandler} from '@scripts/modules/ajax-handlers/useConvertible';
@@ -14,7 +14,7 @@ describe("UseConvertibleHandler", () => {
     let handler: UseConvertibleAjaxHandler;
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vitest.clearAllMocks();
 
         handler = new UseConvertibleAjaxHandler(logger, submissionService);
         responseBuilder = new HgResponseBuilder();

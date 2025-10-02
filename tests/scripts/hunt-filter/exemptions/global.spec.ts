@@ -12,7 +12,7 @@ describe('Global Exemptions', () => {
         logger = {} as LoggerService;
         target = new IntakeRejectionEngine(logger);
 
-        logger.debug = jest.fn();
+        logger.debug = vi.fn();
     });
 
     describe('validateMessage', () => {

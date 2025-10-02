@@ -2,7 +2,7 @@ import {BristleWoodsRiftDetailer} from '@scripts/modules/details/environments/br
 import {JournalMarkup, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 describe('BristleWoodsRiftDetailer', () => {
     const message = mock<IntakeMessage>();

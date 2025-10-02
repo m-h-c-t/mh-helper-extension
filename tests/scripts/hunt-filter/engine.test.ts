@@ -3,7 +3,7 @@ import {HgResponse, User} from '@scripts/types/hg';
 import {IntakeMessage} from '@scripts/types/mhct';
 import {LoggerService} from '@scripts/services/logging';
 import {getValidPreResponse, getValidPostResponse, getDefaultUser, getDefaultIntakeMessage} from './common';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 // Mock logger won't actually call console.log
 const logger = mock<LoggerService>();

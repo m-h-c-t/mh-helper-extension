@@ -3,7 +3,7 @@ import {JournalMarkup, User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 import {QuestFortRox} from "@scripts/types/hg/quests";
 import {UserBuilder} from "@tests/utility/builders";
-import {mock} from "jest-mock-extended";
+import {mock} from "vitest-mock-extended";
 
 describe('Fort Rox stages', () => {
     const message = mock<IntakeMessage>();

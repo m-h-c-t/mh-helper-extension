@@ -2,7 +2,7 @@
 
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import pluginJest from 'eslint-plugin-jest';
+import pluginVitest from 'eslint-plugin-vitest';
 import globals from 'globals';
 
 export default tseslint.config(
@@ -31,7 +31,7 @@ export default tseslint.config(
         rules: {
             'array-bracket-newline': ['error', 'consistent'],
             'comma-dangle': ['error', 'only-multiline'],
-            'indent': ['error', 4, { SwitchCase: 1, outerIIFEBody: 'off', }],
+            'indent': ['error', 4, {SwitchCase: 1, outerIIFEBody: 'off'}],
             'no-constant-binary-expression': ['error'],
             'no-unneeded-ternary': ['error'],
             'no-var': ['warn'],
@@ -40,7 +40,7 @@ export default tseslint.config(
             'object-curly-newline': ['error'],
             'prefer-const': ['error'],
             'semi': ['error', 'always'],
-            '@typescript-eslint/no-unused-vars': ['error', { args: 'none' }],
+            '@typescript-eslint/no-unused-vars': ['error', {args: 'none'}],
         }
     },
 
@@ -48,19 +48,16 @@ export default tseslint.config(
     {
         files: ['**/*.spec.ts'],
         plugins: {
-            jest: pluginJest
+            vitest: pluginVitest
         },
         languageOptions: {
-            globals: pluginJest.environments.globals.globals
+            globals: pluginVitest.environments.env.globals
         },
         rules: {
             '@typescript-eslint/no-unsafe-argument': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
             '@typescript-eslint/no-unused-xpressions': 'off',
-
-            // https://github.com/jest-community/eslint-plugin-jest/blob/main/docs/rules/unbound-method.md
             '@typescript-eslint/unbound-method': 'off',
-            'jest/unbound-method': 'error'
         }
     },
 

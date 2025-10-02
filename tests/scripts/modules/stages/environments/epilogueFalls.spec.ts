@@ -2,7 +2,7 @@ import {IntakeMessage} from "@scripts/types/mhct";
 import {User} from "@scripts/types/hg";
 import {UserBuilder} from "@tests/utility/builders";
 import {EpilogueFallsStager} from "@scripts/modules/stages/environments/epilogueFalls";
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 import {RapidZoneType} from "@scripts/types/hg/quests/epilogueFalls";
 
 describe("EpilogueFallsStager", () => {

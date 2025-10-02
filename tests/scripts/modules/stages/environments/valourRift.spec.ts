@@ -2,7 +2,7 @@ import {ValourRiftStager} from "@scripts/modules/stages/environments/valourRift"
 import {JournalMarkup, User} from "@scripts/types/hg";
 import {IntakeMessage} from "@scripts/types/mhct";
 import {QuestRiftValour} from "@scripts/types/hg/quests";
-import {mock} from "jest-mock-extended";
+import {mock} from "vitest-mock-extended";
 import {UserBuilder} from "@tests/utility/builders";
 
 describe('Valour Rift stages', () => {

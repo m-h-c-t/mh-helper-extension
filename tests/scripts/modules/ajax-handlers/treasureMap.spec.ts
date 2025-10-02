@@ -4,7 +4,7 @@ import {TreasureMap, TreasureMapInventory} from "@scripts/types/hg/treasureMap";
 import {HgResponse} from "@scripts/types/hg";
 import {HgResponseBuilder} from "@tests/utility/builders";
 import {LoggerService} from "@scripts/services/logging";
-import {mock} from "jest-mock-extended";
+import {mock} from "vitest-mock-extended";
 
 class TreasureMapResponseBuilder extends HgResponseBuilder {
     treasure_map_inventory?: {
@@ -61,7 +61,7 @@ describe("TreasureMapHandler", () => {
     const treasureMapUrl = "mousehuntgame.com/managers/ajax/users/treasuremap_v2.php";
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
         responseBuilder = new TreasureMapResponseBuilder();
         handler = new TreasureMapHandler(logger, submissionService);

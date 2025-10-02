@@ -4,7 +4,7 @@ import {SubmissionService} from "@scripts/services/submission.service";
 import {InventoryItem} from "@scripts/types/hg";
 import {LoggerService} from "@scripts/services/logging";
 import {HgResponseBuilder} from "@tests/utility/builders";
-import {mock} from "jest-mock-extended";
+import {mock} from "vitest-mock-extended";
 
 const logger = mock<LoggerService>();
 const submissionService = mock<SubmissionService>();
@@ -17,7 +17,7 @@ describe("SBFactoryAjaxHandler", () => {
     const responseBuilder = new HgResponseBuilder();
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe("match", () => {

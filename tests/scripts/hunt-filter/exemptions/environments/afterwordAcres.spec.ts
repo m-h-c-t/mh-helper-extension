@@ -7,7 +7,7 @@ import {IntakeMessage} from '@scripts/types/mhct';
 import {LoggerService} from "@scripts/services/logging";
 import {getDefaultIntakeMessage} from '@tests/scripts/hunt-filter/common';
 import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 describe('Afterword Acres exemptions', () => {
     const logger: LoggerService = mock<LoggerService>();

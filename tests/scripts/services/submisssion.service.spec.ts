@@ -4,21 +4,16 @@ import {EnvironmentService} from '@scripts/services/environment.service';
 import {ApiService} from '@scripts/services/api.service';
 import {HgItem, IntakeMessage} from '@scripts/types/mhct';
 import * as timeUtils from '@scripts/util/time';
-import {mock} from 'jest-mock-extended';
-
-// Mock dependencies
-jest.mock('@scripts/services/environment.service');
-jest.mock('@scripts/services/api.service');
-jest.mock('@scripts/util/time');
+import {mock} from 'vitest-mock-extended';
 
 describe('SubmissionService', () => {
-    const mockLogger = mock<LoggerService>();
     let service: SubmissionService;
-    let mockEnvironmentService: jest.Mocked<EnvironmentService>;
-    let mockApiService: jest.Mocked<ApiService>;
-    let mockGetSettings: jest.Mock;
-    let mockGetBasicInfo: jest.Mock;
-    let mockShowFlashMessage: jest.Mock;
+    const mockLogger = mock<LoggerService>();
+    const mockEnvironmentService = mock<EnvironmentService>();
+    const mockApiService = mock<ApiService>();
+    const mockGetSettings = vi.fn();
+    const mockGetBasicInfo = vi.fn();
+    const mockShowFlashMessage = vi.fn();
     let mockUserSettings: Record<string, boolean>;
 
     const mockHunterInfo = {
@@ -29,37 +24,32 @@ describe('SubmissionService', () => {
     const testTimestamp = 1674000000;
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
-        mockEnvironmentService = {
-            getConvertibleIntakeUrl: jest.fn().mockReturnValue('convert-url'),
-            getMainIntakeUrl: jest.fn().mockReturnValue('main-url'),
-            getRejectionIntakeUrl: jest.fn().mockReturnValue('rejection-url'),
-            getRhIntakeUrl: jest.fn().mockReturnValue('rh-url'),
-            getMapIntakeUrl: jest.fn().mockReturnValue('map-url'),
-            getUuidUrl: jest.fn().mockReturnValue('uuid-url')
-        } as unknown as jest.Mocked<EnvironmentService>;
+        mockEnvironmentService.getConvertibleIntakeUrl.mockReturnValue('convert-url');
+        mockEnvironmentService.getMainIntakeUrl.mockReturnValue('main-url');
+        mockEnvironmentService.getRejectionIntakeUrl.mockReturnValue('rejection-url');
+        mockEnvironmentService.getRhIntakeUrl.mockReturnValue('rh-url');
+        mockEnvironmentService.getMapIntakeUrl.mockReturnValue('map-url');
+        mockEnvironmentService.getUuidUrl.mockReturnValue('uuid-url');
 
-        mockApiService = {
-            send: jest.fn().mockImplementation((method, url, body) => {
-                if (url === 'uuid-url') {
-                    return Promise.resolve('test-uuid');
-                } else {
-                    return Promise.resolve({success: true, message: 'Success message', status: 'success'});
-                }
-            })
-        } as unknown as jest.Mocked<ApiService>;
+        mockApiService.send.mockImplementation((method, url, body) => {
+            if (url === 'uuid-url') {
+                return Promise.resolve('test-uuid');
+            } else {
+                return Promise.resolve({success: true, message: 'Success message', status: 'success'});
+            }
+        });
 
         mockUserSettings = {
             'tracking-events': true,
             'tracking-convertibles': true
         };
 
-        mockGetSettings = jest.fn().mockResolvedValue(mockUserSettings);
-        mockGetBasicInfo = jest.fn().mockReturnValue(mockHunterInfo);
-        mockShowFlashMessage = jest.fn();
+        mockGetSettings.mockResolvedValue(mockUserSettings);
+        mockGetBasicInfo.mockReturnValue(mockHunterInfo);
 
-        jest.spyOn(timeUtils, 'getUnixTimestamp').mockReturnValue(testTimestamp);
+        vi.spyOn(timeUtils, 'getUnixTimestamp').mockReturnValue(testTimestamp);
 
         // Create the service instance
         service = new SubmissionService(
@@ -131,7 +121,7 @@ describe('SubmissionService', () => {
                 mockLogger,
                 mockEnvironmentService,
                 mockApiService,
-                jest.fn().mockResolvedValue(mockUserSettings),
+                vi.fn().mockResolvedValue(mockUserSettings),
                 mockGetBasicInfo,
                 mockShowFlashMessage
             );
@@ -166,7 +156,7 @@ describe('SubmissionService', () => {
                 mockLogger,
                 mockEnvironmentService,
                 mockApiService,
-                jest.fn().mockResolvedValue(mockUserSettings),
+                vi.fn().mockResolvedValue(mockUserSettings),
                 mockGetBasicInfo,
                 mockShowFlashMessage
             );
@@ -210,7 +200,7 @@ describe('SubmissionService', () => {
                 mockLogger,
                 mockEnvironmentService,
                 mockApiService,
-                jest.fn().mockResolvedValue(mockUserSettings),
+                vi.fn().mockResolvedValue(mockUserSettings),
                 mockGetBasicInfo,
                 mockShowFlashMessage
             );
@@ -257,7 +247,7 @@ describe('SubmissionService', () => {
                 mockLogger,
                 mockEnvironmentService,
                 mockApiService,
-                jest.fn().mockResolvedValue(mockUserSettings),
+                vi.fn().mockResolvedValue(mockUserSettings),
                 mockGetBasicInfo,
                 mockShowFlashMessage
             );
@@ -323,7 +313,7 @@ describe('SubmissionService', () => {
                 mockLogger,
                 mockEnvironmentService,
                 mockApiService,
-                jest.fn().mockResolvedValue(mockUserSettings),
+                vi.fn().mockResolvedValue(mockUserSettings),
                 mockGetBasicInfo,
                 mockShowFlashMessage
             );
@@ -346,10 +336,6 @@ describe('SubmissionService', () => {
                 timestamp: testTimestamp
             }
         };
-
-        beforeEach(() => {
-            mockEnvironmentService.getRejectionIntakeUrl = jest.fn().mockReturnValue('rejection-url');
-        });
 
         it('submits rejection data when tracking-hunts is enabled', async () => {
             await service.submitRejection(rejection);
@@ -396,7 +382,7 @@ describe('SubmissionService', () => {
                 mockLogger,
                 mockEnvironmentService,
                 mockApiService,
-                jest.fn().mockResolvedValue(mockUserSettings),
+                vi.fn().mockResolvedValue(mockUserSettings),
                 mockGetBasicInfo,
                 mockShowFlashMessage
             );

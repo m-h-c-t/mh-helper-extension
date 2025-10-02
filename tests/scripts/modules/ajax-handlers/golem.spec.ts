@@ -3,17 +3,17 @@ import type {GolemPayload, GolemResponse} from '@scripts/modules/ajax-handlers/g
 import {HgResponse} from '@scripts/types/hg';
 import {LoggerService} from '@scripts/services/logging';
 import {HgResponseBuilder} from '@tests/utility/builders';
-import {mock} from 'jest-mock-extended';
+import {mock} from 'vitest-mock-extended';
 
 const logger = mock<LoggerService>();
-const showFlashMessage = jest.fn();
+const showFlashMessage = vi.fn();
 const handler = new GWHGolemAjaxHandler(logger, showFlashMessage);
 
 const gwhURL = 'mousehuntgame.com/managers/ajax/events/winter_hunt_region.php';
 
 describe('GWHGolemAjaxHandler', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('match', () => {
@@ -28,7 +28,7 @@ describe('GWHGolemAjaxHandler', () => {
 
     describe('execute', () => {
         it('does not call submitGolems with unhandled json', async () => {
-            handler.submitGolems = jest.fn();
+            handler.submitGolems = vi.fn();
 
             await handler.execute({} as unknown as HgResponse);
 
@@ -45,8 +45,8 @@ describe('GWHGolemAjaxHandler', () => {
                 ...builder.build(),
                 golem_rewards: testResponses.prologuePondResponse.golem_rewards,
             };
-            Date.now = jest.fn(() => 12345);
-            handler.submitGolems = jest.fn();
+            Date.now = vi.fn(() => 12345);
+            handler.submitGolems = vi.fn();
 
             await handler.execute(response);
 
