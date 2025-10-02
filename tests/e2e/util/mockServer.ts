@@ -85,10 +85,10 @@ export default class MockServer {
         url: string,
         timeout = 5000)
     {
-        let timer: number | undefined;
+        let timer: NodeJS.Timeout | undefined;
         return Promise.race([
-            new Promise<never>((reject) => {
-                timer = setTimeout(reject, timeout);
+            new Promise<never>((_, reject) => {
+                timer = setTimeout(() => reject(new Error(`Timeout waiting for ${event} ${url}`)), timeout);
             }),
             new Promise<HttpRequestEventMap[EventName][0]>(resolve => {
 

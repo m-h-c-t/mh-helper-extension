@@ -5,6 +5,9 @@ export default defineConfig({
     plugins: [tsConfigPaths()],
     test: {
         globals: true,
+        coverage: {
+            provider: 'v8'
+        },
         projects: [
             {
                 extends: true,
