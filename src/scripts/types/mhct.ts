@@ -14,6 +14,8 @@ const lootSchema = z.object({
     plural_name: z.string(),
 });
 
+export type Loot = z.infer<typeof lootSchema>;
+
 // Things pulled directly from user and don't require transformation
 // i.e not stage, hunt, loot
 export const intakeMessageBaseSchema = z.object({
@@ -31,7 +33,7 @@ export const intakeMessageBaseSchema = z.object({
     caught: zodStrumber,
     attracted: zodStrumber,
     mouse: z.string(),
-    auras: z.array(z.string()),
+    auras: z.array(z.string()).optional(),
 });
 
 export type IntakeMessageBase = z.infer<typeof intakeMessageBaseSchema>;
@@ -39,10 +41,16 @@ export type IntakeMessageBase = z.infer<typeof intakeMessageBaseSchema>;
 export const intakeMessageSchema = intakeMessageBaseSchema.extend({
     stage: z.unknown().optional(),
     hunt_details: z.record(z.string(), z.unknown()),
-    loot: z.array(lootSchema),
+    loot: z.array(lootSchema).optional(),
 });
 
 export type IntakeMessage = z.infer<typeof intakeMessageSchema>;
+
+export interface ConvertibleMessage {
+    convertible: HgItem;
+    items: HgItem[];
+    asset_package_hash: number;
+}
 
 /**
  * An object with an numbered id and string name.
@@ -51,7 +59,7 @@ export type IntakeMessage = z.infer<typeof intakeMessageSchema>;
 export type ComponentEntry = z.infer<typeof componentEntrySchema>;
 
 /**
- * An object opened (convertible) or recieved (convertible contents)
+ * An object opened (convertible) or received (convertible contents)
  */
 export const hgItemSchema = z.object({
     /** HitGrab's ID for the id */
@@ -59,7 +67,7 @@ export const hgItemSchema = z.object({
     item_id: z.coerce.number().optional(),
     /** HitGrab's display name for the item */
     name: z.string(),
-    /** The number of items opened or recieved */
+    /** The number of items opened or received */
     quantity: z.coerce.number(),
 })
     .transform((val, ctx) => {

@@ -5,6 +5,9 @@ export default defineConfig({
     plugins: [tsConfigPaths()],
     test: {
         globals: true,
+        coverage: {
+            provider: 'v8'
+        },
         projects: [
             {
                 extends: true,
@@ -15,6 +18,23 @@ export default defineConfig({
                     exclude: [...configDefaults.exclude],
                 },
             },
+            {
+                extends: true,
+                test: {
+                    name: 'e2e',
+                    environment: 'happy-dom',
+                    include: ['tests/e2e/**/*.{test,spec}.{js,ts,tsx}'],
+                    testTimeout: 60000,
+                    setupFiles: [
+                        './tests/e2e/util/setup-env.ts'
+                    ],
+                    environmentOptions: {
+                        'happyDOM': {
+                            url: 'https://www.mousehuntgame.com/',
+                        }
+                    }
+                },
+            }
         ]
     },
 });

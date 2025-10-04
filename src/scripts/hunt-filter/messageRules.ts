@@ -61,8 +61,21 @@ class IntakeMessageSameAuras implements IPropertyRule<IntakeMessage> {
     readonly description = "Auras should not change";
     readonly property = "auras";
     isValid(pre: IntakeMessage, post: IntakeMessage): boolean {
-        return pre.auras.length === post.auras.length
-            && pre.auras.every(a => post.auras.includes(a));
+        if (pre.auras == null && post.auras == null) {
+            return true;
+        }
+
+        if ((pre.auras == null) !== (post.auras == null)) {
+            return false;
+        }
+
+        // Compare array lengths
+        if (pre.auras!.length !== post.auras!.length) {
+            return false;
+        }
+
+        return pre.auras!.every((aura) => post.auras!.includes(aura))
+            && post.auras!.every((aura) => pre.auras!.includes(aura));
     }
 }
 

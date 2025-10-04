@@ -1,5 +1,7 @@
-import {HgResponse, InventoryItem, JournalMarkup, Quests, User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import {HgConvertibleResponse, HgResponse, InventoryItem, JournalMarkup, Quests, User} from "@scripts/types/hg";
+import {ConvertibleMessage, IntakeMessage, Loot} from "@scripts/types/mhct";
+import {StringyObject} from "./stringyObject";
+import {ConvertibleOpen} from "@scripts/types/hg/convertibleOpen";
 
 function clone<T>(obj: T): T {
     if (obj === undefined || obj === null) {
@@ -74,8 +76,6 @@ export class HgResponseBuilder {
             }
         }];
 
-        this.trapImage ??= {auras: {}};
-
         return {
             success: 1,
             active_turn: this.activeTurn,
@@ -85,6 +85,61 @@ export class HgResponseBuilder {
             inventory: clone(this.inventory),
             trap_image: clone(this.trapImage),
             ...clone(this.unknown),
+        };
+    }
+}
+
+export class HgConvertibleResponseBuilder extends HgResponseBuilder {
+
+    convertibleOpen?: ConvertibleOpen;
+    items?: Record<string, InventoryItem>;
+
+    withConvertible(args: {
+        convertible: InventoryItem,
+        items: (InventoryItem & { pluralized_name?: string })[]
+    }) {
+        const convertible = clone(args.convertible);
+        const items = clone(args.items);
+
+        this.convertibleOpen = {
+            ...convertible,
+            items: items.map((v, i) => ({
+                type: v.type,
+                name: v.name,
+                pluralized_name: v.pluralized_name,
+                quantity: v.quantity,
+            }))
+        };
+        this.items = {
+            [convertible.type]: convertible,
+        };
+        this.inventory = {
+            [convertible.type]: convertible,
+            ...items.reduce((acc, cur) => {
+                delete cur.pluralized_name;
+                acc[cur.type] = cur;
+                return acc;
+            }, {} as Record<string, InventoryItem>),
+        };
+
+        return this;
+    }
+
+    build(): HgConvertibleResponse {
+        const base = super.build();
+
+        if (this.convertibleOpen == null) {
+            throw new Error('ConvertibleOpen must be set');
+        }
+
+        if (this.items == null) {
+            throw new Error('Items must be set');
+        }
+
+        return {
+            ...base,
+            convertible_open: this.convertibleOpen,
+            items: this.items,
         };
     }
 }
@@ -103,7 +158,8 @@ export class UserBuilder {
     identification: UserIdentification = {
         user_id: 1,
         sn_user_id: '2',
-        unique_hash: 'hashbrowns',
+        // sha512 of user_id: 1
+        unique_hash: '4dff4ea340f0a823f15d3f4f01ab62eae0e5da579ccb851f8db9dfe84c58b2b37b89903a740e1ee172da793a6e79d560e5f7f9bd058a12a280433ed6fa46510a',
         has_shield: true,
     };
 
@@ -219,7 +275,19 @@ export class UserBuilder {
 
 export class IntakeMessageBuilder {
 
+    auras?: string[];
+    loot?: Loot[];
     stage: unknown;
+
+    withAuras(auras: string[]) {
+        this.auras = auras;
+        return this;
+    }
+
+    withLoot(loot: Loot[]) {
+        this.loot = loot;
+        return this;
+    }
 
     withStage(stage: unknown) {
         this.stage = stage;
@@ -233,10 +301,10 @@ export class IntakeMessageBuilder {
 
         const renderData = response.journal_markup[0].render_data;
 
-        const message = {
+        const message: Partial<StringyObject<IntakeMessage>> & Record<string, unknown> = {
             uuid: '1',
             extension_version: '0',
-            hunter_id_hash: '01020304',
+            hunter_id_hash: '4dff4ea340f0a823f15d3f4f01ab62eae0e5da579ccb851f8db9dfe84c58b2b37b89903a740e1ee172da793a6e79d560e5f7f9bd058a12a280433ed6fa46510a',
             entry_timestamp: renderData.entry_timestamp.toString(),
             location: {
                 id: `${response.user.environment_id}`,
@@ -268,15 +336,65 @@ export class IntakeMessageBuilder {
             caught: '1',
             attracted: '1',
             hunt_details: {
+                is_lucky_catch: 'false'
             },
-            loot: [],
-            auras: []
-        } as unknown as IntakeMessage;
+        };
+
+        if (this.auras) {
+            message.auras = this.auras;
+        }
+
+        if (this.loot) {
+            message.loot = this.loot.map(v => ({
+                id: `${v.id}`,
+                name: v.name,
+                amount: `${v.amount}`,
+                lucky: `${v.lucky}`,
+                plural_name: v.plural_name,
+            }));
+        }
 
         if (this.stage) {
             message.stage = this.stage;
         }
 
+        // @ts-expect-error - Partial<StringyObject<IntakeMessage>> is not exactly IntakeMessage
+        return message;
+    }
+}
+
+export class ConvertibleMessageBuilder {
+
+    public build(response: HgConvertibleResponse): ConvertibleMessage {
+        const convertibleItem = response.items[response.convertible_open.type];
+
+        if (convertibleItem == null) {
+            throw new Error();
+        }
+
+        const message: Partial<StringyObject<ConvertibleMessage>> & Record<string, unknown> = {
+            convertible: {
+                id: `${convertibleItem.item_id}`,
+                name: `${convertibleItem.name}`,
+                quantity: `${convertibleItem.quantity}`,
+            },
+            items: response.convertible_open.items.map(v => {
+                return {
+                    // @ts-expect-error - response.items[v.type] may be undefined
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    id: `${response.inventory[v.type].item_id}`,
+                    name: v.name,
+                    quantity: `${v.quantity}`,
+                };
+            }),
+            uuid: '1',
+            entry_timestamp: '1212121',
+            asset_package_hash: '1212121000',
+            extension_version: '0',
+            hunter_id_hash: '4dff4ea340f0a823f15d3f4f01ab62eae0e5da579ccb851f8db9dfe84c58b2b37b89903a740e1ee172da793a6e79d560e5f7f9bd058a12a280433ed6fa46510a',
+        };
+
+        // @ts-expect-error - Partial<StringyObject<ConvertibleMessage>> is not exactly ConvertibleMessage
         return message;
     }
 }
