@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */ // mswjs correctly handles promise listeners internally
-import {BatchInterceptor, type ExtractEventNames} from '@mswjs/interceptors';
-import {XMLHttpRequestInterceptor} from '@mswjs/interceptors/XMLHttpRequest';
-import {FetchInterceptor} from '@mswjs/interceptors/fetch';
-import {hgResponseSchema, type HgResponse} from '@scripts/types/hg';
-import {Emitter} from 'strict-event-emitter';
-import {LoggerService} from './logging';
+import { BatchInterceptor, type ExtractEventNames } from '@mswjs/interceptors';
+import { FetchInterceptor } from '@mswjs/interceptors/fetch';
+import { XMLHttpRequestInterceptor } from '@mswjs/interceptors/XMLHttpRequest';
+import { hgResponseSchema, type HgResponse } from '@scripts/types/hg';
 import qs from 'qs';
+import { Emitter } from 'strict-event-emitter';
 import z from 'zod';
+
+import type { LoggerService } from './logging';
 
 export interface RequestEventParams {
     url: URL;
@@ -22,11 +23,11 @@ export interface ResponseEventParams extends RequestEventParams {
 type InterceptorEventMap = {
     request: [
         args: RequestEventParams
-    ],
+    ];
     response: [
         args: ResponseEventParams
-    ],
-}
+    ];
+};
 
 export interface RequestBody {
     [key: string]: undefined | string | RequestBody | (string | RequestBody)[];
@@ -50,6 +51,7 @@ export class InterceptorService {
             new FetchInterceptor(),
         ]
     });
+
     private emitter: Emitter<InterceptorEventMap>;
 
     constructor(private readonly logger: LoggerService) {
@@ -190,7 +192,7 @@ export class InterceptorService {
 
         return parsedUrl.origin === 'https://www.mousehuntgame.com'
             // TODO: Enable when hunter_hash is supported
-            //&& !parsedUrl.pathname.endsWith('/managers/ajax/users/session.php') // Ignore sensitive session calls
+            // && !parsedUrl.pathname.endsWith('/managers/ajax/users/session.php') // Ignore sensitive session calls
             && !parsedUrl.pathname.startsWith('/api/'); // Ignore mobile API calls
     }
 }

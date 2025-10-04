@@ -1,6 +1,7 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class TableOfContentsDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Table of Contents';

@@ -1,12 +1,17 @@
-import {Messenger} from '@scripts/content/messaging/messenger';
-import {ApiService} from '@scripts/services/api.service';
-import {InterceptorService, RequestBody} from '@scripts/services/interceptor.service';
-import {LoggerService, LogLevel} from '@scripts/services/logging';
-import {ForegroundMessageHandler} from '@scripts/services/message-handler/foreground-message-handler';
-import {HgResponse} from '@scripts/types/hg';
-import {z} from 'zod';
-import {CrownTrackerExtensionMessage, CrownTrackerMessages} from './tracker.types';
-import {ExtensionLog} from '../extension-log/extension-log';
+import type { Messenger } from '@scripts/content/messaging/messenger';
+import type { ApiService } from '@scripts/services/api.service';
+import type { InterceptorService, RequestBody } from '@scripts/services/interceptor.service';
+import type { LoggerService } from '@scripts/services/logging';
+import type { HgResponse } from '@scripts/types/hg';
+
+import { LogLevel } from '@scripts/services/logging';
+import { ForegroundMessageHandler } from '@scripts/services/message-handler/foreground-message-handler';
+import { z } from 'zod';
+
+import type { ExtensionLog } from '../extension-log/extension-log';
+import type { CrownTrackerExtensionMessage } from './tracker.types';
+
+import { CrownTrackerMessages } from './tracker.types';
 
 /**
  * Crown Tracker module to monitor and submit King's Crown data.
@@ -26,6 +31,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
         last_read_journal_entry_id: z.coerce.number(),
         uh: z.string(),
     }).strict(); // .strict() is used to ensure that no extra properties are present in the request
+
     // to differentiate between a plain profile request and a King's Crown request
     private readonly requestKingsCrownSchema = z.object({
         page_class: z.literal('HunterProfile'),
@@ -36,6 +42,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
         last_read_journal_entry_id: z.coerce.number(),
         uh: z.string(),
     });
+
     private readonly responseKingsCrownSchema = z.object({
         page: z.object({
             tabs: z.object({
@@ -57,6 +64,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
             }),
         }),
     });
+
     private lastSentRequestTime: Date = new Date();
     private lastSnuid: string | null = null;
 
@@ -93,7 +101,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
 
         const requestBody = parsedRequestResult.data;
         if (this.lastSnuid === requestBody.page_arguments.snuid) {
-            this.logger.debug("Skipping King's Crown request (already requested for this user)");
+            this.logger.debug('Skipping King\'s Crown request (already requested for this user)');
             return;
         }
 
@@ -101,22 +109,22 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
         const now = new Date();
         const timeSinceLastRequest = now.getTime() - this.lastSentRequestTime.getTime();
         if (timeSinceLastRequest < 5000) {
-            this.logger.debug("Skipping King's Crown request (throttled)");
+            this.logger.debug('Skipping King\'s Crown request (throttled)');
             return;
         }
 
         this.lastSentRequestTime = now;
         // Request King's Crowns
-        this.apiService.send("POST",
-            "/managers/ajax/pages/page.php",
+        this.apiService.send('POST',
+            '/managers/ajax/pages/page.php',
             {
-                sn: "Hitgrab",
-                hg_is_ajax: "1",
-                page_class: "HunterProfile",
+                sn: 'Hitgrab',
+                hg_is_ajax: '1',
+                page_class: 'HunterProfile',
                 page_arguments: {
-                    legacyMode: "",
-                    tab: "kings_crowns",
-                    sub_tab: "false",
+                    legacyMode: '',
+                    tab: 'kings_crowns',
+                    sub_tab: 'false',
                     snuid: requestBody.page_arguments.snuid,
                 },
                 last_read_journal_entry_id: requestBody.last_read_journal_entry_id,
@@ -124,7 +132,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
             },
             false,
         ).catch((error) => {
-            this.logger.error("Failed to send King's Crown request", error);
+            this.logger.error('Failed to send King\'s Crown request', error);
         });
     }
 
@@ -142,7 +150,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
         if (!parsedResponse.success) {
             this.logger.debug('Skipped crown submission due to unhandled XHR structure');
 
-            this.logger.warn("Unhandled King's Crown response structure", {
+            this.logger.warn('Unhandled King\'s Crown response structure', {
                 error: z.prettifyError(parsedResponse.error),
                 request: parsedRequest.data,
                 response: response,
@@ -188,7 +196,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
 
             message.crowns[badge.type] = badge.count;
         }
-        this.logger.debug("Crowns payload: ", message);
+        this.logger.debug('Crowns payload: ', message);
 
         // We need to create a forwarding message to prevent other extensions (e.g. Privacy Badger)
         // from blocking submissions by submitting from the background script.

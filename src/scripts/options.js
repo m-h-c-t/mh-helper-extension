@@ -1,5 +1,5 @@
-import {ConsoleLogger} from "./services/logging";
-import {SettingsService} from "./services/settings/settings.service";
+import { ConsoleLogger } from './services/logging';
+import { SettingsService } from './services/settings/settings.service';
 
 // eslint-disable-next-line no-undef
 const isDev = process.env.ENV === 'development';
@@ -8,31 +8,31 @@ const settingsService = new SettingsService(logger);
 
 let currentSettings;
 
-void settingsService.getAll().then(settings => {
+void settingsService.getAll().then((settings) => {
     currentSettings = settings;
     onUserSettingsReceived(settings);
 });
 
 function qs$(a, b) {
-    if ( typeof a === 'string') {
+    if (typeof a === 'string') {
         return document.querySelector(a);
     }
-    if ( a === null ) { return null; }
-    if ( b === null ) { return a; }
+    if (a === null) { return null; }
+    if (b === null) { return a; }
     return a.querySelector(b);
 }
 
 function qsa$(a, b) {
-    if ( typeof a === 'string') {
+    if (typeof a === 'string') {
         return document.querySelectorAll(a);
     }
-    if ( a === null ) { return []; }
+    if (a === null) { return []; }
     return a.querySelectorAll(b);
 }
 
 function onUserSettingsReceived(settings) {
     const checkboxes = qsa$('[data-setting-type="bool"]');
-    const onCheckboxChange = ev => {
+    const onCheckboxChange = (ev) => {
         const checkbox = ev.target;
         const name = checkbox.dataset.settingName || '';
         currentSettings[name] = checkbox.checked;
@@ -45,12 +45,12 @@ function onUserSettingsReceived(settings) {
         checkbox.addEventListener('change', onCheckboxChange);
     }
 
-    const onValueChange = ev => {
+    const onValueChange = (ev) => {
         const input = ev.target;
         const name = input.dataset.settingName || '';
         currentSettings[name] = input.value;
     };
-    qsa$('[data-setting-type="value"]').forEach(function(elem) {
+    qsa$('[data-setting-type="value"]').forEach(function (elem) {
         elem.value = settings[elem.dataset.settingName];
         elem.addEventListener('change', onValueChange);
     });
@@ -59,7 +59,7 @@ function onUserSettingsReceived(settings) {
 }
 
 function synchronizeDOM() {
-    qsa$('[data-hidden-until]').forEach(elem => {
+    qsa$('[data-hidden-until]').forEach((elem) => {
         const name = elem.dataset.hiddenUntil;
         const checkbox = document.querySelector(`input[data-setting-name="${name}"]`);
         if (checkbox.checked) {
@@ -69,7 +69,7 @@ function synchronizeDOM() {
         }
     });
 
-    qsa$('input[type="range"]').forEach(function(elem) {
+    qsa$('input[type="range"]').forEach(function (elem) {
         const output = document.querySelector(`output[for="${elem.id}"`);
         if (output) {
             output.value = elem.value;
@@ -84,18 +84,18 @@ document.getElementById('save').addEventListener('click', async () => {
     }
 
     const save_button = document.getElementById('save');
-    save_button.innerText = "Saved! (Refreshing MH Page)";
-    save_button.classList.remove("btn-primary");
-    save_button.classList.add("btn-success");
+    save_button.innerText = 'Saved! (Refreshing MH Page)';
+    save_button.classList.remove('btn-primary');
+    save_button.classList.add('btn-success');
     setTimeout(() => {
-        save_button.innerText = "Save";
-        save_button.classList.remove("btn-success");
-        save_button.classList.add("btn-primary");
+        save_button.innerText = 'Save';
+        save_button.classList.remove('btn-success');
+        save_button.classList.add('btn-primary');
     }, 2000);
 
     // Reload all open MH pages to apply these settings.
     void chrome.tabs.query(
-        {'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
+        {url: ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']},
         tabs => tabs.forEach(tab => chrome.tabs.reload(tab.id))
     );
 });
@@ -112,8 +112,8 @@ qsa$('input[type="range"]').forEach(
 
 // Attach audio handler for the horn sound alert button.
 // TODO: Update settings page to allow selecting a local file, rather than only choosing a remote URL.
-qs$("#play_sound").addEventListener('click', () => {
-    let file_path = document.querySelector("#custom_sound").value.trim();
+qs$('#play_sound').addEventListener('click', () => {
+    let file_path = document.querySelector('#custom_sound').value.trim();
     if (!file_path) {
         file_path = chrome.runtime.getURL('sounds/bell.mp3');
     }

@@ -1,5 +1,6 @@
-import {BrowserApi} from "@scripts/services/browser/browser-api";
-import {LoggerService} from "@scripts/services/logging";
+import type { LoggerService } from '@scripts/services/logging';
+
+import { BrowserApi } from '@scripts/services/browser/browser-api';
 
 /**
  * Generic extension message structure that all background handlers must implement
@@ -105,13 +106,13 @@ export abstract class BackgroundMessageHandler<
             // Call the handler with standardized parameters
             const messageResponse = handler({message, sender});
 
-            if (typeof messageResponse === "undefined") {
+            if (typeof messageResponse === 'undefined') {
                 return false;
             }
 
             // Handle both sync and async responses
             Promise.resolve(messageResponse)
-                .then((response) => sendResponse(response))
+                .then(response => sendResponse(response))
                 .catch((error) => {
                     this.logger.error(
                         `Error handling extension message for command '${message.command}'`,

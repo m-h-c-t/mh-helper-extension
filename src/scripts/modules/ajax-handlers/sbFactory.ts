@@ -1,11 +1,13 @@
-import {SubmissionService} from "@scripts/services/submission.service";
-import type {HgResponse} from "@scripts/types/hg";
-import type {HgItem} from "@scripts/types/mhct";
-import type {LoggerService} from "@scripts/services/logging";
-import {CustomConvertibleIds as Ids} from "@scripts/util/constants";
-import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {type VendingMachineReponse, type VendingMachinePurchaseType, vendingMachineResponseSchema} from "./sbFactory.types";
-import {z} from "zod";
+import type { LoggerService } from '@scripts/services/logging';
+import type { SubmissionService } from '@scripts/services/submission.service';
+import type { HgResponse } from '@scripts/types/hg';
+import type { HgItem } from '@scripts/types/mhct';
+
+import { CustomConvertibleIds as Ids } from '@scripts/util/constants';
+import { z } from 'zod';
+
+import { AjaxSuccessHandler } from './ajaxSuccessHandler';
+import { type VendingMachineReponse, type VendingMachinePurchaseType, vendingMachineResponseSchema } from './sbFactory.types';
 
 export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -25,7 +27,7 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
      * @returns True if this handler applies, otherwise false
      */
     match(url: string): boolean {
-        return url.includes("mousehuntgame.com/managers/ajax/events/birthday_factory.php");
+        return url.includes('mousehuntgame.com/managers/ajax/events/birthday_factory.php');
     }
 
     async execute(responseJSON: HgResponse): Promise<void> {
@@ -56,12 +58,12 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
 
         // Convert pack code names to made-up internal identifiers
         const packs: Record<VendingMachinePurchaseType, number> = {
-            larry_starter_mix_snack_pack:	Ids.LarryStarterMixSnackPack,
-            tribal_crunch_snack_pack:	Ids.TribalCrunchSnackPack,
-            wild_west_ranch_rings_snack_pack:	Ids.WildWestRanchRingsSnackPack,
-            sandy_bert_bites_snack_pack:	Ids.SandyBertBitesSnackPack,
-            hollow_heights_party_pack_snack_pack:	Ids.HollowHeightsPartyPackSnackPack,
-            riftios_snack_pack:	Ids.RiftiosSnackPack,
+            larry_starter_mix_snack_pack: Ids.LarryStarterMixSnackPack,
+            tribal_crunch_snack_pack: Ids.TribalCrunchSnackPack,
+            wild_west_ranch_rings_snack_pack: Ids.WildWestRanchRingsSnackPack,
+            sandy_bert_bites_snack_pack: Ids.SandyBertBitesSnackPack,
+            hollow_heights_party_pack_snack_pack: Ids.HollowHeightsPartyPackSnackPack,
+            riftios_snack_pack: Ids.RiftiosSnackPack,
             story_seeds_snack_pack: Ids.StorySeedsSnackPack,
             fantasy_fizz_snack_pack: Ids.FantasyFizzSnackPack,
         };
@@ -87,7 +89,7 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
         const items: HgItem[] = [];
 
         try {
-            purchase.items.forEach(item => {
+            purchase.items.forEach((item) => {
                 const inventoryItem = Object.values(inventory).find(i => i.name == item.name);
                 if (inventoryItem == null) {
                     this.logger.debug('Snack pack item missing from inventory', {inventory, item});
@@ -100,9 +102,8 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
                     quantity: item.quantity,
                 });
             });
-
         } catch (error) {
-            this.logger.warn((error as Error) .toString());
+            this.logger.warn((error as Error).toString());
             return;
         }
 
@@ -119,7 +120,7 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
         const response = vendingMachineResponseSchema.safeParse(responseJSON);
 
         if (!response.success) {
-            this.logger.warn("Unexpected vending machine response object.", z.prettifyError(response.error));
+            this.logger.warn('Unexpected vending machine response object.', z.prettifyError(response.error));
         }
 
         return response.success;

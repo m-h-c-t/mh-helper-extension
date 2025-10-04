@@ -1,8 +1,9 @@
-import {BristleWoodsRiftDetailer} from '@scripts/modules/details/environments/bristleWoodsRift';
-import {JournalMarkup, User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { BristleWoodsRiftDetailer } from '@scripts/modules/details/environments/bristleWoodsRift';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('BristleWoodsRiftDetailer', () => {
     const message = mock<IntakeMessage>();

@@ -1,5 +1,5 @@
-import {zodStrumber} from "@scripts/util/zod";
-import {z} from "zod";
+import { zodStrumber } from '@scripts/util/zod';
+import { z } from 'zod';
 
 const componentEntrySchema = z.object({
     id: zodStrumber,
@@ -76,7 +76,7 @@ export const hgItemSchema = z.object({
         if (id === undefined) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: "Either id or item_id must be set",
+                message: 'Either id or item_id must be set',
             });
             return z.NEVER;
         }

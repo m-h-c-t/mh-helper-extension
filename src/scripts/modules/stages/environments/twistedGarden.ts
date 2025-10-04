@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class TwistedGardenStager implements IStager {
     readonly environment: string = 'Twisted Garden';
@@ -15,6 +16,6 @@ export class TwistedGardenStager implements IStager {
         }
 
         const container_status = (quest.is_normal) ? quest.minigame.bucket_state : quest.minigame.vials_state;
-        message.stage = (container_status === "dumped") ? "Pouring" : "Not Pouring";
+        message.stage = (container_status === 'dumped') ? 'Pouring' : 'Not Pouring';
     }
 }

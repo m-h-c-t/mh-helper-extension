@@ -1,8 +1,9 @@
-import {SchoolOfSorceryStager} from "@scripts/modules/stages/environments/schoolOfSorcery";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import type {CourseSelection, CourseType, QuestSchoolOfSorcery} from "@scripts/types/hg/quests";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { CourseSelection, CourseType, QuestSchoolOfSorcery } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { SchoolOfSorceryStager } from '@scripts/modules/stages/environments/schoolOfSorcery';
 
 describe('School of Sorcery stages', () => {
     let stager: IStager;
@@ -40,10 +41,10 @@ describe('School of Sorcery stages', () => {
     });
 
     it.each<{courseType: CourseType, powerType: 'arcane' | 'shadow', expected: string}>([
-        {courseType: 'arcane_101_course',   powerType: 'arcane', expected: 'Arcane Arts'},
-        {courseType: 'shadow_101_course',   powerType: 'shadow', expected: 'Shadow Sciences'},
-        {courseType: 'exam_course',         powerType: 'arcane', expected: 'Final Exam - Arcane'},
-        {courseType: 'exam_course',         powerType: 'shadow', expected: 'Final Exam - Shadow'},
+        {courseType: 'arcane_101_course', powerType: 'arcane', expected: 'Arcane Arts'},
+        {courseType: 'shadow_101_course', powerType: 'shadow', expected: 'Shadow Sciences'},
+        {courseType: 'exam_course', powerType: 'arcane', expected: 'Final Exam - Arcane'},
+        {courseType: 'exam_course', powerType: 'shadow', expected: 'Final Exam - Shadow'},
     ])('should set stage to $expected when taking course $courseType', ({courseType, powerType, expected}) => {
         preUser.quests.QuestSchoolOfSorcery!.in_course = true;
         if (preUser.quests.QuestSchoolOfSorcery?.in_course) {
@@ -60,10 +61,10 @@ describe('School of Sorcery stages', () => {
     });
 
     it.each<{courseType: CourseType, powerType: 'arcane' | 'shadow', expected: string}>([
-        {courseType: 'arcane_101_course',   powerType: 'arcane', expected: 'Arcane Arts Boss'},
-        {courseType: 'shadow_101_course',   powerType: 'shadow', expected: 'Shadow Sciences Boss'},
-        {courseType: 'exam_course',         powerType: 'arcane', expected: 'Final Exam Boss'},
-        {courseType: 'exam_course',         powerType: 'shadow', expected: 'Final Exam Boss'},
+        {courseType: 'arcane_101_course', powerType: 'arcane', expected: 'Arcane Arts Boss'},
+        {courseType: 'shadow_101_course', powerType: 'shadow', expected: 'Shadow Sciences Boss'},
+        {courseType: 'exam_course', powerType: 'arcane', expected: 'Final Exam Boss'},
+        {courseType: 'exam_course', powerType: 'shadow', expected: 'Final Exam Boss'},
     ])('should set stage to $expected when encountering $courseType boss', ({courseType, powerType, expected}) => {
         preUser.quests.QuestSchoolOfSorcery!.in_course = true;
         if (preUser.quests.QuestSchoolOfSorcery?.in_course) {
@@ -78,7 +79,6 @@ describe('School of Sorcery stages', () => {
 
         expect(message.stage).toBe(expected);
     });
-
 });
 
 export function createCourseAttributes(course: {courseType: CourseType, powerType: 'arcane' | 'shadow'}, isBossEncounter = false): QuestSchoolOfSorcery {

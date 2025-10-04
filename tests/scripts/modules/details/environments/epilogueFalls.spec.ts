@@ -1,8 +1,9 @@
-import {EpilogueFallsDetailer} from '@scripts/modules/details/environments/epilogueFalls';
-import {User, JournalMarkup, RapidZoneType, RapidZoneName} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { User, JournalMarkup, RapidZoneType, RapidZoneName } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { EpilogueFallsDetailer } from '@scripts/modules/details/environments/epilogueFalls';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('EpilogueFallsDetailer', () => {
     let detailer: EpilogueFallsDetailer;
@@ -51,7 +52,7 @@ describe('EpilogueFallsDetailer', () => {
             expect(result).toBeUndefined();
         });
 
-        it.each<{ zoneType: RapidZoneType, zoneName: RapidZoneName, expectedQuality: "Sparse" | "Common" | "Abundant" }>([
+        it.each<{zoneType: RapidZoneType, zoneName: RapidZoneName, expectedQuality: 'Sparse' | 'Common' | 'Abundant'}>([
             {zoneType: 'low_morsel_zone', zoneName: 'Sparse Morsel Zone', expectedQuality: 'Sparse'},
             {zoneType: 'medium_algae_zone', zoneName: 'Common Algae Zone', expectedQuality: 'Common'},
             {zoneType: 'rich_halophyte_zone', zoneName: 'Abundant Halophyte Zone', expectedQuality: 'Abundant'}

@@ -1,4 +1,4 @@
-import {getUnixTimestamp} from "@scripts/util/time";
+import { getUnixTimestamp } from '@scripts/util/time';
 
 describe('getUnixTimetamp', () => {
     beforeEach(() => {

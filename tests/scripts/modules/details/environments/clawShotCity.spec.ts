@@ -1,8 +1,9 @@
-import {ClawShotCityDetailer} from '@scripts/modules/details/environments/clawShotCity';
-import {User, JournalMarkup} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { User, JournalMarkup } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { ClawShotCityDetailer } from '@scripts/modules/details/environments/clawShotCity';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('ClawShotCityDetailer', () => {
     const message = mock<IntakeMessage>();

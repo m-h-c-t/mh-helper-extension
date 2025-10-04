@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const questLabyrinthSchema = z.object({
     status: z.string(),

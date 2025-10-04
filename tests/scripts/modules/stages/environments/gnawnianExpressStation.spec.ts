@@ -1,8 +1,9 @@
-import {GnawnianExpressStationStager} from "@scripts/modules/stages/environments/gnawnianExpressStation";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {BoardingPhase, JumpPhase, OffTrain, QuestTrainStation, SupplyPhase, TroubleArea} from "@scripts/types/hg/quests";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { BoardingPhase, JumpPhase, OffTrain, QuestTrainStation, SupplyPhase, TroubleArea } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { GnawnianExpressStationStager } from '@scripts/modules/stages/environments/gnawnianExpressStation';
 
 describe('Gnawnian Express Station stages', () => {
     let stager: IStager;
@@ -40,7 +41,7 @@ describe('Gnawnian Express Station stages', () => {
     });
 
     it('should reject when pre and post on_train differ', () => {
-        message.location = {id: 0, name: "GES"}; // legacy rejects by setting location to null
+        message.location = {id: 0, name: 'GES'}; // legacy rejects by setting location to null
         preUser.quests.QuestTrainStation = createJumpPhaseAttributes();
         postUser.quests.QuestTrainStation = createOffTrainAttributes();
 
@@ -66,7 +67,6 @@ describe('Gnawnian Express Station stages', () => {
     });
 
     describe('Supply Depot', () => {
-
         it('should be Rush when more than zero supply hoarder turns', () => {
             preUser.quests.QuestTrainStation = createSuppyPhaseAttributes(1);
             postUser.quests.QuestTrainStation = createSuppyPhaseAttributes(1);
@@ -86,7 +86,7 @@ describe('Gnawnian Express Station stages', () => {
         });
 
         it('should be No Rush + SS Charm when zero supply hoarder turns with Supply Schedule Charm equipped', () => {
-            preUser.trinket_name = "Supply Schedule Charm";
+            preUser.trinket_name = 'Supply Schedule Charm';
             preUser.quests.QuestTrainStation = createSuppyPhaseAttributes(0);
             postUser.quests.QuestTrainStation = createSuppyPhaseAttributes(0);
 
@@ -149,7 +149,7 @@ describe('Gnawnian Express Station stages', () => {
         it('should append Not Defending with no area specific charm', () => {
             message.charm = {
                 id: 42,
-                name: "The Answer",
+                name: 'The Answer',
             };
             preUser.quests.QuestTrainStation = createBoardingPhaseAttributes('door');
             postUser.quests.QuestTrainStation = createBoardingPhaseAttributes('door');
@@ -161,7 +161,6 @@ describe('Gnawnian Express Station stages', () => {
     });
 
     describe('Daredevil Canyon', () => {
-
         it.each<{charm: string, expected: string}>([
             {charm: 'Magmatic Crystal Charm', expected: '- Magmatic Crystal'},
             {charm: 'Black Powder Charm', expected: '- Black Powder'},
@@ -199,7 +198,7 @@ export function createSuppyPhaseAttributes(supplyHoarderTurns = 5): SupplyPhase 
     };
 }
 
-export function createBoardingPhaseAttributes(troubleArea: TroubleArea = "roof"): BoardingPhase {
+export function createBoardingPhaseAttributes(troubleArea: TroubleArea = 'roof'): BoardingPhase {
     return {
         on_train: true,
         current_phase: 'boarding',

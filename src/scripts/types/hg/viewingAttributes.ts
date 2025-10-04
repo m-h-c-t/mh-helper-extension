@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const fieryWarpathViewingAttributesSchema = z.object({
     desert_warpath: z.object({
@@ -35,15 +35,15 @@ export const zugzwangsTowerViewingAttributesSchema = z.object({
 export const viewingAttributesSchema = z.union([
     // Specific environments with typed viewing_atts
     z.object({
-        environment_name: z.literal("Fiery Warpath"),
+        environment_name: z.literal('Fiery Warpath'),
         viewing_atts: fieryWarpathViewingAttributesSchema,
     }),
     z.object({
-        environment_name: z.literal("Seasonal Garden"),
+        environment_name: z.literal('Seasonal Garden'),
         viewing_atts: seasonalGardenViewingAttributesSchema,
     }),
     z.object({
-        environment_name: z.literal("Zugzwang's Tower"),
+        environment_name: z.literal('Zugzwang\'s Tower'),
         viewing_atts: zugzwangsTowerViewingAttributesSchema,
     }),
     // Fallback for any other environment

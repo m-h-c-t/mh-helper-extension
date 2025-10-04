@@ -1,12 +1,14 @@
-import {ValidatedAjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {SubmissionService} from "@scripts/services/submission.service";
-import {hgResponseSchema} from "@scripts/types/hg";
-import {HgItem} from "@scripts/types/mhct";
-import {LoggerService} from "@scripts/services/logging";
-import {z} from "zod";
+import type { LoggerService } from '@scripts/services/logging';
+import type { SubmissionService } from '@scripts/services/submission.service';
+import type { HgItem } from '@scripts/types/mhct';
+
+import { hgResponseSchema } from '@scripts/types/hg';
+import { z } from 'zod';
+
+import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 
 export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
-    readonly name = "Use Convertible";
+    readonly name = 'Use Convertible';
     readonly schema = hgResponseSchema.extend({
         convertible_open: z.object({
             type: z.string(),
@@ -32,13 +34,13 @@ export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
     }
 
     match(url: string): boolean {
-        return url.includes("mousehuntgame.com/managers/ajax/users/useconvertible.php");
+        return url.includes('mousehuntgame.com/managers/ajax/users/useconvertible.php');
     }
 
     protected async validatedExecute(data: z.infer<typeof this.schema>): Promise<void> {
         const convertibleType = data.convertible_open.type;
         if (!(convertibleType in data.items)) {
-            this.logger.warn("Couldn't find any items from opened convertible");
+            this.logger.warn('Couldn\'t find any items from opened convertible');
             return;
         }
 
@@ -50,7 +52,7 @@ export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
         };
 
         if (!convertible) {
-            this.logger.warn("Couldn't find any items from opened convertible");
+            this.logger.warn('Couldn\'t find any items from opened convertible');
             return;
         }
 
@@ -61,7 +63,7 @@ export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
 
         // verify that data.inventory is a record
         if (!data.inventory || Array.isArray(data.inventory)) {
-            this.logger.warn("Inventory is not a record");
+            this.logger.warn('Inventory is not a record');
             return;
         }
 

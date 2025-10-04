@@ -1,11 +1,12 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {EpilogueFallsStager} from '@scripts/modules/stages/environments/epilogueFalls';
-import {IStager} from '@scripts/modules/stages/stages.types';
-import {RapidZoneType, User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from "@scripts/services/logging";
-import {HgResponseBuilder, IntakeMessageBuilder, UserBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { LoggerService } from '@scripts/services/logging';
+import type { RapidZoneType, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { EpilogueFallsStager } from '@scripts/modules/stages/environments/epilogueFalls';
+import { HgResponseBuilder, IntakeMessageBuilder, UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('Epilogue Falls exemptions', () => {
     const logger: LoggerService = mock<LoggerService>();
@@ -83,7 +84,7 @@ describe('Epilogue Falls exemptions', () => {
             {preOnRapids: true, preZone: 'waterfall_zone', postOnRapids: true, postZone: 'grotto_zone', shouldAccept: true},
             {preOnRapids: true, preZone: 'grotto_zone', postOnRapids: true, postZone: 'waterfall_zone', shouldAccept: false},
         ])(
-            "when on_rapids changes from $preOnRapids to $postOnRapids and zone changes from $preZone to $postZone, shouldAccept is $shouldAccept",
+            'when on_rapids changes from $preOnRapids to $postOnRapids and zone changes from $preZone to $postZone, shouldAccept is $shouldAccept',
             ({preOnRapids, preZone, postOnRapids, postZone, shouldAccept}) => {
                 preUser.quests.QuestEpilogueFalls!.on_rapids = preOnRapids;
                 preUser.quests.QuestEpilogueFalls!.rapids.zone_data.type = preZone;

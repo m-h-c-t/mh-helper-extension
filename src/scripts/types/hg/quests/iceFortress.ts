@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 const cannonTypeSchema = z.enum(['snow_cannon', 'cinnamon_cannon', 'charm_cannon']);
 

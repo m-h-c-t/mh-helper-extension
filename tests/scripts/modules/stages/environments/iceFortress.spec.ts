@@ -1,6 +1,7 @@
-import {IceFortressStager} from '@scripts/modules/stages/environments/iceFortress';
-import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { IceFortressStager } from '@scripts/modules/stages/environments/iceFortress';
 
 describe('IceFortressStager', () => {
     it('adds boss stage (but not right now)', () => {
@@ -18,6 +19,6 @@ describe('IceFortressStager', () => {
         } as User;
         stager.addStage(message, userPre, {} as User, {});
 
-        expect(message.stage).not.toBe("Boss");
+        expect(message.stage).not.toBe('Boss');
     });
 });

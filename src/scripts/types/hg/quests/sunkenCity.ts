@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const questSunkenCitySchema = z.object({
     is_diving: z.boolean(),

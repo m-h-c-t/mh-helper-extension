@@ -1,13 +1,14 @@
-import {SuperBrieFactoryStager} from "@scripts/modules/stages/environments/superBrieFactory";
-import type {User} from "@scripts/types/hg";
-import type {IntakeMessage} from "@scripts/types/mhct";
-import type {QuestSuperBrieFactory} from "@scripts/types/hg/quests";
+import type { User } from '@scripts/types/hg';
+import type { QuestSuperBrieFactory } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
-describe("SuperBrieFactoryStager", () => {
+import { SuperBrieFactoryStager } from '@scripts/modules/stages/environments/superBrieFactory';
+
+describe('SuperBrieFactoryStager', () => {
     const defaultJournal = {};
     const defaultQuest: QuestSuperBrieFactory = {
         factory_atts: {
-            current_room: "pumping_room",
+            current_room: 'pumping_room',
             boss_warning: null,
         },
     };
@@ -17,23 +18,23 @@ describe("SuperBrieFactoryStager", () => {
         },
     } as User;
 
-    it("is for the SUPER|brie+ Factory environment", () => {
+    it('is for the SUPER|brie+ Factory environment', () => {
         const stager = new SuperBrieFactoryStager();
 
-        expect(stager.environment).toBe("SUPER|brie+ Factory");
+        expect(stager.environment).toBe('SUPER|brie+ Factory');
     });
 
-    it("throws when the quest is undefined", () => {
+    it('throws when the quest is undefined', () => {
         const stager = new SuperBrieFactoryStager();
         const user = changeFactoryQuest(defaultUser, undefined!);
 
         expect(() => {
             stager.addStage({} as IntakeMessage, user, user, defaultJournal);
-        }).toThrow("User is in SB+ factory but quest wasn't found.");
+        }).toThrow('User is in SB+ factory but quest wasn\'t found.');
     });
 
-    describe("boss", () => {
-        it("is Boss stage when there is boss_warning", () => {
+    describe('boss', () => {
+        it('is Boss stage when there is boss_warning', () => {
             const stager = new SuperBrieFactoryStager();
             const message = {} as IntakeMessage;
             const preUser = {
@@ -47,18 +48,17 @@ describe("SuperBrieFactoryStager", () => {
 
             stager.addStage(message, preUser, defaultUser, defaultJournal);
 
-            expect(message.stage).toBe("Boss");
+            expect(message.stage).toBe('Boss');
         });
     });
 
     describe('rooms', () => {
         it.each([
-            {room: "pumping_room",           expected: "Pump Room"},
-            {room: "mixing_room",            expected: "Mixing Room"},
-            {room: "break_room",             expected: "Break Room"},
-            {room: "quality_assurance_room", expected: "QA Room"},
+            {room: 'pumping_room', expected: 'Pump Room'},
+            {room: 'mixing_room', expected: 'Mixing Room'},
+            {room: 'break_room', expected: 'Break Room'},
+            {room: 'quality_assurance_room', expected: 'QA Room'},
         ])('sets room with Coggy Colby', ({room, expected}) => {
-
             const stager = new SuperBrieFactoryStager();
             const message = {} as IntakeMessage;
             const preUser = {

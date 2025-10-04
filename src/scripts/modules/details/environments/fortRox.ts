@@ -1,6 +1,7 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class FortRoxDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Fort Rox';
@@ -29,7 +30,7 @@ export class FortRoxDetailer implements IEnvironmentDetailer {
         }
 
         // The mage tower's auto-catch can be applied during Day and Dawn phases, too.
-        const tower_state = quest.tower_status.includes("inactive")
+        const tower_state = quest.tower_status.includes('inactive')
             ? 0
             : quest.fort.t.level;
         details.can_autocatch_any = (tower_state >= 2);

@@ -1,9 +1,10 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {BountifulBeanstalkStager} from '@scripts/modules/stages/environments/bountifulBeanstalk';
-import {User} from '@scripts/types/hg';
-import {ComponentEntry, IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from "@scripts/services/logging";
-import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
+import type { LoggerService } from '@scripts/services/logging';
+import type { User } from '@scripts/types/hg';
+import type { ComponentEntry, IntakeMessage } from '@scripts/types/mhct';
+
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { BountifulBeanstalkStager } from '@scripts/modules/stages/environments/bountifulBeanstalk';
+import { getDefaultIntakeMessage, getDefaultUser } from '@tests/scripts/hunt-filter/common';
 import * as stageTest from '@tests/scripts/modules/stages/environments/bountifulBeanstalk.spec';
 
 describe('Bountiful Beanstalk exemptions', () => {
@@ -113,7 +114,7 @@ describe('Bountiful Beanstalk exemptions', () => {
                 });
             });
 
-            interface HelperType { floor: string, room: string, isBossEncounter: boolean }
+            interface HelperType {floor: string, room: string, isBossEncounter: boolean}
             function setCastleQuestAttributes(preAttributes: HelperType, postAttributes: HelperType, mouse: string) {
                 preUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes(preAttributes, preAttributes.isBossEncounter);
                 postUser.quests.QuestBountifulBeanstalk = stageTest.createCastleAttributes(preAttributes, postAttributes.isBossEncounter);

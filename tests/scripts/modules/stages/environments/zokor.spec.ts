@@ -1,6 +1,7 @@
-import {ZokorStager} from "@scripts/modules/stages/environments/zokor";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { ZokorStager } from '@scripts/modules/stages/environments/zokor';
 
 describe('Zokor stages', () => {
     const DISTRICTS = [
@@ -9,12 +10,12 @@ describe('Zokor stages', () => {
         'Inner Fealty Temple',
         'Templar\'s Sanctum',
 
-        //Scholar
+        // Scholar
         'Neophyte Scholar Study',
         'Master Scholar Auditorium',
         'Dark Library',
 
-        //Tech
+        // Tech
         'Tech Foundry Outskirts',
         'Tech Research Center',
         'Manaforge',

@@ -1,6 +1,6 @@
-import {z} from "zod";
+import { z } from 'zod';
 
-export const FortRoxStages = [ 'stage_one', 'stage_two', 'stage_three', 'stage_four', 'stage_five' ] as const;
+export const FortRoxStages = ['stage_one', 'stage_two', 'stage_three', 'stage_four', 'stage_five'] as const;
 const fortRoxStageSchema = z.enum(FortRoxStages);
 
 export const questFortRoxSchema = z.object({

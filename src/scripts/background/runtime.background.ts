@@ -1,11 +1,11 @@
-import {BrowserApi} from "@scripts/services/browser/browser-api";
-import {LoggerService} from "@scripts/services/logging";
+import type { LoggerService } from '@scripts/services/logging';
+
+import { BrowserApi } from '@scripts/services/browser/browser-api';
 
 export default class RuntimeBackground {
     constructor(
         private logger: LoggerService
     ) {
-
         BrowserApi.addListener(chrome.runtime.onUpdateAvailable, this.onUpdateAvailable);
         BrowserApi.addListener(chrome.runtime.onInstalled, this.onInstalled);
     }
@@ -29,13 +29,13 @@ export default class RuntimeBackground {
         this.logger.info(`runtime onInstalled reason: ${details.reason}`);
 
         if (details.reason === 'update') {
-            this.logger.debug("Reloading all MouseHunt tabs due to extension update...");
+            this.logger.debug('Reloading all MouseHunt tabs due to extension update...');
             void this.reloadMouseHuntTabs();
         }
     };
 
     private async reloadMouseHuntTabs() {
-        const tabs = await BrowserApi.tabsQuery({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']});
+        const tabs = await BrowserApi.tabsQuery({url: ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']});
 
         for (const tab of tabs) {
             if (tab.id) {

@@ -1,6 +1,7 @@
-import {LuckyCatchDetailer} from '@scripts/modules/details/global/luckyCatch';
-import {JournalMarkup} from '@scripts/types/hg';
-import {HgResponseBuilder, IntakeMessageBuilder, UserBuilder} from '@tests/utility/builders';
+import type { JournalMarkup } from '@scripts/types/hg';
+
+import { LuckyCatchDetailer } from '@scripts/modules/details/global/luckyCatch';
+import { HgResponseBuilder, IntakeMessageBuilder, UserBuilder } from '@tests/utility/builders';
 
 describe('LuckyCatchDetailer', () => {
     const hgResponseBuilder = new HgResponseBuilder();
@@ -49,7 +50,6 @@ describe('LuckyCatchDetailer', () => {
     });
 
     describe('when mouse is caught', () => {
-
         it('should return is_lucky_catch as true when css_class includes luckycatchsuccess', () => {
             defaultJournalMarkupEntry.render_data.css_class = 'some-class luckycatchsuccess another-class';
             const {message, preUser, postUser} = setupHuntTest();

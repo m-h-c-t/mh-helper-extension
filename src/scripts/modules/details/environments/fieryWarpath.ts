@@ -1,12 +1,12 @@
-import type {FieryWarpathViewingAttributes, JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { FieryWarpathViewingAttributes, JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class FieryWarpathDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Fiery Warpath';
 
     addDetails(message: IntakeMessage, userPre: User, userPost: User, journal: JournalMarkup): Record<PropertyKey, unknown> | undefined {
-
         /*
         * Log the mouse populations, remaining total, boss invincibility, and streak data.
         * MAYBE: Record usage of FW charms, e.g. "targeted mouse was attracted"
@@ -24,7 +24,7 @@ export class FieryWarpathDetailer implements IEnvironmentDetailer {
         const fw: Record<string, unknown> = {};
 
         if ([1, 2, 3].includes(wave)) {
-            const asType = (name: string) => name.replace(/desert_|_weak|_epic|_strong/g, "");
+            const asType = (name: string) => name.replace(/desert_|_weak|_epic|_strong/g, '');
 
             if (preAttrs.streak_quantity && preAttrs.streak_quantity > 0) {
                 fw.streak_count = preAttrs.streak_quantity;
@@ -36,21 +36,21 @@ export class FieryWarpathDetailer implements IEnvironmentDetailer {
             // Track the mice remaining in the wave, per type and in total.
             let remaining = 0;
             [
-                "desert_warrior",
-                "desert_warrior_weak",
-                "desert_warrior_epic",
-                "desert_scout",
-                "desert_scout_weak",
-                "desert_scout_epic",
-                "desert_archer",
-                "desert_archer_weak",
-                "desert_archer_epic",
-                "desert_mage",
-                "desert_mage_strong",
-                "desert_cavalry",
-                "desert_cavalry_strong",
-                "desert_artillery",
-            ].filter(name => preAttrs.mice && name in preAttrs.mice).forEach(mouse => {
+                'desert_warrior',
+                'desert_warrior_weak',
+                'desert_warrior_epic',
+                'desert_scout',
+                'desert_scout_weak',
+                'desert_scout_epic',
+                'desert_archer',
+                'desert_archer_weak',
+                'desert_archer_epic',
+                'desert_mage',
+                'desert_mage_strong',
+                'desert_cavalry',
+                'desert_cavalry_strong',
+                'desert_artillery',
+            ].filter(name => preAttrs.mice && name in preAttrs.mice).forEach((mouse) => {
                 const mouseData = preAttrs.mice[mouse];
                 if (mouseData?.quantity) {
                     const q = mouseData.quantity;
@@ -63,15 +63,15 @@ export class FieryWarpathDetailer implements IEnvironmentDetailer {
             // Support retreats when 10% or fewer total mice remain.
             fw.morale = remaining / wave_total;
 
-            fw.has_support_mice = (preAttrs.has_support_mice === "active");
+            fw.has_support_mice = (preAttrs.has_support_mice === 'active');
             if (fw.has_support_mice) {
                 // Calculate the non-rounded `morale_percent` viewing attribute.
-                fw.support_morale = (wave_total - remaining) / (.9 * wave_total);
+                fw.support_morale = (wave_total - remaining) / (0.9 * wave_total);
             }
-        } else if ([4, "portal"].includes(preAttrs.wave)) {
+        } else if ([4, 'portal'].includes(preAttrs.wave)) {
             // If the Warmonger or Artillery Commander was already caught (i.e. Ultimate Charm),
             // don't record any hunt details since there isn't anything to learn.
-            const boss = (message.stage === "Portal")
+            const boss = (message.stage === 'Portal')
                 ? preAttrs.mice.desert_artillery_commander
                 : preAttrs.mice.desert_boss;
             if (!boss || boss.quantity !== 1) {
@@ -88,9 +88,9 @@ export class FieryWarpathDetailer implements IEnvironmentDetailer {
         return fw;
     }
 
-    private assertFieryWarpath(user: User): asserts user is User & { viewing_atts: FieryWarpathViewingAttributes } {
+    private assertFieryWarpath(user: User): asserts user is User & {viewing_atts: FieryWarpathViewingAttributes} {
         if (!('desert_warpath' in user.viewing_atts) || user.viewing_atts.desert_warpath == null) {
-            throw new Error("This detailer only supports Fiery Warpath viewing attributes");
+            throw new Error('This detailer only supports Fiery Warpath viewing attributes');
         }
     }
 }

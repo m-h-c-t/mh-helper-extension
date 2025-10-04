@@ -1,7 +1,7 @@
-import z from "zod";
-import {hgResponseSchema} from "@scripts/types/hg";
+import { hgResponseSchema } from '@scripts/types/hg';
+import z from 'zod';
 
-//#region Vending Machine Schema
+// #region Vending Machine Schema
 
 const vendingMachineItemSchema = z.object({
     name: z.string(),
@@ -11,14 +11,14 @@ const vendingMachineItemSchema = z.object({
 });
 
 const vendingMachinePurchaseTypeSchema = z.enum([
-    "larry_starter_mix_snack_pack",
-    "tribal_crunch_snack_pack",
-    "wild_west_ranch_rings_snack_pack",
-    "sandy_bert_bites_snack_pack",
-    "hollow_heights_party_pack_snack_pack",
-    "riftios_snack_pack",
-    "story_seeds_snack_pack",
-    "fantasy_fizz_snack_pack",
+    'larry_starter_mix_snack_pack',
+    'tribal_crunch_snack_pack',
+    'wild_west_ranch_rings_snack_pack',
+    'sandy_bert_bites_snack_pack',
+    'hollow_heights_party_pack_snack_pack',
+    'riftios_snack_pack',
+    'story_seeds_snack_pack',
+    'fantasy_fizz_snack_pack',
 ]);
 
 export type VendingMachinePurchaseType = z.infer<typeof vendingMachinePurchaseTypeSchema>;
@@ -37,9 +37,9 @@ export const vendingMachineResponseSchema = hgResponseSchema.extend({
 
 export type VendingMachineReponse = z.infer<typeof vendingMachineResponseSchema>;
 
-//#endregion Vending Machine Schema
+// #endregion Vending Machine Schema
 
-//#region Cheesy Pipe Party Schema
+// #region Cheesy Pipe Party Schema
 
 const regionEnum = z.enum([
     'gnawnia',
@@ -73,7 +73,7 @@ const baseTileDataSchema = z.object({
 
 const otherTileDataSchema = baseTileDataSchema.extend({
     has_prize: z.literal(false),
-    prize_name: z.string().refine(val => val === ""),
+    prize_name: z.string().refine(val => val === ''),
     prize_quantity: z.coerce.number().refine(val => val === 0),
 });
 
@@ -83,7 +83,7 @@ const prizeTileDataSchema = baseTileDataSchema.extend({
 
 const hiddenPrizeTileDataSchema = prizeTileDataSchema.extend({
     has_prize: z.literal(true),
-    prize_name: z.string().refine(val => val === ""),
+    prize_name: z.string().refine(val => val === ''),
     is_prize_unlocked: z.literal(false),
 });
 
@@ -94,7 +94,7 @@ const revealedPrizeTileDataSchema = baseTileDataSchema.extend({
 });
 
 const tileDataSchema = otherTileDataSchema.or(
-    z.discriminatedUnion("is_prize_unlocked", [
+    z.discriminatedUnion('is_prize_unlocked', [
         hiddenPrizeTileDataSchema,
         revealedPrizeTileDataSchema,
     ],
@@ -126,4 +126,4 @@ export type CheesyPipePartyGame = z.infer<typeof cheesyPipePartyGameSchema>;
 
 export type CheesyPipePartyResponse = z.infer<typeof cheesyPipePartyResponseSchema>;
 
-//#endregion Cheesy Pipe Party Schema
+// #endregion Cheesy Pipe Party Schema

@@ -1,8 +1,9 @@
-import {SubmissionService} from "@scripts/services/submission.service";
-import type {HgResponse} from "@scripts/types/hg";
-import type {HgItem} from "@scripts/types/mhct";
-import type {LoggerService} from "@scripts/services/logging";
-import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
+import type { LoggerService } from '@scripts/services/logging';
+import type { SubmissionService } from '@scripts/services/submission.service';
+import type { HgResponse } from '@scripts/types/hg';
+import type { HgItem } from '@scripts/types/mhct';
+
+import { AjaxSuccessHandler } from './ajaxSuccessHandler';
 
 export class SEHAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -22,7 +23,7 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
      * @returns True if this handler applies, otherwise false
      */
     match(url: string): boolean {
-        return url.includes("mousehuntgame.com/managers/ajax/events/spring_hunt.php");
+        return url.includes('mousehuntgame.com/managers/ajax/events/spring_hunt.php');
     }
 
     async execute(responseJSON: HgResponse): Promise<void> {
@@ -69,7 +70,7 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
 
         const items: HgItem[] = [];
         try {
-            purchase.items.forEach(item => {
+            purchase.items.forEach((item) => {
                 const inventoryItem = Object.values(inventoryWithExtraMap).find(i => i.name == item.name);
                 if (inventoryItem == null) {
                     this.logger.debug('Egg content item missing from inventory', {inventoryWithExtraMap, item});
@@ -82,7 +83,6 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
                     quantity: item.quantity,
                 });
             });
-
         } catch (error) {
             this.logger.warn((error as Error).toString());
             return;
@@ -94,7 +94,7 @@ export class SEHAjaxHandler extends AjaxSuccessHandler {
 }
 
 interface HgResponseWithEggContents extends HgResponse {
-    egg_contents?: EggContents
+    egg_contents?: EggContents;
 }
 
 interface EggContents {

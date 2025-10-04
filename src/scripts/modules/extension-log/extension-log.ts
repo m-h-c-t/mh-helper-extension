@@ -1,7 +1,11 @@
-import {Messenger} from "@scripts/content/messaging/messenger";
-import {LogLevel} from "@scripts/services/logging";
-import {ExtensionLogExtensionMessage, ExtensionLogMessages} from "./extension-log.types";
-import {ForegroundMessageHandler} from "@scripts/services/message-handler/foreground-message-handler";
+import type { Messenger } from '@scripts/content/messaging/messenger';
+import type { LogLevel } from '@scripts/services/logging';
+
+import { ForegroundMessageHandler } from '@scripts/services/message-handler/foreground-message-handler';
+
+import type { ExtensionLogExtensionMessage } from './extension-log.types';
+
+import { ExtensionLogMessages } from './extension-log.types';
 
 /**
  * Extension Log module to send log messages from the foreground to the background.

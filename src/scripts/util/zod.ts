@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 /**
  * A Zod schema that accepts either a number or a string containing commas.
@@ -8,11 +8,11 @@ import {z} from "zod";
 export const zodStrumber = z.union([
     z.number(),
     z.string().transform((val, ctx) => {
-        const numericValue = parseInt(val.replace(/,/g, ""));
+        const numericValue = parseInt(val.replace(/,/g, ''));
         if (isNaN(numericValue)) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: "Invalid number format",
+                message: 'Invalid number format',
             });
             return z.NEVER;
         }

@@ -1,10 +1,11 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {IcebergStager} from '@scripts/modules/stages/environments/iceberg';
-import {IStager} from '@scripts/modules/stages/stages.types';
-import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from "@scripts/services/logging";
-import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { LoggerService } from '@scripts/services/logging';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { IcebergStager } from '@scripts/modules/stages/environments/iceberg';
+import { getDefaultIntakeMessage, getDefaultUser } from '@tests/scripts/hunt-filter/common';
 
 describe('Iceberg exemptions', () => {
     let logger: LoggerService;

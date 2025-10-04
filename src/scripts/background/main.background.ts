@@ -1,9 +1,10 @@
-import {ConsoleLogger} from "@scripts/services/logging";
-import RuntimeBackground from "./runtime.background";
-import {MigrationRunnerService} from "@scripts/services/settings/settings-migrations/migration-runner.service";
-import {SettingsService} from "@scripts/services/settings/settings.service";
-import {CrownTrackerBackground} from "@scripts/modules/crown-tracker/tracker.background";
-import {ExtensionLogBackground} from "@scripts/modules/extension-log/extension-log.background";
+import { CrownTrackerBackground } from '@scripts/modules/crown-tracker/tracker.background';
+import { ExtensionLogBackground } from '@scripts/modules/extension-log/extension-log.background';
+import { ConsoleLogger } from '@scripts/services/logging';
+import { MigrationRunnerService } from '@scripts/services/settings/settings-migrations/migration-runner.service';
+import { SettingsService } from '@scripts/services/settings/settings.service';
+
+import RuntimeBackground from './runtime.background';
 
 export default class MainBackground {
     logger: ConsoleLogger;
@@ -14,7 +15,7 @@ export default class MainBackground {
     extensionLogBackground: ExtensionLogBackground;
 
     constructor() {
-        const isDev = process.env.ENV === "development";
+        const isDev = process.env.ENV === 'development';
 
         this.logger = new ConsoleLogger(isDev);
         this.runtimeBackground = new RuntimeBackground(this.logger);
@@ -25,7 +26,7 @@ export default class MainBackground {
     }
 
     async bootstrap() {
-        this.logger.info("Bootstrapping background service...");
+        this.logger.info('Bootstrapping background service...');
 
         await this.migrationService.run();
         await this.runtimeBackground.init();

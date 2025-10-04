@@ -1,17 +1,17 @@
-import {FortRoxStager} from "@scripts/modules/stages/environments/fortRox";
-import {JournalMarkup, User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {QuestFortRox} from "@scripts/types/hg/quests";
-import {UserBuilder} from "@tests/utility/builders";
-import {mock} from "vitest-mock-extended";
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { QuestFortRox } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { FortRoxStager } from '@scripts/modules/stages/environments/fortRox';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('Fort Rox stages', () => {
     const message = mock<IntakeMessage>();
     const postUser = mock<User>();
     const journal = mock<JournalMarkup>();
 
-
-    let preUser: User & { quests: { QuestFortRox: QuestFortRox } };
+    let preUser: User & {quests: {QuestFortRox: QuestFortRox}};
     let stager: FortRoxStager;
 
     beforeEach(() => {
@@ -23,7 +23,7 @@ describe('Fort Rox stages', () => {
             is_dawn: null,
             is_lair: null,
             current_stage: null,
-            tower_status: "",
+            tower_status: '',
             fort: {
                 w: {level: 0, status: 'inactive'},
                 b: {level: 0, status: 'inactive'},
@@ -38,7 +38,7 @@ describe('Fort Rox stages', () => {
                 environment_name: 'Fort Rox',
             })
             .withQuests({QuestFortRox: quest})
-            .build() as User & { quests: { QuestFortRox: QuestFortRox } };
+            .build() as User & {quests: {QuestFortRox: QuestFortRox}};
     });
 
     it('should be for the Fort Rox environment', () => {

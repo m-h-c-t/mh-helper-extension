@@ -1,8 +1,12 @@
-import {LoggerService} from "@scripts/services/logging/logger.service";
-import {BackgroundMessageHandler} from "@scripts/services/message-handler/background-message-handler";
-import {BrowserApi} from "@scripts/services/browser/browser-api";
-import {CrownTrackerBackgroundExtensionMessageHandlers, CrownTrackerExtensionMessage, Crowns} from "./tracker.types";
-import {z} from "zod";
+import type { LoggerService } from '@scripts/services/logging/logger.service';
+
+import { BrowserApi } from '@scripts/services/browser/browser-api';
+import { BackgroundMessageHandler } from '@scripts/services/message-handler/background-message-handler';
+import { z } from 'zod';
+
+import type { CrownTrackerBackgroundExtensionMessageHandlers, CrownTrackerExtensionMessage } from './tracker.types';
+
+import { Crowns } from './tracker.types';
 
 /**
  * Crown Tracker background module to handle King's Crown data submissions.
@@ -14,7 +18,7 @@ export class CrownTrackerBackground extends BackgroundMessageHandler<
     CrownTrackerExtensionMessage,
     CrownTrackerBackgroundExtensionMessageHandlers
 > {
-    protected readonly messageNamespace = "crownTracker";
+    protected readonly messageNamespace = 'crownTracker';
 
     private readonly crownPayloadSchema = z.object({
         user: z.string().min(1),
@@ -39,17 +43,17 @@ export class CrownTrackerBackground extends BackgroundMessageHandler<
     ): Promise<void> {
         const crownPayloadParseResult = this.crownPayloadSchema.safeParse(message);
         if (!crownPayloadParseResult.success) {
-            this.logger.warn("CrownTracker invalid payload", z.prettifyError(crownPayloadParseResult.error));
+            this.logger.warn('CrownTracker invalid payload', z.prettifyError(crownPayloadParseResult.error));
             return;
         }
 
         const crownPayload = crownPayloadParseResult.data;
-        if (Crowns.every((crown) => crownPayload.crowns[crown] === 0)) {
-            this.logger.debug("CrownTracker no crowns to submit", {user: crownPayload.user, crowns: crownPayload.crowns});
+        if (Crowns.every(crown => crownPayload.crowns[crown] === 0)) {
+            this.logger.debug('CrownTracker no crowns to submit', {user: crownPayload.user, crowns: crownPayload.crowns});
             return;
         }
 
-        const hash = Crowns.map((crown) => crownPayload.crowns[crown]).join(',');
+        const hash = Crowns.map(crown => crownPayload.crowns[crown]).join(',');
         const existingHash = await chrome.storage.session.get([crownPayload.user]);
         if (existingHash[crownPayload.user] === hash) {
             this.logger.info(`CrownTracker skipping submission for user "${crownPayload.user}" (already sent).`);
@@ -105,6 +109,6 @@ export class CrownTrackerBackground extends BackgroundMessageHandler<
         });
 
         // Return total crowns submitted
-        //return Object.values(crowns).reduce((a, b) => a + b, 0);
+        // return Object.values(crowns).reduce((a, b) => a + b, 0);
     }
 }

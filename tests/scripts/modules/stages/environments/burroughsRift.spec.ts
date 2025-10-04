@@ -1,7 +1,8 @@
-import {BurroughsRiftStager} from "@scripts/modules/stages/environments/burroughsRift";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { BurroughsRiftStager } from '@scripts/modules/stages/environments/burroughsRift';
 
 describe('Burroughs Rift stages', () => {
     let stager: IStager;
@@ -35,7 +36,6 @@ describe('Burroughs Rift stages', () => {
         ${'tier_2'} | ${'Mist 6-18'}
         ${'tier_3'} | ${'Mist 19-20'}
     `('should set stage to $expected when mist is at $level', ({level, expected}) => {
-
         preUser.quests = {QuestRiftBurroughs: {
             mist_tier: level,
         }};

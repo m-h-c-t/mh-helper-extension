@@ -1,9 +1,10 @@
-import {AfterwordAcresStager} from '@scripts/modules/stages/environments/afterwordAcres';
-import {User} from '@scripts/types/hg';
-import {BlightTier} from '@scripts/types/hg/quests/afterwordAcres';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { User } from '@scripts/types/hg';
+import type { BlightTier } from '@scripts/types/hg/quests/afterwordAcres';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { AfterwordAcresStager } from '@scripts/modules/stages/environments/afterwordAcres';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('AfterwordAcresStager', () => {
     let stager: AfterwordAcresStager;

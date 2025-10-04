@@ -1,6 +1,7 @@
-import {MuridaeMarketStager} from "@scripts/modules/stages/environments/muridaeMarket";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { MuridaeMarketStager } from '@scripts/modules/stages/environments/muridaeMarket';
 
 describe('Muridae Market stages', () => {
     it('should be for the "Muridae Market" environment', () => {

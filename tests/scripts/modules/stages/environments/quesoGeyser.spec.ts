@@ -1,7 +1,8 @@
-import {QuesoGeyserStager} from "@scripts/modules/stages/environments/quesoGeyser";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { QuesoGeyserStager } from '@scripts/modules/stages/environments/quesoGeyser';
 
 describe('Queso Geyser stages', () => {
     let stager: IStager;

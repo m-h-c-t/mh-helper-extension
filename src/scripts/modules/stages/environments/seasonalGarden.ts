@@ -1,6 +1,8 @@
-import type {SeasonalGardenViewingAttributes, User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import type { SeasonalGardenViewingAttributes, User } from '@scripts/types/hg';
+
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 const ALL_SEASONS_SHORT = ['sg', 'sr', 'fl', 'wr'] as const;
 type SeasonShort = typeof ALL_SEASONS_SHORT[number];
@@ -9,10 +11,10 @@ export class SeasonalGardenStager implements IStager {
     readonly environment: string = 'Seasonal Garden';
 
     readonly seasonToStage: Record<SeasonShort, string> = {
-        'sg': 'Spring',
-        'sr': 'Summer',
-        'fl': 'Fall',
-        'wr': 'Winter',
+        sg: 'Spring',
+        sr: 'Summer',
+        fl: 'Fall',
+        wr: 'Winter',
     };
 
     /**
@@ -34,10 +36,9 @@ export class SeasonalGardenStager implements IStager {
         }
 
         message.stage = this.seasonToStage[season];
-
     }
 
-    private isSeasonalGarden(user: User): asserts user is User & { viewing_atts: SeasonalGardenViewingAttributes } {
+    private isSeasonalGarden(user: User): asserts user is User & {viewing_atts: SeasonalGardenViewingAttributes} {
         if (!('season' in user.viewing_atts) || user.viewing_atts.season == null) {
             throw new Error('Seasonal Garden season not found in user viewing_attributes');
         }

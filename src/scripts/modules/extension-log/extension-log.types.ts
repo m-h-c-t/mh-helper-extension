@@ -1,5 +1,5 @@
-import {LogLevel} from "@scripts/services/logging";
-import {MessageHandlerRegistry, MessageHandlerParams} from "@scripts/services/message-handler/background-message-handler";
+import type { LogLevel } from '@scripts/services/logging';
+import type { MessageHandlerRegistry, MessageHandlerParams } from '@scripts/services/message-handler/background-message-handler';
 
 export const ExtensionLogMessages = {
     ExtensionLog: 'extensionLog',

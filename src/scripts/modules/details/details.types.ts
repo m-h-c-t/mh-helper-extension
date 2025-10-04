@@ -1,5 +1,5 @@
-import type {JournalMarkup, User} from "@scripts/types/hg";
-import type {IntakeMessage} from "@scripts/types/mhct";
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 /**
  * An object that can add hunt details.
@@ -12,5 +12,5 @@ export interface IEnvironmentDetailer extends IDetailer {
     /**
      * The location the detailer matches
      */
-     readonly environment: string;
+    readonly environment: string;
 }

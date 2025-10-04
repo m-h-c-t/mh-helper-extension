@@ -1,6 +1,7 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class SandCryptsDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Sand Crypts';
@@ -13,7 +14,7 @@ export class SandCryptsDetailer implements IEnvironmentDetailer {
             return;
         }
 
-        if (["King Grub", "King Scarab"].includes(message.mouse)) {
+        if (['King Grub', 'King Scarab'].includes(message.mouse)) {
             return {
                 salt: quest.minigame.salt_charms_used,
             };

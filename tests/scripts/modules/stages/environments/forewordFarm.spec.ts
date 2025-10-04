@@ -1,7 +1,8 @@
-import {ForewordFarmStager} from "@scripts/modules/stages/environments/forewardFarm";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { ForewordFarmStager } from '@scripts/modules/stages/environments/forewardFarm';
 
 describe('Foreword Farm stages', () => {
     let stager: IStager;

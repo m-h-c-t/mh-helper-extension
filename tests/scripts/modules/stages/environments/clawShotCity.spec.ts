@@ -1,6 +1,7 @@
-import {ClawShotCityStager} from '@scripts/modules/stages/environments/clawShotCity';
-import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { ClawShotCityStager } from '@scripts/modules/stages/environments/clawShotCity';
 
 describe('ClawShotCityStager', () => {
     it('Should be for the "Claw Shot City" environment', () => {

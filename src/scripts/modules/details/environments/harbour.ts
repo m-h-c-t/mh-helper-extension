@@ -1,6 +1,7 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class HarbourDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Harbour';
@@ -14,11 +15,11 @@ export class HarbourDetailer implements IEnvironmentDetailer {
 
         // Report whether certain mice were attractable on the hunt.
         const details: Record<string, unknown> = {
-            on_bounty: (quest.status === "searchStarted"),
+            on_bounty: (quest.status === 'searchStarted'),
         };
 
         quest.crew.forEach((mouse) => {
-            details[`has_caught_${mouse.type}`] = (mouse.status === "caught");
+            details[`has_caught_${mouse.type}`] = (mouse.status === 'caught');
         });
 
         return details;

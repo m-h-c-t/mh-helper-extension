@@ -1,11 +1,12 @@
-import {SpookyShuffleAjaxHandler} from "@scripts/modules/ajax-handlers";
-import {SpookyShuffleResponse, SpookyShuffleStatus} from "@scripts/modules/ajax-handlers/spookyShuffle.types";
-import {SubmissionService} from "@scripts/services/submission.service";
-import {LoggerService} from "@scripts/services/logging";
-import {CustomConvertibleIds} from "@scripts/util/constants";
-import {getItemsByClass} from "@scripts/util/hgFunctions";
-import {HgResponseBuilder} from "@tests/utility/builders";
-import {mock} from "vitest-mock-extended";
+import type { SpookyShuffleResponse, SpookyShuffleStatus } from '@scripts/modules/ajax-handlers/spookyShuffle.types';
+import type { LoggerService } from '@scripts/services/logging';
+import type { SubmissionService } from '@scripts/services/submission.service';
+
+import { SpookyShuffleAjaxHandler } from '@scripts/modules/ajax-handlers';
+import { CustomConvertibleIds } from '@scripts/util/constants';
+import { getItemsByClass } from '@scripts/util/hgFunctions';
+import { HgResponseBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 vi.mock('@scripts/util/hgFunctions');
 
@@ -14,10 +15,9 @@ const submissionService = mock<SubmissionService>();
 const handler = new SpookyShuffleAjaxHandler(logger, submissionService);
 const mockedGetItemsByClass = vi.mocked(getItemsByClass);
 
-const spookyShuffle_url = "mousehuntgame.com/managers/ajax/events/spooky_shuffle.php";
+const spookyShuffle_url = 'mousehuntgame.com/managers/ajax/events/spooky_shuffle.php';
 
-describe("SpookyShuffleAjaxHandler", () => {
-
+describe('SpookyShuffleAjaxHandler', () => {
     const responseBuilder = new HgResponseBuilder();
 
     beforeEach(() => {
@@ -25,7 +25,7 @@ describe("SpookyShuffleAjaxHandler", () => {
         vi.resetModules();
     });
 
-    describe("match", () => {
+    describe('match', () => {
         it('is false when url is ignored', () => {
             expect(handler.match('mousehuntgame.com/managers/ajax/events/gwh.php')).toBe(false);
         });
@@ -35,9 +35,8 @@ describe("SpookyShuffleAjaxHandler", () => {
         });
     });
 
-    describe("execute", () => {
+    describe('execute', () => {
         it('warns if response is unexpected', async () => {
-
             // memory_game missing here,
             const response = responseBuilder.build();
 
@@ -141,7 +140,6 @@ describe("SpookyShuffleAjaxHandler", () => {
                 expectedItems
             );
         });
-
 
         it('submits upgraded duke board', async () => {
             mockedGetItemsByClass.mockReturnValue(Promise.resolve([
@@ -250,6 +248,5 @@ describe("SpookyShuffleAjaxHandler", () => {
             expect(logger.warn).toHaveBeenCalledWith(`Item 'Test Item' wasn't found in item map. Check its classification type`);
             expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
         });
-
     });
 });

@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const beanstalkAttributesSchema = z.object({
     in_castle: z.literal(false),
@@ -9,9 +9,9 @@ export const beanstalkAttributesSchema = z.object({
 
 export const embellishmentSchema = z.object({
     type: z.union([
-        z.literal("golden_key"),
-        z.literal("golden_feather"),
-        z.literal("ruby_remover"),
+        z.literal('golden_key'),
+        z.literal('golden_feather'),
+        z.literal('ruby_remover'),
     ]),
     is_active: z.boolean(),
 });

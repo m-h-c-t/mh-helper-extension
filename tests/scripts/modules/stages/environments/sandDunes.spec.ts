@@ -1,8 +1,9 @@
-import {SandDunesStager} from "@scripts/modules/stages/environments/sandDunes";
-import {JournalMarkup, QuestSandDunes, User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {UserBuilder} from "@tests/utility/builders";
-import {mock} from "vitest-mock-extended";
+import type { JournalMarkup, QuestSandDunes, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { SandDunesStager } from '@scripts/modules/stages/environments/sandDunes';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('Sand Dunes stages', () => {
     const message = mock<IntakeMessage>();
@@ -22,7 +23,7 @@ describe('Sand Dunes stages', () => {
                 is_normal: true,
             }
         })
-        .build() as User & { quests: { QuestSandDunes: QuestSandDunes & { is_normal: true } } };
+        .build() as User & {quests: {QuestSandDunes: QuestSandDunes & {is_normal: true}}};
 
     const stager = new SandDunesStager();
 

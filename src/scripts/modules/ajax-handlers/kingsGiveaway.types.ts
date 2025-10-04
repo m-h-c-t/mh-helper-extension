@@ -1,6 +1,6 @@
-import {hgResponseSchema} from "@scripts/types/hg";
-import {zodStrumber} from "@scripts/util/zod";
-import {z} from "zod";
+import { hgResponseSchema } from '@scripts/types/hg';
+import { zodStrumber } from '@scripts/util/zod';
+import { z } from 'zod';
 
 export const kingsGiveawayResultSchema = z.object({
     quantity: z.coerce.number(),

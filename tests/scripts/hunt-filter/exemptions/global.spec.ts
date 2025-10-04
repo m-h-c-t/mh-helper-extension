@@ -1,8 +1,9 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from "@scripts/services/logging";
-import {getDefaultIntakeMessage} from '../common';
+import type { LoggerService } from '@scripts/services/logging';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+
+import { getDefaultIntakeMessage } from '../common';
 
 describe('Global Exemptions', () => {
     let logger: LoggerService;
@@ -38,7 +39,6 @@ describe('Global Exemptions', () => {
             const valid = target.validateMessage(preMessage, postMessage);
 
             expect(valid).toBe(true);
-
         });
 
         it('should accept when charms runs out', () => {

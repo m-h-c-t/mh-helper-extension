@@ -1,9 +1,10 @@
-import {ValourRiftStager} from "@scripts/modules/stages/environments/valourRift";
-import {JournalMarkup, User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {QuestRiftValour} from "@scripts/types/hg/quests";
-import {mock} from "vitest-mock-extended";
-import {UserBuilder} from "@tests/utility/builders";
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { QuestRiftValour } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { ValourRiftStager } from '@scripts/modules/stages/environments/valourRift';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('Valour Rift stages', () => {
     const message = mock<IntakeMessage>();
@@ -11,7 +12,7 @@ describe('Valour Rift stages', () => {
     const journal = mock<JournalMarkup>();
 
     let stager: ValourRiftStager;
-    let preUser: User & { quests: { QuestRiftValour: QuestRiftValour } };
+    let preUser: User & {quests: {QuestRiftValour: QuestRiftValour}};
 
     beforeEach(() => {
         stager = new ValourRiftStager();
@@ -19,7 +20,7 @@ describe('Valour Rift stages', () => {
             .withQuests({
                 QuestRiftValour: getDefaultQuest()
             })
-            .build() as User & { quests: { QuestRiftValour: QuestRiftValour } };
+            .build() as User & {quests: {QuestRiftValour: QuestRiftValour}};
     });
 
     it('should be for the Valour Rift environment', () => {

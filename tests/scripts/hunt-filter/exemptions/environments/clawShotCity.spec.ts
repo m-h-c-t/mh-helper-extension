@@ -1,9 +1,10 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {ClawShotCityStager} from '@scripts/modules/stages/environments/clawShotCity';
-import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from "@scripts/services/logging";
-import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
+import type { LoggerService } from '@scripts/services/logging';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { ClawShotCityStager } from '@scripts/modules/stages/environments/clawShotCity';
+import { getDefaultIntakeMessage, getDefaultUser } from '@tests/scripts/hunt-filter/common';
 
 describe('Claw Shot City exemptions', () => {
     let logger: LoggerService;

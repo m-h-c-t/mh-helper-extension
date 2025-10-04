@@ -1,9 +1,10 @@
-import {GWHGolemAjaxHandler} from '@scripts/modules/ajax-handlers/golem';
-import type {GolemPayload, GolemResponse} from '@scripts/modules/ajax-handlers/golem.types';
-import {HgResponse} from '@scripts/types/hg';
-import {LoggerService} from '@scripts/services/logging';
-import {HgResponseBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { GolemPayload, GolemResponse } from '@scripts/modules/ajax-handlers/golem.types';
+import type { LoggerService } from '@scripts/services/logging';
+import type { HgResponse } from '@scripts/types/hg';
+
+import { GWHGolemAjaxHandler } from '@scripts/modules/ajax-handlers/golem';
+import { HgResponseBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 const logger = mock<LoggerService>();
 const showFlashMessage = vi.fn();
@@ -37,7 +38,6 @@ describe('GWHGolemAjaxHandler', () => {
         });
 
         it('calls submitGolems with expected data', async () => {
-
             const builder = new HgResponseBuilder()
                 .withJournalMarkup(testResponses.prologuePondResponse.journal_markup);
 

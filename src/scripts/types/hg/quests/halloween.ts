@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const questHalloweenBoilingCauldronSchema = z.object({
     reward_track: z.object({

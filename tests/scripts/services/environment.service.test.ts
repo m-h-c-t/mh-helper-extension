@@ -1,5 +1,4 @@
-
-import {EnvironmentService} from '@scripts/services/environment.service';
+import { EnvironmentService } from '@scripts/services/environment.service';
 
 describe('EnvironmentService', () => {
     let service: EnvironmentService;

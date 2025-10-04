@@ -1,16 +1,19 @@
-import {type User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {MistTier, MistTiers} from '@scripts/types/hg/quests';
-import {type IStager} from '../stages.types';
+import type { MistTier } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { type User } from '@scripts/types/hg';
+import { MistTiers } from '@scripts/types/hg/quests';
+
+import { type IStager } from '../stages.types';
 
 export class BurroughsRiftStager implements IStager {
     readonly environment: string = 'Burroughs Rift';
 
     readonly tierToStage: Record<MistTier, string> = {
-        'tier_0': 'Mist 0',
-        'tier_1': 'Mist 1-5',
-        'tier_2': 'Mist 6-18',
-        'tier_3': 'Mist 19-20',
+        tier_0: 'Mist 0',
+        tier_1: 'Mist 1-5',
+        tier_2: 'Mist 6-18',
+        tier_3: 'Mist 19-20',
     };
 
     /**

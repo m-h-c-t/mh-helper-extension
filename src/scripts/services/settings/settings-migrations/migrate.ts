@@ -1,7 +1,8 @@
-import {InitialMigration} from "./migrations/1-initial-migration";
-import {Migrator} from "./migrator";
+import type { Migrator } from './migrator';
 
-export function getMigrations(): Migrator<number,number>[] {
+import { InitialMigration } from './migrations/1-initial-migration';
+
+export function getMigrations(): Migrator<number, number>[] {
     return [
         new InitialMigration() // 0, 1
     ];

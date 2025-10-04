@@ -1,9 +1,9 @@
-import type {IMessageExemption} from "@scripts/hunt-filter/interfaces";
-import type {IntakeMessage} from "@scripts/types/mhct";
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 class EnemyEncounterExemption implements IMessageExemption {
-    readonly description = "Transition involving enemy encounter (boss)";
-    readonly property = "stage";
+    readonly description = 'Transition involving enemy encounter (boss)';
+    readonly property = 'stage';
     getExemptions(
         pre: IntakeMessage,
         post: IntakeMessage
@@ -12,7 +12,7 @@ class EnemyEncounterExemption implements IMessageExemption {
             this.isTransitionToBoss(pre.stage, post.stage, pre.mouse) ||
             this.isTransitionFromBoss(pre.stage, post.stage, pre.mouse)
         ) {
-            return ["stage"];
+            return ['stage'];
         }
 
         return null;
@@ -44,8 +44,8 @@ class EnemyEncounterExemption implements IMessageExemption {
         }
 
         return mouse === 'Empyrean Empress' ||
-            mouse.startsWith("Paragon of") ||
-            mouse.startsWith("Warden of");
+            mouse.startsWith('Paragon of') ||
+            mouse.startsWith('Warden of');
     }
 }
 

@@ -1,11 +1,13 @@
-import {LoggerService} from "@scripts/services/logging";
-import {HgResponse, User} from "../types/hg";
-import {IntakeMessage} from "../types/mhct";
-import {IRule, IPropertyRule, IMessageExemption} from "./interfaces";
-import {ResponseRules} from "./responseRules";
-import {UserRules} from "./userRules";
-import {MessageRules} from "./messageRules";
-import {MessageExemptions} from "./exemptions";
+import type { LoggerService } from '@scripts/services/logging';
+
+import type { HgResponse, User } from '../types/hg';
+import type { IntakeMessage } from '../types/mhct';
+import type { IRule, IPropertyRule, IMessageExemption } from './interfaces';
+
+import { MessageExemptions } from './exemptions';
+import { MessageRules } from './messageRules';
+import { ResponseRules } from './responseRules';
+import { UserRules } from './userRules';
 
 /**
  * Uses pluggable rule to validate data before a hunt can be
@@ -26,7 +28,7 @@ export class IntakeRejectionEngine {
     }
 
     public validateResponse(pre: HgResponse, post: HgResponse): boolean {
-        return this.responseRules.every(r => {
+        return this.responseRules.every((r) => {
             const isValid = r.isValid(pre, post);
             if (!isValid) {
                 this.logger.debug(`Api responses invalid: ${r.description}`);
@@ -36,7 +38,7 @@ export class IntakeRejectionEngine {
     }
 
     public validateUser(pre: User, post: User): boolean {
-        return this.userRules.every(r => {
+        return this.userRules.every((r) => {
             const isValid = r.isValid(pre, post);
             if (!isValid) {
                 this.logger.debug(`User objects invalid: ${r.description}`);

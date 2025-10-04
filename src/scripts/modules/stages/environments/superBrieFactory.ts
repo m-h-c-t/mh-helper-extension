@@ -1,16 +1,17 @@
-import type {IStager} from '../stages.types';
-import type {User} from '@scripts/types/hg';
-import type {IntakeMessage} from '@scripts/types/mhct';
-import type {RoomType} from '@scripts/types/hg/quests';
+import type { User } from '@scripts/types/hg';
+import type { RoomType } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IStager } from '../stages.types';
 
 export class SuperBrieFactoryStager implements IStager {
     readonly environment: string = 'SUPER|brie+ Factory';
 
     readonly roomTypeToStage: Record<RoomType, string> = {
-        "pumping_room":           "Pump Room",
-        "mixing_room":            "Mixing Room",
-        "break_room":             "Break Room",
-        "quality_assurance_room": "QA Room",
+        pumping_room: 'Pump Room',
+        mixing_room: 'Mixing Room',
+        break_room: 'Break Room',
+        quality_assurance_room: 'QA Room',
     };
 
     addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {
@@ -21,11 +22,11 @@ export class SuperBrieFactoryStager implements IStager {
         }
 
         if (quest.factory_atts.boss_warning === true) {
-            message.stage = "Boss";
+            message.stage = 'Boss';
         } else {
             message.stage = this.roomTypeToStage[quest.factory_atts.current_room];
-            if (!message.stage || !userPre.bait_name.includes('Coggy Colby') ) {
-                message.stage = "Any Room";
+            if (!message.stage || !userPre.bait_name.includes('Coggy Colby')) {
+                message.stage = 'Any Room';
             }
         }
     }

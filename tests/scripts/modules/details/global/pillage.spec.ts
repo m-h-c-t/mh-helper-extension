@@ -1,6 +1,7 @@
-import {PillageDetailer} from '@scripts/modules/details/global/pillage';
-import {JournalMarkup} from '@scripts/types/hg';
-import {HgResponseBuilder, IntakeMessageBuilder, UserBuilder} from '@tests/utility/builders';
+import type { JournalMarkup } from '@scripts/types/hg';
+
+import { PillageDetailer } from '@scripts/modules/details/global/pillage';
+import { HgResponseBuilder, IntakeMessageBuilder, UserBuilder } from '@tests/utility/builders';
 
 describe('PillageDetailer', () => {
     const hgResponseBuilder = new HgResponseBuilder();

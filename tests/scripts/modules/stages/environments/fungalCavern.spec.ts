@@ -1,30 +1,30 @@
-import {FungalCavernStager} from "@scripts/modules/stages/environments/fungalCavern";
-import type {IntakeMessage} from "@scripts/types/mhct";
-import {User} from "@scripts/types/hg";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
-describe("FungalCavernStager", () => {
+import { FungalCavernStager } from '@scripts/modules/stages/environments/fungalCavern';
+
+describe('FungalCavernStager', () => {
     const stager = new FungalCavernStager();
 
-    it("is for the Fungal Cavern environment", () => {
-        expect(stager.environment).toBe("Fungal Cavern");
+    it('is for the Fungal Cavern environment', () => {
+        expect(stager.environment).toBe('Fungal Cavern');
     });
 
-    it("is gemology base stage if gemology base is armed", () => {
+    it('is gemology base stage if gemology base is armed', () => {
         const message = {} as IntakeMessage;
         const userPre = {
-            base_name: "Gemology Base",
+            base_name: 'Gemology Base',
         } as User;
         stager.addStage(message, userPre, {} as User, {});
-        expect(message.stage).toBe("Gemology Base");
+        expect(message.stage).toBe('Gemology Base');
     });
 
-    it("is not gemology stage if gemology base is not armed", () => {
+    it('is not gemology stage if gemology base is not armed', () => {
         const message = {} as IntakeMessage;
         const userPre = {
-            base_name: "",
+            base_name: '',
         } as User;
         stager.addStage(message, userPre, {} as User, {});
-        expect(message.stage).toBe("Not Gemology");
+        expect(message.stage).toBe('Not Gemology');
     });
-
 });

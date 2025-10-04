@@ -1,15 +1,19 @@
-import {ValidatedAjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {KingsGiveawayResponse, kingsGiveawayResponseSchema} from "./kingsGiveaway.types";
-import {MouseRipApiService} from "@scripts/services/mouserip-api.service";
-import {SubmissionService} from "@scripts/services/submission.service";
-import {HgItem} from "@scripts/types/mhct";
-import {LoggerService} from "@scripts/services/logging";
-import {CustomConvertibleIds} from "@scripts/util/constants";
-import {z} from "zod";
+import type { LoggerService } from '@scripts/services/logging';
+import type { MouseRipApiService } from '@scripts/services/mouserip-api.service';
+import type { SubmissionService } from '@scripts/services/submission.service';
+import type { HgItem } from '@scripts/types/mhct';
+import type { z } from 'zod';
+
+import { CustomConvertibleIds } from '@scripts/util/constants';
+
+import type { KingsGiveawayResponse } from './kingsGiveaway.types';
+
+import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
+import { kingsGiveawayResponseSchema } from './kingsGiveaway.types';
 
 export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
     private itemCache: Record<string, number> | null = null;
-    readonly name = "King's Giveaway";
+    readonly name = 'King\'s Giveaway';
     readonly schema = kingsGiveawayResponseSchema;
 
     constructor(
@@ -20,7 +24,7 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
     }
 
     match(url: string): boolean {
-        if (!url.includes("mousehuntgame.com/managers/ajax/events/kings_giveaway.php")) {
+        if (!url.includes('mousehuntgame.com/managers/ajax/events/kings_giveaway.php')) {
             return false;
         }
 
@@ -44,14 +48,14 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
             inventory == null ||
             Array.isArray(inventory) ||
             !result.quantity ||
-            result.slot !== "bonus"
+            result.slot !== 'bonus'
         ) {
             this.logger.debug('Skipped mini prize pack submission due to unhandled XHR structure. This is probably fine.');
             return;
         }
 
         const convertible = {
-            name: "King's Mini Prize Pack",
+            name: 'King\'s Mini Prize Pack',
             id: CustomConvertibleIds.KingsMiniPrizePack,
             quantity: result.quantity,
         };
@@ -85,7 +89,7 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
             }
         }
 
-        this.logger.debug("Prizepack: ", {convertible, items});
+        this.logger.debug('Prizepack: ', {convertible, items});
         await this.submissionService.submitEventConvertible(convertible, items);
     }
 
@@ -101,13 +105,13 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
 
         const convertible = {
             id: CustomConvertibleIds.KingsGiveawayVault,
-            name: "King's Giveaway Vault",
+            name: 'King\'s Giveaway Vault',
             quantity: 1,
         };
 
         // vault_prizes don't have an id needed to submit with convertible
         // need to get them manually from the table below
-        const items: HgItem[] = kga.vault_prizes.map(i => {
+        const items: HgItem[] = kga.vault_prizes.map((i) => {
             const id = this.itemCache![i.type];
             if (id == null) {
                 throw new Error(`Unknown item type '${i.type}' in King's Vault`);

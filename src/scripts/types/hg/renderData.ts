@@ -1,7 +1,7 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const renderDataSchema = z.object({
-    //image: Image | [];
+    // image: Image | [];
     entry_id: z.number(),
     mouse_type: z.union([z.string(), z.boolean()]),
     css_class: z.string(),

@@ -1,23 +1,26 @@
-import {LoggerService} from "@scripts/services/logging";
-import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {GolemPayload, GolemResponse, golemResponseSchema} from "./golem.types";
-import {HgResponse, JournalMarkup} from "@scripts/types/hg";
-import {z} from "zod";
+import type { LoggerService } from '@scripts/services/logging';
+import type { HgResponse, JournalMarkup } from '@scripts/types/hg';
 
-const rarities = ["area", "hat", "scarf"] as const;
+import { z } from 'zod';
+
+import type { GolemPayload, GolemResponse } from './golem.types';
+
+import { AjaxSuccessHandler } from './ajaxSuccessHandler';
+import { golemResponseSchema } from './golem.types';
+
+const rarities = ['area', 'hat', 'scarf'] as const;
 
 export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
-
     constructor(
         private logger: LoggerService,
-        private showFlashMessage: (type: "error" | "warning" | "success", message: string) => void
+        private showFlashMessage: (type: 'error' | 'warning' | 'success', message: string) => void
     ) {
         super();
     }
 
     public match(url: string): boolean {
         // Triggers on Golem claim, dispatch, upgrade, and on "Decorate" click (+others, perhaps).
-        if (!url.includes("mousehuntgame.com/managers/ajax/events/winter_hunt_region.php")) {
+        if (!url.includes('mousehuntgame.com/managers/ajax/events/winter_hunt_region.php')) {
             return false;
         }
 
@@ -32,13 +35,13 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
         const golemData = responseJSON.golem_rewards;
         const uid = responseJSON.user.sn_user_id.toString();
         if (!uid) {
-            this.logger.warn("Skipped GWH golem submission due to missing user attribution.", responseJSON);
+            this.logger.warn('Skipped GWH golem submission due to missing user attribution.', responseJSON);
             return;
         }
 
         const location = this.getLocationFromJournalMarkup(responseJSON.journal_markup);
         if (location == null) {
-            this.logger.warn("Skipped GWH golem submission due to empty location.", responseJSON);
+            this.logger.warn('Skipped GWH golem submission due to empty location.', responseJSON);
             return;
         }
 
@@ -61,7 +64,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
         }
 
         if (payload.loot.length > 0) {
-            this.logger.debug("GWH Golem: {golem}", payload);
+            this.logger.debug('GWH Golem: {golem}', payload);
             const success = await this.submitGolems([payload]);
 
             if (success) {
@@ -77,12 +80,12 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
      * @param golems
      * @returns The number of submitted golems, otherwise false.
      */
-    public async submitGolems(golems: GolemPayload[]): Promise<number|false> {
+    public async submitGolems(golems: GolemPayload[]): Promise<number | false> {
         if (!Array.isArray(golems) || !golems.length) {
             return false;
         }
 
-        const endpoint = "https://script.google.com/macros/s/AKfycbzQjEgLA5W7ZUVKydZ_l_Cm8419bI8e0Vs2y3vW2S_RwlF-6_I/exec";
+        const endpoint = 'https://script.google.com/macros/s/AKfycbzQjEgLA5W7ZUVKydZ_l_Cm8419bI8e0Vs2y3vW2S_RwlF-6_I/exec';
         const options: RequestInit = {
             mode: 'cors',
             method: 'POST',
@@ -117,7 +120,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
 
         const golemLocationRegex = /My golem returned from (?:the )?(.+) with/;
         for (const journalEntry of journalMarkup) {
-            const result = golemLocationRegex.exec(journalEntry?.render_data?.text ?? "");
+            const result = golemLocationRegex.exec(journalEntry?.render_data?.text ?? '');
             if (result) {
                 return result[1];
             }
@@ -135,7 +138,7 @@ export class GWHGolemAjaxHandler extends AjaxSuccessHandler {
         const response = golemResponseSchema.safeParse(responseJSON);
 
         if (!response.success) {
-            this.logger.debug("Skipped GWH golem submission since there are no golem rewards.", z.prettifyError(response.error));
+            this.logger.debug('Skipped GWH golem submission since there are no golem rewards.', z.prettifyError(response.error));
         }
 
         return response.success;

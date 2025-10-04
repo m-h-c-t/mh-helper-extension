@@ -1,6 +1,7 @@
-import {LabyrinthStager} from "@scripts/modules/stages/environments/labyrinth";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { LabyrinthStager } from '@scripts/modules/stages/environments/labyrinth';
 
 describe('Labyrinth stages', () => {
     const HallwayLengths = ['Short', 'Medium', 'Long'];
@@ -20,7 +21,7 @@ describe('Labyrinth stages', () => {
     it('should throw for non hallway', () => {
         const stager = new LabyrinthStager();
         const message = {} as IntakeMessage;
-        const preUser = {quests: {QuestLabyrinth:{
+        const preUser = {quests: {QuestLabyrinth: {
             status: 'intersection',
         }}} as User;
         const postUser = {} as User;
@@ -33,7 +34,7 @@ describe('Labyrinth stages', () => {
         it.each(HallwayLengths)('hallway length: %p', (length) => {
             const stager = new LabyrinthStager();
             const message = {} as IntakeMessage;
-            const preUser = {quests: {QuestLabyrinth:{
+            const preUser = {quests: {QuestLabyrinth: {
                 hallway_name: `${length} ${hallwayType} Hallway`,
                 status: 'hallway',
             }}} as User;

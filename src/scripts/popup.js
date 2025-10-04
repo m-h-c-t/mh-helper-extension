@@ -6,12 +6,11 @@
  * @param {boolean} [silent] if true, errors will not be displayed to the user.
  */
 function findOpenMHTab(callback, button_id, silent) {
-    chrome.tabs.query({'url': ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, tabs => {
+    chrome.tabs.query({url: ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, (tabs) => {
         if (tabs.length > 0) {
             callback(tabs[0].id, button_id);
-        }
-        else if (!silent) {
-            displayErrorPopup("Please navigate to MouseHunt page first.");
+        } else if (!silent) {
+            displayErrorPopup('Please navigate to MouseHunt page first.');
         }
     });
 }
@@ -26,7 +25,7 @@ function sendMessageToScript(tab_id, button_id) {
     // Switch to MH tab if needed.
     const needsMHPageActive = ['horn', 'tsitu_loader', 'mhmh', 'ryonn'];
     if (needsMHPageActive.includes(button_id)) {
-        chrome.tabs.update(tab_id, {'active': true});
+        chrome.tabs.update(tab_id, {active: true});
     }
 
     // Send message to content script
@@ -34,19 +33,19 @@ function sendMessageToScript(tab_id, button_id) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const version_element = document.getElementById("version");
+    const version_element = document.getElementById('version');
     if (version_element) {
         version_element.innerText = ` version: ${chrome.runtime.getManifest().version}`;
     }
     // Schedule updates of the horn timer countdown.
-    findOpenMHTab(tab => {
-        const huntTimerField = document.getElementById("huntTimer");
+    findOpenMHTab((tab) => {
+        const huntTimerField = document.getElementById('huntTimer');
         updateHuntTimerField(tab, huntTimerField); // Fire now
         setInterval(updateHuntTimerField, 1000, tab, huntTimerField); // Continue firing each second
     }, null, true);
 
     // Send specific clicks to the content script for handling and/or additional forwarding.
-    ['mhmh', 'userhistory', 'ryonn', 'horn', 'tsitu_loader'].forEach(id => {
+    ['mhmh', 'userhistory', 'ryonn', 'horn', 'tsitu_loader'].forEach((id) => {
         const button_element = document.getElementById(id);
         if (button_element) {
             button_element.addEventListener('click', () => findOpenMHTab(sendMessageToScript, id));
@@ -62,12 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
  * @param {HTMLElement} [huntTimerField] The div element corresponding to the horn countdown timer.
  */
 function updateHuntTimerField(tab, huntTimerField) {
-    chrome.tabs.sendMessage(tab, {mhct_link: "huntTimer"}, response => {
+    chrome.tabs.sendMessage(tab, {mhct_link: 'huntTimer'}, (response) => {
         if (chrome.runtime.lastError) {
             displayErrorPopup(chrome.runtime.lastError.message);
         }
         if (huntTimerField) {
-            if (response === "Ready") {
+            if (response === 'Ready') {
                 huntTimerField.innerHTML = '<img src="images/horn.png" class="horn">';
             } else {
                 huntTimerField.textContent = response;

@@ -1,7 +1,8 @@
-import {CursedCityStager} from "@scripts/modules/stages/environments/cursedCity";
-import {LostCityStager} from "@scripts/modules/stages/environments/lostCity";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { CursedCityStager } from '@scripts/modules/stages/environments/cursedCity';
+import { LostCityStager } from '@scripts/modules/stages/environments/lostCity';
 
 describe('Lost City stages', () => {
     it('should be for the "Lost City" environment', () => {

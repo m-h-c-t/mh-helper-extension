@@ -1,12 +1,13 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class ZugzwangsTowerDetailer implements IEnvironmentDetailer {
-    readonly environment: string = "Zugzwang's Tower";
+    readonly environment: string = 'Zugzwang\'s Tower';
 
     addDetails(message: IntakeMessage, userPre: User, userPost: User, journal: JournalMarkup): Record<PropertyKey, unknown> | undefined {
-        if (userPre.environment_name !== "Zugzwang's Tower") {
+        if (userPre.environment_name !== 'Zugzwang\'s Tower') {
             return;
         }
 

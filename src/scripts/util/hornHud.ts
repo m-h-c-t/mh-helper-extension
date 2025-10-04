@@ -3,7 +3,7 @@
  * This class can only be uses from contexts that have access to DOM.
  */
 export class HornHud {
-    private static messageQueue: { message: string, type: 'success' | 'warning' | 'error' }[] = [];
+    private static messageQueue: {message: string, type: 'success' | 'warning' | 'error'}[] = [];
     private static isProcessingQueue = false;
 
     public static async showMessage(
@@ -80,7 +80,7 @@ export class HornHud {
             messageDom.classList.remove('huntersHornView__message--active');
 
             if (hasPreviousMessage) {
-                await new Promise((r) => setTimeout(r, 300));
+                await new Promise(r => setTimeout(r, 300));
                 messageDom.innerHTML = previousMessage;
                 messageDom.classList.add('huntersHornView__message--active');
             }
@@ -93,13 +93,13 @@ export class HornHud {
         // Allow previous message to animate out before replacing
         if (hasPreviousMessage) {
             messageDom.classList.remove('huntersHornView__message--active');
-            await new Promise((r) => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 300));
         }
 
         messageDom.replaceChildren(messageView);
         messageDom.classList.add('huntersHornView__message--active');
 
-        await new Promise((r) => setTimeout(r, duration));
+        await new Promise(r => setTimeout(r, duration));
         await removeMessage();
     }
 

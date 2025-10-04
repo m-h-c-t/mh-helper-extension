@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 const pourStatusSchema = z.enum(['filling', 'dumped']);
 

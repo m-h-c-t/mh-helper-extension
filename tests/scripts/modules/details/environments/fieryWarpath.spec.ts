@@ -1,25 +1,26 @@
-import {FieryWarpathDetailer} from '@scripts/modules/details/environments/fieryWarpath';
-import type {User, JournalMarkup, FieryWarpathViewingAttributes} from '@scripts/types/hg';
-import type {IntakeMessage} from '@scripts/types/mhct';
-import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { User, JournalMarkup, FieryWarpathViewingAttributes } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { FieryWarpathDetailer } from '@scripts/modules/details/environments/fieryWarpath';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('FieryWarpathDetailer', () => {
     const message = mock<IntakeMessage>();
     const journal = mock<JournalMarkup>();
 
-    let userPre: User & { viewing_atts: FieryWarpathViewingAttributes };
-    let userPost: User & { viewing_atts: FieryWarpathViewingAttributes };
+    let userPre: User & {viewing_atts: FieryWarpathViewingAttributes};
+    let userPost: User & {viewing_atts: FieryWarpathViewingAttributes};
     let detailer: FieryWarpathDetailer;
 
     beforeEach(() => {
         detailer = new FieryWarpathDetailer();
         userPre = new UserBuilder()
             .withViewingAttributes(getDefaultViewingAttributes())
-            .build() as User & { viewing_atts: FieryWarpathViewingAttributes };
+            .build() as User & {viewing_atts: FieryWarpathViewingAttributes};
         userPost = new UserBuilder()
             .withViewingAttributes(getDefaultViewingAttributes())
-            .build() as User & { viewing_atts: FieryWarpathViewingAttributes };
+            .build() as User & {viewing_atts: FieryWarpathViewingAttributes};
     });
 
     describe('addDetails', () => {

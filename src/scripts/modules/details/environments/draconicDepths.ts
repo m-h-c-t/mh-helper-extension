@@ -1,7 +1,8 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {QuestDraconicDepths} from '@scripts/types/hg/quests/draconicDepths';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { QuestDraconicDepths } from '@scripts/types/hg/quests/draconicDepths';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class DraconicDepthsDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Draconic Depths';

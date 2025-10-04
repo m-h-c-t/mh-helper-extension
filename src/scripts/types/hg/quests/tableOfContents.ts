@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const questTableOfContentsSchema = z.object({
     is_writing: z.boolean(),

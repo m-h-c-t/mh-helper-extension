@@ -1,13 +1,13 @@
 /* Emulates jquery.param() */
 export function param(data: unknown) {
-    if (data == null) { return ""; }
+    if (data == null) { return ''; }
 
     const urlParams: string[] = [];
 
     const add = (name: string, valueOrFunction: unknown) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        let value: unknown = typeof valueOrFunction === "function" ? valueOrFunction() : valueOrFunction;
-        value ??= "";
+        let value: unknown = typeof valueOrFunction === 'function' ? valueOrFunction() : valueOrFunction;
+        value ??= '';
 
         urlParams.push(`${encodeURIComponent(name)}=${encodeURIComponent(value as (string | number | boolean))}`);
     };
@@ -15,14 +15,14 @@ export function param(data: unknown) {
     const buildParams = (prefix: string, obj: unknown) => {
         if (Array.isArray(obj)) {
             obj.forEach((value, index) => {
-                if (prefix.endsWith("[]")) {
+                if (prefix.endsWith('[]')) {
                     add(prefix, value);
                 } else {
-                    const i = typeof value === "object" && value != null ? index : "";
+                    const i = typeof value === 'object' && value != null ? index : '';
                     buildParams(`${prefix}[${i}]`, value);
                 }
             });
-        } else if (typeof obj === "object" && obj != null) {
+        } else if (typeof obj === 'object' && obj != null) {
             for (const [name, value] of Object.entries(obj)) {
                 buildParams(`${prefix}[${name}]`, value);
             }
@@ -42,5 +42,5 @@ export function param(data: unknown) {
         }
     }
 
-    return urlParams.join("&");
+    return urlParams.join('&');
 };

@@ -1,12 +1,12 @@
-import {LoggingAssertions} from '@tests/utility/logging-assertions';
-import {HgResponseBuilder, IntakeMessageBuilder, UserBuilder} from '@tests/utility/builders';
-import {soundHorn} from './util/soundHorn';
-import MockServer from './util/mockServer';
+import { HgResponseBuilder, IntakeMessageBuilder, UserBuilder } from '@tests/utility/builders';
+import { LoggingAssertions } from '@tests/utility/logging-assertions';
 import nock from 'nock';
 import qs from 'qs';
 
-describe('MHCT Hunt Submission', () => {
+import MockServer from './util/mockServer';
+import { soundHorn } from './util/soundHorn';
 
+describe('MHCT Hunt Submission', () => {
     let server: MockServer;
 
     beforeEach(() => {
@@ -72,4 +72,3 @@ describe('MHCT Hunt Submission', () => {
         }
     });
 });
-

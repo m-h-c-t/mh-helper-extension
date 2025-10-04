@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class MousoleumStager implements IStager {
     readonly environment: string = 'Mousoleum';
@@ -11,6 +12,6 @@ export class MousoleumStager implements IStager {
             throw new Error('QuestMousoleum is undefined');
         }
 
-        message.stage = (userPre.quests.QuestMousoleum.has_wall) ? "Has Wall" : "No Wall";
+        message.stage = (userPre.quests.QuestMousoleum.has_wall) ? 'Has Wall' : 'No Wall';
     }
 }

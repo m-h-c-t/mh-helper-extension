@@ -1,6 +1,7 @@
-import * as hg from '@scripts/types/hg';
-import * as mhct from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import type * as hg from '@scripts/types/hg';
+import type * as mhct from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class SandDunesStager implements IStager {
     readonly environment: string = 'Sand Dunes';
@@ -13,10 +14,10 @@ export class SandDunesStager implements IStager {
 
         this.assertIsNormalQuestSandDunes(quest);
 
-        message.stage = (quest.minigame.has_stampede) ? "Stampede" : "No Stampede";
+        message.stage = (quest.minigame.has_stampede) ? 'Stampede' : 'No Stampede';
     }
 
-    private assertIsNormalQuestSandDunes(quest: hg.QuestSandDunes): asserts quest is hg.QuestSandDunes & { is_normal: true } {
+    private assertIsNormalQuestSandDunes(quest: hg.QuestSandDunes): asserts quest is hg.QuestSandDunes & {is_normal: true} {
         if (!quest.is_normal) {
             throw new Error('This stager is only for Sand Dunes and not the Sand Crypts');
         }

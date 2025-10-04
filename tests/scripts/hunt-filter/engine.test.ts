@@ -1,9 +1,11 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {HgResponse, User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from '@scripts/services/logging';
-import {getValidPreResponse, getValidPostResponse, getDefaultUser, getDefaultIntakeMessage} from './common';
-import {mock} from 'vitest-mock-extended';
+import type { LoggerService } from '@scripts/services/logging';
+import type { HgResponse, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { mock } from 'vitest-mock-extended';
+
+import { getValidPreResponse, getValidPostResponse, getDefaultUser, getDefaultIntakeMessage } from './common';
 
 // Mock logger won't actually call console.log
 const logger = mock<LoggerService>();
@@ -74,26 +76,26 @@ describe('validateMessage', () => {
 
     it('passes', () => {
         expect(engine.validateMessage(pre, post)).toBe(true);
-        logger.info("one");
+        logger.info('one');
     });
 
     it('rejects different locations', () => {
-        post.location.name = "Real Location";
+        post.location.name = 'Real Location';
         expect(engine.validateMessage(pre, post)).toBe(false);
     });
 
     it('rejects different traps', () => {
-        post.trap.name = "Real Trap";
+        post.trap.name = 'Real Trap';
         expect(engine.validateMessage(pre, post)).toBe(false);
     });
 
     it('rejects different bases', () => {
-        post.base.name = "Real Base";
+        post.base.name = 'Real Base';
         expect(engine.validateMessage(pre, post)).toBe(false);
     });
 
     it('rejects different cheese', () => {
-        post.cheese.name = "Real Cheese";
+        post.cheese.name = 'Real Cheese';
         expect(engine.validateMessage(pre, post)).toBe(false);
     });
 
@@ -112,20 +114,18 @@ describe('validateMessage', () => {
     });
 
     it('exempts location and stage if realm ripper was caught', () => {
-        pre.location.name = "Forbidden Grove";
-        pre.stage = "Open";
-        pre.mouse = "Realm Ripper";
-        post.location.name = "Acolyte Realm";
+        pre.location.name = 'Forbidden Grove';
+        pre.stage = 'Open';
+        pre.mouse = 'Realm Ripper';
+        post.location.name = 'Acolyte Realm';
         expect(engine.validateMessage(pre, post)).toBe(true);
     });
 
     it('exempts stage if vincent was caught', () => {
-        pre.stage = "Boss";
-        pre.mouse = "Vincent, The Magnificent";
-        post.stage = "Any Room";
+        pre.stage = 'Boss';
+        pre.mouse = 'Vincent, The Magnificent';
+        post.stage = 'Any Room';
 
         expect(engine.validateMessage(pre, post)).toBe(true);
     });
 });
-
-

@@ -1,8 +1,8 @@
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
-import {TableOfContentsStager} from "@scripts/modules/stages/environments/tableOfContents";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import { TableOfContentsStager } from '@scripts/modules/stages/environments/tableOfContents';
 
 describe('Table of Contents stages', () => {
     let stager: IStager;

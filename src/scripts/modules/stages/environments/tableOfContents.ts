@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class TableOfContentsStager implements IStager {
     readonly environment: string = 'Table of Contents';
