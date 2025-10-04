@@ -1,10 +1,11 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {FloatingIslandsStager} from '@scripts/modules/stages/environments/floatingIslands';
-import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {FloatingIslandHuntingSiteAtts} from '@scripts/types/hg/quests/floatingIslands';
-import {LoggerService} from "@scripts/services/logging";
-import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
+import type { LoggerService } from '@scripts/services/logging';
+import type { User } from '@scripts/types/hg';
+import type { FloatingIslandHuntingSiteAtts } from '@scripts/types/hg/quests/floatingIslands';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { FloatingIslandsStager } from '@scripts/modules/stages/environments/floatingIslands';
+import { getDefaultIntakeMessage, getDefaultUser } from '@tests/scripts/hunt-filter/common';
 import * as stageTest from '@tests/scripts/modules/stages/environments/floatingIslands.spec';
 
 describe('Floating Islands exemptions', () => {
@@ -33,7 +34,7 @@ describe('Floating Islands exemptions', () => {
             postMessage = {...getDefaultIntakeMessage()};
         });
 
-        describe('Enemy Encounters' , () => {
+        describe('Enemy Encounters', () => {
             describe.each<{mouse: string, atts: Partial<FloatingIslandHuntingSiteAtts>}>([
                 {mouse: 'Warden of Wind', atts: {is_low_tier_island: true}},
                 {mouse: 'Paragon of the Lawless', atts: {is_high_tier_island: true}},
@@ -69,7 +70,6 @@ describe('Floating Islands exemptions', () => {
                     expect(valid).toBe(true);
                 });
             });
-
         });
 
         function setHuntingSiteAtts(preAttributes: Partial<FloatingIslandHuntingSiteAtts>,

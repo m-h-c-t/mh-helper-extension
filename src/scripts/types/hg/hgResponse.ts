@@ -1,9 +1,10 @@
-import {z} from "zod";
-import {userSchema} from "./user";
-import {journalMarkupSchema} from "./journalMarkup";
-import {inventoryItemSchema, inventorySchema} from "./inventory";
-import {trapImageSchema} from "./trapImage";
-import {convertibleOpenSchema} from "./convertibleOpen";
+import { z } from 'zod';
+
+import { convertibleOpenSchema } from './convertibleOpen';
+import { inventoryItemSchema, inventorySchema } from './inventory';
+import { journalMarkupSchema } from './journalMarkup';
+import { trapImageSchema } from './trapImage';
+import { userSchema } from './user';
 
 export const hgResponseSchema = z.object({
     user: userSchema,

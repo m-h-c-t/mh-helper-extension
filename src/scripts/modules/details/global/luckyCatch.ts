@@ -1,6 +1,7 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IDetailer} from '../details.types';
-import {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IDetailer } from '../details.types';
 
 export class LuckyCatchDetailer implements IDetailer {
     /**
@@ -9,7 +10,7 @@ export class LuckyCatchDetailer implements IDetailer {
     addDetails(message: IntakeMessage, userPre: User, userPost: User, journal: JournalMarkup): LuckyCatchDetails | undefined {
         if (message.caught) {
             return {
-                is_lucky_catch: journal.render_data.css_class.includes("luckycatchsuccess"),
+                is_lucky_catch: journal.render_data.css_class.includes('luckycatchsuccess'),
             } as LuckyCatchDetails;
         }
     }

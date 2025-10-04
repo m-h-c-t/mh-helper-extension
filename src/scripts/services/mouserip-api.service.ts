@@ -1,13 +1,14 @@
-import {ApiService} from "./api.service";
-import {LoggerService} from "./logging";
-import {z} from "zod";
+import { z } from 'zod';
+
+import type { ApiService } from './api.service';
 
 export class MouseRipApiService {
-    constructor(private readonly logger: LoggerService,
-        private readonly apiService: ApiService) {}
+    constructor(
+        private readonly apiService: ApiService
+    ) {}
 
     async getAllItems(): Promise<MouseRipItem[]> {
-        const response = await this.apiService.send('GET', 'https://api.mouse.rip/items', null, true, (headers) => this.alterHeaders(headers));
+        const response = await this.apiService.send('GET', 'https://api.mouse.rip/items', null, true, headers => this.alterHeaders(headers));
 
         return mouseRipItemSchema.array().parse(response);
     }

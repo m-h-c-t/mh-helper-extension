@@ -1,12 +1,16 @@
-import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {SubmissionService} from "@scripts/services/submission.service";
-import {HgItem} from "@scripts/types/mhct";
-import {LoggerService} from "@scripts/services/logging";
-import {SpookyShuffleResponse, spookyShuffleResponseSchema, TitleRange} from "./spookyShuffle.types";
-import {CustomConvertibleIds} from "@scripts/util/constants";
-import {parseHgInt} from "@scripts/util/number";
-import * as hgFuncs from "@scripts/util/hgFunctions";
-import {z} from "zod";
+import type { LoggerService } from '@scripts/services/logging';
+import type { SubmissionService } from '@scripts/services/submission.service';
+import type { HgItem } from '@scripts/types/mhct';
+
+import { CustomConvertibleIds } from '@scripts/util/constants';
+import * as hgFuncs from '@scripts/util/hgFunctions';
+import { parseHgInt } from '@scripts/util/number';
+import { z } from 'zod';
+
+import type { SpookyShuffleResponse, TitleRange } from './spookyShuffle.types';
+
+import { AjaxSuccessHandler } from './ajaxSuccessHandler';
+import { spookyShuffleResponseSchema } from './spookyShuffle.types';
 
 export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -21,7 +25,7 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
     }
 
     match(url: string): boolean {
-        if (!url.includes("mousehuntgame.com/managers/ajax/events/spooky_shuffle.php")) {
+        if (!url.includes('mousehuntgame.com/managers/ajax/events/spooky_shuffle.php')) {
             return false;
         }
 
@@ -48,7 +52,6 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
             return;
         }
 
-
         const convertibleContent: HgItem[] = [];
         const processed = new Set<string>();
         try {
@@ -56,7 +59,7 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
             // to convert the names to ids.
             const itemMap = await this.fetchItemNameToIdMap();
 
-            result.cards.forEach(c => {
+            result.cards.forEach((c) => {
                 // All cards need to be revealed and also exist in name to id map.
                 // An error here typically means:
                 // 1. Didn't fetch the required item classification
@@ -103,7 +106,7 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
             quantity: 1,
         };
 
-        this.logger.debug("Shuffle Board: ", {convertible, items: convertibleContent});
+        this.logger.debug('Shuffle Board: ', {convertible, items: convertibleContent});
         await this.submissionService.submitEventConvertible(convertible, convertibleContent);
     }
 
@@ -131,7 +134,7 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
         const response = spookyShuffleResponseSchema.safeParse(responseJSON);
 
         if (!response.success) {
-            this.logger.warn("Unexpected spooky shuffle response object.", z.prettifyError(response.error));
+            this.logger.warn('Unexpected spooky shuffle response object.', z.prettifyError(response.error));
         }
 
         return response.success;

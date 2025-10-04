@@ -1,5 +1,6 @@
-import {UserSettings} from "../../settings.service";
-import {Migrator} from "../migrator";
+import type { UserSettings } from '../../settings.service';
+
+import { Migrator } from '../migrator';
 
 interface OldSettings {
     tracking_enabled: boolean;

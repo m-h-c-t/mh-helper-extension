@@ -1,20 +1,22 @@
-import {Message, MessageTypes} from "./message";
+import type { Message } from './message';
 
-const SENDER = "mhct-helper";
+import { MessageTypes } from './message';
+
+const SENDER = 'mhct-helper';
 
 type PostMessageFunction = (message: MessageWithMetadata, remotePort: MessagePort) => void;
 
 export interface Channel {
-  addEventListener: (listener: (message: MessageEvent<MessageWithMetadata>) => void) => void;
-  removeEventListener: (listener: (message: MessageEvent<MessageWithMetadata>) => void) => void;
-  postMessage: PostMessageFunction;
+    addEventListener: (listener: (message: MessageEvent<MessageWithMetadata>) => void) => void;
+    removeEventListener: (listener: (message: MessageEvent<MessageWithMetadata>) => void) => void;
+    postMessage: PostMessageFunction;
 }
 
-export interface Metadata { SENDER: typeof SENDER; senderId: string }
+export interface Metadata {SENDER: typeof SENDER, senderId: string}
 export type MessageWithMetadata = Message & Metadata;
 type Handler = (
-  message: MessageWithMetadata,
-  abortController?: AbortController,
+    message: MessageWithMetadata,
+    abortController?: AbortController,
 ) => void | Promise<Message | undefined>;
 
 /**
@@ -39,8 +41,8 @@ export class Messenger {
 
         return new Messenger({
             postMessage: (message, port) => window.postMessage(message, windowOrigin, [port]),
-            addEventListener: (listener) => window.addEventListener("message", listener),
-            removeEventListener: (listener) => window.removeEventListener("message", listener),
+            addEventListener: listener => window.addEventListener('message', listener),
+            removeEventListener: listener => window.removeEventListener('message', listener),
         });
     }
 
@@ -81,7 +83,7 @@ export class Messenger {
                     metadata: {SENDER},
                     type: MessageTypes.AbortRequest,
                 });
-            abortSignal?.addEventListener("abort", abortListener);
+            abortSignal?.addEventListener('abort', abortListener);
 
             this.broadcastChannel.postMessage(
                 {...request, SENDER, senderId: this.messengerId},
@@ -89,7 +91,7 @@ export class Messenger {
             );
             const response = await promise;
 
-            abortSignal?.removeEventListener("abort", abortListener);
+            abortSignal?.removeEventListener('abort', abortListener);
 
             if (response.type === MessageTypes.ErrorResponse) {
                 const error = new Error();
@@ -124,7 +126,7 @@ export class Messenger {
             };
 
             const onDestroyListener = () => abortController.abort();
-            this.onDestroy.addEventListener("destroy", onDestroyListener);
+            this.onDestroy.addEventListener('destroy', onDestroyListener);
 
             try {
                 const handlerResponse = await this.handler(message, abortController);
@@ -136,7 +138,7 @@ export class Messenger {
                     error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
                 });
             } finally {
-                this.onDestroy.removeEventListener("destroy", onDestroyListener);
+                this.onDestroy.removeEventListener('destroy', onDestroyListener);
                 port.close();
             }
         };
@@ -146,7 +148,7 @@ export class Messenger {
    * Cleans up the messenger by removing the message event listener
    */
     async destroy() {
-        this.onDestroy.dispatchEvent(new Event("destroy"));
+        this.onDestroy.dispatchEvent(new Event('destroy'));
 
         if (this.messageEventListener) {
             await this.sendDisconnectCommand();

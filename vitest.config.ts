@@ -1,5 +1,5 @@
-import {configDefaults, defineConfig} from "vitest/config";
-import tsConfigPaths from "vite-tsconfig-paths";
+import tsConfigPaths from 'vite-tsconfig-paths';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
     plugins: [tsConfigPaths()],
@@ -29,7 +29,7 @@ export default defineConfig({
                         './tests/e2e/util/setup-env.ts'
                     ],
                     environmentOptions: {
-                        'happyDOM': {
+                        happyDOM: {
                             url: 'https://www.mousehuntgame.com/',
                         }
                     }

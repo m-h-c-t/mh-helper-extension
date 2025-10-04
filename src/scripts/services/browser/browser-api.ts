@@ -1,4 +1,4 @@
-import {isBrowserSafariApi} from '@scripts/services/browser/browser-services';
+import { isBrowserSafariApi } from '@scripts/services/browser/browser-services';
 
 export class BrowserApi {
     static isSafariApi: boolean = isBrowserSafariApi();
@@ -22,7 +22,7 @@ export class BrowserApi {
      * a result, it will return null when called from that context.
      */
     static getBackgroundPage(): Window | null {
-        if (typeof chrome.extension.getBackgroundPage === "undefined") {
+        if (typeof chrome.extension.getBackgroundPage === 'undefined') {
             return null;
         }
 
@@ -36,7 +36,7 @@ export class BrowserApi {
      * @param window - The window to check.
      */
     static isBackgroundPage(window: Window & typeof globalThis): boolean {
-        return typeof window !== "undefined" && window === BrowserApi.getBackgroundPage();
+        return typeof window !== 'undefined' && window === BrowserApi.getBackgroundPage();
     }
 
     // Keep track of all the events registered in a Safari popup so we can remove
@@ -106,7 +106,7 @@ export class BrowserApi {
     private static setupUnloadListeners() {
         // The MDN recommend using 'visibilitychange' but that event is fired any time the popup window is obscured as well
         // 'pagehide' works just like 'unload' but is compatible with the back/forward cache, so we prefer using that one
-        self.addEventListener("pagehide", () => {
+        self.addEventListener('pagehide', () => {
             for (const [event, callback] of BrowserApi.trackedChromeEventListeners) {
                 event.removeListener(callback);
             }

@@ -1,8 +1,9 @@
-import {TableOfContentsDetailer} from '@scripts/modules/details/environments/tableOfContents';
-import {User, JournalMarkup} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { User, JournalMarkup } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { TableOfContentsDetailer } from '@scripts/modules/details/environments/tableOfContents';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('TableOfContentsDetailer', () => {
     const message = mock<IntakeMessage>();

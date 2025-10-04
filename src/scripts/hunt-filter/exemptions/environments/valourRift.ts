@@ -1,5 +1,5 @@
-import type {IMessageExemption} from "@scripts/hunt-filter/interfaces";
-import type {IntakeMessage} from "@scripts/types/mhct";
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 // TODO: Move to quests\ValourRift.ts once made
 export const OutsideStages = ['Outside'] as const;
@@ -18,8 +18,8 @@ export type ValourRiftStage = typeof ValourRiftStages[number];
  * a Valour Rift Eclipse (Normal or Umbra)
  */
 class EclipseMouseStageExemption implements IMessageExemption {
-    readonly description = "Eclipse caught in Valour Rift";
-    readonly property = "stage";
+    readonly description = 'Eclipse caught in Valour Rift';
+    readonly property = 'stage';
 
     getExemptions(
         pre: IntakeMessage,
@@ -29,7 +29,7 @@ class EclipseMouseStageExemption implements IMessageExemption {
             (this.isNormalEclipse(pre) || this.isUmbraEclipse(pre)) &&
             this.isValourRiftStage(post.stage)
         ) {
-            return ["stage"];
+            return ['stage'];
         }
 
         return null;

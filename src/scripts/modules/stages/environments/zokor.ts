@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 const DISTRICTS = [
     // Level 1
@@ -28,20 +29,20 @@ export class ZokorStager implements IStager {
     readonly environment: string = 'Zokor';
 
     readonly partialDistrictToStage: Record<District, string> = {
-        'Garden':     'Farming 0+',
-        'Study':      'Scholar 15+',
-        'Shrine':     'Fealty 15+',
-        'Outskirts':  'Tech 15+',
-        'Room':       'Treasure 15+',
-        'Minotaur':   'Lair - Each 30+',
-        'Temple':     'Fealty 50+',
-        'Auditorium': 'Scholar 50+',
-        'Farmhouse':  'Farming 50+',
-        'Center':     'Tech 50+',
-        'Vault':      'Treasure 50+',
-        'Library':    'Scholar 80+',
-        'Manaforge':  'Tech 80+',
-        'Sanctum':    'Fealty 80+',
+        Garden: 'Farming 0+',
+        Study: 'Scholar 15+',
+        Shrine: 'Fealty 15+',
+        Outskirts: 'Tech 15+',
+        Room: 'Treasure 15+',
+        Minotaur: 'Lair - Each 30+',
+        Temple: 'Fealty 50+',
+        Auditorium: 'Scholar 50+',
+        Farmhouse: 'Farming 50+',
+        Center: 'Tech 50+',
+        Vault: 'Treasure 50+',
+        Library: 'Scholar 80+',
+        Manaforge: 'Tech 80+',
+        Sanctum: 'Fealty 80+',
     };
 
     addStage(message: IntakeMessage, userPre: User, userPost: User, journal: unknown): void {

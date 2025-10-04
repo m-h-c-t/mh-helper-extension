@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 const sandDunesSchema = z.object({
     is_normal: z.literal(true),

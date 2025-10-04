@@ -1,8 +1,9 @@
-import {BountifulBeanstalkStager} from "@scripts/modules/stages/environments/bountifulBeanstalk";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import type {BeanstalkAttributes, CastleAttributes, QuestBountifulBeanstalk} from "@scripts/types/hg/quests";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { BeanstalkAttributes, CastleAttributes, QuestBountifulBeanstalk } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { BountifulBeanstalkStager } from '@scripts/modules/stages/environments/bountifulBeanstalk';
 
 describe('Bountiful Beanstalk stages', () => {
     let stager: IStager;
@@ -91,7 +92,6 @@ describe('Bountiful Beanstalk stages', () => {
 
         expect(message.stage).toBe(expected);
     });
-
 });
 
 export function getDefaultQuest(): QuestBountifulBeanstalk {

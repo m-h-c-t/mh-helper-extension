@@ -1,9 +1,10 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {IceFortressStager} from '@scripts/modules/stages/environments/iceFortress';
-import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from "@scripts/services/logging";
-import {getDefaultIntakeMessage, getDefaultUser} from '@tests/scripts/hunt-filter/common';
+import type { LoggerService } from '@scripts/services/logging';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { IceFortressStager } from '@scripts/modules/stages/environments/iceFortress';
+import { getDefaultIntakeMessage, getDefaultUser } from '@tests/scripts/hunt-filter/common';
 
 describe('Ice Fortress exemptions', () => {
     let logger: LoggerService;
@@ -60,7 +61,6 @@ describe('Ice Fortress exemptions', () => {
         });
 
         it('should accept transtion on catching Frost King', () => {
-
             if (preUser.quests.QuestIceFortress && postUser.quests.QuestIceFortress) {
                 preUser.quests.QuestIceFortress.shield.is_broken = true;
                 postUser.quests.QuestIceFortress.shield.is_broken = false;
@@ -87,10 +87,10 @@ describe('Ice Fortress exemptions', () => {
             quests: {
                 QuestIceFortress: {
                     shield: {is_broken: false},
-                    cannons:    {
-                        charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
-                        cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
-                        snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: "disabled"},
+                    cannons: {
+                        charm_cannon: {is_enabled: null, is_active: null, just_fired: null, state: 'disabled'},
+                        cinnamon_cannon: {is_enabled: null, is_active: null, just_fired: null, state: 'disabled'},
+                        snow_cannon: {is_enabled: null, is_active: null, just_fired: null, state: 'disabled'},
                     },
                 },
             },

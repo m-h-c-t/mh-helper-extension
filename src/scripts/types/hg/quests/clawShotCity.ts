@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const questClawShotCitySchema = z.object({
     map_active: z.boolean(),

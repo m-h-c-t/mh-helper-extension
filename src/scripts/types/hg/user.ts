@@ -1,8 +1,9 @@
-import {z} from "zod";
-import {environmentAttributesSchema} from "./environmentAttributes";
-import {viewingAttributesSchema} from "./viewingAttributes";
-import {questsSchema} from "./quests";
-import {zodStrumber} from "@scripts/util/zod";
+import { zodStrumber } from '@scripts/util/zod';
+import { z } from 'zod';
+
+import { environmentAttributesSchema } from './environmentAttributes';
+import { questsSchema } from './quests';
+import { viewingAttributesSchema } from './viewingAttributes';
 
 export const userSchema = z.object({
     user_id: z.number(),

@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class LostCityStager implements IStager {
     readonly environment: string = 'Lost City';
@@ -15,6 +16,6 @@ export class LostCityStager implements IStager {
             throw new Error('QuestLostCity is undefined');
         }
 
-        message.stage = (quest.minigame.is_cursed) ? "Cursed" : "Not Cursed";
+        message.stage = (quest.minigame.is_cursed) ? 'Cursed' : 'Not Cursed';
     }
 }

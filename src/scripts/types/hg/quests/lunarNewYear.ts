@@ -7,4 +7,3 @@ export const questLunarNewYearLanternSchema = z.object({
 });
 
 export type QuestLunarNewYearLantern = z.infer<typeof questLunarNewYearLanternSchema>;
-

@@ -1,5 +1,5 @@
+import { hgResponseSchema } from '@scripts/types/hg';
 import z from 'zod';
-import {hgResponseSchema} from '@scripts/types/hg';
 
 /**
  * An item brought back back a golem
@@ -11,7 +11,7 @@ const golemItemSchema = z.object({
 
 type GolemItem = z.infer<typeof golemItemSchema>;
 
-const raritySchema = z.enum(["area", "hat", "scarf"]);
+const raritySchema = z.enum(['area', 'hat', 'scarf']);
 export type Rarity = z.infer<typeof raritySchema>;
 
 /**
@@ -56,10 +56,10 @@ export interface GolemResponse {
  * The data that will be recorded externally
  */
 export interface GolemPayload {
-    uid: string,
+    uid: string;
     timestamp: number;
     location: string;
     loot: (GolemItem & {
-        rarity: Rarity
-    })[]
+        rarity: Rarity;
+    })[];
 }

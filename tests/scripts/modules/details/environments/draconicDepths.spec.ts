@@ -1,8 +1,9 @@
-import {DraconicDepthsDetailer} from '@scripts/modules/details/environments/draconicDepths';
-import type {IntakeMessage} from '@scripts/types/mhct';
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {QuestDraconicDepths} from '@scripts/types/hg/quests/draconicDepths';
-import {UserBuilder} from '@tests/utility/builders';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { QuestDraconicDepths } from '@scripts/types/hg/quests/draconicDepths';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { DraconicDepthsDetailer } from '@scripts/modules/details/environments/draconicDepths';
+import { UserBuilder } from '@tests/utility/builders';
 
 describe('Draconic Depths Detailer', () => {
     let detailer: DraconicDepthsDetailer;
@@ -24,7 +25,6 @@ describe('Draconic Depths Detailer', () => {
     });
 
     it('should add multiplier details when in cavern', () => {
-
         const userPost = userBuilder.build();
         userPost.quests.QuestDraconicDepths!.in_cavern = true;
         if (userPost.quests.QuestDraconicDepths!.in_cavern) {

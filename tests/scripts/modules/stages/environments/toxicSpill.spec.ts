@@ -1,8 +1,10 @@
-import {ToxicSpillStager} from "@scripts/modules/stages/environments/toxicSpill";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {PollutionTitle, PollutionTitleStatus, PollutionTitles, QuestPollutionOutbreak} from "@scripts/types/hg/quests";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { PollutionTitle, PollutionTitleStatus, QuestPollutionOutbreak } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { ToxicSpillStager } from '@scripts/modules/stages/environments/toxicSpill';
+import { PollutionTitles } from '@scripts/types/hg/quests';
 
 describe('Toxic Spill stages', () => {
     let stager: IStager;
@@ -22,7 +24,6 @@ describe('Toxic Spill stages', () => {
         postUser = {
             quests: {QuestPollutionOutbreak: getDefaultQuest()},
         } as User;
-
     });
 
     it('should be for the Toxic Spill environment', () => {
@@ -114,4 +115,3 @@ describe('Toxic Spill stages', () => {
         };
     }
 });
-

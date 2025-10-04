@@ -1,6 +1,7 @@
-import {SlushyShorelineStager} from "@scripts/modules/stages/environments/slushyShoreline";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { SlushyShorelineStager } from '@scripts/modules/stages/environments/slushyShoreline';
 
 describe('Slushy Shoreline stages', () => {
     it('should be for the "Slushy Shoreline" environment', () => {

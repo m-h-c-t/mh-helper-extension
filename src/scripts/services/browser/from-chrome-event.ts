@@ -1,6 +1,6 @@
-import {Observable} from "rxjs";
+import { Observable } from 'rxjs';
 
-import {BrowserApi} from "./browser-api";
+import { BrowserApi } from './browser-api';
 
 /**
  * Converts a Chrome event to an Observable stream.

@@ -1,16 +1,17 @@
-import {IntakeRejectionEngine} from "@scripts/hunt-filter/engine";
-import {SchoolOfSorceryStager} from "@scripts/modules/stages/environments/schoolOfSorcery";
-import {User} from "@scripts/types/hg";
-import {ComponentEntry, IntakeMessage} from "@scripts/types/mhct";
-import {CourseType} from "@scripts/types/hg/quests/schoolOfSorcery";
-import {LoggerService} from "@scripts/services/logging";
+import type { LoggerService } from '@scripts/services/logging';
+import type { User } from '@scripts/types/hg';
+import type { CourseType } from '@scripts/types/hg/quests/schoolOfSorcery';
+import type { ComponentEntry, IntakeMessage } from '@scripts/types/mhct';
+
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { SchoolOfSorceryStager } from '@scripts/modules/stages/environments/schoolOfSorcery';
 import {
     getDefaultIntakeMessage,
     getDefaultUser
-} from "@tests/scripts/hunt-filter/common";
-import * as stageTest from "@tests/scripts/modules/stages/environments/schoolOfSorcery.spec";
+} from '@tests/scripts/hunt-filter/common';
+import * as stageTest from '@tests/scripts/modules/stages/environments/schoolOfSorcery.spec';
 
-describe("School of Sorcery exemptions", () => {
+describe('School of Sorcery exemptions', () => {
     let logger: LoggerService;
     let stager: SchoolOfSorceryStager;
     let target: IntakeRejectionEngine;
@@ -23,7 +24,7 @@ describe("School of Sorcery exemptions", () => {
         logger.debug = vi.fn();
     });
 
-    describe("validateMessage", () => {
+    describe('validateMessage', () => {
         let preUser: User;
         let postUser: User;
         let preMessage: IntakeMessage;
@@ -36,11 +37,11 @@ describe("School of Sorcery exemptions", () => {
             postMessage = {...getDefaultIntakeMessage()};
         });
 
-        describe("In Course", () => {
-            it("should reject on transition to boss", () => {
+        describe('In Course', () => {
+            it('should reject on transition to boss', () => {
                 preUser.quests.QuestSchoolOfSorcery = stageTest.createCourseAttributes({courseType: 'arcane_101_course', powerType: 'arcane'}, false);
                 postUser.quests.QuestSchoolOfSorcery = stageTest.createCourseAttributes({courseType: 'arcane_101_course', powerType: 'arcane'}, true);
-                preMessage.mouse = postMessage.mouse = "Some Random Mouse";
+                preMessage.mouse = postMessage.mouse = 'Some Random Mouse';
 
                 calculateStage();
 
@@ -50,11 +51,11 @@ describe("School of Sorcery exemptions", () => {
             });
 
             describe.each<{courseType: CourseType, powerType: 'arcane' | 'shadow', boss: string}>([
-                {courseType: 'arcane_101_course',   powerType: 'arcane', boss: 'Arcane Master Sorcerer'},
-                {courseType: 'shadow_101_course',   powerType: 'shadow', boss: 'Shadow Master Sorcerer'},
-                {courseType: 'exam_course',         powerType: 'arcane', boss: 'Mythical Master Sorcerer'},
-                {courseType: 'exam_course',         powerType: 'shadow', boss: 'Mythical Master Sorcerer'},
-            ])("Boss catching", ({courseType, powerType, boss}) => {
+                {courseType: 'arcane_101_course', powerType: 'arcane', boss: 'Arcane Master Sorcerer'},
+                {courseType: 'shadow_101_course', powerType: 'shadow', boss: 'Shadow Master Sorcerer'},
+                {courseType: 'exam_course', powerType: 'arcane', boss: 'Mythical Master Sorcerer'},
+                {courseType: 'exam_course', powerType: 'shadow', boss: 'Mythical Master Sorcerer'},
+            ])('Boss catching', ({courseType, powerType, boss}) => {
                 it(`should accept on transition from catching ${boss} in ${courseType} to hallway`, () => {
                     preUser.quests.QuestSchoolOfSorcery = stageTest.createCourseAttributes({courseType, powerType}, true);
                     postUser.quests.QuestSchoolOfSorcery = stageTest.createHallwayAttributes();
@@ -109,7 +110,7 @@ describe("School of Sorcery exemptions", () => {
 
     function getSchoolOfSorceryUser(): User {
         return {
-            environment_name: "School of Sorcery",
+            environment_name: 'School of Sorcery',
             quests: {
                 QuestSchoolOfSorcery: stageTest.getDefaultQuest(),
             },

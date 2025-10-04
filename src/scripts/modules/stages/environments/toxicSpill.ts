@@ -1,8 +1,10 @@
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {PollutionTitle, PollutionTitles, PollutionTitleStatus} from "@scripts/types/hg/quests";
-import {IStager} from "../stages.types";
+import type { User } from '@scripts/types/hg';
+import type { PollutionTitle, PollutionTitleStatus } from '@scripts/types/hg/quests';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
+import { PollutionTitles } from '@scripts/types/hg/quests';
+
+import type { IStager } from '../stages.types';
 
 export class ToxicSpillStager implements IStager {
     readonly environment: string = 'Toxic Spill';
@@ -18,13 +20,13 @@ export class ToxicSpillStager implements IStager {
         const pre_titles = preQuest.titles;
         const post_titles = postQuest.titles;
         const formatted_titles: Record<PollutionTitle, string> = {
-            hero:                 'Hero',
-            knight:               'Knight',
-            lord_lady:            'Lord/Lady',
-            baron_baroness:       'Baron/Baroness',
-            count_countess:       'Count/Countess',
-            duke_dutchess:        'Duke/Duchess',
-            grand_duke:           'Grand Duke/Duchess',
+            hero: 'Hero',
+            knight: 'Knight',
+            lord_lady: 'Lord/Lady',
+            baron_baroness: 'Baron/Baroness',
+            count_countess: 'Count/Countess',
+            duke_dutchess: 'Duke/Duchess',
+            grand_duke: 'Grand Duke/Duchess',
             archduke_archduchess: 'Archduke/Archduchess',
         };
 

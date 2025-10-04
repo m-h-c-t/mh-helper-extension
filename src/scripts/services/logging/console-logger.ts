@@ -1,8 +1,8 @@
-import {LogLevel} from "./log-level";
-import {LoggerService} from "./logger.service";
+import type { LoggerService } from './logger.service';
+
+import { LogLevel } from './log-level';
 
 export class ConsoleLogger implements LoggerService {
-
     /**
      * @param isDev Whether or not we're in a dev environment (enables debug logging)
      * @param filter A function to filter log messages by level (return true to skip logging)
@@ -72,7 +72,7 @@ export class ConsoleLogger implements LoggerService {
             start: start,
             detail: {
                 devtools: {
-                    dataType: "track-entry",
+                    dataType: 'track-entry',
                     track,
                     trackGroup,
                     properties,
@@ -88,7 +88,7 @@ export class ConsoleLogger implements LoggerService {
         const mark = performance.mark(name, {
             detail: {
                 devtools: {
-                    dataType: "marker",
+                    dataType: 'marker',
                 },
             },
         });

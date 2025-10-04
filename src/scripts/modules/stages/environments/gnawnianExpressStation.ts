@@ -1,7 +1,10 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {TroubleArea, type BoardingPhase} from '@scripts/types/hg/quests/gnawnianExpressStation';
-import {type IStager} from '../stages.types';
+import type { TroubleArea } from '@scripts/types/hg/quests/gnawnianExpressStation';
+
+import { type User } from '@scripts/types/hg';
+import { type BoardingPhase } from '@scripts/types/hg/quests/gnawnianExpressStation';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class GnawnianExpressStationStager implements IStager {
     readonly environment: string = 'Gnawnian Express Station';
@@ -21,7 +24,6 @@ export class GnawnianExpressStationStager implements IStager {
         if (quest.on_train !== final_quest.on_train) {
             throw new Error('Skipping hunt due to server-side train stage change');
         }
-
 
         // Pre- & post-hunt user object agree on train & phase statuses.
         if (!quest.on_train || !final_quest.on_train) {
@@ -57,9 +59,9 @@ export class GnawnianExpressStationStager implements IStager {
 
             const charm_id = message.charm?.id ?? -1;
             const area_to_charm: Record<TroubleArea, number> = {
-                'door': 1210,
-                'rails': 1211,
-                'roof': 1212,
+                door: 1210,
+                rails: 1211,
+                roof: 1212,
             };
             const has_correct_charm = area_to_charm[area] === charm_id;
             if (has_correct_charm) {

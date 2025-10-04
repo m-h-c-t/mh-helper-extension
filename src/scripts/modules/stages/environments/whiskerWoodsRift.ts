@@ -1,7 +1,8 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
-import {parseHgInt} from '@scripts/util/number';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+import { parseHgInt } from '@scripts/util/number';
+
+import { type IStager } from '../stages.types';
 
 export class WhiskerWoodsRiftStager implements IStager {
     readonly environment: string = 'Whisker Woods Rift';

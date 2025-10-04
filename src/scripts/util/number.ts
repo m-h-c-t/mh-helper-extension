@@ -1,4 +1,3 @@
-
 /**
  * Gets a number from a Hg stringy number (may contain commas).
  *
@@ -14,5 +13,5 @@ export function parseHgInt(value: string | number): number {
         return value;
     }
 
-    return parseInt(value.replace(/,/g, ""), 10);
+    return parseInt(value.replace(/,/g, ''), 10);
 }

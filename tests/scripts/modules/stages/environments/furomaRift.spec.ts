@@ -1,7 +1,8 @@
-import {FuromaRiftStager} from "@scripts/modules/stages/environments/furomaRift";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { FuromaRiftStager } from '@scripts/modules/stages/environments/furomaRift';
 
 describe('Furoma Rift stages', () => {
     let stager: IStager;

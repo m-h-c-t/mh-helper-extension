@@ -1,9 +1,9 @@
-import {BalacksCoveStager} from "@scripts/modules/stages/environments/balacksCove";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { BalacksCoveStager } from '@scripts/modules/stages/environments/balacksCove';
 
 describe('Balack\'s Cove stages', () => {
-
     it('should be for the "Balack\'s Cove" environment', () => {
         const stager = new BalacksCoveStager();
         expect(stager.environment).toBe('Balack\'s Cove');

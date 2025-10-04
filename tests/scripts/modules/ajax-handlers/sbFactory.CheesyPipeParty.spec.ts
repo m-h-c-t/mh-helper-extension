@@ -1,19 +1,19 @@
-import {CheesyPipePartyAjaxHandler} from "@scripts/modules/ajax-handlers";
-import {CheesyPipePartyGame, CheesyPipePartyResponse} from "@scripts/modules/ajax-handlers/sbFactory.types";
-import {SubmissionService} from "@scripts/services/submission.service";
-import {InventoryItem} from "@scripts/types/hg";
-import {LoggerService} from "@scripts/services/logging";
-import {HgResponseBuilder} from "@tests/utility/builders";
-import {mock} from "vitest-mock-extended";
+import type { CheesyPipePartyGame, CheesyPipePartyResponse } from '@scripts/modules/ajax-handlers/sbFactory.types';
+import type { LoggerService } from '@scripts/services/logging';
+import type { SubmissionService } from '@scripts/services/submission.service';
+import type { InventoryItem } from '@scripts/types/hg';
+
+import { CheesyPipePartyAjaxHandler } from '@scripts/modules/ajax-handlers';
+import { HgResponseBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 const logger = mock<LoggerService>();
 const submissionService = mock<SubmissionService>();
 const handler = new CheesyPipePartyAjaxHandler(logger, submissionService);
 
-const sbfactory_url = "mousehuntgame.com/managers/ajax/events/cheesy_pipe_party.php";
+const sbfactory_url = 'mousehuntgame.com/managers/ajax/events/cheesy_pipe_party.php';
 
-describe("CheesyPipePartyAjaxHandler", () => {
-
+describe('CheesyPipePartyAjaxHandler', () => {
     const responseBuilder = new HgResponseBuilder();
 
     const createResponse = (game: CheesyPipePartyGame, inventory: Record<string, InventoryItem>) => {
@@ -35,7 +35,7 @@ describe("CheesyPipePartyAjaxHandler", () => {
         vi.clearAllMocks();
     });
 
-    describe("match", () => {
+    describe('match', () => {
         it('is false when url is ignored', () => {
             expect(handler.match('mousehuntgame.com/managers/ajax/events/kings_giveaway.php')).toBe(false);
         });
@@ -45,7 +45,7 @@ describe("CheesyPipePartyAjaxHandler", () => {
         });
     });
 
-    describe("execute", () => {
+    describe('execute', () => {
         it('logs if pipe party response is not expected', async () => {
             // cheesy_pipe_party missing here,
             const response = responseBuilder.build();
@@ -149,8 +149,8 @@ describe("CheesyPipePartyAjaxHandler", () => {
 
 // Data is minimum required for the execute to pass
 const testResponses: Record<string, {
-    cheesy_pipe_party_game: CheesyPipePartyGame,
-    inventory: Record<string, InventoryItem>,
+    cheesy_pipe_party_game: CheesyPipePartyGame;
+    inventory: Record<string, InventoryItem>;
 }> = {
     responseOne: {
         cheesy_pipe_party_game: {
@@ -162,7 +162,7 @@ const testResponses: Record<string, {
                         {
                             tile_data: {
                                 has_prize: true,
-                                prize_name: "Test Prize",
+                                prize_name: 'Test Prize',
                                 prize_quantity: 420,
                                 is_prize_unlocked: true,
                             },
@@ -172,18 +172,18 @@ const testResponses: Record<string, {
             ],
             regions: [
                 {
-                    type: "gnawnia",
-                    name: "Test Region",
+                    type: 'gnawnia',
+                    name: 'Test Region',
                 },
             ],
-            selected_region: "gnawnia",
+            selected_region: 'gnawnia',
             num_prizes: 1,
         },
         inventory: {
-            "test_prize": {
+            test_prize: {
                 item_id: 44,
-                type: "test_prize",
-                name: "Test Prize",
+                type: 'test_prize',
+                name: 'Test Prize',
                 quantity: 123,
             },
         },

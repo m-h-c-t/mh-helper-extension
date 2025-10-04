@@ -1,9 +1,11 @@
-import {IntakeRejectionEngine} from '@scripts/hunt-filter/engine';
-import {NormalFloorStages, FloorStage, UmbraFloorStages} from '@scripts/hunt-filter/exemptions/environments/valourRift';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {LoggerService} from "@scripts/services/logging";
-import {getDefaultIntakeMessage} from '../../common';
+import type { FloorStage } from '@scripts/hunt-filter/exemptions/environments/valourRift';
+import type { LoggerService } from '@scripts/services/logging';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
+import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
+import { NormalFloorStages, UmbraFloorStages } from '@scripts/hunt-filter/exemptions/environments/valourRift';
+
+import { getDefaultIntakeMessage } from '../../common';
 
 describe('Valour Rift', () => {
     let logger: LoggerService;

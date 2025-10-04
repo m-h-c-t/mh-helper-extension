@@ -1,4 +1,4 @@
-import qs from "qs";
+import qs from 'qs';
 
 export const openConvertible = (item_type: string, quantity: number) => {
     return fetch('https://www.mousehuntgame.com/managers/ajax/users/useconvertible.php', {

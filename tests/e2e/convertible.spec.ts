@@ -1,9 +1,10 @@
-import {LoggingAssertions} from '@tests/utility/logging-assertions';
-import {ConvertibleMessageBuilder, HgConvertibleResponseBuilder} from '@tests/utility/builders';
-import {openConvertible} from './util/openConvertible';
-import MockServer from './util/mockServer';
+import { ConvertibleMessageBuilder, HgConvertibleResponseBuilder } from '@tests/utility/builders';
+import { LoggingAssertions } from '@tests/utility/logging-assertions';
 import nock from 'nock';
 import qs from 'qs';
+
+import MockServer from './util/mockServer';
+import { openConvertible } from './util/openConvertible';
 
 describe('MHCT Convertible Submission', () => {
     let server: MockServer;

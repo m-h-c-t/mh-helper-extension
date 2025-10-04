@@ -1,4 +1,4 @@
-import {ConsoleLogger, LogLevel} from "@scripts/services/logging";
+import { ConsoleLogger, LogLevel } from '@scripts/services/logging';
 
 mockConsole();
 
@@ -34,7 +34,7 @@ describe('ConsoleLogger', () => {
     });
 
     it('skips logging when level is too low', () => {
-        logger = new ConsoleLogger(false, (level) => level < LogLevel.Warn);
+        logger = new ConsoleLogger(false, level => level < LogLevel.Warn);
 
         logger.debug();
         logger.info();
@@ -58,7 +58,8 @@ describe('ConsoleLogger', () => {
  */
 function mockConsole(): void {
     const consoleFuncsToMock: (keyof Console)[] = ['debug', 'info', 'log', 'warn', 'error'];
-    consoleFuncsToMock.map(v => {;
+    consoleFuncsToMock.map((v) => {
+        ;
         global.console[v] = vi.fn();
     });
 }

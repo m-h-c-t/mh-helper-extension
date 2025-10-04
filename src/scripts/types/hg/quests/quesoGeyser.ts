@@ -1,6 +1,6 @@
-import {z} from "zod";
+import { z } from 'zod';
 
-export const QuesoGeyserStates = [ 'collecting', 'corked', 'eruption', 'claim' ] as const;
+export const QuesoGeyserStates = ['collecting', 'corked', 'eruption', 'claim'] as const;
 const quesoGeyserStateSchema = z.enum(QuesoGeyserStates);
 
 export const questQuesoGeyserSchema = z.object({

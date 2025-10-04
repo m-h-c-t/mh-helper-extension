@@ -1,6 +1,7 @@
-import {MousoleumStager} from '@scripts/modules/stages/environments/mousoleum';
-import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { MousoleumStager } from '@scripts/modules/stages/environments/mousoleum';
 
 describe('MousoleumStager', () => {
     it('sets stage to "Has Wall" if user has Mousoleum wall', () => {

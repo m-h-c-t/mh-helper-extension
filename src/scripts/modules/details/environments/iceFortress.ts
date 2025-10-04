@@ -1,7 +1,8 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {QuestIceFortress} from '@scripts/types/hg/quests/iceFortress';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { QuestIceFortress } from '@scripts/types/hg/quests/iceFortress';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class IceFortressDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Ice Fortress';
@@ -12,6 +13,5 @@ export class IceFortressDetailer implements IEnvironmentDetailer {
         if (quest == null) {
             return;
         }
-
     }
 }

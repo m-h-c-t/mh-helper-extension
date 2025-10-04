@@ -1,5 +1,7 @@
-import {MessageTypes} from "./messaging/message";
-import {MessageWithMetadata, Messenger} from "./messaging/messenger";
+import type { MessageWithMetadata } from './messaging/messenger';
+
+import { MessageTypes } from './messaging/message';
+import { Messenger } from './messaging/messenger';
 
 /**
  * This class will handle messages from the web page and forward them to the background script.

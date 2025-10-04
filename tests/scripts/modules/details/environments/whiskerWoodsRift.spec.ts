@@ -1,14 +1,15 @@
-import {WhiskerWoodsRiftDetailer} from "@scripts/modules/details/environments/whiskerWoodsRift";
-import {JournalMarkup, QuestRiftWhiskerWoods, User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {UserBuilder} from "@tests/utility/builders";
-import {mock} from "vitest-mock-extended";
+import type { JournalMarkup, QuestRiftWhiskerWoods, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { WhiskerWoodsRiftDetailer } from '@scripts/modules/details/environments/whiskerWoodsRift';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('calcWhiskerWoodsRiftHuntDetails', () => {
     const message = mock<IntakeMessage>();
     const user_post = mock<User>();
     const hunt = mock<JournalMarkup>();
-    let user: User & { quests: { QuestRiftWhiskerWoods: QuestRiftWhiskerWoods } };
+    let user: User & {quests: {QuestRiftWhiskerWoods: QuestRiftWhiskerWoods}};
     let detailer: WhiskerWoodsRiftDetailer;
 
     beforeEach(() => {
@@ -22,7 +23,7 @@ describe('calcWhiskerWoodsRiftHuntDetails', () => {
                     },
                 },
             })
-            .build() as User & { quests: { QuestRiftWhiskerWoods: QuestRiftWhiskerWoods } };
+            .build() as User & {quests: {QuestRiftWhiskerWoods: QuestRiftWhiskerWoods}};
 
         detailer = new WhiskerWoodsRiftDetailer();
     });

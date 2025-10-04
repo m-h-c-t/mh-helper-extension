@@ -1,7 +1,8 @@
+import type { LoggerService } from '@scripts/services/logging';
+
+import { UserBuilder } from '@tests/utility/builders';
 import $ from 'jquery';
-import {UserBuilder} from '@tests/utility/builders';
 import nock from 'nock';
-import {LoggerService} from '@scripts/services/logging';
 
 export const mockLoggerService = {
     debug: vi.fn(),
@@ -30,7 +31,7 @@ afterAll(() => {
 });
 
 function setupMain() {
-    //vi.stubEnv('ENV', 'development');
+    // vi.stubEnv('ENV', 'development');
     mockConsole();
     stubContentScript();
     setupDOM();
@@ -46,7 +47,7 @@ function setupMain() {
                 resolve();
             }
         };
-        window.addEventListener("message", listener);
+        window.addEventListener('message', listener);
     });
 }
 
@@ -54,7 +55,6 @@ function setupMain() {
  * Sets up mocks for common console logging functions
  */
 function mockConsole(): void {
-
     vi.mock('@scripts/services/logging', () => ({
         ConsoleLogger: vi.fn().mockImplementation(() => mockLoggerService),
     }));
@@ -64,7 +64,7 @@ function mockConsole(): void {
  * Simplest stub of the content script required for main to start
  */
 function stubContentScript() {
-    window.addEventListener("message", event => {
+    window.addEventListener('message', (event) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const data = event.data;
 

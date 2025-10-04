@@ -1,5 +1,5 @@
-import type {IMessageExemption} from '@scripts/hunt-filter/interfaces';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 /* stages for reference
     "Treacherous Tunnels": "0-300ft",
@@ -27,6 +27,7 @@ class IcebergGeneralExemption implements IMessageExemption {
         'Lord Splodington',
         'Princess Fist',
     ];
+
     getExemptions(
         pre: IntakeMessage,
         post: IntakeMessage
@@ -79,9 +80,7 @@ class IcewingMouseExemption implements IMessageExemption {
         }
         return null;
     }
-
 }
-
 
 class DeepMouseExemption implements IMessageExemption {
     readonly description = 'Deep Mouse caught in Deep Lair';
@@ -97,7 +96,6 @@ class DeepMouseExemption implements IMessageExemption {
         }
         return null;
     }
-
 }
 
 export const icebergExemptions = [

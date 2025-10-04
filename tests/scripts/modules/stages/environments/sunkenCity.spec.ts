@@ -1,6 +1,7 @@
-import {SunkenCityStager} from "@scripts/modules/stages/environments/sunkenCity";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { SunkenCityStager } from '@scripts/modules/stages/environments/sunkenCity';
 
 describe('Sunken City stages', () => {
     it('should be for the "Sunken City" environment', () => {

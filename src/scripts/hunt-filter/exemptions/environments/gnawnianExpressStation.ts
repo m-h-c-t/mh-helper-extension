@@ -1,5 +1,5 @@
-import type {IMessageExemption} from '@scripts/hunt-filter/interfaces';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 // As this is an older area, just allow all transitions between stages
 

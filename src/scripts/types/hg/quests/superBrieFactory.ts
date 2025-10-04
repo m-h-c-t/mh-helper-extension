@@ -1,10 +1,10 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 const roomTypeSchema = z.enum([
-    "mixing_room",
-    "break_room",
-    "pumping_room",
-    "quality_assurance_room",
+    'mixing_room',
+    'break_room',
+    'pumping_room',
+    'quality_assurance_room',
 ]);
 
 export const questSuperBrieFactorySchema = z.object({

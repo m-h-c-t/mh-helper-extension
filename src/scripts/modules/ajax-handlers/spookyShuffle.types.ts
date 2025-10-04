@@ -1,5 +1,5 @@
-import z from "zod";
-import {hgResponseSchema} from "@scripts/types/hg";
+import { hgResponseSchema } from '@scripts/types/hg';
+import z from 'zod';
 
 const TitleRanges = [
     'novice_journeyman',

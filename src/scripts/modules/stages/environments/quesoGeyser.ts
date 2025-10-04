@@ -1,7 +1,10 @@
-import {type User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {QuesoGeyserState, QuesoGeyserStates} from '@scripts/types/hg/quests/quesoGeyser';
-import {type IStager} from '../stages.types';
+import type { QuesoGeyserState } from '@scripts/types/hg/quests/quesoGeyser';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { type User } from '@scripts/types/hg';
+import { QuesoGeyserStates } from '@scripts/types/hg/quests/quesoGeyser';
+
+import { type IStager } from '../stages.types';
 
 export class QuesoGeyserStager implements IStager {
     readonly environment: string = 'Queso Geyser';
@@ -21,11 +24,11 @@ export class QuesoGeyserStager implements IStager {
         }
 
         const state = quest.state;
-        if (state === "collecting" || state === "claim") {
-            message.stage = "Cork Collecting";
-        } else if (state === "corked") {
-            message.stage = "Pressure Building";
-        } else if (state === "eruption") {
+        if (state === 'collecting' || state === 'claim') {
+            message.stage = 'Cork Collecting';
+        } else if (state === 'corked') {
+            message.stage = 'Pressure Building';
+        } else if (state === 'eruption') {
             // Tiny/Small/Medium/Large/Epic Eruption
             message.stage = quest.state_name;
         }

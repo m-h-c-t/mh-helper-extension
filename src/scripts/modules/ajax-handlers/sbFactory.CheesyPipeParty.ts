@@ -1,11 +1,15 @@
-import {HgResponse} from "@scripts/types/hg";
-import {HgItem} from "@scripts/types/mhct";
-import {LoggerService} from "@scripts/services/logging";
-import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {CheesyPipePartyGame, CheesyPipePartyResponse, cheesyPipePartyResponseSchema, Region} from "./sbFactory.types";
-import {CustomConvertibleIds} from "@scripts/util/constants";
-import {SubmissionService} from "@scripts/services/submission.service";
-import {z} from "zod";
+import type { LoggerService } from '@scripts/services/logging';
+import type { SubmissionService } from '@scripts/services/submission.service';
+import type { HgResponse } from '@scripts/types/hg';
+import type { HgItem } from '@scripts/types/mhct';
+
+import { CustomConvertibleIds } from '@scripts/util/constants';
+import { z } from 'zod';
+
+import type { CheesyPipePartyGame, CheesyPipePartyResponse, Region } from './sbFactory.types';
+
+import { AjaxSuccessHandler } from './ajaxSuccessHandler';
+import { cheesyPipePartyResponseSchema } from './sbFactory.types';
 
 export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
     /**
@@ -25,7 +29,7 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
      * @returns True if this handler applies, otherwise false
      */
     match(url: string): boolean {
-        return url.includes("mousehuntgame.com/managers/ajax/events/cheesy_pipe_party.php");
+        return url.includes('mousehuntgame.com/managers/ajax/events/cheesy_pipe_party.php');
     }
 
     async execute(responseJSON: HgResponse): Promise<void> {
@@ -86,7 +90,7 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
         const items: HgItem[] = [];
 
         try {
-            revealedPrizeTiles.forEach(tile => {
+            revealedPrizeTiles.forEach((tile) => {
                 const inventoryItem = Object.values(inventory).find(i => i.name == tile.prize_name);
                 if (inventoryItem == null) {
                     this.logger.debug('Cheesy Pipe Party item missing from inventory', {inventory, tile});
@@ -99,9 +103,8 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
                     quantity: tile.prize_quantity,
                 });
             });
-
         } catch (error) {
-            this.logger.warn((error as Error) .toString());
+            this.logger.warn((error as Error).toString());
             return;
         }
 
@@ -119,7 +122,7 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
         const response = cheesyPipePartyResponseSchema.safeParse(responseJSON);
 
         if (!response.success) {
-            this.logger.warn("Unexpected Cheesy Pipe Party response object.", z.prettifyError(response.error));
+            this.logger.warn('Unexpected Cheesy Pipe Party response object.', z.prettifyError(response.error));
         }
 
         return response.success;

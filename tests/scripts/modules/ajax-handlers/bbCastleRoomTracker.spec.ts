@@ -1,9 +1,10 @@
-import {mergician} from "mergician";
-import {BountifulBeanstalkRoomTrackerAjaxHandler} from "@scripts/modules/ajax-handlers";
-import {HgResponse} from "@scripts/types/hg";
-import {LoggerService}  from "@scripts/services/logging";
-import type {BeanstalkRarityPayload} from "@scripts/modules/ajax-handlers/beanstalkRoomTracker.types";
-import {mock} from "vitest-mock-extended";
+import type { BeanstalkRarityPayload } from '@scripts/modules/ajax-handlers/beanstalkRoomTracker.types';
+import type { LoggerService } from '@scripts/services/logging';
+import type { HgResponse } from '@scripts/types/hg';
+
+import { BountifulBeanstalkRoomTrackerAjaxHandler } from '@scripts/modules/ajax-handlers';
+import { mergician } from 'mergician';
+import { mock } from 'vitest-mock-extended';
 
 // @ts-expect-error override fetch for now
 global.fetch = vi.fn(() =>
@@ -19,61 +20,61 @@ const handler = new BountifulBeanstalkRoomTrackerAjaxHandler(
     showFlashMessage
 );
 
-const activeHuntUrl = "mousehuntgame.com/managers/ajax/turns/activeturn.php";
+const activeHuntUrl = 'mousehuntgame.com/managers/ajax/turns/activeturn.php';
 const beanstalkUrl =
-    "mousehuntgame.com/managers/ajax/environment/bountiful_beanstalk.php";
+    'mousehuntgame.com/managers/ajax/environment/bountiful_beanstalk.php';
 
-describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
+describe('BountifulBeanstalkRoomTrackerAjaxHandler', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.resetModules();
     });
 
-    describe("match", () => {
-        it("is false when url is ignored", () => {
+    describe('match', () => {
+        it('is false when url is ignored', () => {
             expect(
                 handler.match(
-                    "mousehuntgame.com/managers/ajax/environment/table_of_contents.php"
+                    'mousehuntgame.com/managers/ajax/environment/table_of_contents.php'
                 )
             ).toBe(false);
         });
 
         it.each([activeHuntUrl, beanstalkUrl])(
-            "is true when url matches",
+            'is true when url matches',
             (url) => {
                 expect(handler.match(url)).toBe(true);
             }
         );
     });
 
-    describe("execute", () => {
-        it("should ignore if not in bountiful beanstalk", async () => {
+    describe('execute', () => {
+        it('should ignore if not in bountiful beanstalk', async () => {
             await handler.execute(
                 getDefaultResponse({
                     user: {
-                        environment_name: "Server Room",
+                        environment_name: 'Server Room',
                     },
                 })
             );
 
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: Not in BB environment"
+                'BBRoomTracker: Not in BB environment'
             );
         });
 
-        it("should log if there are too many journal entries", async () => {
+        it('should log if there are too many journal entries', async () => {
             await handler.execute(
                 getDefaultResponse({
                     active_turn: undefined,
                     journal_markup: [
                         {
                             render_data: {
-                                css_class: "",
+                                css_class: '',
                             },
                         },
                         {
                             render_data: {
-                                css_class: "",
+                                css_class: '',
                             },
                         },
                     ],
@@ -81,11 +82,11 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
             );
 
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: Didn't plant vine or too many journal entries (2 entries)"
+                'BBRoomTracker: Didn\'t plant vine or too many journal entries (2 entries)'
             );
         });
 
-        it("should ignore if not in castle", async () => {
+        it('should ignore if not in castle', async () => {
             await handler.execute(
                 getDefaultResponse({
                     active_turn: true,
@@ -100,11 +101,11 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
             );
 
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: User not in castle"
+                'BBRoomTracker: User not in castle'
             );
         });
 
-        it("should ignore if not suitable room position", async () => {
+        it('should ignore if not suitable room position', async () => {
             await handler.execute(
                 getDefaultResponse({
                     active_turn: true,
@@ -112,11 +113,11 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
             );
 
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: User not in a submittable position"
+                'BBRoomTracker: User not in a submittable position'
             );
         });
 
-        it("should submit if user just planted vine", async () => {
+        it('should submit if user just planted vine', async () => {
             await handler.execute(getDefaultResponse({
                 user: {
                     quests: {
@@ -138,30 +139,30 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
 
             const expectedData: BeanstalkRarityPayload = {
                 version: 1,
-                floor: "dungeon_floor",
+                floor: 'dungeon_floor',
                 embellishments: {
                     golden_key: true,
                     ruby_remover: false,
                 },
-                room: "magic_bean_ultimate_room",
+                room: 'magic_bean_ultimate_room',
             };
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: Submitting current room"
+                'BBRoomTracker: Submitting current room'
             );
             expect(showFlashMessage).toHaveBeenCalledWith(
-                "success",
-                "Castle room data submitted successfully"
+                'success',
+                'Castle room data submitted successfully'
             );
             expect(global.fetch).toHaveBeenCalledWith(
-                "https://script.google.com/macros/s/AKfycbynfLfTaN6tnEYBE1Z9iPJEtO4xCCvsqHQqiu246JCKCUvwQU8WyICEJGzX45UF3HPmAA/exec",
+                'https://script.google.com/macros/s/AKfycbynfLfTaN6tnEYBE1Z9iPJEtO4xCCvsqHQqiu246JCKCUvwQU8WyICEJGzX45UF3HPmAA/exec',
                 expect.objectContaining({
-                    method: "POST",
+                    method: 'POST',
                     body: JSON.stringify(expectedData),
                 })
             );
         });
 
-        it("should submit if user just entered new room", async () => {
+        it('should submit if user just entered new room', async () => {
             await handler.execute(getDefaultResponse({
                 active_turn: true,
                 user: {
@@ -179,30 +180,30 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
 
             const expectedData: BeanstalkRarityPayload = {
                 version: 1,
-                floor: "dungeon_floor",
+                floor: 'dungeon_floor',
                 embellishments: {
                     golden_key: true,
                     ruby_remover: false,
                 },
-                room: "magic_bean_ultimate_room",
+                room: 'magic_bean_ultimate_room',
             };
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: Submitting current room"
+                'BBRoomTracker: Submitting current room'
             );
             expect(showFlashMessage).toHaveBeenCalledWith(
-                "success",
-                "Castle room data submitted successfully"
+                'success',
+                'Castle room data submitted successfully'
             );
             expect(global.fetch).toHaveBeenCalledWith(
-                "https://script.google.com/macros/s/AKfycbynfLfTaN6tnEYBE1Z9iPJEtO4xCCvsqHQqiu246JCKCUvwQU8WyICEJGzX45UF3HPmAA/exec",
+                'https://script.google.com/macros/s/AKfycbynfLfTaN6tnEYBE1Z9iPJEtO4xCCvsqHQqiu246JCKCUvwQU8WyICEJGzX45UF3HPmAA/exec',
                 expect.objectContaining({
-                    method: "POST",
+                    method: 'POST',
                     body: JSON.stringify(expectedData),
                 })
             );
         });
 
-        it("should submit next room if user just triggered chase", async () => {
+        it('should submit next room if user just triggered chase', async () => {
             await handler.execute(getDefaultResponse({
                 active_turn: true,
                 user: {
@@ -212,10 +213,10 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
                                 is_boss_chase: true,
                                 room_position: 19,
                                 current_floor: {
-                                    type: "great_hall_floor",
+                                    type: 'great_hall_floor',
                                 },
                                 next_room: {
-                                    type: "egg_standard_room",
+                                    type: 'egg_standard_room',
                                 },
                             },
                         },
@@ -225,30 +226,30 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
 
             const expectedData: BeanstalkRarityPayload = {
                 version: 1,
-                floor: "great_hall_floor",
+                floor: 'great_hall_floor',
                 embellishments: {
                     golden_key: true,
                     ruby_remover: false,
                 },
-                room: "egg_standard_room",
+                room: 'egg_standard_room',
             };
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: Submitting next room"
+                'BBRoomTracker: Submitting next room'
             );
             expect(showFlashMessage).toHaveBeenCalledWith(
-                "success",
-                "Castle room data submitted successfully"
+                'success',
+                'Castle room data submitted successfully'
             );
             expect(global.fetch).toHaveBeenCalledWith(
-                "https://script.google.com/macros/s/AKfycbynfLfTaN6tnEYBE1Z9iPJEtO4xCCvsqHQqiu246JCKCUvwQU8WyICEJGzX45UF3HPmAA/exec",
+                'https://script.google.com/macros/s/AKfycbynfLfTaN6tnEYBE1Z9iPJEtO4xCCvsqHQqiu246JCKCUvwQU8WyICEJGzX45UF3HPmAA/exec',
                 expect.objectContaining({
-                    method: "POST",
+                    method: 'POST',
                     body: JSON.stringify(expectedData),
                 })
             );
         });
 
-        it("should log an error if fetch throws", async () => {
+        it('should log an error if fetch throws', async () => {
             const err = new Error();
             global.fetch = vi.fn(() => {
                 throw err;
@@ -268,16 +269,16 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
             }));
 
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: Submitting next room"
+                'BBRoomTracker: Submitting next room'
             );
             expect(showFlashMessage).not.toHaveBeenCalled();
             expect(logger.error).toHaveBeenCalledWith(
-                "BBRoomTracker: Castle room data network error",
+                'BBRoomTracker: Castle room data network error',
                 err
             );
         });
 
-        it("should log a warning if response is not OK", async () => {
+        it('should log a warning if response is not OK', async () => {
             // @ts-expect-error override fetch for now
             global.fetch = vi.fn(() =>
                 Promise.resolve({
@@ -299,11 +300,11 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
             }));
 
             expect(logger.debug).toHaveBeenCalledWith(
-                "BBRoomTracker: Submitting next room"
+                'BBRoomTracker: Submitting next room'
             );
             expect(showFlashMessage).not.toHaveBeenCalled();
             expect(logger.warn).toHaveBeenCalledWith(
-                "BBRoomTracker: Error submitting castle room data"
+                'BBRoomTracker: Error submitting castle room data'
             );
         });
     });
@@ -319,7 +320,7 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
         return mergician(
             {
                 user: {
-                    environment_name: "Bountiful Beanstalk",
+                    environment_name: 'Bountiful Beanstalk',
                     quests: {
                         QuestBountifulBeanstalk: {
                             in_castle: true,
@@ -327,22 +328,22 @@ describe("BountifulBeanstalkRoomTrackerAjaxHandler", () => {
                                 is_boss_chase: false,
                                 room_position: 10,
                                 current_floor: {
-                                    type: "dungeon_floor",
+                                    type: 'dungeon_floor',
                                 },
                                 current_room: {
-                                    type: "magic_bean_ultimate_room",
+                                    type: 'magic_bean_ultimate_room',
                                 },
                                 next_room: {
-                                    type: "string_super_room",
+                                    type: 'string_super_room',
                                 },
                             },
                             embellishments: [
                                 {
-                                    type: "golden_key",
+                                    type: 'golden_key',
                                     is_active: true,
                                 },
                                 {
-                                    type: "ruby_remover",
+                                    type: 'ruby_remover',
                                     is_active: false,
                                 },
                             ],

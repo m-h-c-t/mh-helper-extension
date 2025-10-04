@@ -1,6 +1,7 @@
-import {SeasonalGardenStager} from "@scripts/modules/stages/environments/seasonalGarden";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { SeasonalGardenStager } from '@scripts/modules/stages/environments/seasonalGarden';
 
 describe('Seasonal Garden stages', () => {
     it('should be for the "Seasonal Garden" environment', () => {

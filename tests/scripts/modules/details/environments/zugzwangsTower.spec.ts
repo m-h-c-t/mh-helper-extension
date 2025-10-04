@@ -1,15 +1,16 @@
-import {ZugzwangsTowerDetailer} from "@scripts/modules/details/environments/zugzwangsTower";
-import {JournalMarkup, User, ZugzwangsTowerViewingAttributes} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {UserBuilder} from "@tests/utility/builders";
-import {mock} from "vitest-mock-extended";
+import type { JournalMarkup, User, ZugzwangsTowerViewingAttributes } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { ZugzwangsTowerDetailer } from '@scripts/modules/details/environments/zugzwangsTower';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('ZugzwangsTowerDetailer', () => {
     const message = mock<IntakeMessage>();
     const user_post = mock<User>();
     const hunt = mock<JournalMarkup>();
 
-    let user: User & { viewing_atts: ZugzwangsTowerViewingAttributes };
+    let user: User & {viewing_atts: ZugzwangsTowerViewingAttributes};
     let detailer: ZugzwangsTowerDetailer;
 
     beforeEach(() => {
@@ -18,14 +19,14 @@ describe('ZugzwangsTowerDetailer', () => {
         user = new UserBuilder()
             .withEnvironment({
                 environment_id: 0,
-                environment_name: "Zugzwang's Tower",
+                environment_name: 'Zugzwang\'s Tower',
             })
             .withViewingAttributes({viewing_atts: {
                 zzt_amplifier: 0,
                 zzt_tech_progress: 0,
                 zzt_mage_progress: 0,
             }})
-            .build() as User & { viewing_atts: ZugzwangsTowerViewingAttributes };
+            .build() as User & {viewing_atts: ZugzwangsTowerViewingAttributes};
     });
 
     it('should parse and return basic tower data', () => {

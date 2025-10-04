@@ -1,5 +1,5 @@
-import type {IMessageExemption} from '@scripts/hunt-filter/interfaces';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 class DraconicDepthsCavernExemptions implements IMessageExemption {
     readonly description = 'Allow transitions between cavern stages';

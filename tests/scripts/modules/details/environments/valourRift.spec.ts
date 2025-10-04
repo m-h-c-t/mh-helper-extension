@@ -1,8 +1,9 @@
-import {ValourRiftDetailer} from '@scripts/modules/details/environments/valourRift';
-import {User, JournalMarkup} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
-import {UserBuilder} from '@tests/utility/builders';
-import {mock} from 'vitest-mock-extended';
+import type { User, JournalMarkup } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { ValourRiftDetailer } from '@scripts/modules/details/environments/valourRift';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('ValourRiftDetailer', () => {
     const message = mock<IntakeMessage>();

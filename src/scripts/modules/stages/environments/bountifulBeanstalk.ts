@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class BountifulBeanstalkStager implements IStager {
     readonly environment: string = 'Bountiful Beanstalk';
@@ -26,15 +27,15 @@ export class BountifulBeanstalkStager implements IStager {
                 .trim();
 
             if (castle.is_boss_encounter) {
-                floor += " Giant";
+                floor += ' Giant';
             }
 
             message.stage = `${floor} - ${room}`;
         } else {
-            message.stage = "Beanstalk";
+            message.stage = 'Beanstalk';
 
             if (quest.beanstalk.is_boss_encounter) {
-                message.stage = "Beanstalk Boss";
+                message.stage = 'Beanstalk Boss';
             }
         }
     }

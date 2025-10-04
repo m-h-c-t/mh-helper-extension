@@ -1,16 +1,16 @@
-import type {IMessageExemption} from "@scripts/hunt-filter/interfaces";
-import type {IntakeMessage} from "@scripts/types/mhct";
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 /**
  * Allow transitions from Boss stages to course stages or hallway
  */
 class CourseBossExemption implements IMessageExemption {
-    readonly description = "School of Sorcery Boss Encounter";
-    readonly property = "stage";
+    readonly description = 'School of Sorcery Boss Encounter';
+    readonly property = 'stage';
 
     readonly CourseBossStagesToMouse: Record<string, string | undefined> = {
-        'Arcane Arts Boss': 'Arcane Master Sorcerer' ,
-        'Shadow Sciences Boss': 'Shadow Master Sorcerer' ,
+        'Arcane Arts Boss': 'Arcane Master Sorcerer',
+        'Shadow Sciences Boss': 'Shadow Master Sorcerer',
         'Final Exam Boss': 'Mythical Master Sorcerer',
     };
 
@@ -18,7 +18,6 @@ class CourseBossExemption implements IMessageExemption {
         pre: IntakeMessage,
         post: IntakeMessage
     ): (keyof IntakeMessage)[] | null {
-
         // Only allow transitions from boss to outside for now
         if (this.isTransitionFromBossToHallway(pre.stage, post.stage, pre.mouse)) {
             return ['stage', 'cheese'];

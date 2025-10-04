@@ -1,8 +1,10 @@
-import {LoggerService} from "@scripts/services/logging";
-import {AjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {HgResponse, JournalMarkup} from "@scripts/types/hg";
-import {BeanstalkRarityPayload} from "./beanstalkRoomTracker.types";
-import {CastleAttributes, Embellishment} from "@scripts/types/hg/quests";
+import type { LoggerService } from '@scripts/services/logging';
+import type { HgResponse, JournalMarkup } from '@scripts/types/hg';
+import type { CastleAttributes, Embellishment } from '@scripts/types/hg/quests';
+
+import type { BeanstalkRarityPayload } from './beanstalkRoomTracker.types';
+
+import { AjaxSuccessHandler } from './ajaxSuccessHandler';
 
 /**
  * Reports room rarities so they can be analyzed with other tools
@@ -10,7 +12,7 @@ import {CastleAttributes, Embellishment} from "@scripts/types/hg/quests";
 export class BountifulBeanstalkRoomTrackerAjaxHandler extends AjaxSuccessHandler {
     constructor(
         private logger: LoggerService,
-        private showFlashMessage: (type: "error" | "warning" | "success", message: string) => void
+        private showFlashMessage: (type: 'error' | 'warning' | 'success', message: string) => void
     ) {
         super();
     }
@@ -19,8 +21,8 @@ export class BountifulBeanstalkRoomTrackerAjaxHandler extends AjaxSuccessHandler
         // We use bountiful_beanstalk.php when the user plants a vine to submit first room
         // Otherwise, use activeturn to check if user is at the start/end of a room
         if (!(
-            url.includes("mousehuntgame.com/managers/ajax/environment/bountiful_beanstalk.php") ||
-            url.includes("mousehuntgame.com/managers/ajax/turns/activeturn.php")
+            url.includes('mousehuntgame.com/managers/ajax/environment/bountiful_beanstalk.php') ||
+            url.includes('mousehuntgame.com/managers/ajax/turns/activeturn.php')
         )) {
             return false;
         }
@@ -29,10 +31,9 @@ export class BountifulBeanstalkRoomTrackerAjaxHandler extends AjaxSuccessHandler
     }
 
     public async execute(responseJSON: HgResponse): Promise<void> {
-
         const {user} = responseJSON;
-        if (user.environment_name != "Bountiful Beanstalk") {
-            this.logger.debug("BBRoomTracker: Not in BB environment");
+        if (user.environment_name != 'Bountiful Beanstalk') {
+            this.logger.debug('BBRoomTracker: Not in BB environment');
             return;
         }
 
@@ -47,12 +48,12 @@ export class BountifulBeanstalkRoomTrackerAjaxHandler extends AjaxSuccessHandler
         // Should not be null but check just in case
         const quest = user.quests.QuestBountifulBeanstalk;
         if (quest == null) {
-            this.logger.warn("BBRoomTracker: Quest was null!");
+            this.logger.warn('BBRoomTracker: Quest was null!');
             return;
         }
 
         if (!quest.in_castle) {
-            this.logger.debug("BBRoomTracker: User not in castle");
+            this.logger.debug('BBRoomTracker: User not in castle');
             return;
         }
 
@@ -65,15 +66,15 @@ export class BountifulBeanstalkRoomTrackerAjaxHandler extends AjaxSuccessHandler
         // 2) Being chased
         const isAtRelaventPosition = this.isStartingNewRoom(quest) || this.isStartingChase(quest);
         if (!isAtRelaventPosition) {
-            this.logger.debug("BBRoomTracker: User not in a submittable position");
+            this.logger.debug('BBRoomTracker: User not in a submittable position');
             return;
         }
 
         const success = await this.submitRoomData(quest);
         if (success) {
-            this.showFlashMessage('success', "Castle room data submitted successfully");
+            this.showFlashMessage('success', 'Castle room data submitted successfully');
         } else {
-            this.logger.warn("BBRoomTracker: Error submitting castle room data");
+            this.logger.warn('BBRoomTracker: Error submitting castle room data');
         }
 
         return;

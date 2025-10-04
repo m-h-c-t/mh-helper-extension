@@ -1,8 +1,9 @@
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {FloatingIslandHuntingSiteAtts, QuestFloatingIslands} from "@scripts/types/hg/quests/floatingIslands";
-import {FloatingIslandsStager} from "@scripts/modules/stages/environments/floatingIslands";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { FloatingIslandHuntingSiteAtts, QuestFloatingIslands } from '@scripts/types/hg/quests/floatingIslands';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { FloatingIslandsStager } from '@scripts/modules/stages/environments/floatingIslands';
 
 // Common Nomenclature
 // LAI = Low Altitude Island
@@ -64,7 +65,6 @@ describe('Floating Islands stages', () => {
             quests: {},
         } as User;
         postUser = {} as User;
-
     });
 
     it('should throw when QuestFloatingIslands is undefined', () => {
@@ -79,7 +79,6 @@ describe('Floating Islands stages', () => {
     });
 
     describe('Enemy Encounters', () => {
-
         it('should set stage to Warden on low tier enemy encounter', () => {
             setHuntingSiteAtts({
                 is_enemy_encounter: true,
@@ -113,7 +112,7 @@ describe('Floating Islands stages', () => {
 
     describe('Pirates', () => {
         beforeEach(() => {
-            preUser.bait_name = "Sky Pirate Swiss Cheese";
+            preUser.bait_name = 'Sky Pirate Swiss Cheese';
         });
 
         it('should be Island pirates with no vault', () => {
@@ -147,7 +146,7 @@ describe('Floating Islands stages', () => {
 
     describe('Loot Cache', () => {
         it('should default stage when user has 1x loot_cache active with CCC', () => {
-            preUser.bait_name = "Cloud Cheesecake";
+            preUser.bait_name = 'Cloud Cheesecake';
             setHuntingSiteAtts({
                 is_low_tier_island: true,
                 activated_island_mod_types: ['loot_cache'],
@@ -158,7 +157,7 @@ describe('Floating Islands stages', () => {
         });
 
         it('should set loot cache stage when user has at least 2x loot_cache active with CCC', () => {
-            preUser.bait_name = "Cloud Cheesecake";
+            preUser.bait_name = 'Cloud Cheesecake';
             setHuntingSiteAtts({
                 is_low_tier_island: true,
                 activated_island_mod_types: ['loot_cache', 'loot_cache'],
@@ -169,7 +168,7 @@ describe('Floating Islands stages', () => {
         });
 
         it('should set loot cache stage when user has at least 2x loot_cache active with ERCCC', () => {
-            preUser.bait_name = "Extra Rich Cloud Cheesecake";
+            preUser.bait_name = 'Extra Rich Cloud Cheesecake';
             setHuntingSiteAtts({
                 is_vault_island: true,
                 activated_island_mod_types: ['loot_cache', 'loot_cache', 'loot_cache', 'loot_cache'],

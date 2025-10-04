@@ -1,6 +1,7 @@
-import {HarbourStager} from "@scripts/modules/stages/environments/harbour";
-import {User} from '@scripts/types/hg';
-import {IntakeMessage} from '@scripts/types/mhct';
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { HarbourStager } from '@scripts/modules/stages/environments/harbour';
 
 describe('HarbourStager', () => {
     it('sets stage to "No Bounty" if user can begin search', () => {

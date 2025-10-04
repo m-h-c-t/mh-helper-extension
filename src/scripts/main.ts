@@ -1,29 +1,34 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import {IntakeRejectionEngine} from "./hunt-filter/engine";
-import {ConsoleLogger, LogLevel} from './services/logging';
-import {EnvironmentService} from "./services/environment.service";
-import {MouseRipApiService} from "./services/mouserip-api.service";
-import {InterceptorService, ResponseEventParams} from "./services/interceptor.service";
-import {UserSettings} from "./services/settings/settings.service";
-import {SubmissionService} from "./services/submission.service";
-import {ApiService} from "./services/api.service";
-import {HgResponse, hgResponseSchema, Inventory, InventoryItem, JournalMarkup, User} from "./types/hg";
-import {HornHud} from './util/hornHud';
-import {Messenger} from "./content/messaging/messenger";
-import {CrownTracker} from "./modules/crown-tracker/tracker";
-import {IEnvironmentDetailer} from "./modules/details/details.types";
-import {ExtensionLog} from "./modules/extension-log/extension-log";
-import {IntakeMessage, IntakeMessageBase, intakeMessageBaseSchema, intakeMessageSchema} from "./types/mhct";
-import {parseHgInt} from "./util/number";
-import {z} from "zod";
+import { z } from 'zod';
+
+import type { IEnvironmentDetailer } from './modules/details/details.types';
+import type { IStager } from './modules/stages/stages.types';
+import type { ResponseEventParams } from './services/interceptor.service';
+import type { UserSettings } from './services/settings/settings.service';
+import type { HgResponse, Inventory, InventoryItem, JournalMarkup, User } from './types/hg';
+import type { IntakeMessage, IntakeMessageBase } from './types/mhct';
+
+import { Messenger } from './content/messaging/messenger';
+import { IntakeRejectionEngine } from './hunt-filter/engine';
 import * as successHandlers from './modules/ajax-handlers';
+import { CrownTracker } from './modules/crown-tracker/tracker';
 import * as detailers from './modules/details';
+import { ExtensionLog } from './modules/extension-log/extension-log';
 import * as stagers from './modules/stages';
+import { ApiService } from './services/api.service';
+import { EnvironmentService } from './services/environment.service';
+import { InterceptorService } from './services/interceptor.service';
+import { ConsoleLogger, LogLevel } from './services/logging';
+import { MouseRipApiService } from './services/mouserip-api.service';
+import { SubmissionService } from './services/submission.service';
+import { hgResponseSchema } from './types/hg';
+import { intakeMessageBaseSchema, intakeMessageSchema } from './types/mhct';
+import { HornHud } from './util/hornHud';
+import { parseHgInt } from './util/number';
 
 declare global {
     interface Window {
@@ -60,7 +65,7 @@ declare global {
         }),
         showFlashMessage
     );
-    const mouseRipApiService = new MouseRipApiService(logger, apiService);
+    const mouseRipApiService = new MouseRipApiService(apiService);
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
@@ -76,9 +81,8 @@ declare global {
 
     async function main() {
         try {
-
             if (!(window as any).jQuery) {
-                throw new Error("Can't find jQuery.");
+                throw new Error('Can\'t find jQuery.');
             }
 
             userSettings = await getSettingsAsync();
@@ -91,7 +95,7 @@ declare global {
                 crownTracker.init();
             }
         } catch (error) {
-            logger.error("Failed to initialize.", error);
+            logger.error('Failed to initialize.', error);
         }
     }
 
@@ -103,8 +107,8 @@ declare global {
 
         settingsPromise = new Promise<UserSettings>((resolve, reject) => {
             const getSettingsTimeout = setTimeout(() => {
-                window.removeEventListener("message", listenSettings);
-                reject(new Error("Timeout waiting for settings."));
+                window.removeEventListener('message', listenSettings);
+                reject(new Error('Timeout waiting for settings.'));
             }, 60000);
 
             // Set up message listener
@@ -115,13 +119,13 @@ declare global {
 
                 // Clean up
                 clearTimeout(getSettingsTimeout);
-                window.removeEventListener("message", listenSettings);
+                window.removeEventListener('message', listenSettings);
 
                 resolve(event.data.settings as UserSettings);
             }
 
-            window.addEventListener("message", listenSettings);
-            window.postMessage({mhct_settings_request: 1}, "*");
+            window.addEventListener('message', listenSettings);
+            window.postMessage({mhct_settings_request: 1}, '*');
         });
 
         try {
@@ -135,7 +139,7 @@ declare global {
     }
 
     function getExtensionVersion() {
-        const version = $("#mhhh_version").val() as string;
+        const version = $('#mhhh_version').val() as string;
 
         // split version and convert to padded number number format
         // 0.0.0 -> 000000
@@ -144,9 +148,9 @@ declare global {
         const [major, minor, patch] = version.split('.');
 
         return Number(
-            (major?.padStart(2, '0') || '00') +
-            (minor?.padStart(2, '0') || '00') +
-            (patch?.padStart(2, '0') || '00')
+            (major?.padStart(2, '0') ?? '00') +
+            (minor?.padStart(2, '0') ?? '00') +
+            (patch?.padStart(2, '0') ?? '00')
         );
     }
 
@@ -156,7 +160,7 @@ declare global {
         if (typeof user.user_id === 'undefined') {
             // No problem if user is not logged in yet.
             // This function will be called on logins (ajaxSuccess on session.php)
-            logger.debug("User is not logged in yet.");
+            logger.debug('User is not logged in yet.');
             return;
         }
 
@@ -164,9 +168,9 @@ declare global {
         const msgUint8 = new TextEncoder().encode(user_id);
         const hashBuffer = await crypto.subtle.digest('SHA-512', msgUint8);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
-        hunter_id_hash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+        hunter_id_hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-        logger.debug("createHunterIdHash:", {
+        logger.debug('createHunterIdHash:', {
             hunter_id: user_id,
             hunter_id_hash,
         });
@@ -174,11 +178,11 @@ declare global {
 
     async function initialLoad() {
         if (isDev) {
-            logger.debug("Debug mode activated");
-            logger.info("Test version detected, turning on debug mode and pointing to server on localhost");
+            logger.debug('Debug mode activated');
+            logger.info('Test version detected, turning on debug mode and pointing to server on localhost');
         }
 
-        logger.debug("initialLoad ran with settings", {userSettings});
+        logger.debug('initialLoad ran with settings', {userSettings});
 
         mhhh_version = getExtensionVersion();
         await createHunterIdHash();
@@ -205,7 +209,7 @@ declare global {
 
     // Listening for calls
     function addWindowMessageListeners() {
-        window.addEventListener('message', ev => {
+        window.addEventListener('message', (ev) => {
             if (ev.data.mhct_message == null) {
                 return;
             }
@@ -239,7 +243,7 @@ declare global {
                     return;
                 }
 
-                const sound_the_horn = confirm("Horn is Ready! Sound it?");
+                const sound_the_horn = confirm('Horn is Ready! Sound it?');
                 if (sound_the_horn) {
                     sound_horn();
                 }
@@ -252,7 +256,7 @@ declare global {
                 const myAudio = new Audio(sound_url);
                 const volume = ev.data.volume;
                 if (volume > 0) {
-                    myAudio.volume = Number((volume/100).toFixed(2));
+                    myAudio.volume = Number((volume / 100).toFixed(2));
                     void myAudio.play();
                 }
             }
@@ -261,16 +265,15 @@ declare global {
             if (ev.data.mhct_message === 'crownSubmissionStatus') {
                 const counts = ev.data.submitted;
                 if (counts) {
-                    showFlashMessage("success",
+                    showFlashMessage('success',
                         `Submitted ${counts} crowns for ${$('span[class*="titleBar-name"]').text()}.`);
                 } else if (counts != null) {
-                    showFlashMessage("error", "There was an issue submitting crowns on the backend.");
+                    showFlashMessage('error', 'There was an issue submitting crowns on the backend.');
                 } else {
                     logger.debug('Skipped submission (already sent).');
                 }
                 return;
             }
-
         }, false);
     }
 
@@ -282,8 +285,8 @@ declare global {
         void fetch(menuURL).then(response => response.text()).then((data) => {
             const url = new URL(menuURL);
             // FireFox will still have EXTENSION_URL in the code, so replace with origin of URL (moz-extension://<internal_uuid>/)
-            data = data.replace("EXTENSION_URL", url.origin);
-            document.location.href = "javascript:void function(){" + data + "%0A}();";
+            data = data.replace('EXTENSION_URL', url.origin);
+            document.location.href = 'javascript:void function(){' + data + '%0A}();';
         });
     }
 
@@ -292,7 +295,7 @@ declare global {
         let url = '';
         let glue = '';
         let method = '';
-        let input_name ='';
+        let input_name = '';
         if (solver === 'mhmh') {
             url = environmentService.getMapHelperUrl();
             glue = '\n';
@@ -308,16 +311,16 @@ declare global {
         }
 
         const payload = {
-            map_id: user.quests.QuestRelicHunter.default_map_id,
-            action: "map_info",
-            uh: user.unique_hash,
-            last_read_journal_entry_id: lastReadJournalEntryId,
+            'map_id': user.quests.QuestRelicHunter.default_map_id,
+            'action': 'map_info',
+            'uh': user.unique_hash,
+            'last_read_journal_entry_id': lastReadJournalEntryId,
             'X-Requested-By': `MHCT/${mhhh_version}`,
         };
         $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap_v2.php', payload, null, 'json')
-            .done(data => {
+            .done((data) => {
                 if (data) {
-                    if (!data.treasure_map || data.treasure_map.view_state === "noMap") {
+                    if (!data.treasure_map || data.treasure_map.view_state === 'noMap') {
                         alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
                         return;
                     }
@@ -327,8 +330,8 @@ declare global {
                     }
                     const mice = getMapMice(data, true);
                     $('<form method="' + method + '" action="' + url + '" target="_blank">' +
-                    '<input type="hidden" name="' + input_name + '" value="' + mice.join(glue) +
-                    '"></form>').appendTo('body').submit().remove();
+                        '<input type="hidden" name="' + input_name + '" value="' + mice.join(glue) +
+                        '"></form>').appendTo('body').submit().remove();
                 }
             });
     }
@@ -374,13 +377,13 @@ declare global {
                 return;
             }
 
-            logger.debug("Fetching user object before hunting", performance.now());
-            const pageResponse = await apiService.send("POST",
-                "/managers/ajax/pages/page.php",
+            logger.debug('Fetching user object before hunting', performance.now());
+            const pageResponse = await apiService.send('POST',
+                '/managers/ajax/pages/page.php',
                 {
-                    sn: "Hitgrab",
+                    sn: 'Hitgrab',
                     hg_is_ajax: 1,
-                    page_class: "Camp",
+                    page_class: 'Camp',
                     last_read_journal_entry_id: lastReadJournalEntryId,
                     uh: user.unique_hash
                 },
@@ -435,11 +438,10 @@ declare global {
      * @param {string} rawPostResponse String representation of the response from calling activeturn.php
      */
     function recordHuntWithPrehuntUser(rawPreResponse: unknown, post_response: HgResponse) {
-
         const safeParseResultPre = hgResponseSchema.safeParse(rawPreResponse);
 
         if (!safeParseResultPre.success) {
-            logger.warn("Unexpected pre hunt response type received", z.prettifyError(safeParseResultPre.error));
+            logger.warn('Unexpected pre hunt response type received', z.prettifyError(safeParseResultPre.error));
 
             return;
         }
@@ -483,23 +485,23 @@ declare global {
             obj_post: Record<string, any>
         ) {
             const simple_diffs = new Set(['string', 'number', 'boolean']);
-            for (const [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith("hash"))) {
+            for (const [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith('hash'))) {
                 pre.add(key);
                 if (!post.has(key)) {
-                    result[key] = {in: "pre", val: value};
+                    result[key] = {in: 'pre', val: value};
                 } else if (simple_diffs.has(typeof value)) {
                     // Some HG endpoints do not cast numeric values to number due to numeric precision issues.
                     // Thus, the type-converting inequality check is performed instead of strict inequality.
                     if (value != obj_post[key]) {
-                        result[key] = {"pre": value, "post": obj_post[key]};
+                        result[key] = {pre: value, post: obj_post[key]};
                     }
                 } else if (Array.isArray(value)) {
                     // Do not modify the element order by sorting.
                     const other = obj_post[key];
                     if (value.length > other.length) {
-                        result[key] = {type: "-", "pre": value, "post": other};
+                        result[key] = {type: '-', pre: value, post: other};
                     } else if (value.length < other.length) {
-                        result[key] = {type: "+", "pre": value, "post": other};
+                        result[key] = {type: '+', pre: value, post: other};
                     } else {
                         // Same number of elements. Compare them under the assumption that the elements
                         // have the same order.
@@ -519,15 +521,15 @@ declare global {
                     }
                 }
             }
-            Object.keys(obj_post).filter(key => !pre.has(key) && !key.endsWith("hash"))
-                .forEach(key => {
-                    result[key] = {in: "post", val: obj_post[key]};
+            Object.keys(obj_post).filter(key => !pre.has(key) && !key.endsWith('hash'))
+                .forEach((key) => {
+                    result[key] = {in: 'post', val: obj_post[key]};
                 });
 
             return result;
         }
 
-        logger.debug("User object diff",
+        logger.debug('User object diff',
             diffUserObjects({}, new Set(), new Set(Object.keys(user_post)), user_pre, user_post)
         );
 
@@ -538,7 +540,7 @@ declare global {
 
         const hunt = parseJournalEntries(post_response, maxEntryId);
         if (!hunt || Object.keys(hunt).length === 0) {
-            logger.info("Missing Info (trap check or friend hunt)(2)");
+            logger.info('Missing Info (trap check or friend hunt)(2)');
             return;
         }
 
@@ -583,7 +585,7 @@ declare global {
                 if (!checkPostResult.success) {
                     issues.push(z.prettifyError(checkPostResult.error));
                 }
-                throw new Error(`Failed to create intake message. Issues:\n\n${issues.join("\n\n")}`);
+                throw new Error(`Failed to create intake message. Issues:\n\n${issues.join('\n\n')}`);
             }
 
             return {
@@ -598,11 +600,11 @@ declare global {
             // Create two intake messages. One based on pre-response. The other based on post-response.
             ({message_pre, message_post} = createIntakeMessage(pre_response, post_response, hunt));
         } catch (error) {
-            logger.error("Something went wrong creating message", error);
+            logger.error('Something went wrong creating message', error);
         }
 
         if (message_pre == null || message_post == null) {
-            logger.warn("Critical user data missing; cannot record hunt. See error log.");
+            logger.warn('Critical user data missing; cannot record hunt. See error log.');
             return;
         }
 
@@ -619,13 +621,13 @@ declare global {
             return;
         }
 
-        logger.debug("Recording hunt", {message_var:message_pre, user_pre, user_post, hunt});
+        logger.debug('Recording hunt', {message_var: message_pre, user_pre, user_post, hunt});
         // Upload the hunt record.
         void submissionService.submitHunt(message_pre);
     }
 
     // Add bonus journal entry stuff to the hunt_details
-    function calcMoreDetails(hunt: JournalMarkup & { more_details?: Record<string, unknown> }): Record<string, unknown> | undefined {
+    function calcMoreDetails(hunt: JournalMarkup & {more_details?: Record<string, unknown>}): Record<string, unknown> | undefined {
         let new_details: Record<string, unknown> | undefined = {};
         if ('more_details' in hunt) {
             new_details = hunt.more_details;
@@ -640,7 +642,7 @@ declare global {
      * @returns {import("./types/hg").JournalMarkup | null} The journal entry corresponding to the active hunt.
      */
     function parseJournalEntries(hunt_response: HgResponse, max_old_entry_id: number): JournalMarkup | null {
-        let journal: (JournalMarkup & { more_details?: Record<string, unknown> }) | undefined;
+        let journal: (JournalMarkup & {more_details?: Record<string, unknown>}) | undefined;
         const more_details: Record<string, unknown> = {};
         let journal_entries = hunt_response.journal_markup;
         if (!journal_entries) { return null; }
@@ -652,7 +654,7 @@ declare global {
 
         // Cancel everything if there's trap check somewhere
         if (journal_entries.findIndex(x => x.render_data.css_class.search(/passive/) !== -1) !== -1) {
-            logger.info("Found trap check too close to hunt. Aborting.");
+            logger.info('Found trap check too close to hunt. Aborting.');
             return null;
         }
 
@@ -668,7 +670,7 @@ declare global {
             }
         };
 
-        journal_entries.forEach(markup => {
+        journal_entries.forEach((markup) => {
             const css_class = markup.render_data.css_class;
             // Handle a Relic Hunter attraction.
             if (css_class.search(/(relicHunter_catch|relicHunter_failure)/) !== -1) {
@@ -684,15 +686,13 @@ declare global {
                         logger.debug(`Found the Relic Hunter in ${rh_message.rh_environment}`);
                     }
                 }
-            }
-            else if (css_class.search(/prizemouse/) !== -1) {
+            } else if (css_class.search(/prizemouse/) !== -1) {
                 // Handle a prize mouse attraction.
                 // TODO: Implement data submission
                 void extensionLog.log(LogLevel.Info, {
                     prize_mouse_journal: markup,
                 });
-            }
-            else if (css_class.search(/desert_heater_base_trigger/) !== -1 && css_class.search(/fail/) === -1) {
+            } else if (css_class.search(/desert_heater_base_trigger/) !== -1 && css_class.search(/fail/) === -1) {
                 // Handle a Desert Heater Base loot proc.
                 const data = markup.render_data.text;
                 const quantityRegex = /mouse dropped ([\d,]+) <a class/;
@@ -715,11 +715,11 @@ declare global {
                     } else {
                         const convertible = {
                             id: 2952, // Desert Heater Base's item ID
-                            name: "Desert Heater Base",
+                            name: 'Desert Heater Base',
                             quantity: 1,
                         };
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
-                        logger.debug("Desert Heater Base proc", {desert_heater_loot: items});
+                        logger.debug('Desert Heater Base proc', {desert_heater_loot: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
@@ -729,17 +729,16 @@ declare global {
                         inventory: hunt_response.inventory,
                     });
                 }
-            }
-            else if (css_class.search(/unstable_charm_trigger/) !== -1) {
+            } else if (css_class.search(/unstable_charm_trigger/) !== -1) {
                 const data = markup.render_data.text;
                 const trinketRegex = /item\.php\?item_type=(.*?)"/.exec(data);
                 if (trinketRegex) {
                     const resultTrinket = trinketRegex[1];
-                    if(hunt_response.inventory != null && !Array.isArray(hunt_response.inventory) && resultTrinket in hunt_response.inventory) {
+                    if (hunt_response.inventory != null && !Array.isArray(hunt_response.inventory) && resultTrinket in hunt_response.inventory) {
                         const {name: trinketName, item_id: trinketId} = hunt_response.inventory[resultTrinket];
                         const convertible = {
                             id: 1478, // Unstable Charm's item ID
-                            name: "Unstable Charm",
+                            name: 'Unstable Charm',
                             quantity: 1,
                         };
                         const items = [{
@@ -747,13 +746,12 @@ declare global {
                             name: trinketName,
                             quantity: 1,
                         }];
-                        logger.debug("Submitting Unstable Charm: ", {unstable_charm_loot: items});
+                        logger.debug('Submitting Unstable Charm: ', {unstable_charm_loot: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
-            }
-            else if (css_class.search(/gift_wrapped_charm_trigger/) !== -1) {
+            } else if (css_class.search(/gift_wrapped_charm_trigger/) !== -1) {
                 const data = markup.render_data.text;
                 const trinketRegex = /item\.php\?item_type=(.*?)"/.exec(data);
                 if (trinketRegex) {
@@ -762,7 +760,7 @@ declare global {
                     if (trinket) {
                         const convertible = {
                             id: 2525, // Gift Wrapped Charm's item ID
-                            name: "Gift Wrapped Charm",
+                            name: 'Gift Wrapped Charm',
                             quantity: 1,
                         };
                         const items = [{
@@ -770,13 +768,12 @@ declare global {
                             name: trinket.name,
                             quantity: 1,
                         }];
-                        logger.debug("Submitting Gift Wrapped Charm: ", {gift_wrapped_charm_loot: items});
+                        logger.debug('Submitting Gift Wrapped Charm: ', {gift_wrapped_charm_loot: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
-            }
-            else if (css_class.search(/torch_charm_event/) !== -1) {
+            } else if (css_class.search(/torch_charm_event/) !== -1) {
                 const data = markup.render_data.text;
                 const torchprocRegex = /item\.php\?item_type=(.*?)"/.exec(data);
                 if (torchprocRegex) {
@@ -785,7 +782,7 @@ declare global {
                     if (torchItemResult) {
                         const convertible = {
                             id: 2180, // Torch Charm's item ID
-                            name: "Torch Charm",
+                            name: 'Torch Charm',
                             quantity: 1,
                         };
                         const items = [{
@@ -793,24 +790,23 @@ declare global {
                             name: torchItemResult.name,
                             quantity: 1,
                         }];
-                        logger.debug("Submitting Torch Charm: ", {torch_charm_loot: items});
+                        logger.debug('Submitting Torch Charm: ', {torch_charm_loot: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
-            }
-            else if (css_class.search(/queso_cannonstorm_base_trigger/) !== -1) {
+            } else if (css_class.search(/queso_cannonstorm_base_trigger/) !== -1) {
                 const data = markup.render_data.text;
                 const qcbprocRegex = /item\.php\?item_type=(.*?)"/g;
                 const matchResults = [...data.matchAll(qcbprocRegex)];
-                if (matchResults.length == 4){
+                if (matchResults.length == 4) {
                     // Get third match, then first capturing group
                     const resultItem = matchResults[2][1];
                     const baseResultItem = getItemFromInventoryByType(resultItem);
                     if (baseResultItem) {
                         const convertible = {
                             id: 3526, // Queso Cannonstorm Base's item ID
-                            name: "Queso Cannonstorm Base",
+                            name: 'Queso Cannonstorm Base',
                             quantity: 1,
                         };
                         const items = [{
@@ -818,18 +814,15 @@ declare global {
                             name: baseResultItem.name,
                             quantity: 1,
                         }];
-                        logger.debug("Submitting Queso Cannonstorm Base: ", {queso_cannonstorm_base_loot: items});
+                        logger.debug('Submitting Queso Cannonstorm Base: ', {queso_cannonstorm_base_loot: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
-            }
-            else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
-
+            } else if (css_class.search(/alchemists_cookbook_base_bonus/) !== -1) {
                 more_details.alchemists_cookbook_base_bonus = true;
-                logger.debug("Adding Cookbook Base Bonus to details", {procs: more_details});
-            }
-            else if (css_class.search(/boiling_cauldron_potion_bonus/) !== -1) {
+                logger.debug('Adding Cookbook Base Bonus to details', {procs: more_details});
+            } else if (css_class.search(/boiling_cauldron_potion_bonus/) !== -1) {
                 const data = markup.render_data.text;
                 const potionRegex = /item\.php\?item_type=(.*?)"/.exec(data);
                 if (potionRegex) {
@@ -838,7 +831,7 @@ declare global {
                     if (potionItemResult) {
                         const convertible = {
                             id: 3304,
-                            name: "Boiling Cauldron Trap",
+                            name: 'Boiling Cauldron Trap',
                             quantity: 1,
                         };
                         const items = [{
@@ -846,15 +839,14 @@ declare global {
                             name: potionItemResult.name,
                             quantity: 1,
                         }];
-                        logger.debug("Boiling Cauldron Trap proc", {boiling_cauldron_trap: items});
+                        logger.debug('Boiling Cauldron Trap proc', {boiling_cauldron_trap: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
                 more_details.boiling_cauldron_trap_bonus = true;
-                logger.debug("Boiling Cauldron Trap details", {procs: more_details});
-            }
-            else if (css_class.search(/chesla_trap_trigger/) !== -1) {
+                logger.debug('Boiling Cauldron Trap details', {procs: more_details});
+            } else if (css_class.search(/chesla_trap_trigger/) !== -1) {
                 // Handle a potential Gilded Charm proc.
                 const data = markup.render_data.text;
                 const gildedRegex = /my Gilded Charm/.exec(data);
@@ -871,35 +863,31 @@ declare global {
                     } else {
                         const convertible = {
                             id: 2174, // Gilded Charm's item ID
-                            name: "Gilded Charm",
+                            name: 'Gilded Charm',
                             quantity: 1,
                         };
-                        const items = [{id: 114, name: "SUPER|brie+", quantity: lootQty}];
-                        logger.debug("Guilded Charm proc", {gilded_charm: items});
+                        const items = [{id: 114, name: 'SUPER|brie+', quantity: lootQty}];
+                        logger.debug('Guilded Charm proc', {gilded_charm: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
-            }
-            else if (css_class.search(/pirate_sleigh_trigger/) !== -1) {
+            } else if (css_class.search(/pirate_sleigh_trigger/) !== -1) {
                 // SS Scoundrel Sleigh got 'im!
                 more_details.pirate_sleigh_trigger = true;
-                logger.debug("Pirate Sleigh proc", {procs: more_details});
-            }
-            else if (css_class.search(/rainbowQuillSpecialEffect/) !== -1) {
-                if (user.environment_name == "Afterword Acres" || user.environment_name == "Epilogue Falls") {
+                logger.debug('Pirate Sleigh proc', {procs: more_details});
+            } else if (css_class.search(/rainbowQuillSpecialEffect/) !== -1) {
+                if (user.environment_name == 'Afterword Acres' || user.environment_name == 'Epilogue Falls') {
                     more_details.rainbow_quill_trigger = true;
                 }
-                logger.debug("Rainbow Quill proc", {procs: more_details});
-            }
-            else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
-                logger.debug("Got a hunt record ", {procs: more_details});
+                logger.debug('Rainbow Quill proc', {procs: more_details});
+            } else if (css_class.search(/(catchfailure|catchsuccess|attractionfailure|stuck_snowball_catch)/) !== -1) {
+                logger.debug('Got a hunt record ', {procs: more_details});
                 if (css_class.includes('active')) {
                     journal = markup;
-                    logger.debug("Found the active hunt", {journal});
+                    logger.debug('Found the active hunt', {journal});
                 }
-            }
-            else if (css_class.search(/linked|passive|misc/) !== -1) {
+            } else if (css_class.search(/linked|passive|misc/) !== -1) {
                 // Ignore any friend hunts, trap checks, or custom loot journal entries.
             }
         });
@@ -943,11 +931,11 @@ declare global {
         type PropFields = 'weapon' | 'base' | 'trinket' | 'bait';
         type ComponentFields = 'trap' | 'base' | 'cheese' | 'charm';
         const components: {
-            prop: PropFields,
-            message_field: ComponentFields,
-            required: boolean,
-            replacer: RegExp,
-            [key: string]: unknown
+            prop: PropFields;
+            message_field: ComponentFields;
+            required: boolean;
+            replacer: RegExp;
+            [key: string]: unknown;
         }[] = [
             {prop: 'weapon', message_field: 'trap', required: true, replacer: / trap$/i},
             {prop: 'base', message_field: 'base', required: true, replacer: / base$/i},
@@ -988,13 +976,13 @@ declare global {
             }
             // Remove HTML tags and other text around the mouse name.
             message.mouse = journal.render_data.text
-                .replace(/^.*?;">/, '')    // Remove all text through the first sequence of `;">`
-                .replace(/<\/a>.*/i, '')    // Remove text after the first <a href>'s closing tag </a>
-                .replace(/ mouse$/i, '');  // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
+                .replace(/^.*?;">/, '') // Remove all text through the first sequence of `;">`
+                .replace(/<\/a>.*/i, '') // Remove text after the first <a href>'s closing tag </a>
+                .replace(/ mouse$/i, ''); // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
         }
 
         // Auras
-        if (hgResponse.trap_image != null){
+        if (hgResponse.trap_image != null) {
             message.auras = Object.keys(hgResponse.trap_image.auras).filter(codename => hgResponse.trap_image!.auras[codename].status === 'active');
         }
 
@@ -1033,9 +1021,9 @@ declare global {
      */
     function fixLGLocations(message: IntakeMessageBase) {
         const environmentMap: Record<string, number> = {
-            "Cursed City": 5000,
-            "Sand Crypts": 5001,
-            "Twisted Garden": 5002,
+            'Cursed City': 5000,
+            'Sand Crypts': 5001,
+            'Twisted Garden': 5002,
         };
 
         if (message.location.name in environmentMap) {
@@ -1043,8 +1031,7 @@ declare global {
         }
     }
 
-    /** @type {Object<string, import("./modules/stages/stages.types").IStager>} */
-    const location_stager_lookup: Record<string, import("./modules/stages/stages.types").IStager> = {};
+    const location_stager_lookup: Record<string, IStager> = {};
     for (const stager of stagers.stageModules) {
         location_stager_lookup[stager.environment] = stager;
     }
@@ -1112,16 +1099,16 @@ declare global {
         };
 
         let hunt_description = hunt.render_data.text;
-        if (!hunt_description.includes("following loot:")) { return; }
+        if (!hunt_description.includes('following loot:')) { return; }
 
-        hunt_description = hunt_description.substring(hunt_description.indexOf("following loot:") + 15);
+        hunt_description = hunt_description.substring(hunt_description.indexOf('following loot:') + 15);
         // Use a stricter regex to split on closing anchor tags like </a> with optional whitespace
         const loot_array = hunt_description.split(/<\/a\s*>/gi).filter(i => i.trim());
         const lootList = [];
         for (const item_text of loot_array) {
             const item_name = /item\.php\?item_type=(.*?)"/.exec(item_text)?.[1];
             const item_amount = parseHgInt(/\d+[\d,]*/.exec(item_text)?.[0] ?? '0');
-            const plural_name = $($.parseHTML(item_text)).filter("a").text();
+            const plural_name = $($.parseHTML(item_text)).filter('a').text();
 
             const inventory_item = getItemFromInventoryByType(item_name ?? '');
             if (!inventory_item) {
@@ -1130,14 +1117,14 @@ declare global {
             }
 
             const loot_object = {
-                amount:      item_amount,
-                lucky:       item_text.includes('class="lucky"'),
-                id:          inventory_item.item_id,
-                name:        inventory_item.name,
+                amount: item_amount,
+                lucky: item_text.includes('class="lucky"'),
+                id: inventory_item.item_id,
+                name: inventory_item.name,
                 plural_name: item_amount > 1 ? plural_name : '',
             };
 
-            logger.debug("Loot object", {loot_object});
+            logger.debug('Loot object', {loot_object});
 
             lootList.push(loot_object);
         }
@@ -1155,7 +1142,7 @@ declare global {
                 return;
             }
 
-            if (e.key === "Escape" && elements.length > 0) {
+            if (e.key === 'Escape' && elements.length > 0) {
                 elements.each(function () {
                     $(this).trigger('click');
                 });
@@ -1172,7 +1159,7 @@ declare global {
             mhct_finish_load: 1,
         }, window.origin);
 
-        logger.info(`Helper Extension version ${isDev ? "DEV" : mhhh_version} loaded! Good luck!`);
+        logger.info(`Helper Extension version ${isDev ? 'DEV' : mhhh_version} loaded! Good luck!`);
     }
 
     void main();

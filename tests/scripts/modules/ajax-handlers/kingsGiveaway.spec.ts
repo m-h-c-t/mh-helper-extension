@@ -1,24 +1,25 @@
-import {KingsGiveawayAjaxHandler} from "@scripts/modules/ajax-handlers/kingsGiveaway";
-import {MouseRipApiService} from "@scripts/services/mouserip-api.service";
-import {SubmissionService} from "@scripts/services/submission.service";
-import {CustomConvertibleIds} from "@scripts/util/constants";
-import {LoggerService} from "@scripts/services/logging";
-import {HgResponseBuilder} from "@tests/utility/builders";
-import {mock} from "vitest-mock-extended";
+import type { LoggerService } from '@scripts/services/logging';
+import type { MouseRipApiService } from '@scripts/services/mouserip-api.service';
+import type { SubmissionService } from '@scripts/services/submission.service';
+
+import { KingsGiveawayAjaxHandler } from '@scripts/modules/ajax-handlers/kingsGiveaway';
+import { CustomConvertibleIds } from '@scripts/util/constants';
+import { HgResponseBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 const logger = mock<LoggerService>();
 const submissionService = mock<SubmissionService>();
 const mouseRipApiService = mock<MouseRipApiService>();
 
-const kga_url = "mousehuntgame.com/managers/ajax/events/kings_giveaway.php";
+const kga_url = 'mousehuntgame.com/managers/ajax/events/kings_giveaway.php';
 
-describe("KingsGiveawayAjaxHandler", () => {
+describe('KingsGiveawayAjaxHandler', () => {
     let responseBuilder: HgResponseBuilder;
     let handler: KingsGiveawayAjaxHandler;
 
     // Mouse RIP item mock
     const knownVaultItems = [
-        //{type: 'extreme_regal_trinket', id: 2542},
+        // {type: 'extreme_regal_trinket', id: 2542},
         {type: 'prize_credit_stat_item', name: 'King\'s Credit', id: 420},
         {type: 'rainbow_scroll_case_convertible', name: 'Rainbow Scroll Case', id: 1974},
         {type: 'rainbow_luck_trinket', name: 'Rainbow Luck Charm', id: 1692},
@@ -33,26 +34,26 @@ describe("KingsGiveawayAjaxHandler", () => {
         handler = new KingsGiveawayAjaxHandler(logger, submissionService, mouseRipApiService);
     });
 
-    describe("match", () => {
-        it("is false when url is ignored", () => {
-            expect(handler.match("mousehuntgame.com/managers/ajax/events/sprint_hunt.php")).toBe(false);
+    describe('match', () => {
+        it('is false when url is ignored', () => {
+            expect(handler.match('mousehuntgame.com/managers/ajax/events/sprint_hunt.php')).toBe(false);
         });
 
-        it("is true when url matches", () => {
+        it('is true when url matches', () => {
             expect(handler.match(kga_url)).toBe(true);
         });
     });
 
-    describe("execute", () => {
+    describe('execute', () => {
         it('logs if KGA response is not a mini prize pack opening', async () => {
             const response = responseBuilder.build();
             await handler.execute(response);
 
-            expect(logger.warn).toHaveBeenCalledWith("ValidatedAjaxSuccessHandler: Invalid response for King's Giveaway", expect.anything(), expect.anything());
+            expect(logger.warn).toHaveBeenCalledWith('ValidatedAjaxSuccessHandler: Invalid response for King\'s Giveaway', expect.anything(), expect.anything());
             expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
-        it("submits expected response one", async () => {
+        it('submits expected response one', async () => {
             const response = responseBuilder
                 .withUnknown(testResponses.responseOne)
                 .build();
@@ -60,14 +61,14 @@ describe("KingsGiveawayAjaxHandler", () => {
 
             const expectedConvertible = {
                 id: CustomConvertibleIds.KingsMiniPrizePack,
-                name: "King's Mini Prize Pack",
+                name: 'King\'s Mini Prize Pack',
                 quantity: 1,
             };
 
             const expectedItems = [
                 {
                     id: 1982,
-                    name: "Super Regal Charm",
+                    name: 'Super Regal Charm',
                     quantity: 5,
                 },
             ];
@@ -79,7 +80,7 @@ describe("KingsGiveawayAjaxHandler", () => {
             );
         });
 
-        it("submits expected response two", async () => {
+        it('submits expected response two', async () => {
             const response = responseBuilder
                 .withUnknown(testResponses.responseTwo)
                 .build();
@@ -87,14 +88,14 @@ describe("KingsGiveawayAjaxHandler", () => {
 
             const expectedConvertible = {
                 id: CustomConvertibleIds.KingsMiniPrizePack,
-                name: "King's Mini Prize Pack",
+                name: 'King\'s Mini Prize Pack',
                 quantity: 1,
             };
 
             const expectedItems = [
                 {
                     id: 431,
-                    name: "Gold",
+                    name: 'Gold',
                     quantity: 5000,
                 },
             ];
@@ -106,7 +107,7 @@ describe("KingsGiveawayAjaxHandler", () => {
             );
         });
 
-        it("submits expected upon opening 10th pack", async () => {
+        it('submits expected upon opening 10th pack', async () => {
             const response = responseBuilder
                 .withUnknown(testResponses.responseWithVaultOne)
                 .build();
@@ -114,14 +115,14 @@ describe("KingsGiveawayAjaxHandler", () => {
 
             const expectedPrizeConvertible = {
                 id: CustomConvertibleIds.KingsMiniPrizePack,
-                name: "King's Mini Prize Pack",
+                name: 'King\'s Mini Prize Pack',
                 quantity: 1,
             };
 
             const expectedPrizeItems = [
                 {
                     id: 114,
-                    name: "SUPER|brie+",
+                    name: 'SUPER|brie+',
                     quantity: 5,
                 },
             ];
@@ -133,24 +134,24 @@ describe("KingsGiveawayAjaxHandler", () => {
 
             const expectedVaultConvertible = {
                 id: CustomConvertibleIds.KingsGiveawayVault,
-                name: "King's Giveaway Vault",
+                name: 'King\'s Giveaway Vault',
                 quantity: 1,
             };
 
             const expectedVaultItems = [
                 {
                     id: 420,
-                    name: "King's Credits",
+                    name: 'King\'s Credits',
                     quantity: 300,
                 },
                 {
                     id: 1692,
-                    name: "Rainbow Charms",
+                    name: 'Rainbow Charms',
                     quantity: 50,
                 },
                 {
                     id: 1974,
-                    name: "Rainbow Scroll Case",
+                    name: 'Rainbow Scroll Case',
                     quantity: 1,
                 },
             ];
@@ -162,7 +163,7 @@ describe("KingsGiveawayAjaxHandler", () => {
             );
         });
 
-        it("logs warning when items from mouse rip don't contain vault item", async () => {
+        it('logs warning when items from mouse rip don\'t contain vault item', async () => {
             const response = responseBuilder
                 .withUnknown(testResponses.responseWithVaultTwo)
                 .build();
@@ -170,13 +171,13 @@ describe("KingsGiveawayAjaxHandler", () => {
             await expect(handler.execute(response)).rejects.toThrow(`Unknown item type 'extreme_regal_trinket' in King's Vault`);
         });
 
-        it("errors out on response three", async () => {
+        it('errors out on response three', async () => {
             const response = responseBuilder
                 .withUnknown(testResponses.responseWithInventoryError)
                 .build();
             await handler.execute(response);
 
-            expect(logger.warn).toHaveBeenCalledWith("Item (unknown_item_type) not found in inventory from King's Mini Prize Pack opening");
+            expect(logger.warn).toHaveBeenCalledWith('Item (unknown_item_type) not found in inventory from King\'s Mini Prize Pack opening');
             expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
         });
     });
@@ -186,166 +187,166 @@ describe("KingsGiveawayAjaxHandler", () => {
 const testResponses = {
     // 5 Super Regal Charms
     responseOne: {
-        "kings_giveaway": {
-            "remaining_openable_prize_packs": 10,
-            "vault_is_open": null,
-            "vault_prizes": [],
+        kings_giveaway: {
+            remaining_openable_prize_packs: 10,
+            vault_is_open: null,
+            vault_prizes: [],
         },
-        "kings_giveaway_result": {
-            "quantity": 1,
-            "slot": "bonus",
-            "items": [
+        kings_giveaway_result: {
+            quantity: 1,
+            slot: 'bonus',
+            items: [
                 {
-                    "type": "super_regal_trinket",
-                    "name": "Super Regal Charm",
-                    "quantity": 5,
+                    type: 'super_regal_trinket',
+                    name: 'Super Regal Charm',
+                    quantity: 5,
                 },
             ],
         },
-        "inventory": {
-            "super_regal_trinket": {
-                "item_id": 1982,
-                "name": "Super Regal Charm",
-                "type": "super_regal_trinket",
-                "quantity": 2,
+        inventory: {
+            super_regal_trinket: {
+                item_id: 1982,
+                name: 'Super Regal Charm',
+                type: 'super_regal_trinket',
+                quantity: 2,
             },
         },
     },
 
     // 5000 gold
     responseTwo: {
-        "kings_giveaway": {
-            "remaining_openable_prize_packs": 10,
-            "vault_is_open": null,
-            "vault_prizes": [],
+        kings_giveaway: {
+            remaining_openable_prize_packs: 10,
+            vault_is_open: null,
+            vault_prizes: [],
         },
-        "kings_giveaway_result": {
-            "quantity": 1,
-            "slot": "bonus",
-            "items": [
+        kings_giveaway_result: {
+            quantity: 1,
+            slot: 'bonus',
+            items: [
                 {
-                    "type": "gold_stat_item",
-                    "name": "Gold",
-                    "quantity": "5,000",
+                    type: 'gold_stat_item',
+                    name: 'Gold',
+                    quantity: '5,000',
                 },
             ],
         },
         // inventory doesn"t contain gold response
-        "inventory": {
-            "super_brie_cheese": {
-                "item_id": 114,
-                "name": "SUPER|brie+",
-                "quantity": 5,
-                "type": "super_brie_cheese",
+        inventory: {
+            super_brie_cheese: {
+                item_id: 114,
+                name: 'SUPER|brie+',
+                quantity: 5,
+                type: 'super_brie_cheese',
             },
         },
     },
 
     // 10th opening + vault prizes
     responseWithVaultOne: {
-        "kings_giveaway": {
-            "remaining_openable_prize_packs": null,
-            "vault_is_open": true,
-            "vault_prizes": [
+        kings_giveaway: {
+            remaining_openable_prize_packs: null,
+            vault_is_open: true,
+            vault_prizes: [
                 {
-                    "quantity": 300,
-                    "type": "prize_credit_stat_item",
-                    "name": "King's Credits",
+                    quantity: 300,
+                    type: 'prize_credit_stat_item',
+                    name: 'King\'s Credits',
                 },
                 {
-                    "quantity": 50,
-                    "type": "rainbow_luck_trinket",
-                    "name": "Rainbow Charms",
+                    quantity: 50,
+                    type: 'rainbow_luck_trinket',
+                    name: 'Rainbow Charms',
                 },
                 {
-                    "quantity": 1,
-                    "type": "rainbow_scroll_case_convertible",
-                    "name": "Rainbow Scroll Case",
-                },
-            ],
-        },
-        "kings_giveaway_result": {
-            "slot": "bonus",
-            "quantity": 1,
-            "items": [
-                {
-                    "type": "super_brie_cheese",
-                    "name": "SUPER|brie+",
-                    "quantity": 5,
+                    quantity: 1,
+                    type: 'rainbow_scroll_case_convertible',
+                    name: 'Rainbow Scroll Case',
                 },
             ],
         },
-        "inventory": {
-            "super_brie_cheese": {
-                "item_id": 114,
-                "name": "SUPER|brie+",
-                "quantity": 5,
-                "type": "super_brie_cheese",
+        kings_giveaway_result: {
+            slot: 'bonus',
+            quantity: 1,
+            items: [
+                {
+                    type: 'super_brie_cheese',
+                    name: 'SUPER|brie+',
+                    quantity: 5,
+                },
+            ],
+        },
+        inventory: {
+            super_brie_cheese: {
+                item_id: 114,
+                name: 'SUPER|brie+',
+                quantity: 5,
+                type: 'super_brie_cheese',
             },
         },
     },
 
     // 10th opening + vault prizes
     responseWithVaultTwo: {
-        "kings_giveaway": {
-            "remaining_openable_prize_packs": null,
-            "vault_is_open": true,
-            "vault_prizes": [
+        kings_giveaway: {
+            remaining_openable_prize_packs: null,
+            vault_is_open: true,
+            vault_prizes: [
                 {
-                    "quantity": 100,
-                    "type": "extreme_regal_trinket",
-                    "name": "Extreme Regal Charm",
+                    quantity: 100,
+                    type: 'extreme_regal_trinket',
+                    name: 'Extreme Regal Charm',
                 },
                 {
-                    "quantity": 50,
-                    "type": "rainbow_luck_trinket",
-                    "name": "Rainbow Charms",
+                    quantity: 50,
+                    type: 'rainbow_luck_trinket',
+                    name: 'Rainbow Charms',
                 },
                 {
-                    "quantity": 1,
-                    "type": "rainbow_scroll_case_convertible",
-                    "name": "Rainbow Scroll Case",
-                },
-            ],
-        },
-        "kings_giveaway_result": {
-            "slot": "bonus",
-            "quantity": 1,
-            "items": [
-                {
-                    "type": "super_brie_cheese",
-                    "name": "SUPER|brie+",
-                    "quantity": 5,
+                    quantity: 1,
+                    type: 'rainbow_scroll_case_convertible',
+                    name: 'Rainbow Scroll Case',
                 },
             ],
         },
-        "inventory": {
-            "super_brie_cheese": {
-                "item_id": 114,
-                "name": "SUPER|brie+",
-                "quantity": 5,
-                "type": "super_brie_cheese",
+        kings_giveaway_result: {
+            slot: 'bonus',
+            quantity: 1,
+            items: [
+                {
+                    type: 'super_brie_cheese',
+                    name: 'SUPER|brie+',
+                    quantity: 5,
+                },
+            ],
+        },
+        inventory: {
+            super_brie_cheese: {
+                item_id: 114,
+                name: 'SUPER|brie+',
+                quantity: 5,
+                type: 'super_brie_cheese',
             },
         },
     },
 
     responseWithInventoryError: {
-        "kings_giveaway": {
-            "remaining_openable_prize_packs": 10,
-            "vault_is_open": null,
-            "vault_prizes": [],
+        kings_giveaway: {
+            remaining_openable_prize_packs: 10,
+            vault_is_open: null,
+            vault_prizes: [],
         },
-        "kings_giveaway_result": {
-            "quantity": 1,
-            "slot": "bonus",
-            "items": [
+        kings_giveaway_result: {
+            quantity: 1,
+            slot: 'bonus',
+            items: [
                 {
-                    "type": "unknown_item_type",
-                    "name": "Unknown",
-                    "quantity": "1,111",
+                    type: 'unknown_item_type',
+                    name: 'Unknown',
+                    quantity: '1,111',
                 },
             ],
         },
-        "inventory": {},
+        inventory: {},
     },
 };

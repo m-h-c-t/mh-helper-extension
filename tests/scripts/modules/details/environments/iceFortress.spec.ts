@@ -1,6 +1,7 @@
-import {IceFortressDetailer} from '@scripts/modules/details/environments/iceFortress';
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { IceFortressDetailer } from '@scripts/modules/details/environments/iceFortress';
 
 describe('IceFortressDetailer', () => {
     test('getDetails does nothing', () => {

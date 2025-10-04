@@ -1,6 +1,7 @@
-import {MoussuPicchuStager} from "@scripts/modules/stages/environments/moussuPicchu";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { MoussuPicchuStager } from '@scripts/modules/stages/environments/moussuPicchu';
 
 describe('MoussuPicchuStager', () => {
     const ElementLevels = ['low', 'medium', 'high', 'max'];

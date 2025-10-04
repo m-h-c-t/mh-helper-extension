@@ -1,8 +1,9 @@
-import {ForbiddenGroveStager} from "@scripts/modules/stages/environments/forbiddenGrove";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
-describe("ForbiddenGroveStager", () => {
+import { ForbiddenGroveStager } from '@scripts/modules/stages/environments/forbiddenGrove';
+
+describe('ForbiddenGroveStager', () => {
     const stager = new ForbiddenGroveStager();
     let defaultPre: User;
     let defaultPost: User;
@@ -16,11 +17,11 @@ describe("ForbiddenGroveStager", () => {
         defaultJournal = {};
     });
 
-    it("should be for the Forbidden Grove environment", () => {
-        expect(stager.environment).toBe("Forbidden Grove");
+    it('should be for the Forbidden Grove environment', () => {
+        expect(stager.environment).toBe('Forbidden Grove');
     });
 
-    describe("addStage", () => {
+    describe('addStage', () => {
         // Possible scenarios (pre -> post)
         // 1. Open -> Open
         // 2. Open -> Close (server side door change) (throws)
@@ -44,59 +45,59 @@ describe("ForbiddenGroveStager", () => {
             expect(defaultMessage.stage).toBe(expected);
         };
 
-        it("throws when quest is undefined", () => {
+        it('throws when quest is undefined', () => {
             delete defaultPre.quests.QuestForbiddenGrove;
 
             expect(() => act()).toThrow(
-                "User is missing Forbidden Grove quest"
+                'User is missing Forbidden Grove quest'
             );
         });
 
-        it("is Open when both pre and post are open", () => {
+        it('is Open when both pre and post are open', () => {
             act(undefined, getDefaultUser());
-            assert("Open");
+            assert('Open');
         });
 
-        it("throws on server side door change", () => {
+        it('throws on server side door change', () => {
             defaultPost.quests.QuestForbiddenGrove!.grove.is_open = false;
 
             expect(() => act()).toThrow(
-                "Skipping hunt during server side door change"
+                'Skipping hunt during server side door change'
             );
         });
 
-        it("is Closed when pre open but post is now in Acolyte Realm", () => {
+        it('is Closed when pre open but post is now in Acolyte Realm', () => {
             delete defaultPost.quests.QuestForbiddenGrove;
 
             act();
-            assert("Closed");
+            assert('Closed');
         });
 
-        it("is Closed when pre and post both closed", () => {
+        it('is Closed when pre and post both closed', () => {
             defaultPre.quests.QuestForbiddenGrove!.grove.is_open = false;
             defaultPost.quests.QuestForbiddenGrove!.grove.is_open = false;
 
             act();
-            assert("Closed");
+            assert('Closed');
         });
 
-        it("is Closed when pre closed and moved to AR in post", () => {
+        it('is Closed when pre closed and moved to AR in post', () => {
             defaultPre.quests.QuestForbiddenGrove!.grove.is_open = false;
             delete defaultPost.quests.QuestForbiddenGrove;
 
             act();
-            assert("Closed");
+            assert('Closed');
         });
 
         it.each([[true], [false]])(
-            "is RR charm when pre open or closed with RR charm ",
+            'is RR charm when pre open or closed with RR charm ',
             (isOpen) => {
                 defaultPre.quests.QuestForbiddenGrove!.grove.is_open = isOpen;
-                defaultPre.trinket_name = "Realm Ripper Charm";
+                defaultPre.trinket_name = 'Realm Ripper Charm';
                 delete defaultPost.quests.QuestForbiddenGrove;
 
                 act();
-                assert("Realm Ripper Charm");
+                assert('Realm Ripper Charm');
             }
         );
     });

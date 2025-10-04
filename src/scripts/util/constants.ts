@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/no-multi-spaces */
 
 export class CustomConvertibleIds {
     // SB Factory

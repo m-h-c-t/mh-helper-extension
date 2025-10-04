@@ -1,4 +1,4 @@
-import qs from "qs";
+import qs from 'qs';
 
 export const soundHorn = () => {
     // fetches must be correctly formed as if they came from ajax (www-form-urlencoded)

@@ -1,24 +1,24 @@
-import {hgResponseSchema} from "@scripts/types/hg";
-import {ValidatedAjaxSuccessHandler} from "./ajaxSuccessHandler";
-import {z} from "zod";
-import {SubmissionService} from "@scripts/services/submission.service";
-import {LoggerService} from "@scripts/services/logging";
+import type { LoggerService } from '@scripts/services/logging';
+import type { SubmissionService } from '@scripts/services/submission.service';
 
+import { hgResponseSchema } from '@scripts/types/hg';
+import { z } from 'zod';
+
+import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 
 export class TreasureMapHandler extends ValidatedAjaxSuccessHandler {
-
     constructor(logger: LoggerService,
         private readonly submissionService: SubmissionService) {
         super(logger);
     }
 
-    readonly name = "Treasure Map";
+    readonly name = 'Treasure Map';
     readonly schema = hgResponseSchema.extend({
         treasure_map_inventory: z.object({
             relic_hunter_hint: z.string(),
         }).optional(),
         treasure_map: z.object({
-            name: z.string().transform((name) => name
+            name: z.string().transform(name => name
                 .replace(/ treasure/i, '')
                 .replace(/rare /i, '')
                 .replace(/common /i, '')
@@ -35,11 +35,10 @@ export class TreasureMapHandler extends ValidatedAjaxSuccessHandler {
     });
 
     match(url: string): boolean {
-        return url.includes("mousehuntgame.com/managers/ajax/users/treasuremap_v2.php");
+        return url.includes('mousehuntgame.com/managers/ajax/users/treasuremap_v2.php');
     }
 
     protected async validatedExecute(data: z.infer<typeof this.schema>): Promise<void> {
-
         const hint = data.treasure_map_inventory?.relic_hunter_hint;
         if (hint) {
             await this.submissionService.submitRelicHunterHint(hint);
@@ -69,5 +68,4 @@ export class TreasureMapHandler extends ValidatedAjaxSuccessHandler {
 
         await this.submissionService.submitTreasureMap(map);
     }
-
 }

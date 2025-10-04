@@ -1,8 +1,9 @@
-import {DraconicDepthsStager} from "@scripts/modules/stages/environments/draconicDepths";
-import {IStager} from "@scripts/modules/stages/stages.types";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import type {CavernType, QuestDraconicDepths} from "@scripts/types/hg/quests/draconicDepths";
+import type { IStager } from '@scripts/modules/stages/stages.types';
+import type { User } from '@scripts/types/hg';
+import type { CavernType, QuestDraconicDepths } from '@scripts/types/hg/quests/draconicDepths';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { DraconicDepthsStager } from '@scripts/modules/stages/environments/draconicDepths';
 
 describe('Draconic Depths stages', () => {
     let stager: IStager;

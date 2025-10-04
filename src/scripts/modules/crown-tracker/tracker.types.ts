@@ -1,4 +1,4 @@
-import {MessageHandlerRegistry, MessageHandlerParams} from "@scripts/services/message-handler/background-message-handler";
+import type { MessageHandlerRegistry, MessageHandlerParams } from '@scripts/services/message-handler/background-message-handler';
 
 export const CrownTrackerMessages = {
     CrownTrackerSubmit: 'crownTrackerSubmit',

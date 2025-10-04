@@ -1,10 +1,11 @@
-import {SubmissionService} from '@scripts/services/submission.service';
-import {LoggerService} from "@scripts/services/logging";
-import {EnvironmentService} from '@scripts/services/environment.service';
-import {ApiService} from '@scripts/services/api.service';
-import {HgItem, IntakeMessage} from '@scripts/types/mhct';
+import type { ApiService } from '@scripts/services/api.service';
+import type { EnvironmentService } from '@scripts/services/environment.service';
+import type { LoggerService } from '@scripts/services/logging';
+import type { HgItem, IntakeMessage } from '@scripts/types/mhct';
+
+import { SubmissionService } from '@scripts/services/submission.service';
 import * as timeUtils from '@scripts/util/time';
-import {mock} from 'vitest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 
 describe('SubmissionService', () => {
     let service: SubmissionService;
@@ -74,7 +75,6 @@ describe('SubmissionService', () => {
         const items: HgItem[] = [{id: 2, name: 'Test Item', quantity: 5}];
 
         it('submits event convertible when tracking-events is enabled', async () => {
-
             await service.submitEventConvertible(convertible, items);
 
             expect(mockEnvironmentService.getUuidUrl).toHaveBeenCalled();
@@ -173,7 +173,6 @@ describe('SubmissionService', () => {
         const hint = 'Test Hint';
 
         it('submits relic hunter hint when tracking-events is enabled', async () => {
-
             await service.submitRelicHunterHint(hint);
 
             expect(mockEnvironmentService.getRhIntakeUrl).toHaveBeenCalled();
@@ -404,7 +403,7 @@ describe('SubmissionService', () => {
         it('logs error when UUID request fails', async () => {
             mockApiService.send.mockImplementation((method, url, body) => {
                 if (url === 'uuid-url') {
-                    return Promise.reject(new Error("UUID request failed"));
+                    return Promise.reject(new Error('UUID request failed'));
                 }
                 return Promise.resolve({});
             });
@@ -412,8 +411,8 @@ describe('SubmissionService', () => {
             await service.submitEventConvertible(convertible, items);
 
             expect(mockLogger.error).toHaveBeenCalledWith(
-                "An error occurred while submitting to MHCT",
-                new Error("UUID request failed")
+                'An error occurred while submitting to MHCT',
+                new Error('UUID request failed')
             );
             expect(mockApiService.send).toHaveBeenCalledTimes(1);
         });

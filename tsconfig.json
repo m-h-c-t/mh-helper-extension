@@ -1,33 +1,44 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "outDir": "dist/scripts",
-    "strict": true,
-    "sourceMap": true,
-    "lib": [
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "experimentalDecorators": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "noEmitOnError": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "allowJs": true,
-    "paths": {
-      "@scripts/*":["./src/scripts/*"],
-      "@tests/*": ["./tests/*"]
-    },
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "types": [
       "chrome",
       "jquery",
       // TODO: Migrate tests away from globals
       "vitest/globals"
-    ]
+    ],
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noUncheckedSideEffectImports": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+
+    "allowJs": true,
+    "resolveJsonModule": true,
+
+    // Strictness
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strict": true,
+    // "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Stricter Typechecking Options
+    // "noUncheckedIndexedAccess": true,
+    // "exactOptionalPropertyTypes": true,
+
+    "paths": {
+      "@scripts/*":["./src/scripts/*"],
+      "@tests/*": ["./tests/*"]
+    },
   },
   "include": [
     "**/*.ts"

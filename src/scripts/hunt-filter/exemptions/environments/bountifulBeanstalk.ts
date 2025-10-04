@@ -1,5 +1,5 @@
-import type {IMessageExemption} from "@scripts/hunt-filter/interfaces";
-import type {IntakeMessage} from "@scripts/types/mhct";
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 // TODO: Use the beanstalk stager to generate stages
 
@@ -7,41 +7,41 @@ import type {IntakeMessage} from "@scripts/types/mhct";
  * Allow transitions between Beanstalk and Beanstalk Boss
  */
 class BeanstalkBossExemption implements IMessageExemption {
-    readonly description = "Beanstalk Boss encounter";
-    readonly property = "stage";
+    readonly description = 'Beanstalk Boss encounter';
+    readonly property = 'stage';
 
     readonly BeanstalkMice: string[] = [
-        "Budrich Thornborn",
-        "Leafton Beanwell",
-        "Herbaceous Bravestalk",
+        'Budrich Thornborn',
+        'Leafton Beanwell',
+        'Herbaceous Bravestalk',
     ];
-    readonly BeanstalkBossMouse = "Vinneus Stalkhome";
+
+    readonly BeanstalkBossMouse = 'Vinneus Stalkhome';
 
     getExemptions(
         pre: IntakeMessage,
         post: IntakeMessage
     ): (keyof IntakeMessage)[] | null {
-
         if (
             this.isTransitionToBoss(pre.stage, post.stage, pre.mouse) ||
             this.isTransitionFromBoss(pre.stage, post.stage, pre.mouse)
         ) {
-            return ["stage"];
+            return ['stage'];
         }
 
         return null;
     }
 
     private isTransitionToBoss(preStage: unknown, postStage: unknown, mouse: unknown) {
-        return preStage === "Beanstalk" &&
-            postStage === "Beanstalk Boss" &&
+        return preStage === 'Beanstalk' &&
+            postStage === 'Beanstalk Boss' &&
             this.isBeanstalkMouse(mouse);
     }
 
     private isTransitionFromBoss(preStage: unknown, postStage: unknown, mouse: unknown) {
-        return preStage === "Beanstalk Boss" &&
-        postStage === "Beanstalk" &&
-        this.isBeanstalkBoss(mouse);
+        return preStage === 'Beanstalk Boss' &&
+            postStage === 'Beanstalk' &&
+            this.isBeanstalkBoss(mouse);
     }
 
     private isBeanstalkMouse(mouse: unknown) {
@@ -57,12 +57,12 @@ class BeanstalkBossExemption implements IMessageExemption {
  * Allow transitions from Castle Giant stages to beanstalk stages (boss too)
  */
 class CastleBossExemption implements IMessageExemption {
-    readonly description = "Bountiful Beanstalk Castle Giant encounter";
-    readonly property = "stage";
+    readonly description = 'Bountiful Beanstalk Castle Giant encounter';
+    readonly property = 'stage';
 
     readonly CastleBossStagesToMouse: Record<string, string | undefined> = {
-        'Dungeon Giant': 'Dungeon Master' ,
-        'Ballroom Giant': 'Malevolent Maestro' ,
+        'Dungeon Giant': 'Dungeon Master',
+        'Ballroom Giant': 'Malevolent Maestro',
         'Great Hall Giant': 'Mythical Giant King',
     };
 
@@ -70,7 +70,6 @@ class CastleBossExemption implements IMessageExemption {
         pre: IntakeMessage,
         post: IntakeMessage
     ): (keyof IntakeMessage)[] | null {
-
         // Only allow transitions from boss to outside for now
         if (
             this.isTransitionFromBoss(pre.stage, post.stage, pre.mouse)
@@ -99,7 +98,7 @@ class CastleBossExemption implements IMessageExemption {
 
     private isBeanstalkStage(stage: unknown) {
         // Returning to a beanstalk boss is impossible. Progress is reset.
-        return stage === "Beanstalk";
+        return stage === 'Beanstalk';
     }
 }
 

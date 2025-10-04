@@ -1,20 +1,16 @@
-import {LoggerService} from "../../logging";
-import {getMigrations} from "./migrate";
-import {InitialMigration} from "./migrations/1-initial-migration";
-import {Migrator} from "./migrator";
+import type { LoggerService } from '../../logging';
+import type { Migrator } from './migrator';
+
+import { getMigrations } from './migrate';
 
 export const CURRENT_VERSION = 1;
 
 export interface MigrationState {
-    currentVersion: number,
-    storage: chrome.storage.StorageArea,
+    currentVersion: number;
+    storage: chrome.storage.StorageArea;
 }
 
 export class MigrationRunnerService {
-    private migrations: Migrator<number, number>[] = [
-        new InitialMigration
-    ];
-
     constructor(private logger: LoggerService) {}
 
     async run() {
@@ -100,4 +96,3 @@ export class MigrationRunnerService {
         }
     }
 }
-

@@ -1,9 +1,12 @@
-import {HgItem, hgItemSchema, IntakeMessage, MhctResponseSchema} from "@scripts/types/mhct";
-import {getUnixTimestamp} from "@scripts/util/time";
-import {ApiService} from "./api.service";
-import {EnvironmentService} from "./environment.service";
-import {LoggerService} from "./logging";
-import {UserSettings} from "./settings/settings.service";
+import type { HgItem, IntakeMessage } from '@scripts/types/mhct';
+
+import { hgItemSchema, MhctResponseSchema } from '@scripts/types/mhct';
+import { getUnixTimestamp } from '@scripts/util/time';
+
+import type { ApiService } from './api.service';
+import type { EnvironmentService } from './environment.service';
+import type { LoggerService } from './logging';
+import type { UserSettings } from './settings/settings.service';
 
 export class SubmissionService {
     private userSettings!: UserSettings;
@@ -16,12 +19,13 @@ export class SubmissionService {
             hunter_id_hash: string;
             mhhh_version: number;
         },
-        private readonly showFlashMessage: (type: "error" | "warning" | "success", message: string) => void,
+        private readonly showFlashMessage: (type: 'error' | 'warning' | 'success', message: string) => void,
     ) {
-        void getSettings().then(settings => {
+        void getSettings().then((settings) => {
             this.userSettings = settings;
         });
     }
+
     async submitEventConvertible(convertible: HgItem, items: HgItem[]): Promise<void> {
         if (this.userSettings['tracking-events'] === false) {
             return;
@@ -64,7 +68,7 @@ export class SubmissionService {
         });
     }
 
-    async submitRelicHunterSighting(sighting:{
+    async submitRelicHunterSighting(sighting: {
         rh_environment: string;
         entry_timestamp: number;
     }): Promise<void> {

@@ -1,9 +1,11 @@
-import {BatchInterceptor, type ExtractEventNames, HttpRequestEventMap} from '@mswjs/interceptors';
-import {FetchInterceptor} from '@mswjs/interceptors/fetch';
-import {XMLHttpRequestInterceptor} from '@mswjs/interceptors/XMLHttpRequest';
-import {HgResponse} from "@scripts/types/hg";
-import {Listener} from 'strict-event-emitter';
-import nock from "nock";
+import type { HttpRequestEventMap } from '@mswjs/interceptors';
+import type { HgResponse } from '@scripts/types/hg';
+import type { Listener } from 'strict-event-emitter';
+
+import { BatchInterceptor, type ExtractEventNames } from '@mswjs/interceptors';
+import { FetchInterceptor } from '@mswjs/interceptors/fetch';
+import { XMLHttpRequestInterceptor } from '@mswjs/interceptors/XMLHttpRequest';
+import nock from 'nock';
 
 /**
  * Utility class to simplify mocking and watching http calls to
@@ -33,42 +35,42 @@ export default class MockServer {
 
     constructor() {
         this.mswInterceptor.apply();
-        this.hgServer = nock("https://www.mousehuntgame.com").defaultReplyHeaders({
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
+        this.hgServer = nock('https://www.mousehuntgame.com').defaultReplyHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json',
         });
 
         // Extension version must be 0 in main.js for it to call localhost (see setupDOM() in e2eSetup.ts)
-        this.mhctServer = nock("https://www.mhct.win").defaultReplyHeaders({
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
+        this.mhctServer = nock('https://www.mhct.win').defaultReplyHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json',
         });
 
         // Setup a few MHCT endpoints to reply happily! (200)
         this.mhctServer
             .persist()
-            .post("/uuid.php")
+            .post('/uuid.php')
             .reply(200, (uri, body) => {
-                return "1";
-            }, {"content-type": "text/html"});
+                return '1';
+            }, {'content-type': 'text/html'});
 
         this.mhctServer
             .persist()
-            .post("/intake.php")
+            .post('/intake.php')
             .reply(200, (uri, body) => {
                 return {
-                    status: "success",
-                    message: "Thanks for the hunt info!",
+                    status: 'success',
+                    message: 'Thanks for the hunt info!',
                 };
             });
 
         this.mhctServer
             .persist()
-            .post("/convertible_intake.php")
+            .post('/convertible_intake.php')
             .reply(200, (uri, body) => {
                 return {
-                    status: "success",
-                    message: "Thanks for the convertible info!",
+                    status: 'success',
+                    message: 'Thanks for the convertible info!',
                 };
             });
     }
@@ -83,15 +85,13 @@ export default class MockServer {
     async on<EventName extends ExtractEventNames<HttpRequestEventMap>>(
         event: EventName,
         url: string,
-        timeout = 5000)
-    {
+        timeout = 5000) {
         let timer: NodeJS.Timeout | undefined;
         return Promise.race([
             new Promise<never>((_, reject) => {
                 timer = setTimeout(() => reject(new Error(`Timeout waiting for ${event} ${url}`)), timeout);
             }),
-            new Promise<HttpRequestEventMap[EventName][0]>(resolve => {
-
+            new Promise<HttpRequestEventMap[EventName][0]>((resolve) => {
                 const handler: Listener<HttpRequestEventMap[EventName]> = (args) => {
                     if (args.request.url === url) {
                         this.mswInterceptor.off(event, handler);
@@ -115,7 +115,7 @@ export default class MockServer {
         }
 
         this.pageInterceptor = this.hgServer.post(
-            "/managers/ajax/pages/page.php"
+            '/managers/ajax/pages/page.php'
         );
         this.pageInterceptor.reply(200, () => response);
     }
@@ -130,7 +130,7 @@ export default class MockServer {
         }
 
         this.activeTurnInterceptor = this.hgServer.post(
-            "/managers/ajax/turns/activeturn.php"
+            '/managers/ajax/turns/activeturn.php'
         );
         this.activeTurnInterceptor.reply(200, (uri, body) => {
             return response;

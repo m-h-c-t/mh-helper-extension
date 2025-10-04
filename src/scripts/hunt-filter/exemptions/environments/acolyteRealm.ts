@@ -1,5 +1,5 @@
-import type {IMessageExemption} from "@scripts/hunt-filter/interfaces";
-import type {IntakeMessage} from "@scripts/types/mhct";
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 /**
  * Provides an exemption on the 'location' difference. Iff the mouse was
@@ -7,18 +7,18 @@ import type {IntakeMessage} from "@scripts/types/mhct";
  * 'location' and 'stage'.
  */
 class RealmRipperLocationExemption implements IMessageExemption {
-    readonly description = "Realm Ripper caught in Forbidden Grove";
-    readonly property = "location";
+    readonly description = 'Realm Ripper caught in Forbidden Grove';
+    readonly property = 'location';
     getExemptions(
         pre: IntakeMessage,
         post: IntakeMessage
     ): (keyof IntakeMessage)[] | null {
         if (
-            pre.location?.name === "Forbidden Grove" &&
-            post.location?.name === "Acolyte Realm" &&
-            pre.mouse === "Realm Ripper"
+            pre.location?.name === 'Forbidden Grove' &&
+            post.location?.name === 'Acolyte Realm' &&
+            pre.mouse === 'Realm Ripper'
         ) {
-            return ["location", "stage"];
+            return ['location', 'stage'];
         }
 
         return null;

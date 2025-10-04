@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class BalacksCoveStager implements IStager {
     readonly environment: string = 'Balack\'s Cove';
@@ -19,13 +20,13 @@ export class BalacksCoveStager implements IStager {
         const direction = quest.tide.direction;
         const progress = quest.tide.percent;
         const imminent_state_change = (progress >= 99
-                // Certain transitions do not change the tide intensity, and are OK to track.
-                && !(tide === "low" && direction === "in")
-                && !(tide === "high" && direction === "out"));
+        // Certain transitions do not change the tide intensity, and are OK to track.
+            && !(tide === 'low' && direction === 'in')
+            && !(tide === 'high' && direction === 'out'));
         if (!imminent_state_change && tide) {
             let tideStage = tide.charAt(0).toUpperCase() + tide.substr(1);
-            if (tideStage === "Med") {
-                tideStage = "Medium";
+            if (tideStage === 'Med') {
+                tideStage = 'Medium';
             }
             message.stage = `${tideStage} Tide`;
         } else {

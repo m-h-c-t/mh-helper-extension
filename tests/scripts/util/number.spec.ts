@@ -1,7 +1,6 @@
-import {parseHgInt} from "@scripts/util/number";
+import { parseHgInt } from '@scripts/util/number';
 
 describe('parseHgInt', () => {
-
     it('should throw on null or undefined input', () => {
         expect(() => parseHgInt(undefined!)).toThrow();
         expect(() => parseHgInt(null!)).toThrow();

@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 const baseQuestTrainStationSchema = z.object({
     on_train: z.boolean(),
@@ -9,9 +9,9 @@ export const offTrainSchema = baseQuestTrainStationSchema.extend({
 });
 
 export const trainPhaseTypeSchema = z.union([
-    z.literal("supplies"),
-    z.literal("boarding"),
-    z.literal("bridge_jump"),
+    z.literal('supplies'),
+    z.literal('boarding'),
+    z.literal('bridge_jump'),
 ]);
 
 export const baseTrainPhaseSchema = baseQuestTrainStationSchema.extend({
@@ -20,24 +20,24 @@ export const baseTrainPhaseSchema = baseQuestTrainStationSchema.extend({
 });
 
 export const troubleAreaSchema = z.union([
-    z.literal("roof"),
-    z.literal("door"),
-    z.literal("rails"),
+    z.literal('roof'),
+    z.literal('door'),
+    z.literal('rails'),
 ]);
 
 export const jumpPhaseSchema = baseTrainPhaseSchema.extend({
-    current_phase: z.literal("bridge_jump"),
+    current_phase: z.literal('bridge_jump'),
 });
 
 export const supplyPhaseSchema = baseTrainPhaseSchema.extend({
-    current_phase: z.literal("supplies"),
+    current_phase: z.literal('supplies'),
     minigame: z.object({
         supply_hoarder_turns: z.coerce.number(),
     }),
 });
 
 export const boardingPhaseSchema = baseTrainPhaseSchema.extend({
-    current_phase: z.literal("boarding"),
+    current_phase: z.literal('boarding'),
     minigame: z.object({
         trouble_area: troubleAreaSchema,
     }),

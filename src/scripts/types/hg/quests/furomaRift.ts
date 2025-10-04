@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const DroidChargeLevels = [
     'charge_level_one',

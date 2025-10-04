@@ -1,6 +1,7 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IDetailer } from '../details.types';
 
 export class HalloweenDetailer implements IDetailer {
     /**
@@ -14,7 +15,6 @@ export class HalloweenDetailer implements IDetailer {
             };
         }
     }
-
 }
 
 /**

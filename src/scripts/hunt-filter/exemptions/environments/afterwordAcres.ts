@@ -1,5 +1,5 @@
-import type {IMessageExemption} from '@scripts/hunt-filter/interfaces';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { IMessageExemption } from '@scripts/hunt-filter/interfaces';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 /**
  * Allow stage transitions between blight tiers in Afterword Acres

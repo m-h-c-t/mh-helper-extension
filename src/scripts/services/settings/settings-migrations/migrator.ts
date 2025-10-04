@@ -1,4 +1,4 @@
-import {MigrationState} from "./migration-runner.service";
+import type { MigrationState } from './migration-runner.service';
 
 export abstract class Migrator<TFrom extends number, TTo extends number> {
     constructor(

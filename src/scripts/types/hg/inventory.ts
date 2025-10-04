@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const inventoryItemSchema = z.object({
     /** HitGrab's internal number id of item */

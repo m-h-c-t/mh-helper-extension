@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class ClawShotCityStager implements IStager {
     readonly environment: string = 'Claw Shot City';
@@ -22,13 +23,13 @@ export class ClawShotCityStager implements IStager {
          */
 
         if (!quest.map_active && !quest.has_wanted_poster) {
-            message.stage = "No poster";
+            message.stage = 'No poster';
         } else if (!quest.map_active && quest.has_wanted_poster) {
-            message.stage = "Has poster";
+            message.stage = 'Has poster';
         } else if (quest.map_active) {
-            message.stage = "Using poster";
+            message.stage = 'Using poster';
         } else {
-            throw new Error("Unexpected Claw Shot City quest state");
+            throw new Error('Unexpected Claw Shot City quest state');
         }
     }
 }

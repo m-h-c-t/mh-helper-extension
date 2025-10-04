@@ -1,6 +1,7 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class ClawShotCityDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Claw Shot City';
@@ -15,10 +16,10 @@ export class ClawShotCityDetailer implements IEnvironmentDetailer {
             return;
         }
 
-        const map = quest.maps.find(m => m.name.endsWith("Wanted Poster"));
+        const map = quest.maps.find(m => m.name.endsWith('Wanted Poster'));
         if (map && !map.is_complete) {
             return {
-                poster_type: map.name.replace(/Wanted Poster/i, "").trim(),
+                poster_type: map.name.replace(/Wanted Poster/i, '').trim(),
                 at_boss: ((map.num_total - map.num_found) === 1),
             };
         }

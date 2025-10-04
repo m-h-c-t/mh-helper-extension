@@ -1,8 +1,9 @@
-import {FieryWarpathStager} from "@scripts/modules/stages/environments/fieryWarpath";
-import {FieryWarpathViewingAttributes, JournalMarkup, User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {UserBuilder} from "@tests/utility/builders";
-import {mock} from "vitest-mock-extended";
+import type { FieryWarpathViewingAttributes, JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { FieryWarpathStager } from '@scripts/modules/stages/environments/fieryWarpath';
+import { UserBuilder } from '@tests/utility/builders';
+import { mock } from 'vitest-mock-extended';
 
 describe('Fiery Warpath stages', () => {
     const message = mock<IntakeMessage>();
@@ -20,7 +21,7 @@ describe('Fiery Warpath stages', () => {
             show_portal: '',
         }
     };
-    let preUser: User & { viewing_atts: FieryWarpathViewingAttributes };
+    let preUser: User & {viewing_atts: FieryWarpathViewingAttributes};
 
     const stager = new FieryWarpathStager();
 
@@ -33,7 +34,7 @@ describe('Fiery Warpath stages', () => {
             .withViewingAttributes({
                 viewing_atts: viewingAttributes,
             })
-            .build() as User & { viewing_atts: FieryWarpathViewingAttributes };
+            .build() as User & {viewing_atts: FieryWarpathViewingAttributes};
     });
 
     it('should be for the "Fiery Warpath" environment', () => {

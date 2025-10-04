@@ -1,4 +1,4 @@
-import {param} from "@scripts/util/param";
+import { param } from '@scripts/util/param';
 
 export class ApiService {
     /**

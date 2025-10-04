@@ -1,6 +1,7 @@
-import {type User} from '@scripts/types/hg';
-import {type IntakeMessage} from '@scripts/types/mhct';
-import {type IStager} from '../stages.types';
+import { type User } from '@scripts/types/hg';
+import { type IntakeMessage } from '@scripts/types/mhct';
+
+import { type IStager } from '../stages.types';
 
 export class BristleWoodsRiftStager implements IStager {
     readonly environment: string = 'Bristle Woods Rift';
@@ -16,8 +17,8 @@ export class BristleWoodsRiftStager implements IStager {
         }
 
         message.stage = quest.chamber_name;
-        if (message.stage === "Rift Acolyte Tower") {
-            message.stage = "Entrance";
+        if (message.stage === 'Rift Acolyte Tower') {
+            message.stage = 'Entrance';
         }
     }
 }

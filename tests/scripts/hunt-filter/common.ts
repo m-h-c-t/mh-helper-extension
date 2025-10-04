@@ -1,5 +1,5 @@
-import {HgResponse, User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { HgResponse, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
 export function getValidPreResponse(): HgResponse {
     return {

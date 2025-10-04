@@ -1,8 +1,8 @@
-import type {User} from '@scripts/types/hg';
-import type {IntakeMessage} from '@scripts/types/mhct';
-import type {IStager} from '../stages.types';
-import type {CourseSelection, CourseType} from '@scripts/types/hg/quests/schoolOfSorcery';
+import type { User } from '@scripts/types/hg';
+import type { CourseSelection, CourseType } from '@scripts/types/hg/quests/schoolOfSorcery';
+import type { IntakeMessage } from '@scripts/types/mhct';
 
+import type { IStager } from '../stages.types';
 
 export class SchoolOfSorceryStager implements IStager {
     readonly environment: string = 'School of Sorcery';
@@ -22,7 +22,7 @@ export class SchoolOfSorceryStager implements IStager {
             stage = this.getCourseName(quest.course_selections, currentCourse.course_type);
 
             if (currentCourse.is_boss_encounter) {
-                stage += " Boss";
+                stage += ' Boss';
             } else if (currentCourse.course_type === 'exam_course') {
                 // Final Exam gets current powertype appended
 

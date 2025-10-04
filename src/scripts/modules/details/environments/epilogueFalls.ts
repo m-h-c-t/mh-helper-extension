@@ -1,6 +1,7 @@
-import {User, JournalMarkup} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
-import {IEnvironmentDetailer} from "../details.types";
+import type { User, JournalMarkup } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 /**
  * Detailer for the Epilogue Falls environment.
@@ -9,7 +10,7 @@ import {IEnvironmentDetailer} from "../details.types";
  * zone_quality: string - The quality of the current rapids zone (from name, e.g. "Sparse", "Common" or "Abundant")
  */
 export class EpilogueFallsDetailer implements IEnvironmentDetailer {
-    readonly environment = "Epilogue Falls";
+    readonly environment = 'Epilogue Falls';
 
     addDetails(message: IntakeMessage, userPre: User, userPost: User, journal: JournalMarkup): object | undefined {
         const quest = userPre.quests.QuestEpilogueFalls;

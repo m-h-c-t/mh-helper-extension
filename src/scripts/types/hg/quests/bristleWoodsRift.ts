@@ -1,5 +1,5 @@
-import {zodStrumber} from "@scripts/util/zod";
-import {z} from "zod";
+import { zodStrumber } from '@scripts/util/zod';
+import { z } from 'zod';
 
 export const questRiftBristleWoodsSchema = z.object({
     chamber_name: z.string(),

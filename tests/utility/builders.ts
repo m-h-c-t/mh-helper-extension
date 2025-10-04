@@ -1,7 +1,8 @@
-import {HgConvertibleResponse, HgResponse, InventoryItem, JournalMarkup, Quests, User} from "@scripts/types/hg";
-import {ConvertibleMessage, IntakeMessage, Loot} from "@scripts/types/mhct";
-import {StringyObject} from "./stringyObject";
-import {ConvertibleOpen} from "@scripts/types/hg/convertibleOpen";
+import type { HgConvertibleResponse, HgResponse, InventoryItem, JournalMarkup, Quests, User } from '@scripts/types/hg';
+import type { ConvertibleOpen } from '@scripts/types/hg/convertibleOpen';
+import type { ConvertibleMessage, IntakeMessage, Loot } from '@scripts/types/mhct';
+
+import type { StringyObject } from './stringyObject';
 
 function clone<T>(obj: T): T {
     if (obj === undefined || obj === null) {
@@ -17,13 +18,12 @@ function clone<T>(obj: T): T {
 */
 
 export class HgResponseBuilder {
-
     activeTurn?: boolean;
     user?: User;
     page?: unknown;
     journalMarkup?: JournalMarkup[];
     inventory?: Record<string, InventoryItem>;
-    trapImage?: { auras: Record<string, {status: 'active' | 'hidden'}> };
+    trapImage?: {auras: Record<string, {status: 'active' | 'hidden'}>};
     unknown?: object;
 
     withActiveTurn(active: boolean) {
@@ -67,12 +67,12 @@ export class HgResponseBuilder {
         this.journalMarkup ??= [{
             render_data: {
                 entry_id: 0,
-                mouse_type: "",
-                css_class: "",
-                entry_date: "",
-                environment: "",
+                mouse_type: '',
+                css_class: '',
+                entry_date: '',
+                environment: '',
                 entry_timestamp: 0,
-                text: ""
+                text: ''
             }
         }];
 
@@ -90,13 +90,12 @@ export class HgResponseBuilder {
 }
 
 export class HgConvertibleResponseBuilder extends HgResponseBuilder {
-
     convertibleOpen?: ConvertibleOpen;
     items?: Record<string, InventoryItem>;
 
     withConvertible(args: {
-        convertible: InventoryItem,
-        items: (InventoryItem & { pluralized_name?: string })[]
+        convertible: InventoryItem;
+        items: (InventoryItem & {pluralized_name?: string})[];
     }) {
         const convertible = clone(args.convertible);
         const items = clone(args.items);
@@ -125,7 +124,7 @@ export class HgConvertibleResponseBuilder extends HgResponseBuilder {
         return this;
     }
 
-    build(): HgConvertibleResponse {
+    override build(): HgConvertibleResponse {
         const base = super.build();
 
         if (this.convertibleOpen == null) {
@@ -145,9 +144,9 @@ export class HgConvertibleResponseBuilder extends HgResponseBuilder {
 }
 
 type UserIdentification = Pick<User, 'user_id' | 'sn_user_id' | 'unique_hash' | 'has_shield'>;
-type UserTurn = Pick<User, | 'num_active_turns' | 'next_activeturn_seconds'>
+type UserTurn = Pick<User, | 'num_active_turns' | 'next_activeturn_seconds'>;
 type UserEnvironment = Pick<User, 'environment_id' | 'environment_name'>;
-type UserTrapStats = Pick<User, 'trap_power' |'trap_luck' |'trap_attraction_bonus' |'trap_power_bonus'>;
+type UserTrapStats = Pick<User, 'trap_power' | 'trap_luck' | 'trap_attraction_bonus' | 'trap_power_bonus'>;
 type UserWeapon = Pick<User, 'weapon_name' | 'weapon_item_id'>;
 type UserBase = Pick<User, 'base_name' | 'base_item_id'>;
 type UserBait = Pick<User, 'bait_name' | 'bait_item_id'>;
@@ -274,7 +273,6 @@ export class UserBuilder {
 }
 
 export class IntakeMessageBuilder {
-
     auras?: string[];
     loot?: Loot[];
     stage: unknown;
@@ -364,7 +362,6 @@ export class IntakeMessageBuilder {
 }
 
 export class ConvertibleMessageBuilder {
-
     public build(response: HgConvertibleResponse): ConvertibleMessage {
         const convertibleItem = response.items[response.convertible_open.type];
 
@@ -378,7 +375,7 @@ export class ConvertibleMessageBuilder {
                 name: `${convertibleItem.name}`,
                 quantity: `${convertibleItem.quantity}`,
             },
-            items: response.convertible_open.items.map(v => {
+            items: response.convertible_open.items.map((v) => {
                 return {
                     // @ts-expect-error - response.items[v.type] may be undefined
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

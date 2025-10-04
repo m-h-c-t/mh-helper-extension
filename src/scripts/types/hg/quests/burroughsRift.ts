@@ -1,4 +1,4 @@
-import {z} from "zod";
+import { z } from 'zod';
 
 export const MistTiers = ['tier_0', 'tier_1', 'tier_2', 'tier_3'] as const;
 const mistTierSchema = z.enum(MistTiers);

@@ -1,6 +1,7 @@
-import {WhiskerWoodsRiftStager} from "@scripts/modules/stages/environments/whiskerWoodsRift";
-import {User} from "@scripts/types/hg";
-import {IntakeMessage} from "@scripts/types/mhct";
+import type { User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import { WhiskerWoodsRiftStager } from '@scripts/modules/stages/environments/whiskerWoodsRift';
 
 describe('Whisker Woods Rift stages', () => {
     const interestingRagePoints = [0, 24, 25, 49, 50];
@@ -13,7 +14,7 @@ describe('Whisker Woods Rift stages', () => {
     it.each(interestingRagePoints)('should set rage to appropriate level', (rage) => {
         const stager = new WhiskerWoodsRiftStager();
         const message = {} as IntakeMessage;
-        const preUser = {quests: {QuestRiftWhiskerWoods:{zones: {
+        const preUser = {quests: {QuestRiftWhiskerWoods: {zones: {
             clearing: {level: rage},
             tree: {level: rage},
             lagoon: {level: rage},
@@ -34,7 +35,7 @@ describe('Whisker Woods Rift stages', () => {
     it.each([-1, 51])('should throw for invalid rage levels', (rage) => {
         const stager = new WhiskerWoodsRiftStager();
         const message = {location: {name: 'Whisker Woods Rift'}} as IntakeMessage;
-        const preUser = {quests: {QuestRiftWhiskerWoods:{zones: {
+        const preUser = {quests: {QuestRiftWhiskerWoods: {zones: {
             clearing: {level: rage},
             tree: {level: rage},
             lagoon: {level: rage},

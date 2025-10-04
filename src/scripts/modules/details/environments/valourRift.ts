@@ -1,6 +1,7 @@
-import type {JournalMarkup, User} from '@scripts/types/hg';
-import type {IEnvironmentDetailer} from '../details.types';
-import type {IntakeMessage} from '@scripts/types/mhct';
+import type { JournalMarkup, User } from '@scripts/types/hg';
+import type { IntakeMessage } from '@scripts/types/mhct';
+
+import type { IEnvironmentDetailer } from '../details.types';
 
 export class ValourRiftDetailer implements IEnvironmentDetailer {
     readonly environment: string = 'Valour Rift';
@@ -14,7 +15,7 @@ export class ValourRiftDetailer implements IEnvironmentDetailer {
         }
 
         // active_augmentations is undefined outside of the tower
-        if (quest.state === "tower") {
+        if (quest.state === 'tower') {
             return {
                 floor: quest.floor, // exact floor number (can be used to derive prestige and floor_type)
                 // No compelling use case for the following 3 augments at the moment

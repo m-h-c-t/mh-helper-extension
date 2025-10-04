@@ -1,11 +1,12 @@
-import {Messenger} from "@scripts/content/messaging/messenger";
-import {ExtensionMessage} from "./background-message-handler";
-import {MessageTypes} from "@scripts/content/messaging/message";
+import type { Messenger } from '@scripts/content/messaging/messenger';
+
+import { MessageTypes } from '@scripts/content/messaging/message';
+
+import type { ExtensionMessage } from './background-message-handler';
 
 export abstract class ForegroundMessageHandler<
     TMessage extends ExtensionMessage
 > {
-
     constructor(
         private readonly messenger: Messenger
     ) { }
