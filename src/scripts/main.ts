@@ -9,7 +9,7 @@ import type { IStager } from './modules/stages/stages.types';
 import type { ResponseEventParams } from './services/interceptor.service';
 import type { UserSettings } from './services/settings/settings.service';
 import type { HgResponse, Inventory, InventoryItem, JournalMarkup, User } from './types/hg';
-import type { IntakeMessage, IntakeMessageBase } from './types/mhct';
+import type { IntakeMessage, IntakeMessageBase, Loot } from './types/mhct';
 
 import { IntakeRejectionEngine } from './hunt-filter/engine';
 import * as successHandlers from './modules/ajax-handlers';
@@ -26,6 +26,7 @@ import { MouseRipApiService } from './services/mouserip-api.service';
 import { SubmissionService } from './services/submission.service';
 import { hgResponseSchema } from './types/hg';
 import { intakeMessageBaseSchema, intakeMessageSchema } from './types/mhct';
+import { diffObject } from './util/diffObject';
 import { parseHgInt } from './util/number';
 
 declare global {
@@ -439,68 +440,8 @@ declare global {
             return;
         }
 
-        /**
-         * Store the difference between generic primitives and certain objects in `result`
-         * @param {Object <string, any>} result The object to write diffs into
-         * @param {Set<string>} pre Keys associated with the current `obj_pre`
-         * @param {Set<string>} post Keys associated with the current `obj_post`
-         * @param {Object <string, any>} obj_pre The pre-hunt user object (or associated nested object)
-         * @param {Object <string, any>} obj_post The post-hunt user object (or associated nested object)
-         */
-        function diffUserObjects(
-            result: Record<string, any>,
-            pre: Set<string>,
-            post: Set<string>,
-            obj_pre: Record<string, any>,
-            obj_post: Record<string, any>
-        ) {
-            const simple_diffs = new Set(['string', 'number', 'boolean']);
-            for (const [key, value] of Object.entries(obj_pre).filter(pair => !pair[0].endsWith('hash'))) {
-                pre.add(key);
-                if (!post.has(key)) {
-                    result[key] = {in: 'pre', val: value};
-                } else if (simple_diffs.has(typeof value)) {
-                    // Some HG endpoints do not cast numeric values to number due to numeric precision issues.
-                    // Thus, the type-converting inequality check is performed instead of strict inequality.
-                    if (value != obj_post[key]) {
-                        result[key] = {pre: value, post: obj_post[key]};
-                    }
-                } else if (Array.isArray(value)) {
-                    // Do not modify the element order by sorting.
-                    const other = obj_post[key];
-                    if (value.length > other.length) {
-                        result[key] = {type: '-', pre: value, post: other};
-                    } else if (value.length < other.length) {
-                        result[key] = {type: '+', pre: value, post: other};
-                    } else {
-                        // Same number of elements. Compare them under the assumption that the elements
-                        // have the same order.
-                        result[key] = {};
-                        diffUserObjects(result[key], new Set(), new Set(Object.keys(other)), value, other);
-                        if (!Object.keys(result[key]).length) {
-                            delete result[key];
-                        }
-                    }
-                } else if (typeof value === 'object' && value instanceof Object) {
-                    // Object comparison requires recursion.
-                    result[key] = {};
-                    diffUserObjects(result[key], new Set(), new Set(Object.keys(obj_post[key])), value, obj_post[key]);
-                    // Avoid reporting same-value objects
-                    if (!Object.keys(result[key]).length) {
-                        delete result[key];
-                    }
-                }
-            }
-            Object.keys(obj_post).filter(key => !pre.has(key) && !key.endsWith('hash'))
-                .forEach((key) => {
-                    result[key] = {in: 'post', val: obj_post[key]};
-                });
-
-            return result;
-        }
-
         logger.debug('User object diff',
-            diffUserObjects({}, new Set(), new Set(Object.keys(user_post)), user_pre, user_post)
+            diffObject({}, user_pre, user_post)
         );
 
         // Find maximum entry id from pre_response
@@ -542,8 +483,11 @@ declare global {
             addHuntDetails(message_pre, before.user, after.user, hunt);
             addHuntDetails(message_post, after.user, after.user, hunt);
 
-            addLoot(message_pre, hunt, after.inventory);
-            addLoot(message_post, hunt, after.inventory);
+            const loot = parseLoot(hunt, after.inventory);
+            if (loot && loot.length > 0) {
+                message_pre.loot = loot;
+                message_post.loot = loot;
+            }
 
             const checkPreResult = intakeMessageSchema.safeParse(message_pre);
             const checkPostResult = intakeMessageSchema.safeParse(message_post);
@@ -1057,11 +1001,10 @@ declare global {
 
     /**
      * Extract loot information from the hunt's journal entry.
-     * @param message The message to be sent.
      * @param hunt The journal entry corresponding to the active hunt.
      * @param inventory The inventory object in hg server response, has item info
      */
-    function addLoot(message: IntakeMessage, hunt: JournalMarkup, inventory: Inventory | undefined) {
+    function parseLoot(hunt: JournalMarkup, inventory: Inventory | undefined): Loot[] | undefined {
         const getItemFromInventoryByType = (itemType: string): InventoryItem | undefined => {
             if (inventory != null && !Array.isArray(inventory)) {
                 return inventory[itemType];
@@ -1098,7 +1041,8 @@ declare global {
 
             lootList.push(loot_object);
         }
-        message.loot = lootList;
+
+        return lootList;
     }
 
     function escapeButtonClose() {
