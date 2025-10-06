@@ -24,6 +24,7 @@ export const userSchema = z.object({
     trap_luck: z.coerce.number(),
     trap_attraction_bonus: z.coerce.number(),
     has_shield: z.boolean(),
+    has_puzzle: z.boolean(),
     environment_id: z.coerce.number(),
     quests: questsSchema,
     enviroment_atts: environmentAttributesSchema.optional(),

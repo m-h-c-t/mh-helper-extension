@@ -8,6 +8,7 @@ const mapSchema = z.object({
 });
 
 export const questRelicHunterSchema = z.object({
+    default_map_id: z.coerce.number().nullable(),
     maps: z.array(mapSchema),
 });
 

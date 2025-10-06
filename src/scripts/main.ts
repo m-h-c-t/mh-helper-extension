@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { z } from 'zod';
 
@@ -12,10 +11,10 @@ import type { UserSettings } from './services/settings/settings.service';
 import type { HgResponse, Inventory, InventoryItem, JournalMarkup, User } from './types/hg';
 import type { IntakeMessage, IntakeMessageBase } from './types/mhct';
 
-import { Messenger } from './content/messaging/messenger';
 import { IntakeRejectionEngine } from './hunt-filter/engine';
 import * as successHandlers from './modules/ajax-handlers';
-import { CrownTracker } from './modules/crown-tracker/tracker';
+import { BadgeTimer } from './modules/badge-timer/badge-timer';
+import { CrownTracker } from './modules/crown-tracker/crown-tracker';
 import * as detailers from './modules/details';
 import { ExtensionLog } from './modules/extension-log/extension-log';
 import * as stagers from './modules/stages';
@@ -27,12 +26,10 @@ import { MouseRipApiService } from './services/mouserip-api.service';
 import { SubmissionService } from './services/submission.service';
 import { hgResponseSchema } from './types/hg';
 import { intakeMessageBaseSchema, intakeMessageSchema } from './types/mhct';
-import { HornHud } from './util/hornHud';
 import { parseHgInt } from './util/number';
 
 declare global {
     interface Window {
-        user: any; // or proper User type if you have it
         jQuery: JQueryStatic;
         $: JQueryStatic;
         lastReadJournalEntryId: number;
@@ -40,7 +37,7 @@ declare global {
     }
 
     // Direct globals (not on window)
-    var user: any;
+    var user: User;
     var lastReadJournalEntryId: number;
 }
 
@@ -52,8 +49,7 @@ declare global {
 
     const isDev = process.env.ENV === 'development';
     const logger = new ConsoleLogger(isDev, shouldFilter);
-    const messenger = Messenger.forDOMCommunication(globalThis.window);
-    const extensionLog = new ExtensionLog(messenger);
+    const extensionLog = new ExtensionLog();
     const apiService = new ApiService();
     const interceptorService = new InterceptorService(logger);
     const environmentService = new EnvironmentService();
@@ -77,11 +73,12 @@ declare global {
         new successHandlers.TreasureMapHandler(logger, submissionService),
         new successHandlers.UseConvertibleAjaxHandler(logger, submissionService),
     ];
-    const crownTracker = new CrownTracker(logger, extensionLog, interceptorService, apiService, messenger);
+    const crownTracker = new CrownTracker(logger, extensionLog, interceptorService, apiService, showFlashMessage);
+    const badgeTimer = new BadgeTimer();
 
     async function main() {
         try {
-            if (!(window as any).jQuery) {
+            if (!window.jQuery) {
                 throw new Error('Can\'t find jQuery.');
             }
 
@@ -94,6 +91,7 @@ declare global {
             if (userSettings['tracking-crowns']) {
                 crownTracker.init();
             }
+            badgeTimer.init();
         } catch (error) {
             logger.error('Failed to initialize.', error);
         }
@@ -225,40 +223,10 @@ declare global {
                 return;
             }
 
-            if (ev.data.mhct_message === 'horn') {
-                sound_horn();
-                return;
-            }
-
             if ('tsitu_loader' === ev.data.mhct_message) {
                 window.tsitu_loader_offset = ev.data.tsitu_loader_offset;
                 openBookmarklet(ev.data.file_link);
                 return;
-            }
-
-            if (ev.data.mhct_message === 'show_horn_alert') {
-                // Since this is delayed by a few seconds from background script
-                // Check that user didn't beat us
-                if (!HornHud.canSoundHorn()) {
-                    return;
-                }
-
-                const sound_the_horn = confirm('Horn is Ready! Sound it?');
-                if (sound_the_horn) {
-                    sound_horn();
-                }
-                return;
-            }
-
-            if (ev.data.mhct_message === 'makenoise') {
-                // settings.debug_logging is a place to get our settings and handle them here.
-                const sound_url = ev.data.sound_url;
-                const myAudio = new Audio(sound_url);
-                const volume = ev.data.volume;
-                if (volume > 0) {
-                    myAudio.volume = Number((volume / 100).toFixed(2));
-                    void myAudio.play();
-                }
             }
 
             // Crown submission results in either the boolean `false`, or the total submitted crowns.
@@ -275,10 +243,6 @@ declare global {
                 return;
             }
         }, false);
-    }
-
-    function sound_horn() {
-        void HornHud.soundHorn();
     }
 
     function openBookmarklet(menuURL: string) {
@@ -310,8 +274,15 @@ declare global {
             return;
         }
 
+        const mapId = user.quests.QuestRelicHunter?.default_map_id;
+
+        if (!mapId) {
+            alert('You are not currently a member of a treasure map.');
+            return;
+        }
+
         const payload = {
-            'map_id': user.quests.QuestRelicHunter.default_map_id,
+            'map_id': mapId,
             'action': 'map_info',
             'uh': user.unique_hash,
             'last_read_journal_entry_id': lastReadJournalEntryId,
@@ -321,7 +292,6 @@ declare global {
             .done((data) => {
                 if (data) {
                     if (!data.treasure_map || data.treasure_map.view_state === 'noMap') {
-                        alert('Please make sure you are logged in into MH and are currently member of a treasure map.');
                         return;
                     }
                     if (!['treasure', 'event'].includes(data.treasure_map.map_class)) {
