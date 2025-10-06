@@ -16,6 +16,7 @@ describe('ClawShotCityDetailer', () => {
         user = new UserBuilder()
             .withQuests({
                 QuestRelicHunter: {
+                    default_map_id: null,
                     maps: []
                 }
             })

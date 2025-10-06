@@ -1,17 +1,18 @@
-import type { Messenger } from '@scripts/content/messaging/messenger';
 import type { ApiService } from '@scripts/services/api.service';
 import type { InterceptorService, RequestBody } from '@scripts/services/interceptor.service';
 import type { LoggerService } from '@scripts/services/logging';
 import type { HgResponse } from '@scripts/types/hg';
 
 import { LogLevel } from '@scripts/services/logging';
-import { ForegroundMessageHandler } from '@scripts/services/message-handler/foreground-message-handler';
+import { defineWindowMessaging } from '@webext-core/messaging/page';
 import { z } from 'zod';
 
 import type { ExtensionLog } from '../extension-log/extension-log';
-import type { CrownTrackerExtensionMessage } from './tracker.types';
+import type { CrownData, CrownTrackerProtocolMap, CrownTrackerSubmitResult } from './crown-tracker.types';
 
-import { CrownTrackerMessages } from './tracker.types';
+export const crownTrackerWindowMessenger = defineWindowMessaging<CrownTrackerProtocolMap>({
+    namespace: 'mhct-helper-extension_crown-tracker',
+});
 
 /**
  * Crown Tracker module to monitor and submit King's Crown data.
@@ -20,7 +21,7 @@ import { CrownTrackerMessages } from './tracker.types';
  * to the Hunter Profile page, specifically targeting the King's Crown data. It
  * submits the crown counts to the background script for further processing.
  */
-export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtensionMessage> {
+export class CrownTracker {
     private readonly requestHunterProfileSchema = z.object({
         sn: z.literal('Hitgrab'),
         hg_is_ajax: z.literal('1'),
@@ -73,15 +74,13 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
         private readonly extensionLog: ExtensionLog,
         private readonly interceptorService: InterceptorService,
         private readonly apiService: ApiService,
-        messenger: Messenger
-    ) {
-        super(messenger);
-    }
+        private readonly showFlashMessage: (type: 'success' | 'warn' | 'error', message: string) => void,
+    ) { }
 
     public init(): void {
         this.interceptorService.on('request', ({url, request}) => this.handleRequest(url, request));
 
-        this.interceptorService.on('response', ({url, request, response}) => this.handleResponse(url, request, response));
+        this.interceptorService.on('response', ({url, request, response}) => void this.handleResponse(url, request, response));
     }
 
     private handleRequest(url: URL, request: RequestBody): void {
@@ -136,7 +135,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
         });
     }
 
-    private handleResponse(url: URL, request: RequestBody, response: HgResponse): void {
+    private async handleResponse(url: URL, request: RequestBody, response: HgResponse) {
         if (url.pathname !== '/managers/ajax/pages/page.php') {
             return;
         }
@@ -156,7 +155,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
                 response: response,
             });
 
-            void this.extensionLog.log(LogLevel.Warn, `Unhandled King's Crown response structure`, {
+            await this.extensionLog.log(LogLevel.Warn, `Unhandled King's Crown response structure`, {
                 error: z.prettifyError(parsedResponse.error),
                 request: parsedRequest.data,
                 response: response,
@@ -166,8 +165,7 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
         }
 
         // Craft a background message
-        const message: CrownTrackerExtensionMessage = {
-            command: CrownTrackerMessages.CrownTrackerSubmit,
+        const message: CrownData = {
             user: parsedRequest.data.page_arguments.snuid,
             crowns: {
                 bronze: 0,
@@ -196,11 +194,22 @@ export class CrownTracker extends ForegroundMessageHandler<CrownTrackerExtension
 
             message.crowns[badge.type] = badge.count;
         }
-        this.logger.debug('Crowns payload: ', message);
+        this.logger.debug('Sending crowns payload to background: ', message);
 
         // We need to create a forwarding message to prevent other extensions (e.g. Privacy Badger)
         // from blocking submissions by submitting from the background script.
-        void this.request(message);
+        try {
+            const result: CrownTrackerSubmitResult = await crownTrackerWindowMessenger.sendMessage('submitCrowns', message);
+            this.showFlashMessage(
+                result.success ? 'success' : 'error',
+                result.success
+                    ? `Successfully submitted ${result.count} crowns to Crown Tracker!`
+                    : `Failed to submit crowns to Crown Tracker: ${result.error}`
+            );
+        } catch (error) {
+            this.logger.error('Failed to submit crowns to Crown Tracker', error);
+            this.showFlashMessage('error', `Failed to submit crowns to Crown Tracker: ${error instanceof Error ? error.message : String(error)}`);
+        }
 
         this.lastSnuid = parsedRequest.data.page_arguments.snuid;
     }

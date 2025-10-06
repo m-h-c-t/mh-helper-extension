@@ -38,6 +38,7 @@ export function getDefaultUser(): User {
         trap_luck: 0,
         trap_attraction_bonus: 0,
         has_shield: false,
+        has_puzzle: false,
         environment_name: 'Fake Location',
         environment_id: 0,
         // force these to null

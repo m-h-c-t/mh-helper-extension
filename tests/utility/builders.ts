@@ -143,7 +143,7 @@ export class HgConvertibleResponseBuilder extends HgResponseBuilder {
     }
 }
 
-type UserIdentification = Pick<User, 'user_id' | 'sn_user_id' | 'unique_hash' | 'has_shield'>;
+type UserIdentification = Pick<User, 'user_id' | 'sn_user_id' | 'unique_hash' | 'has_shield' | 'has_puzzle'>;
 type UserTurn = Pick<User, | 'num_active_turns' | 'next_activeturn_seconds'>;
 type UserEnvironment = Pick<User, 'environment_id' | 'environment_name'>;
 type UserTrapStats = Pick<User, 'trap_power' | 'trap_luck' | 'trap_attraction_bonus' | 'trap_power_bonus'>;
@@ -160,6 +160,7 @@ export class UserBuilder {
         // sha512 of user_id: 1
         unique_hash: '4dff4ea340f0a823f15d3f4f01ab62eae0e5da579ccb851f8db9dfe84c58b2b37b89903a740e1ee172da793a6e79d560e5f7f9bd058a12a280433ed6fa46510a',
         has_shield: true,
+        has_puzzle: false,
     };
 
     turn: UserTurn = {

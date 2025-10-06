@@ -1,8 +1,21 @@
+import type { Observable } from 'rxjs';
+
 import { filter, mergeMap } from 'rxjs';
 
 import type { LoggerService } from '../logging';
 
 import { fromChromeEvent } from '../browser/from-chrome-event';
+
+/**
+ * Type-safe settings update that preserves the key-value relationship.
+ * This allows subscribers to safely update their cached settings without type errors.
+ */
+export type SettingsUpdate<K extends keyof UserSettings = keyof UserSettings> = {
+    [P in K]: {
+        key: P;
+        value: UserSettings[P];
+    };
+}[K];
 
 export interface UserSettings {
     'tracking-hunts': boolean;
@@ -49,19 +62,19 @@ export class SettingsService {
         'general-log-level': 'info',
     };
 
-    readonly updates$;
+    readonly updates$: Observable<SettingsUpdate>;
 
     constructor(private readonly logger: LoggerService) {
         this.updates$ = fromChromeEvent(chrome.storage.onChanged).pipe(
             filter(([changes, areaName]) => areaName === 'sync'),
             mergeMap(async ([changes]) => {
-                const updates: {key: keyof UserSettings, value: UserSettings[keyof UserSettings]}[] = [];
+                const updates: SettingsUpdate[] = [];
 
                 for (const [key] of Object.entries(changes)) {
                     if (key in this.userSettingsDefault) {
                         const typedKey = key as keyof UserSettings;
                         const currentValue = await this.get(typedKey);
-                        updates.push({key: typedKey, value: currentValue});
+                        updates.push({key: typedKey, value: currentValue} as SettingsUpdate);
                     }
                 }
 
@@ -82,8 +95,8 @@ export class SettingsService {
         };
 
         try {
-            const result = await chrome.storage.sync.get(defaults);
-            return result[key] as UserSettings[K];
+            const result = await chrome.storage.sync.get<{[K in keyof UserSettings]: UserSettings[K]}>(defaults);
+            return result[key];
         } catch (error) {
             this.logger.error('Failed to get settings from storage', error);
             return defaults[key];

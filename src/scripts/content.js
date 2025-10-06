@@ -90,31 +90,11 @@ import { HornHud } from './util/hornHud';
             'userhistory',
             'mhmh',
             'ryonn',
-            'horn',
         ].includes(request.mhct_link)) {
         // Forwards messages from popup to main script
             window.postMessage({mhct_message: request.mhct_link}, '*');
-        } else if (request.mhct_link === 'huntTimer') {
-        // Check for a King's Reward, otherwise report the displayed time until next horn.
-            let message = 'Logged out';
-            const krPageElement = document.getElementsByClassName('mousehuntPage-puzzle-form-state hasPuzzle')[0];
-            // KR can prompt a puzzle without the HUD changing. If either are displaying, a pending KR needs to be claimed
-            if (HornHud.isPuzzleActive() ||
-                (krPageElement && window.getComputedStyle(krPageElement).display === 'block')) {
-                message = 'King\'s Reward';
-            } else {
-                const timerText = HornHud.getTimerText();
-                if (timerText) {
-                    message = timerText;
-                }
-            }
-            sendResponse(message);
-        } else if (request.mhct_link === 'show_horn_alert') {
-            window.postMessage({mhct_message: request.mhct_link}, '*');
         } else if (request.mhct_link === 'tsitu_loader') {
             showTsituLoader(true);
-        } else if (request.mhct_link === 'makenoise') {
-            window.postMessage({mhct_message: request.mhct_link, volume: request.volume, sound_url: request.sound_url}, '*');
         }
     });
 
@@ -133,12 +113,6 @@ import { HornHud } from './util/hornHud';
                     mhct_settings_response: 1,
                     settings: userSettings,
                 }, event.origin);
-            } else if (data.mhct_crown_update === 1) {
-                data.origin = event.origin;
-                chrome.runtime.sendMessage(data, wasSubmitted => event.source.postMessage({
-                    mhct_message: 'crownSubmissionStatus',
-                    submitted: wasSubmitted,
-                }, event.origin));
             } else if (data.mhct_finish_load === 1) {
                 showTsituLoader();
             } else if (data.mhct_display_message === 1) {

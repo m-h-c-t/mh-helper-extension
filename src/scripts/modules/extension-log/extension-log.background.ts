@@ -1,30 +1,24 @@
 import type { LoggerService } from '@scripts/services/logging';
 
-import { BackgroundMessageHandler } from '@scripts/services/message-handler/background-message-handler';
+import { defineExtensionMessaging } from '@webext-core/messaging';
 
-import type { ExtensionLogBackgroundExtensionMessageHandlers, ExtensionLogExtensionMessage } from './extension-log.types';
+import type { ExtensionLogData, ExtensionLogProtocolMap } from './extension-log.types';
 
-import { ExtensionLogMessages } from './extension-log.types';
+export const extensionLogExtensionMessenger = defineExtensionMessaging<ExtensionLogProtocolMap>();
 
-export class ExtensionLogBackground extends BackgroundMessageHandler<
-    ExtensionLogExtensionMessage,
-    ExtensionLogBackgroundExtensionMessageHandlers
-> {
+export class ExtensionLogBackground {
+    constructor(
+        private readonly logger: LoggerService
+    ) { }
+
     protected readonly messageNamespace = 'extensionLog';
-
-    protected readonly messageHandlers: ExtensionLogBackgroundExtensionMessageHandlers = {
-        [ExtensionLogMessages.ExtensionLog]: ({message}) => this.handleExtensionLog(message),
-    };
-
-    constructor(logger: LoggerService) {
-        super(logger);
+    init() {
+        extensionLogExtensionMessenger.onMessage('log', (message) => {
+            this.handleLog(message.data);
+        });
     }
 
-    private async handleExtensionLog(
-        message: ExtensionLogExtensionMessage
-    ): Promise<void> {
-        this.logger.log(message.level, message.message, ...(message.args ?? []));
-
-        return Promise.resolve();
+    private handleLog(data: ExtensionLogData) {
+        this.logger.log(data.level, data.message, ...(data.args ?? []));
     }
 }

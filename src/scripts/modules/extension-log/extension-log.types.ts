@@ -1,11 +1,4 @@
 import type { LogLevel } from '@scripts/services/logging';
-import type { MessageHandlerRegistry, MessageHandlerParams } from '@scripts/services/message-handler/background-message-handler';
-
-export const ExtensionLogMessages = {
-    ExtensionLog: 'extensionLog',
-} as const;
-
-export type ExtensionLogMessageType = (typeof ExtensionLogMessages)[keyof typeof ExtensionLogMessages];
 
 export interface ExtensionLogData {
     level: LogLevel;
@@ -13,11 +6,6 @@ export interface ExtensionLogData {
     args?: unknown[];
 }
 
-export type ExtensionLogExtensionMessage = {
-    [key: string]: unknown;
-    command: ExtensionLogMessageType;
-} & ExtensionLogData;
-
-export interface ExtensionLogBackgroundExtensionMessageHandlers extends MessageHandlerRegistry<ExtensionLogExtensionMessage> {
-    [ExtensionLogMessages.ExtensionLog]: (params: MessageHandlerParams<ExtensionLogExtensionMessage>) => Promise<void>;
+export interface ExtensionLogProtocolMap {
+    log(data: ExtensionLogData): void;
 }

@@ -1,26 +1,45 @@
-import type { MessageWithMetadata } from './messaging/messenger';
+import { badgeTimerWindowMessenger } from '@scripts/modules/badge-timer/badge-timer';
+import { badgeTimerExtensionMessenger } from '@scripts/modules/badge-timer/badge-timer.background';
+import { crownTrackerWindowMessenger } from '@scripts/modules/crown-tracker/crown-tracker';
+import { crownTrackerExtensionMessenger } from '@scripts/modules/crown-tracker/crown-tracker.background';
+import { extensionLogWindowMessenger } from '@scripts/modules/extension-log/extension-log';
+import { extensionLogExtensionMessenger } from '@scripts/modules/extension-log/extension-log.background';
 
-import { MessageTypes } from './messaging/message';
-import { Messenger } from './messaging/messenger';
+crownTrackerWindowMessenger.onMessage('submitCrowns', async (message) => {
+    return await crownTrackerExtensionMessenger.sendMessage('submitCrowns', message.data);
+});
 
-/**
- * This class will handle messages from the web page and forward them to the background script.
- */
+extensionLogWindowMessenger.onMessage('log', async (message) => {
+    return await extensionLogExtensionMessenger.sendMessage('log', message.data);
+});
 
-const messenger = Messenger.forDOMCommunication(globalThis.window);
-messenger.handler = handleWindowMessage;
+badgeTimerExtensionMessenger.onMessage('getTurnState', async (message) => {
+    return await badgeTimerWindowMessenger.sendMessage('getTurnState', message.data);
+});
+badgeTimerExtensionMessenger.onMessage('playSound', async (message) => {
+    return await badgeTimerWindowMessenger.sendMessage('playSound', message.data);
+});
+badgeTimerExtensionMessenger.onMessage('soundHorn', async (message) => {
+    return await badgeTimerWindowMessenger.sendMessage('soundHorn', message.data);
+});
+badgeTimerExtensionMessenger.onMessage('confirmHorn', async (message) => {
+    return await badgeTimerWindowMessenger.sendMessage('confirmHorn', message.data);
+});
 
-function handleWindowMessage(
-    message: MessageWithMetadata,
-    abortController?: AbortController
-) {
-    if (message.type === MessageTypes.RuntimeMessage) {
-        void sendExtensionMessage(message.data);
+// TODO: Uncomment
+/*
+// Simulate the internals of webext-core to automatically forward messages from the page to the background script
+const REQUEST_TYPE = '@webext-core/messaging/window';
+const RESPONSE_TYPE = '@webext-core/messaging/window/response';
+
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+window.addEventListener('message', async (event) => {
+    if (event.data?.type === REQUEST_TYPE) {
+        const response = await chrome.runtime.sendMessage(event.data.message);
+        window.postMessage(
+            {type: RESPONSE_TYPE, response, instanceid: event.data.instanceId, message: event.data.message, namespace: event.data.namespace},
+            event.data.senderOrigin
+        );
     }
-
-    return;
-}
-
-async function sendExtensionMessage(data: unknown) {
-    await chrome.runtime.sendMessage(data);
-}
+});
+*/

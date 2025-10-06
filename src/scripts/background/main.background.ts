@@ -1,4 +1,5 @@
-import { CrownTrackerBackground } from '@scripts/modules/crown-tracker/tracker.background';
+import { BadgeTimerBackground } from '@scripts/modules/badge-timer/badge-timer.background';
+import { CrownTrackerBackground } from '@scripts/modules/crown-tracker/crown-tracker.background';
 import { ExtensionLogBackground } from '@scripts/modules/extension-log/extension-log.background';
 import { ConsoleLogger } from '@scripts/services/logging';
 import { MigrationRunnerService } from '@scripts/services/settings/settings-migrations/migration-runner.service';
@@ -13,6 +14,7 @@ export default class MainBackground {
     migrationService: MigrationRunnerService;
     crownTrackerBackground: CrownTrackerBackground;
     extensionLogBackground: ExtensionLogBackground;
+    badgeTimerBackground: BadgeTimerBackground;
 
     constructor() {
         const isDev = process.env.ENV === 'development';
@@ -23,6 +25,7 @@ export default class MainBackground {
         this.migrationService = new MigrationRunnerService(this.logger);
         this.extensionLogBackground = new ExtensionLogBackground(this.logger);
         this.crownTrackerBackground = new CrownTrackerBackground(this.logger);
+        this.badgeTimerBackground = new BadgeTimerBackground(this.logger, this.settingsService);
     }
 
     async bootstrap() {
@@ -30,7 +33,8 @@ export default class MainBackground {
 
         await this.migrationService.run();
         await this.runtimeBackground.init();
-        await this.extensionLogBackground.init();
-        await this.crownTrackerBackground.init();
+        this.extensionLogBackground.init();
+        this.crownTrackerBackground.init();
+        await this.badgeTimerBackground.init();
     }
 }

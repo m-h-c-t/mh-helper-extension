@@ -1,3 +1,5 @@
+import { badgeTimerExtensionMessenger } from './modules/badge-timer/badge-timer.background';
+
 // JS script available only within the pop-up html pages (popup.html & popup2.html)
 /**
  * Query the open tabs and locate the MH tabs. Passes the first result to the callback, along with the invoking button.
@@ -60,19 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
  * @param {number} tab The tab id of the MH page
  * @param {HTMLElement} [huntTimerField] The div element corresponding to the horn countdown timer.
  */
-function updateHuntTimerField(tab, huntTimerField) {
-    chrome.tabs.sendMessage(tab, {mhct_link: 'huntTimer'}, (response) => {
-        if (chrome.runtime.lastError) {
-            displayErrorPopup(chrome.runtime.lastError.message);
-        }
-        if (huntTimerField) {
-            if (response === 'Ready') {
-                huntTimerField.innerHTML = '<img src="images/horn.png" class="horn">';
-            } else {
-                huntTimerField.textContent = response;
-            }
-        }
-    });
+async function updateHuntTimerField(tab, huntTimerField) {
+    const response = await badgeTimerExtensionMessenger.sendMessage('getTurnState', undefined, tab);
+    if (response.success && response.timeLeft === 0) {
+        huntTimerField.innerHTML = '<img src="images/horn.png" class="horn">';
+    } else if (response.success && response.timeLeft > 0) {
+        const minutes = Math.floor(response.timeLeft / 60);
+        const seconds = response.timeLeft % 60;
+        huntTimerField.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
 }
 
 /**
