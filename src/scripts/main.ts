@@ -251,7 +251,13 @@ declare global {
             const url = new URL(menuURL);
             // FireFox will still have EXTENSION_URL in the code, so replace with origin of URL (moz-extension://<internal_uuid>/)
             data = data.replace('EXTENSION_URL', url.origin);
-            document.location.href = 'javascript:void function(){' + data + '%0A}();';
+
+            const s = document.createElement('script');
+            s.text = data;
+            (document.head || document.documentElement).appendChild(s);
+            s.onload = () => {
+                s.remove();
+            };
         });
     }
 
