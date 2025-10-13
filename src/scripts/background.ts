@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 import MainBackground from './background/main.background';
 import { ConsoleLogger } from './services/logging';
 
 const logger = new ConsoleLogger(false);
-const mhctMain = ((self as any).mhctMain = new MainBackground());
+const mhctMain = new MainBackground();
 mhctMain.bootstrap().then(startHeartbeat)
     .catch(error => logger.error(error));
 

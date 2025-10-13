@@ -153,7 +153,6 @@ module.exports = () => {
                         'bm-cre.min.js',
                         'bm-crown.min.js',
                         'bm-map.min.js',
-                        'bm-powers.min.js',
                         'bm-setup-fields.min.js',
                         'bm-setup-items.min.js',
                     ],

@@ -15,6 +15,10 @@ export class DraconicDepthsDetailer implements IEnvironmentDetailer {
         }
 
         if (quest.in_cavern && quest.cavern) {
+            if (quest.cavern.type === 'elemental_dragon_den') {
+                return;
+            }
+
             let multiplier: 1 | 2 | 3 = 1;
             if (quest.cavern.type.startsWith('double')) {
                 multiplier = 2;

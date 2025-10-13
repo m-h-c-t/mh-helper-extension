@@ -13,10 +13,6 @@ export class ConsoleLogger implements LoggerService {
     ) {}
 
     debug(message?: unknown, ...args: unknown[]): void {
-        if (!this.isDev) {
-            return;
-        }
-
         this.log(LogLevel.Debug, message, ...args);
     }
 
@@ -33,7 +29,7 @@ export class ConsoleLogger implements LoggerService {
     }
 
     log(level: LogLevel, message?: unknown, ...args: unknown[]): void {
-        if (this.filter?.(level)) {
+        if (!this.isDev && this.filter?.(level)) {
             return;
         }
 
