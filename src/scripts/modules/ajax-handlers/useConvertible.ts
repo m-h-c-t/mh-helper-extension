@@ -1,31 +1,15 @@
 import type { LoggerService } from '@scripts/services/logging';
 import type { SubmissionService } from '@scripts/services/submission.service';
 import type { HgItem } from '@scripts/types/mhct';
+import type { z } from 'zod';
 
-import { hgResponseSchema } from '@scripts/types/hg';
-import { z } from 'zod';
+import { hgConvertibleResponseSchema } from '@scripts/types/hg';
 
 import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 
 export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
     readonly name = 'Use Convertible';
-    readonly schema = hgResponseSchema.extend({
-        convertible_open: z.object({
-            type: z.string(),
-            items: z.array(z.object({
-                name: z.string(),
-                pluralized_name: z.string(),
-                quantity: z.coerce.number(),
-                type: z.string(),
-            })),
-        }),
-        items: z.record(z.string(), z.object({
-            name: z.string(),
-            item_id: z.coerce.number(),
-            quantity: z.coerce.number(),
-            type: z.string(),
-        })),
-    });
+    readonly schema = hgConvertibleResponseSchema;
 
     constructor(logger: LoggerService,
         private readonly submissionService: SubmissionService
@@ -38,6 +22,11 @@ export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
     }
 
     protected async validatedExecute(data: z.infer<typeof this.schema>): Promise<void> {
+        if (!data.convertible_open) {
+            this.logger.info(`${this.name}: Likely that a treasure map was opened, skipping convertible submission`);
+            return;
+        }
+
         const convertibleType = data.convertible_open.type;
         if (!(convertibleType in data.items)) {
             this.logger.warn('Couldn\'t find any items from opened convertible');

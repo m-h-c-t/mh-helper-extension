@@ -111,6 +111,8 @@ export class SubmissionService {
         uuidRequestBody.entry_timestamp = timestamp;
 
         try {
+            this.logger.debug('Submitting to MHCT', url, message);
+
             const uuid = await this.apiService.send('POST', this.environmentService.getUuidUrl(), uuidRequestBody, true);
 
             const submissionBody: Record<string, unknown> = message;

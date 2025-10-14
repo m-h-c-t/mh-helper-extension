@@ -18,9 +18,10 @@ export const hgResponseSchema = z.object({
 
 export type HgResponse = z.infer<typeof hgResponseSchema>;
 
-export const hgConvertibleResponse = hgResponseSchema.extend({
-    convertible_open: convertibleOpenSchema,
+export const hgConvertibleResponseSchema = hgResponseSchema.extend({
+    treasure_map: z.string().optional(),
+    convertible_open: convertibleOpenSchema.optional(),
     items: z.record(z.string(), inventoryItemSchema),
 });
 
-export type HgConvertibleResponse = z.infer<typeof hgConvertibleResponse>;
+export type HgConvertibleResponse = z.infer<typeof hgConvertibleResponseSchema>;

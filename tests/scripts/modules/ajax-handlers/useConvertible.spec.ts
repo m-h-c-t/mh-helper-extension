@@ -204,6 +204,8 @@ const testResponses = {
     normalConvertible: {
         convertible_open: {
             type: 'test_convertible',
+            name: 'Test Convertible',
+            quantity: 5,
             items: [
                 {
                     name: 'SUPER|brie+',
@@ -234,6 +236,8 @@ const testResponses = {
     goldItemConvertible: {
         convertible_open: {
             type: 'test_convertible',
+            name: 'Test Convertible',
+            quantity: 5,
             items: [
                 {
                     name: 'Gold',
@@ -257,6 +261,8 @@ const testResponses = {
     pointItemConvertible: {
         convertible_open: {
             type: 'test_convertible',
+            name: 'Test Convertible',
+            quantity: 5,
             items: [
                 {
                     name: 'Points',
@@ -280,6 +286,8 @@ const testResponses = {
     multipleItemsConvertible: {
         convertible_open: {
             type: 'test_convertible',
+            name: 'Test Convertible',
+            quantity: 5,
             items: [
                 {
                     name: 'SUPER|brie+',
@@ -316,6 +324,8 @@ const testResponses = {
     missingConvertibleType: {
         convertible_open: {
             type: 'missing_convertible',
+            name: 'Missing Convertible',
+            quantity: 1,
             items: [
                 {
                     name: 'SUPER|brie+',
@@ -346,6 +356,8 @@ const testResponses = {
     invalidInventory: {
         convertible_open: {
             type: 'test_convertible',
+            name: 'Test Convertible',
+            quantity: 5,
             items: [
                 {
                     name: 'SUPER|brie+',
@@ -369,6 +381,8 @@ const testResponses = {
     unknownItemType: {
         convertible_open: {
             type: 'test_convertible',
+            name: 'Test Convertible',
+            quantity: 5,
             items: [
                 {
                     name: 'Unknown Item',
@@ -399,6 +413,8 @@ const testResponses = {
     emptyItems: {
         convertible_open: {
             type: 'test_convertible',
+            name: 'Test Convertible',
+            quantity: 5,
             items: []
         },
         items: {

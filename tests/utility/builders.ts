@@ -364,7 +364,7 @@ export class IntakeMessageBuilder {
 
 export class ConvertibleMessageBuilder {
     public build(response: HgConvertibleResponse): ConvertibleMessage {
-        const convertibleItem = response.items[response.convertible_open.type];
+        const convertibleItem = response.items[response.convertible_open!.type];
 
         if (convertibleItem == null) {
             throw new Error();
@@ -376,7 +376,7 @@ export class ConvertibleMessageBuilder {
                 name: `${convertibleItem.name}`,
                 quantity: `${convertibleItem.quantity}`,
             },
-            items: response.convertible_open.items.map((v) => {
+            items: response.convertible_open!.items.map((v) => {
                 return {
                     // @ts-expect-error - response.items[v.type] may be undefined
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
