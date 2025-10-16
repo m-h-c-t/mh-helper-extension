@@ -107,10 +107,12 @@ export class CrownTracker {
 
         // Throttle safety check
         const now = new Date();
-        const timeSinceLastRequest = now.getTime() - (this.lastSentRequestTime?.getTime() ?? 0);
-        if (timeSinceLastRequest < 5000) {
-            this.logger.debug('Skipping King\'s Crown request (throttled)');
-            return;
+        if (this.lastSentRequestTime !== undefined) {
+            const timeSinceLastRequest = now.getTime() - this.lastSentRequestTime.getTime();
+            if (timeSinceLastRequest < 5000) {
+                this.logger.debug('Skipping King\'s Crown request (throttled)');
+                return;
+            }
         }
 
         this.lastSentRequestTime = now;
