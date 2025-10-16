@@ -1,7 +1,7 @@
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
+import pluginVitest from '@vitest/eslint-plugin';
 import perfectionist from 'eslint-plugin-perfectionist';
-import pluginVitest from 'eslint-plugin-vitest';
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';

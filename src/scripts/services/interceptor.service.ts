@@ -20,7 +20,7 @@ export interface ResponseEventParams extends RequestEventParams {
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-type InterceptorEventMap = {
+export type InterceptorEventMap = {
     request: [
         args: RequestEventParams
     ];
@@ -33,7 +33,7 @@ export interface RequestBody {
     [key: string]: undefined | string | RequestBody | (string | RequestBody)[];
 }
 
-type PromiseLikeListener<Data extends unknown[]> = (...data: Data) => void | Promise<void>;
+export type PromiseLikeListener<Data extends unknown[]> = (...data: Data) => void | Promise<void>;
 
 /**
  * Service for intercepting HTTP requests and responses from MouseHunt game endpoints.

@@ -5,6 +5,7 @@ export type CrownType = (typeof Crowns)[number];
 
 export const crownDataSchema = z.object({
     user: z.string().min(1),
+    timestamp: z.number(),
     crowns: z.record(z.enum(Crowns), z.number())
 });
 
