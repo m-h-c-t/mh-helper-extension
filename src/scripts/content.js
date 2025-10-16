@@ -90,6 +90,7 @@ import { HornHud } from './util/hornHud';
             'userhistory',
             'mhmh',
             'ryonn',
+            'horn',
         ].includes(request.mhct_link)) {
         // Forwards messages from popup to main script
             window.postMessage({mhct_message: request.mhct_link}, '*');

@@ -27,6 +27,7 @@ import { SubmissionService } from './services/submission.service';
 import { hgResponseSchema } from './types/hg';
 import { intakeMessageBaseSchema, intakeMessageSchema } from './types/mhct';
 import { diffObject } from './util/diffObject';
+import { HornHud } from './util/hornHud';
 import { parseHgInt } from './util/number';
 
 declare global {
@@ -221,6 +222,12 @@ declare global {
             if (ev.data.mhct_message === 'mhmh'
                 || ev.data.mhct_message === 'ryonn') {
                 openMapMiceSolver(ev.data.mhct_message);
+                return;
+            }
+
+            // from popup
+            if (ev.data.mhct_message === 'horn') {
+                void HornHud.soundHorn();
                 return;
             }
 

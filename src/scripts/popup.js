@@ -25,7 +25,7 @@ function findOpenMHTab(callback, button_id, silent) {
  */
 function sendMessageToScript(tab_id, button_id) {
     // Switch to MH tab if needed.
-    const needsMHPageActive = ['horn', 'tsitu_loader', 'mhmh', 'ryonn'];
+    const needsMHPageActive = ['tsitu_loader'];
     if (needsMHPageActive.includes(button_id)) {
         chrome.tabs.update(tab_id, {active: true});
     }
