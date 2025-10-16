@@ -51,6 +51,7 @@ export class CrownTracker {
                     subtabs: z.tuple([
                         z.object({
                             mouse_crowns: z.object({
+                                user_name: z.string(),
                                 badge_groups: z.array(z.object({
                                     name: z.string(),
                                     type: z.literal('bronze').or(z.literal('silver')).or(z.literal('gold')).or(z.literal('platinum')).or(z.literal('diamond')),
@@ -66,7 +67,7 @@ export class CrownTracker {
         }),
     });
 
-    private lastSentRequestTime: Date = new Date();
+    private lastSentRequestTime?: Date;
     private lastSnuid: string | null = null;
 
     constructor(
@@ -106,13 +107,16 @@ export class CrownTracker {
 
         // Throttle safety check
         const now = new Date();
-        const timeSinceLastRequest = now.getTime() - this.lastSentRequestTime.getTime();
-        if (timeSinceLastRequest < 5000) {
-            this.logger.debug('Skipping King\'s Crown request (throttled)');
-            return;
+        if (this.lastSentRequestTime !== undefined) {
+            const timeSinceLastRequest = now.getTime() - this.lastSentRequestTime.getTime();
+            if (timeSinceLastRequest < 5000) {
+                this.logger.debug('Skipping King\'s Crown request (throttled)');
+                return;
+            }
         }
 
         this.lastSentRequestTime = now;
+        this.lastSnuid = requestBody.page_arguments.snuid;
         // Request King's Crowns
         this.apiService.send('POST',
             '/managers/ajax/pages/page.php',
@@ -167,6 +171,7 @@ export class CrownTracker {
         // Craft a background message
         const message: CrownData = {
             user: parsedRequest.data.page_arguments.snuid,
+            timestamp: Math.round(Date.now() / 1000),
             crowns: {
                 bronze: 0,
                 silver: 0,
@@ -203,14 +208,12 @@ export class CrownTracker {
             this.showFlashMessage(
                 result.success ? 'success' : 'error',
                 result.success
-                    ? `Successfully submitted ${result.count} crowns to Crown Tracker!`
-                    : `Failed to submit crowns to Crown Tracker: ${result.error}`
+                    ? `Submitted ${result.count} crowns for ${mouseCrowns.user_name} to MHCC!`
+                    : `Failed to submit crowns to MHCC: ${result.error}`
             );
         } catch (error) {
-            this.logger.error('Failed to submit crowns to Crown Tracker', error);
-            this.showFlashMessage('error', `Failed to submit crowns to Crown Tracker: ${error instanceof Error ? error.message : String(error)}`);
+            this.logger.error('Failed to submit crowns to MHCC', error);
+            this.showFlashMessage('error', `Failed to submit crowns to MHCC: ${error instanceof Error ? error.message : String(error)}`);
         }
-
-        this.lastSnuid = parsedRequest.data.page_arguments.snuid;
     }
 }
