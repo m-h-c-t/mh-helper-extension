@@ -25,6 +25,8 @@ export function getDefaultUser(): User {
         unique_hash: 'mhct',
         num_active_turns: 0,
         next_activeturn_seconds: 0,
+        last_active_turn_timestamp: 0,
+        activeturn_wait_seconds: 900,
         base_name: 'Fake Base',
         base_item_id: 0,
         weapon_name: 'Fake Weapon',

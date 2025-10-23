@@ -144,7 +144,7 @@ export class HgConvertibleResponseBuilder extends HgResponseBuilder {
 }
 
 type UserIdentification = Pick<User, 'user_id' | 'sn_user_id' | 'unique_hash' | 'has_shield' | 'has_puzzle'>;
-type UserTurn = Pick<User, | 'num_active_turns' | 'next_activeturn_seconds'>;
+type UserTurn = Pick<User, 'num_active_turns' | 'next_activeturn_seconds' | 'last_active_turn_timestamp' | 'activeturn_wait_seconds'>;
 type UserEnvironment = Pick<User, 'environment_id' | 'environment_name'>;
 type UserTrapStats = Pick<User, 'trap_power' | 'trap_luck' | 'trap_attraction_bonus' | 'trap_power_bonus'>;
 type UserWeapon = Pick<User, 'weapon_name' | 'weapon_item_id'>;
@@ -166,6 +166,8 @@ export class UserBuilder {
     turn: UserTurn = {
         num_active_turns: 0,
         next_activeturn_seconds: 0,
+        last_active_turn_timestamp: 0,
+        activeturn_wait_seconds: 900,
     };
 
     environment: UserEnvironment = {

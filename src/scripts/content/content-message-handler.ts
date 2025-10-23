@@ -13,9 +13,13 @@ extensionLogWindowMessenger.onMessage('log', async (message) => {
     return await extensionLogExtensionMessenger.sendMessage('log', message.data);
 });
 
-badgeTimerExtensionMessenger.onMessage('getTurnState', async (message) => {
-    return await badgeTimerWindowMessenger.sendMessage('getTurnState', message.data);
+badgeTimerWindowMessenger.onMessage('sendTurnState', async (message) => {
+    return await badgeTimerExtensionMessenger.sendMessage('sendTurnState', message.data);
 });
+badgeTimerWindowMessenger.onMessage('sendLoggedOut', async (message) => {
+    return await badgeTimerExtensionMessenger.sendMessage('sendLoggedOut', message.data);
+});
+
 badgeTimerExtensionMessenger.onMessage('playSound', async (message) => {
     return await badgeTimerWindowMessenger.sendMessage('playSound', message.data);
 });

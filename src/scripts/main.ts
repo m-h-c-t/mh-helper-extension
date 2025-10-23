@@ -76,7 +76,7 @@ declare global {
         new successHandlers.UseConvertibleAjaxHandler(logger, submissionService),
     ];
     const crownTracker = new CrownTracker(logger, extensionLog, interceptorService, apiService, showFlashMessage);
-    const badgeTimer = new BadgeTimer();
+    const badgeTimer = new BadgeTimer(interceptorService);
 
     async function main() {
         try {
