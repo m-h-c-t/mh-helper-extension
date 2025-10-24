@@ -22,6 +22,8 @@ export const crownTrackerWindowMessenger = defineWindowMessaging<CrownTrackerPro
  * submits the crown counts to the background script for further processing.
  */
 export class CrownTracker {
+    public PROFILE_THOTTLE_MS = 5000;
+
     private readonly requestHunterProfileSchema = z.object({
         sn: z.literal('Hitgrab'),
         hg_is_ajax: z.literal('1'),
@@ -84,6 +86,7 @@ export class CrownTracker {
         this.interceptorService.on('response', ({url, request, response}) => void this.handleResponse(url, request, response));
     }
 
+    /* Handle requests to the Hunter Profile page so we can request King's Crowns */
     private handleRequest(url: URL, request: RequestBody): void {
         if (url.pathname !== '/managers/ajax/pages/page.php') {
             return;
@@ -94,8 +97,9 @@ export class CrownTracker {
             return;
         }
 
+        // This is a direct request for the King's Crowns (by navigating to the tab).
+        // We don't need to invoke our own request.
         if (this.requestKingsCrownSchema.safeParse(request).success) {
-            // This is a King's Crown request, let it pass
             return;
         }
 
@@ -109,14 +113,13 @@ export class CrownTracker {
         const now = new Date();
         if (this.lastSentRequestTime !== undefined) {
             const timeSinceLastRequest = now.getTime() - this.lastSentRequestTime.getTime();
-            if (timeSinceLastRequest < 5000) {
+            if (timeSinceLastRequest < this.PROFILE_THOTTLE_MS) {
                 this.logger.debug('Skipping King\'s Crown request (throttled)');
                 return;
             }
         }
 
         this.lastSentRequestTime = now;
-        this.lastSnuid = requestBody.page_arguments.snuid;
         // Request King's Crowns
         this.apiService.send('POST',
             '/managers/ajax/pages/page.php',
@@ -146,6 +149,12 @@ export class CrownTracker {
 
         const parsedRequest = this.requestKingsCrownSchema.safeParse(request);
         if (!parsedRequest.success) {
+            return;
+        }
+
+        const requestBody = parsedRequest.data;
+        if (this.lastSnuid === requestBody.page_arguments.snuid) {
+            this.logger.debug('Skipping King\'s Crown request (already requested for this user)');
             return;
         }
 
@@ -214,6 +223,8 @@ export class CrownTracker {
         } catch (error) {
             this.logger.error('Failed to submit crowns to MHCC', error);
             this.showFlashMessage('error', `Failed to submit crowns to MHCC: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+            this.lastSnuid = requestBody.page_arguments.snuid;
         }
     }
 }
