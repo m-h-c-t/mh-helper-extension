@@ -22,7 +22,7 @@ export const crownTrackerWindowMessenger = defineWindowMessaging<CrownTrackerPro
  * submits the crown counts to the background script for further processing.
  */
 export class CrownTracker {
-    public PROFILE_THOTTLE_MS = 5000;
+    public PROFILE_THROTTLE_MS = 5000;
 
     private readonly requestHunterProfileSchema = z.object({
         sn: z.literal('Hitgrab'),
@@ -113,7 +113,7 @@ export class CrownTracker {
         const now = new Date();
         if (this.lastSentRequestTime !== undefined) {
             const timeSinceLastRequest = now.getTime() - this.lastSentRequestTime.getTime();
-            if (timeSinceLastRequest < this.PROFILE_THOTTLE_MS) {
+            if (timeSinceLastRequest < this.PROFILE_THROTTLE_MS) {
                 this.logger.debug('Skipping King\'s Crown request (throttled)');
                 return;
             }

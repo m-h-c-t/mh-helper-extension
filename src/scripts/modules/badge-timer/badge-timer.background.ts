@@ -47,7 +47,7 @@ export class BadgeTimerBackground {
         private readonly logger: LoggerService,
         private readonly settingsService: SettingsService
     ) {
-        badgeTimerExtensionMessenger.onMessage('sendLoggedOut', message => this.handleLoggedOut());
+        badgeTimerExtensionMessenger.onMessage('sendLoggedOut', () => this.handleLoggedOut());
         badgeTimerExtensionMessenger.onMessage('sendTurnState', message => void this.handleTurnStateMessage(message));
         badgeTimerExtensionMessenger.onMessage('getTimeLeft', () => {
             return this.calculateTimeRemaining();
@@ -108,7 +108,7 @@ export class BadgeTimerBackground {
             if (this.turnState.success) {
                 await this.handleTimerUpdate();
             } else {
-                await this.showErrorBadge('Turn state indicates failure');
+                await this.showErrorBadge(this.turnState.error);
             }
         } catch (error) {
             this.logger.warn('Error getting turn state for badge timer', error);
