@@ -134,9 +134,9 @@ export class HornHud {
      * Sound the horn by simulating a mouse events on the horn DOM
      */
     public static async soundHorn() {
-        if (!this.canSoundHorn()) {
-            return;
-        }
+        // if (!this.canSoundHorn()) {
+        //     return;
+        // }
 
         // Body event via 'h'
         // document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'h' }));

@@ -1,14 +1,14 @@
 import type { LoggerService } from '@scripts/services/logging';
 import type { SettingsService, SettingsUpdate, UserSettings } from '@scripts/services/settings/settings.service';
 
-import { defineExtensionMessaging } from '@webext-core/messaging';
+import { defineExtensionMessaging, type ExtensionMessage } from '@webext-core/messaging';
 
-import type { BadgeTimerProtocolMap } from './badge-timer.types';
+import type { BadgeTimerProtocolMap, TurnState } from './badge-timer.types';
 
 export const badgeTimerExtensionMessenger = defineExtensionMessaging<BadgeTimerProtocolMap>();
 
 // Constants
-const BADGE_UPDATE_INTERVAL_MS = 1000;
+const BADGE_UPDATE_INTERVAL_MS = 500;
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_THRESHOLD_FOR_ROUNDING = 30;
 
@@ -40,11 +40,19 @@ interface BadgeState {
 export class BadgeTimerBackground {
     private settings!: UserSettings;
     private hasNotifiedHornReady = false;
+    private lastExtensionMessage: ExtensionMessage | null = null;
+    private turnState: TurnState | null = null;
 
     constructor(
         private readonly logger: LoggerService,
         private readonly settingsService: SettingsService
-    ) { }
+    ) {
+        badgeTimerExtensionMessenger.onMessage('sendLoggedOut', () => this.handleLoggedOut());
+        badgeTimerExtensionMessenger.onMessage('sendTurnState', message => void this.handleTurnStateMessage(message));
+        badgeTimerExtensionMessenger.onMessage('getTimeLeft', () => {
+            return this.calculateTimeRemaining();
+        });
+    }
 
     /**
      * Initialize the badge timer background service.
@@ -59,7 +67,7 @@ export class BadgeTimerBackground {
                 this.handleSettingsUpdate(update);
             });
 
-        // Update badge every second
+        // Update badge loop
         setInterval(() => {
             void this.updateBadge();
         }, BADGE_UPDATE_INTERVAL_MS);
@@ -78,47 +86,35 @@ export class BadgeTimerBackground {
         }
     }
 
+    private handleLoggedOut(): void {
+        this.turnState = null;
+    }
+
+    private handleTurnStateMessage(message: ({data: TurnState} & ExtensionMessage)): void {
+        this.turnState = message.data;
+        this.lastExtensionMessage = message;
+    }
+
     /**
      * Update the badge with current timer state.
-     * Fetches the turn state from the MouseHunt tab and updates the badge accordingly.
      */
     private async updateBadge(): Promise<void> {
-        const tabId = await this.findMouseHuntTabId();
-
-        if (!tabId) {
+        if (!this.turnState) {
             await this.clearBadge();
             return;
         }
 
         try {
-            const turnState = await badgeTimerExtensionMessenger.sendMessage('getTurnState', undefined, {
-                tabId: tabId
-            });
-
-            if (turnState.success) {
-                await this.handleTimerUpdate(turnState.timeLeft, tabId);
+            if (this.turnState.success) {
+                await this.handleTimerUpdate();
             } else {
-                await this.showErrorBadge(turnState.error);
+                await this.showErrorBadge(this.turnState.error);
             }
         } catch (error) {
             this.logger.warn('Error getting turn state for badge timer', error);
             await this.clearBadge();
             this.hasNotifiedHornReady = true;
         }
-    }
-
-    /**
-     * Find the first active MouseHunt tab.
-     * @returns The tab ID if found, undefined otherwise
-     */
-    private async findMouseHuntTabId(): Promise<number | undefined> {
-        const mouseHuntTabs = await chrome.tabs.query({
-            status: 'complete',
-            url: ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*'],
-        });
-
-        const [firstTab] = mouseHuntTabs;
-        return firstTab?.id;
     }
 
     /**
@@ -152,19 +148,42 @@ export class BadgeTimerBackground {
     }
 
     /**
-     * Handle timer update based on remaining time.
-     * @param timeLeft - Seconds remaining until horn is ready
-     * @param tabId - The MouseHunt tab ID
+     * Calculate the current time remaining based on lastTurnTimestamp.
+     * Time remaining = (lastTurnTimestamp + 900 seconds) - current time
+     * @returns Seconds remaining until horn is ready
      */
-    private async handleTimerUpdate(timeLeft: number, tabId: number): Promise<void> {
-        if (timeLeft <= 0) {
+    private calculateTimeRemaining(): number {
+        if (!this.turnState?.success) {
+            return -1;
+        }
+
+        const currentTimeSeconds = Math.floor(Date.now() / 1000);
+        const hornReadyTime = this.turnState.lastTurnTimestamp + this.turnState.turnWaitSeconds;
+        const timeRemaining = hornReadyTime - currentTimeSeconds;
+
+        return Math.max(0, timeRemaining);
+    }
+
+    /**
+     * Handle timer update based on remaining time.
+     */
+    private async handleTimerUpdate(): Promise<void> {
+        if (!this.turnState?.success) {
+            return;
+        }
+
+        const currentTimeLeft = this.calculateTimeRemaining();
+
+        // Only trigger horn ready notifications when time left is exactly zero.
+        // If currentTimeLeft is -1 (e.g., logged out), notifications will not trigger.
+        if (currentTimeLeft === 0) {
             if (!this.hasNotifiedHornReady) {
                 this.hasNotifiedHornReady = true;
-                await this.triggerHornReadyNotifications(tabId);
+                await this.triggerHornReadyNotifications(this.lastExtensionMessage?.sender.tab?.id ?? -1);
             }
         } else {
             this.hasNotifiedHornReady = false;
-            await this.updateTimerBadge(timeLeft);
+            await this.updateTimerBadge(currentTimeLeft);
         }
     }
 

@@ -39,12 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (version_element) {
         version_element.innerText = ` version: ${chrome.runtime.getManifest().version}`;
     }
+
     // Schedule updates of the horn timer countdown.
-    findOpenMHTab((tab) => {
-        const huntTimerField = document.getElementById('huntTimer');
-        updateHuntTimerField(tab, huntTimerField); // Fire now
-        setInterval(updateHuntTimerField, 1000, tab, huntTimerField); // Continue firing each second
-    }, null, true);
+    const huntTimerField = document.getElementById('huntTimer');
+    if (huntTimerField) {
+        setInterval(async () => {
+            await updateHuntTimerField(huntTimerField);
+        }, 1000);
+    }
 
     // Send specific clicks to the content script for handling and/or additional forwarding.
     ['mhmh', 'userhistory', 'ryonn', 'horn', 'tsitu_loader'].forEach((id) => {
@@ -59,16 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /**
  * Query the MH page and display the time remaining until the next horn.
- * @param {number} tab The tab id of the MH page
  * @param {HTMLElement} [huntTimerField] The div element corresponding to the horn countdown timer.
  */
-async function updateHuntTimerField(tab, huntTimerField) {
-    const response = await badgeTimerExtensionMessenger.sendMessage('getTurnState', undefined, tab);
-    if (response.success && response.timeLeft === 0) {
+async function updateHuntTimerField(huntTimerField) {
+    const timeLeft = await badgeTimerExtensionMessenger.sendMessage('getTimeLeft');
+    if (timeLeft === 0) {
         huntTimerField.innerHTML = '<img src="images/horn.png" class="horn">';
-    } else if (response.success && response.timeLeft > 0) {
-        const minutes = Math.floor(response.timeLeft / 60);
-        const seconds = response.timeLeft % 60;
+    } else if (timeLeft > 0) {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
         huntTimerField.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 }

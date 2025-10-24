@@ -36,6 +36,8 @@ describe('MHCT Hunt Submission', () => {
                     .withTurn({
                         num_active_turns: 1,
                         next_activeturn_seconds: 900,
+                        last_active_turn_timestamp: 0,
+                        activeturn_wait_seconds: 900,
                     })
                     .build()
             )

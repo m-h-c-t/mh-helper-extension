@@ -1,3 +1,6 @@
+import type { InterceptorService, RequestBody } from '@scripts/services/interceptor.service';
+import type { HgResponse, User } from '@scripts/types/hg';
+
 import { HornHud } from '@scripts/util/hornHud';
 import { defineWindowMessaging } from '@webext-core/messaging/page';
 
@@ -8,10 +11,21 @@ export const badgeTimerWindowMessenger = defineWindowMessaging<BadgeTimerProtoco
 });
 
 export class BadgeTimer {
+    constructor(
+        private readonly interceptorService: InterceptorService
+    ) {
+        this.interceptorService.on('response', ({request, response}) => void this.handleResponse(request, response));
+    }
+
+    /**
+     * Returns the current user object or undefined if not logged in.
+     * Unlogged-in users are represented as an empty array by the game.
+     */
+    private getCurrentUser(): User | undefined {
+        return !Array.isArray(window.user) ? window.user : undefined;
+    }
+
     init() {
-        badgeTimerWindowMessenger.onMessage('getTurnState', () => {
-            return this.getTurnState();
-        });
         badgeTimerWindowMessenger.onMessage('playSound', (message) => {
             return this.playSound(message.data);
         });
@@ -21,42 +35,47 @@ export class BadgeTimer {
         badgeTimerWindowMessenger.onMessage('confirmHorn', () => {
             return this.confirmHorn();
         });
+
+        try {
+            // On page load send initial state.
+            // Unlogged-in user is represented as an empty array by the game, so we treat that as undefined.
+            void badgeTimerWindowMessenger.sendMessage('sendTurnState', this.getTurnState(this.getCurrentUser()));
+        } catch {
+            // ignore errors
+        }
     }
 
-    private getTurnState(): TurnState {
-        if (user.has_puzzle) {
-            return {
+    async handleResponse(request: RequestBody, response: HgResponse) {
+        if (request.action === 'logout') {
+            await badgeTimerWindowMessenger.sendMessage('sendLoggedOut');
+        } else {
+            await badgeTimerWindowMessenger.sendMessage('sendTurnState', this.getTurnState(response.user));
+        }
+    }
+
+    private getTurnState(user: User | undefined): TurnState {
+        let turnState: TurnState;
+        if (!user) {
+            turnState = {
                 success: false,
-                error: 'King\'s Reward'
+                error: 'Logged out'
             };
         } else {
-            const timerText = HornHud.getTimerText();
-            if (timerText == null) {
-                return {
+            if (user.has_puzzle) {
+                turnState = {
                     success: false,
-                    error: 'Unknown'
-                };
-            } else if (timerText === 'Ready') {
-                return {
-                    success: true,
-                    timeLeft: 0
+                    error: 'King\'s Reward'
                 };
             } else {
-                const match = /(\d+):(\d+)/.exec(timerText);
-                if (!match) {
-                    return {
-                        success: false,
-                        error: 'Unknown'
-                    };
-                }
-                const minutes = parseInt(match[1], 10);
-                const seconds = parseInt(match[2], 10);
-                return {
+                turnState = {
                     success: true,
-                    timeLeft: minutes * 60 + seconds
+                    lastTurnTimestamp: user.last_active_turn_timestamp,
+                    turnWaitSeconds: user.activeturn_wait_seconds
                 };
             }
         }
+
+        return turnState;
     }
 
     private async playSound(sound: {url: string, volume: number}) {
@@ -74,10 +93,6 @@ export class BadgeTimer {
     }
 
     private async confirmHorn() {
-        if (!HornHud.canSoundHorn()) {
-            return;
-        }
-
         if (confirm('Horn is Ready! Sound it?')) {
             await this.soundHorn();
         }
