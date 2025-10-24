@@ -128,30 +128,6 @@ describe('CrownTracker', () => {
             expect(mockApiService.send).not.toHaveBeenCalled();
         });
 
-        it('should skip request if same snuid was already processed', async () => {
-            const url = new URL('https://www.mousehuntgame.com/managers/ajax/pages/page.php');
-            const request = {
-                sn: 'Hitgrab',
-                hg_is_ajax: '1',
-                page_class: 'HunterProfile',
-                page_arguments: {
-                    snuid: '12345'
-                },
-                last_read_journal_entry_id: '123',
-                uh: 'test-uh'
-            };
-
-            // First request should go through
-            await requestHandler({url, request, requestId: ''});
-            expect(mockLogger.debug).not.toHaveBeenCalled();
-            expect(mockApiService.send).toHaveBeenCalledTimes(1);
-
-            // Second request with same snuid should be skipped
-            await requestHandler({url, request, requestId: ''});
-            expect(mockApiService.send).toHaveBeenCalledTimes(1);
-            expect(mockLogger.debug).toHaveBeenCalledWith('Skipping King\'s Crown request (already requested for this user)');
-        });
-
         it('should throttle requests made within 5 seconds', async () => {
             const url = new URL('https://www.mousehuntgame.com/managers/ajax/pages/page.php');
             const request1 = {
@@ -360,6 +336,27 @@ describe('CrownTracker', () => {
             expect(mockLogger.debug).toHaveBeenCalledWith('Sending crowns payload to background: ', expectedMessage);
             expect(crownTrackerWindowMessenger.sendMessage).toHaveBeenCalledWith('submitCrowns', expectedMessage);
             expect(mockShowFlashMessage).toHaveBeenCalledWith('success', 'Submitted 12 crowns for TestUser to MHCC!');
+        });
+
+        it('should skip response if same snuid was already processed', async () => {
+            const url = new URL('https://www.mousehuntgame.com/managers/ajax/pages/page.php');
+            const request = createKingsCrownRequest();
+            const response = createKingsCrownResponse();
+
+            vi.mocked(crownTrackerWindowMessenger.sendMessage).mockResolvedValue({
+                success: true,
+                count: 0
+            });
+
+            // First request should go through
+            await responseHandler({url, request, response, requestId: ''});
+            expect(crownTrackerWindowMessenger.sendMessage).toHaveBeenCalledExactlyOnceWith('submitCrowns', expect.anything());
+            vitest.clearAllMocks();
+
+            // Second request with same snuid should be skipped
+            await responseHandler({url, request, response, requestId: ''});
+            expect(crownTrackerWindowMessenger.sendMessage).not.toHaveBeenCalled();
+            expect(mockLogger.debug).toHaveBeenCalledWith('Skipping King\'s Crown request (already requested for this user)');
         });
 
         it('should handle crown submission failure', async () => {

@@ -1,13 +1,16 @@
 export type TurnState = {
     success: true;
-    timeLeft: number; // in seconds
+    lastTurnTimestamp: number; // in seconds
+    turnWaitSeconds: number;
 } | {
     success: false;
     error: 'King\'s Reward' | 'Logged out' | 'Unknown';
 };
 
 export interface BadgeTimerProtocolMap {
-    getTurnState(): TurnState;
+    getTimeLeft(): number;
+    sendTurnState(turnState: TurnState): void;
+    sendLoggedOut(): void;
     playSound(sound: {url: string, volume: number}): void;
     soundHorn(): void;
     confirmHorn(): void;
