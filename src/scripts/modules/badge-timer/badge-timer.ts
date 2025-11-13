@@ -69,8 +69,8 @@ export class BadgeTimer {
             } else {
                 turnState = {
                     success: true,
-                    lastTurnTimestamp: user.last_active_turn_timestamp,
-                    turnWaitSeconds: user.activeturn_wait_seconds
+                    nextActiveTurnSeconds: user.next_activeturn_seconds,
+                    updatedAt: Date.now(),
                 };
             }
         }

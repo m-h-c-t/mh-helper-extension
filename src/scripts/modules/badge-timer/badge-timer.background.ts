@@ -148,20 +148,20 @@ export class BadgeTimerBackground {
     }
 
     /**
-     * Calculate the current time remaining based on lastTurnTimestamp.
-     * Time remaining = (lastTurnTimestamp + 900 seconds) - current time
-     * @returns Seconds remaining until horn is ready
+     * Calculate the current time remaining based on turn state.
+     * Uses {@link turnState.nextActiveTurnSeconds} (in seconds) and {@link turnState.updatedAt} (in milliseconds).
+     * @returns Seconds remaining until horn is ready or -1 if unavailable
      */
     private calculateTimeRemaining(): number {
         if (!this.turnState?.success) {
             return -1;
         }
 
-        const currentTimeSeconds = Math.floor(Date.now() / 1000);
-        const hornReadyTime = this.turnState.lastTurnTimestamp + this.turnState.turnWaitSeconds;
-        const timeRemaining = hornReadyTime - currentTimeSeconds;
+        const nextTurnTimestamp = this.turnState.updatedAt + (this.turnState.nextActiveTurnSeconds * 1000);
+        const timeRemaining = nextTurnTimestamp - Date.now();
+        const secondsRemaining = Math.ceil(timeRemaining / 1000);
 
-        return Math.max(0, timeRemaining);
+        return Math.max(0, secondsRemaining);
     }
 
     /**

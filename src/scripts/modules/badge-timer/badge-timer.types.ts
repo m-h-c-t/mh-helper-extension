@@ -1,7 +1,7 @@
 export type TurnState = {
     success: true;
-    lastTurnTimestamp: number; // in seconds
-    turnWaitSeconds: number;
+    nextActiveTurnSeconds: number;
+    updatedAt: number; // Timestamp in milliseconds when this state was captured
 } | {
     success: false;
     error: 'King\'s Reward' | 'Logged out' | 'Unknown';
