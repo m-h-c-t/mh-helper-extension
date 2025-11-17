@@ -10,7 +10,7 @@ export class PillageDetailer implements IDetailer {
     addDetails(message: IntakeMessage, userPre: User, userPost: User, journal: JournalMarkup): Record<PropertyKey, unknown> | undefined {
         if (message.attracted && !message.caught && journal.render_data.css_class.includes('catchfailuredamage')) {
             const match = /Additionally, .+ ([\d,]+) .*(gold|bait|points)/.exec(journal.render_data.text);
-            if (match && match.length === 3) {
+            if (match?.length === 3) {
                 return {
                     pillage_amount: parseInt(match[1].replace(/,/g, ''), 10),
                     pillage_type: match[2],

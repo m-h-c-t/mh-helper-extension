@@ -10,7 +10,7 @@ export class SandCryptsDetailer implements IEnvironmentDetailer {
         const quest = userPre.quests.QuestSandDunes;
 
         // Track the grub salt level
-        if (!quest || quest.is_normal || !quest.minigame || quest.minigame.type !== 'grubling') {
+        if (!quest || quest.is_normal || quest.minigame?.type !== 'grubling') {
             return;
         }
 
