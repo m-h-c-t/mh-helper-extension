@@ -56,7 +56,7 @@ function setupMain() {
  */
 function mockConsole(): void {
     vi.mock('@scripts/services/logging', () => ({
-        ConsoleLogger: vi.fn().mockImplementation(() => mockLoggerService),
+        ConsoleLogger: vi.fn().mockImplementation(function () { return mockLoggerService; }),
     }));
 }
 

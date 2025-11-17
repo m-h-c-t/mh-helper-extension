@@ -6,7 +6,7 @@ export default defineConfig({
     test: {
         globals: true,
         coverage: {
-            provider: 'v8'
+            include: ['src/**/*.{js,ts}'],
         },
         projects: [
             {
