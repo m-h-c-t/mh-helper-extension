@@ -58,8 +58,9 @@ describe('ConsoleLogger', () => {
  */
 function mockConsole(): void {
     const consoleFuncsToMock: (keyof Console)[] = ['debug', 'info', 'log', 'warn', 'error'];
-    consoleFuncsToMock.map((v) => {
-        ;
-        global.console[v] = vi.fn();
+    consoleFuncsToMock.forEach((v) => {
+        vi.spyOn(global.console, v).mockImplementation(function () {
+            // Do nothing
+        });
     });
 }
