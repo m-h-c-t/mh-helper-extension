@@ -74,7 +74,7 @@ export class FieryWarpathDetailer implements IEnvironmentDetailer {
             const boss = (message.stage === 'Portal')
                 ? preAttrs.mice.desert_artillery_commander
                 : preAttrs.mice.desert_boss;
-            if (!boss || boss.quantity !== 1) {
+            if (boss?.quantity !== 1) {
                 return;
             }
             // Theurgy Wardens are "desert_elite_gaurd". Yes, "gaurd".

@@ -23,6 +23,7 @@ export default defineConfig(
                 projectService: {
                     allowDefaultProject: ['eslint.config.mjs'],
                 },
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 tsconfigRootDir: import.meta.dirname,
             },
             globals: {
@@ -75,7 +76,7 @@ export default defineConfig(
         rules: {
             '@typescript-eslint/no-unsafe-argument': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
-            '@typescript-eslint/no-unused-xpressions': 'off',
+            '@typescript-eslint/no-unused-expressions': 'off',
             '@typescript-eslint/unbound-method': 'off',
         },
     },
