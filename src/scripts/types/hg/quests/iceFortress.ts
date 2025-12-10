@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-const cannonTypeSchema = z.enum(['snow_cannon', 'cinnamon_cannon', 'charm_cannon']);
-
 const cannonSchema = z.object({
     is_enabled: z.boolean().nullable(),
     is_active: z.boolean().nullable(),
@@ -10,7 +8,11 @@ const cannonSchema = z.object({
 });
 
 export const questIceFortressSchema = z.object({
-    cannons: z.record(cannonTypeSchema, cannonSchema),
+    cannons: z.object({
+        snow_cannon: cannonSchema,
+        cinnamon_cannon: cannonSchema,
+        charm_cannon: cannonSchema,
+    }),
     shield: z.object({
         is_broken: z.boolean(),
     }),
