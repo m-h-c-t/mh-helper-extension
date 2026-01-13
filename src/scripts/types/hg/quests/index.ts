@@ -6,6 +6,7 @@ import { questBountifulBeanstalkSchema } from './bountifulBeanstalk';
 import { questRiftBristleWoodsSchema } from './bristleWoodsRift';
 import { questRiftBurroughsSchema } from './burroughsRift';
 import { questClawShotCitySchema } from './clawShotCity';
+import { questConclusionCliffsSchema } from './conclusionCliffs';
 import { questDraconicDepthsSchema } from './draconicDepths';
 import { questEpilogueFallsSchema } from './epilogueFalls';
 import { questFloatingIslandsSchema } from './floatingIslands';
@@ -43,6 +44,7 @@ export const questsSchema = z.object({
     QuestBalacksCove: questBalacksCoveSchema.optional(),
     QuestBountifulBeanstalk: questBountifulBeanstalkSchema.optional(),
     QuestClawShotCity: questClawShotCitySchema.optional(),
+    QuestConclusionCliffs: questConclusionCliffsSchema.optional(),
     QuestDraconicDepths: questDraconicDepthsSchema.optional(),
     QuestEpilogueFalls: questEpilogueFallsSchema.optional(),
     QuestFloatingIslands: questFloatingIslandsSchema.optional(),
@@ -84,6 +86,7 @@ export * from './bountifulBeanstalk';
 export * from './bristleWoodsRift';
 export * from './burroughsRift';
 export * from './clawShotCity';
+export * from './conclusionCliffs';
 export * from './draconicDepths';
 export * from './epilogueFalls';
 export * from './floatingIslands';

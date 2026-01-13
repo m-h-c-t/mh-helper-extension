@@ -4,6 +4,7 @@ import { BountifulBeanstalkStager } from './environments/bountifulBeanstalk';
 import { BristleWoodsRiftStager } from './environments/bristleWoodsRift';
 import { BurroughsRiftStager } from './environments/burroughsRift';
 import { ClawShotCityStager } from './environments/clawShotCity';
+import { ConclusionCliffsStager } from './environments/conclusionCliffs';
 import { CursedCityStager } from './environments/cursedCity';
 import { DraconicDepthsStager } from './environments/draconicDepths';
 import { EpilogueFallsStager } from './environments/epilogueFalls';
@@ -46,6 +47,7 @@ const stageModules: IStager[] = [
     new BristleWoodsRiftStager(),
     new BurroughsRiftStager(),
     new ClawShotCityStager(),
+    new ConclusionCliffsStager(),
     new CursedCityStager(),
     new DraconicDepthsStager(),
     new EpilogueFallsStager(),

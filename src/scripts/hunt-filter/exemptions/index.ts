@@ -4,6 +4,7 @@ import { acolyteRealmExemptions } from './environments/acolyteRealm';
 import { afterwordAcresExemptions } from './environments/afterwordAcres';
 import { bountifulBeanstalkExemptions } from './environments/bountifulBeanstalk';
 import { clawShotCityExemptions } from './environments/clawShotCity';
+import { conclusionCliffsExemptions } from './environments/conclusionCliffs';
 import { draconicDepthsExemptions } from './environments/draconicDepth';
 import { epilogueFallsExemptions } from './environments/epilogueFalls';
 import { floatingIslandsExemptions } from './environments/floatingIslands';
@@ -23,6 +24,7 @@ export const MessageExemptions: IMessageExemption[] = [
     ...afterwordAcresExemptions,
     ...bountifulBeanstalkExemptions,
     ...clawShotCityExemptions,
+    ...conclusionCliffsExemptions,
     ...draconicDepthsExemptions,
     ...epilogueFallsExemptions,
     ...floatingIslandsExemptions,
