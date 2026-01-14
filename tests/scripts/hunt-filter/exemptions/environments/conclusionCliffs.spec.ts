@@ -43,6 +43,7 @@ describe('Conclusion Cliffs exemptions', () => {
                             is_postscript: false,
                             current_chapter: {
                                 genre_type: 'adventure',
+                                length_type: 'medium',
                             },
                             story_content: [],
                         },

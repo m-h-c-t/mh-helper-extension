@@ -39,6 +39,7 @@ describe('Conclusion Cliffs stages', () => {
                         is_postscript: false,
                         current_chapter: {
                             genre_type: 'adventure',
+                            length_type: 'medium',
                         },
                         story_content: [],
                     },
@@ -60,6 +61,7 @@ describe('Conclusion Cliffs stages', () => {
                         is_postscript: true,
                         current_chapter: {
                             genre_type: 'adventure',
+                            length_type: 'short'
                         },
                         story_content: [],
                     },
@@ -81,6 +83,7 @@ describe('Conclusion Cliffs stages', () => {
                         is_postscript: true,
                         current_chapter: {
                             genre_type: 'adventure',
+                            length_type: 'long'
                         },
                         story_content: [
                             {genre_type: 'adventure'},
@@ -112,6 +115,7 @@ describe('Conclusion Cliffs stages', () => {
                         is_postscript: false,
                         current_chapter: {
                             genre_type: genre,
+                            length_type: 'medium'
                         },
                         story_content: [],
                     },
@@ -133,6 +137,7 @@ describe('Conclusion Cliffs stages', () => {
                         is_postscript: true,
                         current_chapter: {
                             genre_type: 'adventure',
+                            length_type: 'short'
                         },
                         story_content: [],
                     },

@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+const lengthType = [
+    'short',
+    'medium',
+    'long',
+] as const;
+const lengthTypeSchema = z.enum(lengthType);
+
 const genreType = [
     'adventure',
     'comedy',
@@ -18,6 +25,7 @@ export const questConclusionCliffsSchema = z.object({
         is_postscript: z.boolean(),
         current_chapter: z.object({
             genre_type: genreTypeSchema,
+            length_type: lengthTypeSchema,
         }),
         story_content: z.array(z.object({
             genre_type: genreTypeSchema,

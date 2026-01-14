@@ -9,7 +9,6 @@ import { type IntakeMessage } from '@scripts/types/mhct';
  * - Any "Writing <Genre>" ↔ Any other "Writing <Genre>"
  * - Any "Writing <Genre>" → "Postscript" or "Fantasy Postscript"
  * - "Postscript" or "Fantasy Postscript" → "Not Writing"
- * - "Postscript" ↔ "Fantasy Postscript"
  */
 class ConclusionCliffsStageExemption implements IMessageExemption {
     readonly description = 'Conclusion Cliffs stage transitions';
