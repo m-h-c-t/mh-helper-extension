@@ -2,6 +2,7 @@ import type { IDetailer, IEnvironmentDetailer } from './details.types';
 
 import { BristleWoodsRiftDetailer } from './environments/bristleWoodsRift';
 import { ClawShotCityDetailer } from './environments/clawShotCity';
+import { ConclusionCliffsDetailer } from './environments/conclusionCliffs';
 import { DraconicDepthsDetailer } from './environments/draconicDepths';
 import { EpilogueFallsDetailer } from './environments/epilogueFalls';
 import { FieryWarpathDetailer } from './environments/fieryWarpath';
@@ -22,6 +23,7 @@ import { PillageDetailer } from './global/pillage';
 const environmentDetailerModules: IEnvironmentDetailer[] = [
     new BristleWoodsRiftDetailer(),
     new ClawShotCityDetailer(),
+    new ConclusionCliffsDetailer(),
     new DraconicDepthsDetailer(),
     new EpilogueFallsDetailer(),
     new FieryWarpathDetailer(),
