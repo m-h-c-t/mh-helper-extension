@@ -30,3 +30,10 @@ export type StringyObject<T> = {
                 : StringyObject<NonNullable<T[K]>> | Extract<T[K], null | undefined>
             : string;
 };
+
+export type RecursivePartial<T> = {
+    [P in keyof T]?:
+    T[P] extends (infer U)[] ? RecursivePartial<U>[] :
+        T[P] extends object | undefined ? RecursivePartial<T[P]> :
+            T[P];
+};
