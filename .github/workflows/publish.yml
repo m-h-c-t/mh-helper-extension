@@ -138,7 +138,7 @@ jobs:
       - create-zip
     env:
       EXT_VERSION_NUM: ${{ needs.generate-version.outputs.ext-version-num }}
-      VERSIONS_FILE: '/var/www/mh-hunt-helper/src/versions.txt'
+      VERSIONS_FILE: '/var/www/mh-hunt-helper/public/versions.txt'
     runs-on: ubuntu-latest
     steps:
       - name: Allow new version if not already

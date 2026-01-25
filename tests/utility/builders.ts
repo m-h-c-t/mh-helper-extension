@@ -2,7 +2,7 @@ import type { HgConvertibleResponse, HgResponse, InventoryItem, JournalMarkup, Q
 import type { ConvertibleOpen } from '@scripts/types/hg/convertibleOpen';
 import type { ConvertibleMessage, IntakeMessage, Loot } from '@scripts/types/mhct';
 
-import type { StringyObject } from './stringyObject';
+import type { StringyObject } from './types';
 
 function clone<T>(obj: T): T {
     if (obj === undefined || obj === null) {

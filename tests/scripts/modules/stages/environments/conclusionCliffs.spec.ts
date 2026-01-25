@@ -36,12 +36,6 @@ describe('Conclusion Cliffs stages', () => {
                 QuestConclusionCliffs: {
                     story: {
                         is_writing: false,
-                        is_postscript: false,
-                        current_chapter: {
-                            genre_type: 'adventure',
-                            length_type: 'medium',
-                        },
-                        story_content: [],
                     },
                 },
             })

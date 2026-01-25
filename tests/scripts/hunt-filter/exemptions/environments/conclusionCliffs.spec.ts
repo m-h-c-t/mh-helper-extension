@@ -1,12 +1,14 @@
 import type { IStager } from '@scripts/modules/stages/stages.types';
 import type { LoggerService } from '@scripts/services/logging';
 import type { User } from '@scripts/types/hg';
-import type { GenreType } from '@scripts/types/hg/quests/conclusionCliffs';
+import type { GenreType, QuestConclusionCliffs } from '@scripts/types/hg/quests/conclusionCliffs';
 import type { IntakeMessage } from '@scripts/types/mhct';
+import type { RecursivePartial } from '@tests/utility/types';
 
 import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
 import { ConclusionCliffsStager } from '@scripts/modules/stages/environments/conclusionCliffs';
 import { HgResponseBuilder, IntakeMessageBuilder, UserBuilder } from '@tests/utility/builders';
+import { mergician } from 'mergician';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 
@@ -39,7 +41,7 @@ describe('Conclusion Cliffs exemptions', () => {
                 .withQuests({
                     QuestConclusionCliffs: {
                         story: {
-                            is_writing: false,
+                            is_writing: true,
                             is_postscript: false,
                             current_chapter: {
                                 genre_type: 'adventure',
@@ -77,10 +79,20 @@ describe('Conclusion Cliffs exemptions', () => {
                 ['tragedy', 'fantasy'],
                 ['fantasy', 'adventure'],
             ])('should accept transition from Writing %s to Writing %s', (preGenre, postGenre) => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.current_chapter.genre_type = preGenre;
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.current_chapter.genre_type = postGenre;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        current_chapter: {
+                            genre_type: preGenre,
+                        },
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        current_chapter: {
+                            genre_type: postGenre,
+                        },
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -96,10 +108,18 @@ describe('Conclusion Cliffs exemptions', () => {
                 'tragedy',
                 'fantasy',
             ])('should accept transition from Writing %s to Postscript', (genre) => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.current_chapter.genre_type = genre;
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        current_chapter: {
+                            genre_type: genre,
+                        },
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_postscript: true,
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -108,9 +128,17 @@ describe('Conclusion Cliffs exemptions', () => {
             });
 
             it('should accept transition from Postscript to Not Writing', () => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = false;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: false,
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -119,11 +147,18 @@ describe('Conclusion Cliffs exemptions', () => {
             });
 
             it('should accept transition from Fantasy Postscript to Not Writing', () => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                preUser.quests.QuestConclusionCliffs!.story.story_content = [{genre_type: 'fantasy'}];
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = false;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = false;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                        story_content: [{genre_type: 'fantasy'}],
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: false,
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -139,11 +174,21 @@ describe('Conclusion Cliffs exemptions', () => {
                 'tragedy',
                 'fantasy',
             ])('should accept transition from Writing %s to Fantasy Postscript', (genre) => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.current_chapter.genre_type = genre;
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                postUser.quests.QuestConclusionCliffs!.story.story_content = [{genre_type: 'fantasy'}];
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        current_chapter: {
+                            genre_type: genre,
+                        },
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                        story_content: [{genre_type: 'fantasy'}],
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -161,9 +206,19 @@ describe('Conclusion Cliffs exemptions', () => {
                 'tragedy',
                 'fantasy',
             ])('should reject transition from Not Writing to Writing %s', (genre) => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = false;
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.current_chapter.genre_type = genre;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: false,
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        current_chapter: {
+                            genre_type: genre,
+                        },
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -172,9 +227,17 @@ describe('Conclusion Cliffs exemptions', () => {
             });
 
             it('should reject transition from Not Writing to Postscript', () => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = false;
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: false,
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -183,10 +246,18 @@ describe('Conclusion Cliffs exemptions', () => {
             });
 
             it('should reject transition from Not Writing to Fantasy Postscript', () => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = false;
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                postUser.quests.QuestConclusionCliffs!.story.story_content = [{genre_type: 'fantasy'}];
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: false,
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                        story_content: [{genre_type: 'fantasy'}],
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -202,11 +273,21 @@ describe('Conclusion Cliffs exemptions', () => {
                 'tragedy',
                 'fantasy',
             ])('should reject transition from Postscript to Writing %s', (genre) => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = false;
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.current_chapter.genre_type = genre;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_postscript: false,
+                        is_writing: true,
+                        current_chapter: {
+                            genre_type: genre,
+                        },
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -222,12 +303,22 @@ describe('Conclusion Cliffs exemptions', () => {
                 'tragedy',
                 'fantasy',
             ])('should reject transition from Fantasy Postscript to Writing %s', (genre) => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                preUser.quests.QuestConclusionCliffs!.story.story_content = [{genre_type: 'fantasy'}];
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = false;
-                postUser.quests.QuestConclusionCliffs!.story.current_chapter.genre_type = genre;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                        story_content: [{genre_type: 'fantasy'}],
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_postscript: false,
+                        is_writing: true,
+                        current_chapter: {
+                            genre_type: genre,
+                        },
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -236,11 +327,19 @@ describe('Conclusion Cliffs exemptions', () => {
             });
 
             it('should reject transition from Postscript to Fantasy Postscript', () => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                postUser.quests.QuestConclusionCliffs!.story.story_content = [{genre_type: 'fantasy'}];
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                        story_content: [{genre_type: 'fantasy'}],
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -249,11 +348,19 @@ describe('Conclusion Cliffs exemptions', () => {
             });
 
             it('should reject transition from Fantasy Postscript to Postscript', () => {
-                preUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                preUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
-                preUser.quests.QuestConclusionCliffs!.story.story_content = [{genre_type: 'fantasy'}];
-                postUser.quests.QuestConclusionCliffs!.story.is_writing = true;
-                postUser.quests.QuestConclusionCliffs!.story.is_postscript = true;
+                preUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                        story_content: [{genre_type: 'fantasy'}],
+                    }
+                });
+                postUser.quests.QuestConclusionCliffs = generateQuest({
+                    story: {
+                        is_writing: true,
+                        is_postscript: true,
+                    }
+                });
                 calculateStage();
 
                 const valid = target.validateMessage(preMessage, postMessage);
@@ -262,4 +369,19 @@ describe('Conclusion Cliffs exemptions', () => {
             });
         });
     });
+
+    function generateQuest(quest: RecursivePartial<QuestConclusionCliffs>): QuestConclusionCliffs {
+        // @ts-expect-error 123
+        return mergician({
+            story: {
+                is_writing: true,
+                is_postscript: false,
+                current_chapter: {
+                    genre_type: 'adventure',
+                    length_type: 'medium',
+                },
+                story_content: [],
+            },
+        }, quest);
+    }
 });
