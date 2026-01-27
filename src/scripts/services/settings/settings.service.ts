@@ -22,6 +22,7 @@ export interface UserSettings {
     'tracking-crowns': boolean;
     'tracking-convertibles': boolean;
     'tracking-events': boolean;
+    'tracking-errors': boolean;
     'notification-sound': boolean;
     'notification-volume': number;
     'notification-custom': boolean;
@@ -45,6 +46,7 @@ export class SettingsService {
         'tracking-crowns': true,
         'tracking-convertibles': true,
         'tracking-events': true,
+        'tracking-errors': true,
         'notification-sound': false,
         'notification-volume': 100,
         'notification-custom': false,
