@@ -17,7 +17,7 @@ const droidChargeLevelSchema = z.enum(DroidChargeLevels);
 export const questRiftFuromaSchema = z.object({
     view_state: z.string(),
     droid: z.object({
-        charge_level: droidChargeLevelSchema,
+        charge_level: droidChargeLevelSchema.or(z.literal('')), // Can be empty string if view_state has trainingGrounds
     }),
 });
 
