@@ -33,6 +33,7 @@ export class EnvironmentService {
 
     getBaseUrl(): string {
         if (process.env.ENV === 'development') {
+            // Use port from https://github.com/m-h-c-t/mh-hunt-helper/blob/main/docker-compose.yml.example by default
             return 'http://localhost:8080';
         }
 

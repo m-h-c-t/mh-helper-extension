@@ -1,5 +1,4 @@
 import type { HgItem, IntakeMessage } from '@scripts/types/mhct';
-import type { ZodError } from 'zod';
 
 import { hgItemSchema, MhctResponseSchema } from '@scripts/types/mhct';
 import { getUnixTimestamp } from '@scripts/util/time';
@@ -60,16 +59,20 @@ export class SubmissionService {
         await this.postData(this.environmentService.getRejectionIntakeUrl(), rejection);
     }
 
-    async submitZodError(error: ZodError) {
+    async submitZodError(error: {
+        message: string;
+        issues: unknown[];
+    }) {
         if (this.userSettings['tracking-errors'] === false) {
             return;
         }
 
         // Avoid spamming the same error multiple times
-        if (this.seenZodErrors.has(error.message)) {
+        const errorKey = `${error.message}:${JSON.stringify(error.issues)}`;
+        if (this.seenZodErrors.has(errorKey)) {
             return;
         }
-        this.seenZodErrors.add(error.message);
+        this.seenZodErrors.add(errorKey);
 
         const zodMessage = {
             message: error.message,
