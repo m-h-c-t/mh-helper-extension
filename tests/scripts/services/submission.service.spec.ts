@@ -396,6 +396,243 @@ describe('SubmissionService', () => {
         });
     });
 
+    describe('submitZodError', () => {
+        const createMockZodError = (message: string, issues: unknown[]) => ({
+            message,
+            issues,
+            name: 'ZodError',
+        });
+
+        it('respects the tracking-errors setting', async () => {
+            mockUserSettings['tracking-errors'] = false;
+
+            service = new SubmissionService(
+                mockLogger,
+                mockEnvironmentService,
+                mockApiService,
+                vi.fn().mockResolvedValue(mockUserSettings),
+                mockGetBasicInfo,
+                mockShowFlashMessage
+            );
+
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            const zodError = createMockZodError('Test error', [{path: ['field'], message: 'Invalid'}]);
+            await service.submitZodError(zodError);
+
+            expect(mockApiService.send).not.toHaveBeenCalled();
+        });
+
+        it('submits error to the correct endpoint and does not show flash message', async () => {
+            mockEnvironmentService.getErrorIntakeUrl.mockReturnValue('error-url');
+            mockUserSettings['tracking-errors'] = true;
+
+            mockApiService.send.mockClear();
+            mockApiService.send.mockImplementation((method, url, body) => {
+                if (url === 'uuid-url') {
+                    return Promise.resolve('test-uuid');
+                } else {
+                    return Promise.resolve({success: true, message: 'Success message', status: 'success'});
+                }
+            });
+
+            service = new SubmissionService(
+                mockLogger,
+                mockEnvironmentService,
+                mockApiService,
+                vi.fn().mockResolvedValue(mockUserSettings),
+                mockGetBasicInfo,
+                mockShowFlashMessage
+            );
+
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            const zodError = createMockZodError('Validation failed', [{path: ['field'], message: 'Invalid'}]);
+            await service.submitZodError(zodError);
+
+            expect(mockEnvironmentService.getErrorIntakeUrl).toHaveBeenCalled();
+            // Should be 2 calls: 1 for UUID, 1 for error submission
+            expect(mockApiService.send).toHaveBeenCalledTimes(2);
+
+            // Verify the error submission call
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                2,
+                'POST',
+                'error-url',
+                expect.objectContaining({
+                    message: 'Validation failed',
+                    issues: [{path: ['field'], message: 'Invalid'}],
+                    uuid: 'test-uuid',
+                    hunter_id_hash: mockHunterInfo.hunter_id_hash,
+                    extension_version: mockHunterInfo.mhhh_version,
+                    entry_timestamp: testTimestamp
+                }),
+                true
+            );
+
+            // Verify flash message was NOT shown (because showFlashMessage=false was passed to postData)
+            expect(mockShowFlashMessage).not.toHaveBeenCalled();
+        });
+
+        it('includes both message and issues properties in zodMessage', async () => {
+            mockEnvironmentService.getErrorIntakeUrl.mockReturnValue('error-url');
+            mockUserSettings['tracking-errors'] = true;
+
+            mockApiService.send.mockClear();
+            mockApiService.send.mockImplementation((method, url, body) => {
+                if (url === 'uuid-url') {
+                    return Promise.resolve('test-uuid');
+                } else {
+                    return Promise.resolve({success: true, message: 'Success message', status: 'success'});
+                }
+            });
+
+            service = new SubmissionService(
+                mockLogger,
+                mockEnvironmentService,
+                mockApiService,
+                vi.fn().mockResolvedValue(mockUserSettings),
+                mockGetBasicInfo,
+                mockShowFlashMessage
+            );
+
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            const issues = [
+                {path: ['field1'], message: 'Required'},
+                {path: ['field2'], message: 'Invalid type'}
+            ];
+            const zodError = createMockZodError('Multiple validation errors', issues);
+            await service.submitZodError(zodError);
+
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                2,
+                'POST',
+                'error-url',
+                expect.objectContaining({
+                    message: 'Multiple validation errors',
+                    issues
+                }),
+                true
+            );
+        });
+
+        it('properly deduplicates duplicate errors', async () => {
+            mockEnvironmentService.getErrorIntakeUrl.mockReturnValue('error-url');
+            mockUserSettings['tracking-errors'] = true;
+
+            mockApiService.send.mockClear();
+            mockApiService.send.mockImplementation((method, url, body) => {
+                if (url === 'uuid-url') {
+                    return Promise.resolve('test-uuid');
+                } else {
+                    return Promise.resolve({success: true, message: 'Success message', status: 'success'});
+                }
+            });
+
+            service = new SubmissionService(
+                mockLogger,
+                mockEnvironmentService,
+                mockApiService,
+                vi.fn().mockResolvedValue(mockUserSettings),
+                mockGetBasicInfo,
+                mockShowFlashMessage
+            );
+
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            const issues = [{path: ['field'], message: 'Invalid'}];
+            const zodError = createMockZodError('Same error', issues);
+
+            // Submit the same error twice
+            await service.submitZodError(zodError);
+            await service.submitZodError(zodError);
+
+            // Should only make 2 calls total: 1 UUID call + 1 error submission
+            // The second submitZodError call should be skipped due to deduplication
+            expect(mockApiService.send).toHaveBeenCalledTimes(2);
+
+            // Verify the first call is UUID
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                1,
+                'POST',
+                'uuid-url',
+                expect.any(Object),
+                true
+            );
+
+            // Verify only one error submission
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                2,
+                'POST',
+                'error-url',
+                expect.objectContaining({
+                    message: 'Same error',
+                    issues
+                }),
+                true
+            );
+        });
+
+        it('submits different errors even with same message but different issues', async () => {
+            mockEnvironmentService.getErrorIntakeUrl.mockReturnValue('error-url');
+            mockUserSettings['tracking-errors'] = true;
+
+            mockApiService.send.mockClear();
+            mockApiService.send.mockImplementation((method, url, body) => {
+                if (url === 'uuid-url') {
+                    return Promise.resolve('test-uuid');
+                } else {
+                    return Promise.resolve({success: true, message: 'Success message', status: 'success'});
+                }
+            });
+
+            service = new SubmissionService(
+                mockLogger,
+                mockEnvironmentService,
+                mockApiService,
+                vi.fn().mockResolvedValue(mockUserSettings),
+                mockGetBasicInfo,
+                mockShowFlashMessage
+            );
+
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            const error1 = createMockZodError('Validation error', [{path: ['field1'], message: 'Invalid'}]);
+            const error2 = createMockZodError('Validation error', [{path: ['field2'], message: 'Invalid'}]);
+
+            await service.submitZodError(error1);
+            await service.submitZodError(error2);
+
+            // Should make 4 calls total: 2 UUID calls + 2 error submissions
+            expect(mockApiService.send).toHaveBeenCalledTimes(4);
+
+            // Verify first error submission
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                2,
+                'POST',
+                'error-url',
+                expect.objectContaining({
+                    message: 'Validation error',
+                    issues: [{path: ['field1'], message: 'Invalid'}]
+                }),
+                true
+            );
+
+            // Verify second error submission
+            expect(mockApiService.send).toHaveBeenNthCalledWith(
+                4,
+                'POST',
+                'error-url',
+                expect.objectContaining({
+                    message: 'Validation error',
+                    issues: [{path: ['field2'], message: 'Invalid'}]
+                }),
+                true
+            );
+        });
+    });
+
     describe('error handling', () => {
         const convertible: HgItem = {id: 1, name: 'Test Convertible', quantity: 1};
         const items: HgItem[] = [{id: 2, name: 'Test Item', quantity: 5}];

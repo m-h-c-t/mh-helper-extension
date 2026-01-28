@@ -12,7 +12,7 @@ describe('EnvironmentService', () => {
         it('returns localhost URL when env is development', () => {
             service = new EnvironmentService();
 
-            expect(service.getBaseUrl()).toBe('http://localhost');
+            expect(service.getBaseUrl()).toBe('http://localhost:8080');
         });
 
         it('returns production URL when env is production', () => {
@@ -24,7 +24,7 @@ describe('EnvironmentService', () => {
     });
 
     describe.each<{version: number, expectedBaseUrl: string}>([
-        {version: 0, expectedBaseUrl: 'http://localhost'},
+        {version: 0, expectedBaseUrl: 'http://localhost:8080'},
         {version: 1, expectedBaseUrl: 'https://www.mhct.win'},
     ])('URL generation', ({version, expectedBaseUrl}) => {
         beforeEach(() => {
@@ -55,6 +55,10 @@ describe('EnvironmentService', () => {
 
         it('getRejectionIntakeUrl returns correct endpoint', () => {
             expect(service.getRejectionIntakeUrl()).toBe(`${expectedBaseUrl}/rejection_intake.php`);
+        });
+
+        it('getErrorIntakeUrl returns correct endpoint', () => {
+            expect(service.getErrorIntakeUrl()).toBe(`${expectedBaseUrl}/error_intake.php`);
         });
 
         it('getUuidUrl returns correct endpoint', () => {
