@@ -23,13 +23,18 @@ export class EnvironmentService {
         return this.getBaseUrl() + '/rejection_intake.php';
     }
 
+    getErrorIntakeUrl(): string {
+        return this.getBaseUrl() + '/error_intake.php';
+    }
+
     getUuidUrl(): string {
         return this.getBaseUrl() + '/uuid.php';
     }
 
     getBaseUrl(): string {
         if (process.env.ENV === 'development') {
-            return 'http://localhost';
+            // Use port from https://github.com/m-h-c-t/mh-hunt-helper/blob/main/docker-compose.yml.example by default
+            return 'http://localhost:8080';
         }
 
         return 'https://www.mhct.win';

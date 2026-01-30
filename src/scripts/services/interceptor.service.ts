@@ -8,6 +8,7 @@ import { Emitter } from 'strict-event-emitter';
 import z from 'zod';
 
 import type { LoggerService } from './logging';
+import type { SubmissionService } from './submission.service';
 
 export interface RequestEventParams {
     url: URL;
@@ -54,7 +55,9 @@ export class InterceptorService {
 
     private emitter: Emitter<InterceptorEventMap>;
 
-    constructor(private readonly logger: LoggerService) {
+    constructor(private readonly logger: LoggerService,
+        private readonly submissionService: SubmissionService,
+    ) {
         this.emitter = new Emitter<InterceptorEventMap>();
 
         this.interceptor.on('request', async ({request, requestId}) => await this.processRequest(request, requestId));
@@ -134,10 +137,13 @@ export class InterceptorService {
         const responseClone = response.clone();
         const responseParseResult = hgResponseSchema.safeParse(await responseClone.json());
         if (!responseParseResult.success) {
-            this.logger.warn(`Interceptor encountered unexpected HG response\n\n ${z.prettifyError(responseParseResult.error)}`, {
+            const prettyError = z.prettifyError(responseParseResult.error);
+            this.logger.warn(`Interceptor encountered unexpected HG response\n\n ${prettyError}`, {
                 url: response.url,
-                response: responseParseResult
+                error: responseParseResult.error,
             });
+
+            await this.submissionService.submitZodError(responseParseResult.error);
 
             return;
         }

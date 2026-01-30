@@ -12,6 +12,7 @@ import { gnawnianExpressStationExemptions } from './environments/gnawnianExpress
 import { harbourExemptions } from './environments/harbour';
 import { icebergExemptions } from './environments/iceberg';
 import { iceFortressExemptions } from './environments/iceFortress';
+import { quesoGeyserExemptions } from './environments/quesoGeyser';
 import { schoolOfSorceryExemptions } from './environments/schoolOfSorcery';
 import { superBrieFactoryExemptions } from './environments/superBrieFactory';
 import { valourRiftExemptions } from './environments/valourRift';
@@ -32,6 +33,7 @@ export const MessageExemptions: IMessageExemption[] = [
     ...harbourExemptions,
     ...icebergExemptions,
     ...iceFortressExemptions,
+    ...quesoGeyserExemptions,
     ...schoolOfSorceryExemptions,
     ...superBrieFactoryExemptions,
     ...valourRiftExemptions,

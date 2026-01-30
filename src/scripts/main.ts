@@ -53,7 +53,6 @@ declare global {
     const logger = new ConsoleLogger(isDev, shouldFilter);
     const extensionLog = new ExtensionLog();
     const apiService = new ApiService();
-    const interceptorService = new InterceptorService(logger);
     const environmentService = new EnvironmentService();
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const submissionService = new SubmissionService(logger, environmentService, apiService, getSettingsAsync,
@@ -63,6 +62,7 @@ declare global {
         }),
         showFlashMessage
     );
+    const interceptorService = new InterceptorService(logger, submissionService);
     const mouseRipApiService = new MouseRipApiService(apiService);
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),

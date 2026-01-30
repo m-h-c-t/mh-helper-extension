@@ -9,6 +9,7 @@ import type { LoggerService } from './logging';
 import type { UserSettings } from './settings/settings.service';
 
 export class SubmissionService {
+    private seenZodErrors = new Set<string>();
     private userSettings!: UserSettings;
 
     constructor(private readonly logger: LoggerService,
@@ -58,6 +59,29 @@ export class SubmissionService {
         await this.postData(this.environmentService.getRejectionIntakeUrl(), rejection);
     }
 
+    async submitZodError(error: {
+        message: string;
+        issues: unknown[];
+    }) {
+        if (this.userSettings['tracking-errors'] === false) {
+            return;
+        }
+
+        // Avoid spamming the same error multiple times
+        const errorKey = `${error.message}:${JSON.stringify(error.issues)}`;
+        if (this.seenZodErrors.has(errorKey)) {
+            return;
+        }
+        this.seenZodErrors.add(errorKey);
+
+        const zodMessage = {
+            message: error.message,
+            issues: error.issues,
+        };
+
+        await this.postData(this.environmentService.getErrorIntakeUrl(), zodMessage, false);
+    }
+
     async submitRelicHunterHint(hint: string): Promise<void> {
         if (this.userSettings['tracking-events'] === false) {
             return;
@@ -101,7 +125,7 @@ export class SubmissionService {
         await this.postData(this.environmentService.getConvertibleIntakeUrl(), record);
     }
 
-    private async postData(url: string, message: Record<string, unknown>): Promise<void> {
+    private async postData(url: string, message: Record<string, unknown>, showFlashMessage = true): Promise<void> {
         const basicInfo = this.getBasicInfo();
         const timestamp = message.entry_timestamp ?? getUnixTimestamp();
 
@@ -122,7 +146,7 @@ export class SubmissionService {
             const submissionResponse = await this.apiService.send('POST', url, submissionBody, true);
             const parsedResponse = MhctResponseSchema.safeParse(submissionResponse);
 
-            if (parsedResponse.success) {
+            if (parsedResponse.success && showFlashMessage) {
                 this.showFlashMessage(parsedResponse.data.status, parsedResponse.data.message);
             }
         } catch (e) {
