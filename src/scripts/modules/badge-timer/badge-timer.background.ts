@@ -339,6 +339,7 @@ export class BadgeTimerBackground {
 
         return preferredTab?.id
             ?? this.lastExtensionMessage?.sender.tab?.id
+            ?? (await this.getAnyMouseHuntTab())?.id
             ?? -1;
     }
 
@@ -364,10 +365,20 @@ export class BadgeTimerBackground {
         });
 
         if (pinnedMHTabs.length > 0) {
+            // Prefer the most recently accessed pinned tab
+            pinnedMHTabs.sort((a, b) => (b.lastAccessed ?? 0) - (a.lastAccessed ?? 0));
             return pinnedMHTabs[0];
         }
 
         // No preferred tab found, return undefined. The caller can decide what to do.
         return undefined;
+    }
+
+    private async getAnyMouseHuntTab(): Promise<chrome.tabs.Tab | undefined> {
+        const mhTabs = await chrome.tabs.query({
+            url: 'https://www.mousehuntgame.com/*'
+        });
+
+        return mhTabs.length > 0 ? mhTabs[0] : undefined;
     }
 }
