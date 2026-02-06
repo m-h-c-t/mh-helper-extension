@@ -18,13 +18,11 @@
     "permissions": [
         "alarms",
         "notifications",
-        "tabs",
         "storage"
     ],
 
     "content_scripts": [{
-        "all_frames" : true,
-        "matches": ["*://www.mousehuntgame.com/*"],
+        "matches": ["https://www.mousehuntgame.com/*"],
         "css": ["css/user-notify.css"],
         "js": [
             "scripts/content/content-message-handler.js",

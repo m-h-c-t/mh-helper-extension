@@ -35,7 +35,7 @@ export default class RuntimeBackground {
     };
 
     private async reloadMouseHuntTabs() {
-        const tabs = await BrowserApi.tabsQuery({url: ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']});
+        const tabs = await BrowserApi.tabsQuery({url: ['https://www.mousehuntgame.com/*']});
 
         for (const tab of tabs) {
             if (tab.id) {
