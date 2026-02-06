@@ -7,6 +7,7 @@
     "types": [
       "chrome",
       "jquery",
+      "firefox-webext-browser",
       // TODO: Migrate tests away from globals
       "vitest/globals"
     ],
