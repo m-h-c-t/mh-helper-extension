@@ -179,7 +179,14 @@ export class BadgeTimerBackground {
         if (currentTimeLeft === 0) {
             if (!this.hasNotifiedHornReady) {
                 this.hasNotifiedHornReady = true;
-                await this.triggerHornReadyNotifications(this.lastExtensionMessage?.sender.tab?.id ?? -1);
+
+                const tabId = await this.getTabIdToNotify();
+                if (tabId === -1) {
+                    this.logger.warn('No MouseHunt tab found to notify for horn ready.');
+                    return;
+                }
+
+                await this.triggerHornReadyNotifications(tabId);
             }
         } else {
             this.hasNotifiedHornReady = false;
@@ -325,5 +332,53 @@ export class BadgeTimerBackground {
     private async showIntrusiveAlert(tabId: number): Promise<void> {
         await chrome.tabs.update(tabId, {active: true});
         await badgeTimerExtensionMessenger.sendMessage('confirmHorn', undefined, tabId);
+    }
+
+    private async getTabIdToNotify(): Promise<number> {
+        const preferredTab = await this.getPreferredTab();
+
+        return preferredTab?.id
+            ?? this.lastExtensionMessage?.sender.tab?.id
+            ?? (await this.getAnyMouseHuntTab())?.id
+            ?? -1;
+    }
+
+    /**
+     * Get the preferred MouseHunt tab based on user focus and pinning.
+     */
+    private async getPreferredTab(): Promise<chrome.tabs.Tab | undefined> {
+        // 1. Focused MH tab first
+        const focusedTabs = await chrome.tabs.query({
+            active: true,
+            lastFocusedWindow: true,
+            url: 'https://www.mousehuntgame.com/*'
+        });
+
+        if (focusedTabs.length > 0) {
+            return focusedTabs[0];
+        }
+
+        // 2. Then prefer pinned tabs
+        const pinnedMHTabs = await chrome.tabs.query({
+            pinned: true,
+            url: 'https://www.mousehuntgame.com/*'
+        });
+
+        if (pinnedMHTabs.length > 0) {
+            // Prefer the most recently accessed pinned tab
+            pinnedMHTabs.sort((a, b) => (b.lastAccessed ?? 0) - (a.lastAccessed ?? 0));
+            return pinnedMHTabs[0];
+        }
+
+        // No preferred tab found, return undefined. The caller can decide what to do.
+        return undefined;
+    }
+
+    private async getAnyMouseHuntTab(): Promise<chrome.tabs.Tab | undefined> {
+        const mhTabs = await chrome.tabs.query({
+            url: 'https://www.mousehuntgame.com/*'
+        });
+
+        return mhTabs.length > 0 ? mhTabs[0] : undefined;
     }
 }

@@ -8,7 +8,7 @@ import { badgeTimerExtensionMessenger } from './modules/badge-timer/badge-timer.
  * @param {boolean} [silent] if true, errors will not be displayed to the user.
  */
 function findOpenMHTab(callback, button_id, silent) {
-    chrome.tabs.query({url: ['*://www.mousehuntgame.com/*', '*://apps.facebook.com/mousehunt/*']}, (tabs) => {
+    chrome.tabs.query({url: ['https://www.mousehuntgame.com/*']}, (tabs) => {
         if (tabs.length > 0) {
             callback(tabs[0].id, button_id);
         } else if (!silent) {
