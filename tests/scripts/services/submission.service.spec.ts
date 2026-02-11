@@ -418,7 +418,7 @@ describe('SubmissionService', () => {
             await new Promise(resolve => setTimeout(resolve, 0));
 
             const zodError = createMockZodError('Test error', [{path: ['field'], message: 'Invalid'}]);
-            await service.submitZodError(zodError);
+            await service.submitZodError('test-url', zodError);
 
             expect(mockApiService.send).not.toHaveBeenCalled();
         });
@@ -448,7 +448,7 @@ describe('SubmissionService', () => {
             await new Promise(resolve => setTimeout(resolve, 0));
 
             const zodError = createMockZodError('Validation failed', [{path: ['field'], message: 'Invalid'}]);
-            await service.submitZodError(zodError);
+            await service.submitZodError('test-url', zodError);
 
             expect(mockEnvironmentService.getErrorIntakeUrl).toHaveBeenCalled();
             // Should be 2 calls: 1 for UUID, 1 for error submission
@@ -503,7 +503,7 @@ describe('SubmissionService', () => {
                 {path: ['field2'], message: 'Invalid type'}
             ];
             const zodError = createMockZodError('Multiple validation errors', issues);
-            await service.submitZodError(zodError);
+            await service.submitZodError('test-url', zodError);
 
             expect(mockApiService.send).toHaveBeenNthCalledWith(
                 2,
@@ -545,8 +545,8 @@ describe('SubmissionService', () => {
             const zodError = createMockZodError('Same error', issues);
 
             // Submit the same error twice
-            await service.submitZodError(zodError);
-            await service.submitZodError(zodError);
+            await service.submitZodError('test-url', zodError);
+            await service.submitZodError('test-url', zodError);
 
             // Should only make 2 calls total: 1 UUID call + 1 error submission
             // The second submitZodError call should be skipped due to deduplication
@@ -601,8 +601,8 @@ describe('SubmissionService', () => {
             const error1 = createMockZodError('Validation error', [{path: ['field1'], message: 'Invalid'}]);
             const error2 = createMockZodError('Validation error', [{path: ['field2'], message: 'Invalid'}]);
 
-            await service.submitZodError(error1);
-            await service.submitZodError(error2);
+            await service.submitZodError('test-url', error1);
+            await service.submitZodError('test-url', error2);
 
             // Should make 4 calls total: 2 UUID calls + 2 error submissions
             expect(mockApiService.send).toHaveBeenCalledTimes(4);

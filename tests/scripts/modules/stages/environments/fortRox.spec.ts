@@ -1,9 +1,11 @@
 import type { JournalMarkup, User } from '@scripts/types/hg';
 import type { QuestFortRox } from '@scripts/types/hg/quests';
 import type { IntakeMessage } from '@scripts/types/mhct';
+import type { RecursivePartial } from '@tests/utility/types';
 
 import { FortRoxStager } from '@scripts/modules/stages/environments/fortRox';
 import { UserBuilder } from '@tests/utility/builders';
+import { mergician } from 'mergician';
 import { mock } from 'vitest-mock-extended';
 
 describe('Fort Rox stages', () => {
@@ -18,11 +20,7 @@ describe('Fort Rox stages', () => {
         stager = new FortRoxStager();
 
         const quest: QuestFortRox = {
-            is_day: null,
-            is_night: null,
-            is_dawn: null,
-            is_lair: null,
-            current_stage: null,
+            current_phase: 'day',
             tower_status: '',
             fort: {
                 w: {level: 0, status: 'inactive'},
@@ -61,8 +59,10 @@ describe('Fort Rox stages', () => {
         ${'stage_four'}     | ${'Utter Darkness'}
         ${'stage_five'}     | ${'First Light'}
     `('should set stage to $expected during night when in $nightStage', ({nightStage, expected}) => {
-        preUser.quests.QuestFortRox.is_night = true;
-        preUser.quests.QuestFortRox.current_stage = nightStage;
+        preUser.quests.QuestFortRox = generateQuest({
+            current_phase: 'night',
+            current_stage: nightStage,
+        });
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -70,16 +70,24 @@ describe('Fort Rox stages', () => {
     });
 
     it('should throw when night stage is unknown', () => {
-        preUser.quests.QuestFortRox.is_night = true;
-        // @ts-expect-error - testing invalid input
-        preUser.quests.QuestFortRox.current_stage = 'stage_foo';
+        preUser.quests.QuestFortRox = generateQuest({
+            current_phase: 'night',
+            // @ts-expect-error - testing invalid input
+            current_stage: 'stage_foo',
+            tower_status: '',
+            fort: preUser.quests.QuestFortRox.fort
+        });
 
         expect(() => stager.addStage(message, preUser, postUser, journal))
             .toThrow('Skipping unknown Fort Rox stage');
     });
 
     it('should set stage to Day when is day', () => {
-        preUser.quests.QuestFortRox.is_day = true;
+        preUser.quests.QuestFortRox = generateQuest({
+            current_phase: 'day',
+            tower_status: '',
+            fort: preUser.quests.QuestFortRox.fort
+        });
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -87,7 +95,11 @@ describe('Fort Rox stages', () => {
     });
 
     it('should set stage to Dawn when in dawn', () => {
-        preUser.quests.QuestFortRox.is_dawn = true;
+        preUser.quests.QuestFortRox = generateQuest({
+            current_phase: 'dawn',
+            tower_status: '',
+            fort: preUser.quests.QuestFortRox.fort
+        });
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -95,7 +107,11 @@ describe('Fort Rox stages', () => {
     });
 
     it('should set stage to Heart of the Meteor when in lair', () => {
-        preUser.quests.QuestFortRox.is_lair = true;
+        preUser.quests.QuestFortRox = generateQuest({
+            current_phase: 'lair',
+            tower_status: '',
+            fort: preUser.quests.QuestFortRox.fort
+        });
 
         stager.addStage(message, preUser, postUser, journal);
 
@@ -103,8 +119,30 @@ describe('Fort Rox stages', () => {
     });
 
     it('should throw when there is an unhandled state', () => {
+        preUser.quests.QuestFortRox = generateQuest({
+            // @ts-expect-error - testing invalid input
+            current_phase: null,
+            tower_status: '',
+            fort: preUser.quests.QuestFortRox.fort
+        });
+
         expect(() => {
             stager.addStage(message, preUser, postUser, journal);
         }).toThrow('Skipping unknown Fort Rox stage');
     });
+
+    function generateQuest(quest: RecursivePartial<QuestFortRox>): QuestFortRox {
+        // @ts-expect-error - allowing partial for test generation
+        return mergician({
+            current_phase: 'day',
+            tower_status: '',
+            fort: {
+                w: {level: 0, status: 'inactive'},
+                b: {level: 0, status: 'inactive'},
+                c: {level: 0, status: 'inactive'},
+                m: {level: 0, status: 'inactive'},
+                t: {level: 0, status: 'inactive'}
+            }
+        }, quest);
+    }
 });

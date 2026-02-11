@@ -62,7 +62,7 @@ declare global {
         }),
         showFlashMessage
     );
-    const interceptorService = new InterceptorService(logger, submissionService);
+    const interceptorService = new InterceptorService(logger, extensionLog, submissionService);
     const mouseRipApiService = new MouseRipApiService(apiService);
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),

@@ -1,8 +1,10 @@
-import type { User, JournalMarkup } from '@scripts/types/hg';
+import type { User, JournalMarkup, QuestFortRox } from '@scripts/types/hg';
 import type { IntakeMessage } from '@scripts/types/mhct';
+import type { RecursivePartial } from '@tests/utility/types';
 
 import { FortRoxDetailer } from '@scripts/modules/details/environments/fortRox';
 import { UserBuilder } from '@tests/utility/builders';
+import { mergician } from 'mergician';
 import { mock } from 'vitest-mock-extended';
 
 describe('FortRoxDetailer', () => {
@@ -16,11 +18,7 @@ describe('FortRoxDetailer', () => {
         user = new UserBuilder()
             .withQuests({
                 QuestFortRox: {
-                    is_day: null,
-                    is_night: null,
-                    is_dawn: null,
-                    is_lair: null,
-                    current_stage: null,
+                    current_phase: 'day',
                     tower_status: '',
                     fort: {
                         w: {
@@ -52,7 +50,10 @@ describe('FortRoxDetailer', () => {
 
     describe('during night phase', () => {
         beforeEach(() => {
-            user.quests.QuestFortRox!.is_night = true;
+            user.quests.QuestFortRox = generateQuest({
+                current_phase: 'night',
+                current_stage: 'stage_two',
+            });
         });
 
         describe('ballista effects', () => {
@@ -150,7 +151,9 @@ describe('FortRoxDetailer', () => {
 
     describe('during day/dawn phases', () => {
         beforeEach(() => {
-            user.quests.QuestFortRox!.is_night = null;
+            user.quests.QuestFortRox = generateQuest({
+                current_phase: 'day',
+            });
         });
 
         it('should not include night-specific effects', () => {
@@ -192,8 +195,12 @@ describe('FortRoxDetailer', () => {
         });
 
         it('should not enable autocatch when tower is inactive', () => {
-            user.quests.QuestFortRox!.tower_status = 'inactive';
-            user.quests.QuestFortRox!.fort.t.level = 3;
+            user.quests.QuestFortRox = generateQuest({
+                tower_status: 'inactive',
+                fort: {
+                    t: {level: 3, status: 'inactive'}
+                }
+            });
 
             const result = detailer.addDetails(message, user, userPost, journal);
 
@@ -203,8 +210,12 @@ describe('FortRoxDetailer', () => {
         });
 
         it('should not enable autocatch when tower level < 2', () => {
-            user.quests.QuestFortRox!.tower_status = 'active level 1';
-            user.quests.QuestFortRox!.fort.t.level = 1;
+            user.quests.QuestFortRox = generateQuest({
+                tower_status: 'active level 1',
+                fort: {
+                    t: {level: 1, status: 'active'}
+                }
+            });
 
             const result = detailer.addDetails(message, user, userPost, journal);
 
@@ -215,11 +226,16 @@ describe('FortRoxDetailer', () => {
     });
 
     it('should work during night with mage tower effects', () => {
-        user.quests.QuestFortRox!.is_night = true;
-        user.quests.QuestFortRox!.fort.b.level = 2;
-        user.quests.QuestFortRox!.fort.c.level = 1;
-        user.quests.QuestFortRox!.tower_status = 'active';
-        user.quests.QuestFortRox!.fort.t.level = 3;
+        user.quests.QuestFortRox = generateQuest({
+            current_phase: 'night',
+            current_stage: 'stage_two',
+            tower_status: 'active',
+            fort: {
+                b: {level: 2, status: 'active'},
+                c: {level: 1, status: 'active'},
+                t: {level: 3, status: 'active'},
+            }
+        });
 
         const result = detailer.addDetails(message, user, userPost, journal);
 
@@ -233,4 +249,19 @@ describe('FortRoxDetailer', () => {
             can_autocatch_any: true,
         });
     });
+
+    function generateQuest(quest: RecursivePartial<QuestFortRox>): QuestFortRox {
+        // @ts-expect-error - allowing partial for test generation
+        return mergician({
+            current_phase: 'day',
+            tower_status: '',
+            fort: {
+                w: {level: 0, status: 'inactive'},
+                b: {level: 0, status: 'inactive'},
+                c: {level: 0, status: 'inactive'},
+                m: {level: 0, status: 'inactive'},
+                t: {level: 0, status: 'inactive'}
+            }
+        }, quest);
+    }
 });

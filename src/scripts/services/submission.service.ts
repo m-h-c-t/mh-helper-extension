@@ -59,9 +59,10 @@ export class SubmissionService {
         await this.postData(this.environmentService.getRejectionIntakeUrl(), rejection);
     }
 
-    async submitZodError(error: {
+    async submitZodError(url: string, error: {
         message: string;
         issues: unknown[];
+        context?: unknown;
     }) {
         if (this.userSettings['tracking-errors'] === false) {
             return;
@@ -69,14 +70,16 @@ export class SubmissionService {
 
         // Avoid spamming the same error multiple times
         const errorKey = `${error.message}:${JSON.stringify(error.issues)}`;
-        if (this.seenZodErrors.has(errorKey)) {
+        if (process.env.ENV !== 'development' && this.seenZodErrors.has(errorKey)) {
             return;
         }
         this.seenZodErrors.add(errorKey);
 
         const zodMessage = {
+            url,
             message: error.message,
             issues: error.issues,
+            context: error.context,
         };
 
         await this.postData(this.environmentService.getErrorIntakeUrl(), zodMessage, false);

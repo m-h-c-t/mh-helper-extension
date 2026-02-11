@@ -17,7 +17,7 @@ export class FortRoxDetailer implements IEnvironmentDetailer {
         const cannon_level = parseInt(String(quest.fort.c.level), 10);
         const details: Record<string, unknown> = {};
 
-        if (quest.is_night) {
+        if (quest.current_phase === 'night') {
             Object.assign(details, {
                 weakened_weremice: (ballista_level >= 1),
                 can_autocatch_weremice: (ballista_level >= 2),

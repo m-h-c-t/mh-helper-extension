@@ -1,4 +1,7 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */ // mswjs correctly handles promise listeners internally
+/* eslint-disable @typescript-eslint/no-misused-promises */
+// mswjs correctly handles promise listeners internally
+import type { ExtensionLog } from '@scripts/modules/extension-log/extension-log';
+
 import { BatchInterceptor, type ExtractEventNames } from '@mswjs/interceptors';
 import { FetchInterceptor } from '@mswjs/interceptors/fetch';
 import { XMLHttpRequestInterceptor } from '@mswjs/interceptors/XMLHttpRequest';
@@ -7,8 +10,9 @@ import qs from 'qs';
 import { Emitter } from 'strict-event-emitter';
 import z from 'zod';
 
-import type { LoggerService } from './logging';
 import type { SubmissionService } from './submission.service';
+
+import { LogLevel, type LoggerService } from './logging';
 
 export interface RequestEventParams {
     url: URL;
@@ -56,6 +60,7 @@ export class InterceptorService {
     private emitter: Emitter<InterceptorEventMap>;
 
     constructor(private readonly logger: LoggerService,
+        private readonly extensionLog: ExtensionLog,
         private readonly submissionService: SubmissionService,
     ) {
         this.emitter = new Emitter<InterceptorEventMap>();
@@ -134,16 +139,67 @@ export class InterceptorService {
         if (!this.isSupportedRequest(request) || !this.isSupportedResponse(response)) {
             return;
         }
+
         const responseClone = response.clone();
-        const responseParseResult = hgResponseSchema.safeParse(await responseClone.json());
+        const json = await responseClone.json() as unknown;
+        const responseParseResult = hgResponseSchema.safeParse(json);
         if (!responseParseResult.success) {
+            // if there's no "user" key, don't even bother.
+            if (typeof json !== 'object' || json === null || !('user' in json)) {
+                return;
+            }
+
             const prettyError = z.prettifyError(responseParseResult.error);
             this.logger.warn(`Interceptor encountered unexpected HG response\n\n ${prettyError}`, {
                 url: response.url,
                 error: responseParseResult.error,
             });
 
-            await this.submissionService.submitZodError(responseParseResult.error);
+            await this.extensionLog.log(LogLevel.Warn, `Interceptor encountered unexpected HG response`, {
+                url: response.url,
+                error: responseParseResult.error,
+                response: json,
+            });
+
+            let context: Record<string, unknown> | undefined = undefined;
+            try {
+                context = {};
+                for (const issue of responseParseResult.error.issues) {
+                    if (issue.path.length === 0) {
+                        continue;
+                    }
+
+                    const [firstPathSegment, ...restPath] = issue.path;
+                    // Skip if the path is just ["user"] — that's too broad
+                    if (firstPathSegment === 'user' && restPath.length === 0) {
+                        continue;
+                    }
+
+                    // Walk the json object along issue.path to extract the failing value
+                    let current: unknown = json;
+                    for (const segment of issue.path) {
+                        if (current == null || typeof current !== 'object') {
+                            current = undefined;
+                            break;
+                        }
+                        current = (current as Record<PropertyKey, unknown>)[segment];
+                    }
+
+                    const pathKey = issue.path.join('.');
+                    context[pathKey] = current;
+                }
+
+                if (Object.keys(context).length === 0) {
+                    context = undefined;
+                }
+            } catch (e) {
+                this.logger.error('Error while parsing Zod error context', e);
+            }
+
+            await this.submissionService.submitZodError(request.url, {
+                ...responseParseResult.error,
+                context: context,
+            });
 
             return;
         }
