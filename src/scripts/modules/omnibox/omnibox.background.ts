@@ -4,7 +4,8 @@ import type { LoggerService } from '@scripts/services/logging';
 import { BrowserApi } from '@scripts/services/browser/browser-api';
 import { fromChromeEvent } from '@scripts/services/browser/from-chrome-event';
 import fuzzysort from 'fuzzysort';
-import { debounceTime } from 'rxjs/operators';
+import { from } from 'rxjs';
+import { debounceTime, switchMap } from 'rxjs/operators';
 import { LRU } from 'tiny-lru';
 import z from 'zod';
 
@@ -54,10 +55,9 @@ export class OmniboxBackground {
         fromChromeEvent(chrome.omnibox.onInputChanged)
             .pipe(
                 debounceTime(250),
+                switchMap(([text, suggest]) => this.onInputChanged(text, suggest))
             )
-            .subscribe(([text, suggest]) => {
-                void this.onInputChanged(text, suggest);
-            });
+            .subscribe();
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         BrowserApi.addListener(chrome.omnibox.onInputEntered, this.onInputEntered);
         BrowserApi.addListener(chrome.omnibox.onInputCancelled, this.onInputStartedOrCancelled);
@@ -66,50 +66,35 @@ export class OmniboxBackground {
             description: 'MHCT Search - Prefix with "ar", "l", "m", "rm", "c", or "rc" to specify type.'});
     }
 
-    private onInputChanged = async (text: string, suggest: (suggestions: chrome.omnibox.SuggestResult[]) => void) => {
+    private onInputChanged = (text: string, suggest: (suggestions: chrome.omnibox.SuggestResult[]) => void) => {
         this.logger.debug(`✏️ onInputChanged: ${text}`);
 
-        const match = /^(?<prefix>\w+):?\s*(?<query>.*)/.exec(text);
+        const match = /^(?<prefix>\w+)(?::|\s+)(?<query>.*)/.exec(text);
 
-        let prefix: string;
-        let query: string;
+        const prefix = match?.groups?.prefix ?? 'ar';
+        const query = match?.groups?.query ?? text;
 
-        if (!match) {
-            // No structured prefix/query match; treat the whole input as a query with the default prefix.
-            prefix = 'ar';
-            query = text;
-        } else {
-            prefix = match.groups?.prefix ?? 'ar';
-            query = match.groups?.query ?? '';
-        }
-
-        let itemType = this.getItemTypeFromQuery(prefix);
-
+        const itemType = this.getItemTypeFromQuery(prefix);
         if (!itemType) {
-            // Unrecognized prefix: fall back to the default prefix and treat the entire input as the query.
-            prefix = this.itemTypePrefixMap.mouse.prefix;
-            query = text;
-            itemType = this.getItemTypeFromQuery(prefix);
+            return from(Promise.resolve());
         }
 
-        if (!itemType) {
-            return;
-        }
+        return from((async () => {
+            await chrome.omnibox.setDefaultSuggestion({
+                description: this.itemTypePrefixMap[itemType]?.description || 'MHCT Search - Prefix with "ar", "l", "m", "rm", "c", or "rc" to specify type.'
+            });
 
-        await chrome.omnibox.setDefaultSuggestion({
-            description: this.itemTypePrefixMap[itemType]?.description || 'MHCT Search - Prefix with "ar", "l", "m", "rm", "c", or "rc" to specify type.'
-        });
-
-        await this.provideItemSuggestions(itemType, query, suggest);
+            await this.provideItemSuggestions(itemType, query, suggest);
+        })());
     };
 
     private onInputEntered = async (text: string, disposition: browser.omnibox.OnInputEnteredDisposition) => {
         this.logger.debug(`✔️ onInputEntered: text -> ${text} | disposition -> ${disposition}`);
 
-        const match = /^(?<prefix>\w+):?\s*(?<query>.*)/.exec(text);
+        const match = /^(?<prefix>\w+)(?::|\s+)(?<query>.*)/.exec(text);
 
         const prefix = match?.groups?.prefix ?? 'ar';
-        const query = match?.groups?.query ?? '';
+        const query = match?.groups?.query ?? text;
 
         const itemType = this.getItemTypeFromQuery(prefix);
         if (!itemType) {
@@ -230,6 +215,11 @@ export class OmniboxBackground {
         return parseResult.data;
     }
 
+    /**
+     * Determines the item type based on the given prefix.
+     * @param prefix The prefix string to match against known item type aliases.
+     * @returns The corresponding ItemType if a match is found; otherwise, defaults to 'mouse'.
+     */
     private getItemTypeFromQuery(prefix: string): ItemType {
         const prefixAliases: {type: ItemType, aliases: string[]}[] = [
             {type: 'mouse', aliases: ['ar', 'attraction', 'attractions']},
