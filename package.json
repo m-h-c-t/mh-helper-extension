@@ -66,6 +66,7 @@
     "@mswjs/interceptors": "^0.40.0",
     "@stylistic/eslint-plugin": "^5.7.1",
     "@types/chrome": "^0.1.36",
+    "@types/firefox-webext-browser": "^143.0.0",
     "@types/jquery": "^3.5.33",
     "@types/node": "^25.2.0",
     "@types/qs": "^6.14.0",
@@ -100,7 +101,9 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
+    "fuzzysort": "^3.1.0",
     "rxjs": "^7.8.2",
+    "tiny-lru": "^11.4.7",
     "zod": "^4.3.6"
   }
 }
