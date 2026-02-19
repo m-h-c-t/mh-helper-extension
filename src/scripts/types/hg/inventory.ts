@@ -16,7 +16,17 @@ export const inventoryItemSchema = z.object({
 export type InventoryItem = z.infer<typeof inventoryItemSchema>;
 
 export const inventorySchema = z.union([
-    z.record(z.string(), inventoryItemSchema),
+    z.record(z.string(), inventoryItemSchema.or(z.tuple([])))
+        .transform((record) => {
+            // Filter out empty arrays
+            const filtered: Record<string, InventoryItem> = {};
+            for (const [key, value] of Object.entries(record)) {
+                if (!Array.isArray(value)) {
+                    filtered[key] = value;
+                }
+            }
+            return filtered;
+        }),
     z.tuple([]),
 ]);
 

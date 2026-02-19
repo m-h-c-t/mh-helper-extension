@@ -161,17 +161,11 @@ export class InterceptorService {
                 response: json,
             });
 
-            let context: Record<string, unknown> | undefined = undefined;
+            let context: Record<string, unknown> = {};
             try {
                 context = {};
                 for (const issue of responseParseResult.error.issues) {
                     if (issue.path.length === 0) {
-                        continue;
-                    }
-
-                    const [firstPathSegment, ...restPath] = issue.path;
-                    // Skip if the path is just ["user"] — that's too broad
-                    if (firstPathSegment === 'user' && restPath.length === 0) {
                         continue;
                     }
 
@@ -186,20 +180,21 @@ export class InterceptorService {
                     }
 
                     const pathKey = issue.path.join('.');
-                    context[pathKey] = current;
-                }
+                    if (pathKey === 'user') {
+                        // User data can contain sensitive information, so we skip it entirely
+                        continue;
+                    }
 
-                if (Object.keys(context).length === 0) {
-                    context = undefined;
+                    context[pathKey] = current;
                 }
             } catch (e) {
                 this.logger.error('Error while parsing Zod error context', e);
             }
 
-            await this.submissionService.submitZodError(request.url, {
-                ...responseParseResult.error,
-                context: context,
-            });
+            await this.submissionService.submitZodError(request.url,
+                responseParseResult.error.issues,
+                context,
+            );
 
             return;
         }

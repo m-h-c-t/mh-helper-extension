@@ -397,12 +397,6 @@ describe('SubmissionService', () => {
     });
 
     describe('submitZodError', () => {
-        const createMockZodError = (message: string, issues: unknown[]) => ({
-            message,
-            issues,
-            name: 'ZodError',
-        });
-
         it('respects the tracking-errors setting', async () => {
             mockUserSettings['tracking-errors'] = false;
 
@@ -417,8 +411,8 @@ describe('SubmissionService', () => {
 
             await new Promise(resolve => setTimeout(resolve, 0));
 
-            const zodError = createMockZodError('Test error', [{path: ['field'], message: 'Invalid'}]);
-            await service.submitZodError('test-url', zodError);
+            const issues = [{path: ['field'], message: 'Invalid'}];
+            await service.submitZodError('test-url', issues, {});
 
             expect(mockApiService.send).not.toHaveBeenCalled();
         });
@@ -447,8 +441,9 @@ describe('SubmissionService', () => {
 
             await new Promise(resolve => setTimeout(resolve, 0));
 
-            const zodError = createMockZodError('Validation failed', [{path: ['field'], message: 'Invalid'}]);
-            await service.submitZodError('test-url', zodError);
+            const issues = [{path: ['field'], message: 'Invalid'}];
+            const context = {someContext: 'value'};
+            await service.submitZodError('test-url', issues, context);
 
             expect(mockEnvironmentService.getErrorIntakeUrl).toHaveBeenCalled();
             // Should be 2 calls: 1 for UUID, 1 for error submission
@@ -460,8 +455,9 @@ describe('SubmissionService', () => {
                 'POST',
                 'error-url',
                 expect.objectContaining({
-                    message: 'Validation failed',
-                    issues: [{path: ['field'], message: 'Invalid'}],
+                    url: 'test-url',
+                    issues: JSON.stringify(issues),
+                    context: JSON.stringify(context),
                     uuid: 'test-uuid',
                     hunter_id_hash: mockHunterInfo.hunter_id_hash,
                     extension_version: mockHunterInfo.mhhh_version,
@@ -474,7 +470,7 @@ describe('SubmissionService', () => {
             expect(mockShowFlashMessage).not.toHaveBeenCalled();
         });
 
-        it('includes both message and issues properties in zodMessage', async () => {
+        it('includes url, issues, and context properties in submission', async () => {
             mockEnvironmentService.getErrorIntakeUrl.mockReturnValue('error-url');
             mockUserSettings['tracking-errors'] = true;
 
@@ -502,16 +498,17 @@ describe('SubmissionService', () => {
                 {path: ['field1'], message: 'Required'},
                 {path: ['field2'], message: 'Invalid type'}
             ];
-            const zodError = createMockZodError('Multiple validation errors', issues);
-            await service.submitZodError('test-url', zodError);
+            const context = {someData: 'test'};
+            await service.submitZodError('test-url', issues, context);
 
             expect(mockApiService.send).toHaveBeenNthCalledWith(
                 2,
                 'POST',
                 'error-url',
                 expect.objectContaining({
-                    message: 'Multiple validation errors',
-                    issues
+                    url: 'test-url',
+                    issues: JSON.stringify(issues),
+                    context: JSON.stringify(context)
                 }),
                 true
             );
@@ -542,11 +539,11 @@ describe('SubmissionService', () => {
             await new Promise(resolve => setTimeout(resolve, 0));
 
             const issues = [{path: ['field'], message: 'Invalid'}];
-            const zodError = createMockZodError('Same error', issues);
+            const context = {};
 
             // Submit the same error twice
-            await service.submitZodError('test-url', zodError);
-            await service.submitZodError('test-url', zodError);
+            await service.submitZodError('test-url', issues, context);
+            await service.submitZodError('test-url', issues, context);
 
             // Should only make 2 calls total: 1 UUID call + 1 error submission
             // The second submitZodError call should be skipped due to deduplication
@@ -567,14 +564,15 @@ describe('SubmissionService', () => {
                 'POST',
                 'error-url',
                 expect.objectContaining({
-                    message: 'Same error',
-                    issues
+                    url: 'test-url',
+                    issues: JSON.stringify(issues),
+                    context: JSON.stringify(context)
                 }),
                 true
             );
         });
 
-        it('submits different errors even with same message but different issues', async () => {
+        it('submits different errors even with different issues', async () => {
             mockEnvironmentService.getErrorIntakeUrl.mockReturnValue('error-url');
             mockUserSettings['tracking-errors'] = true;
 
@@ -598,11 +596,12 @@ describe('SubmissionService', () => {
 
             await new Promise(resolve => setTimeout(resolve, 0));
 
-            const error1 = createMockZodError('Validation error', [{path: ['field1'], message: 'Invalid'}]);
-            const error2 = createMockZodError('Validation error', [{path: ['field2'], message: 'Invalid'}]);
+            const issues1 = [{path: ['field1'], message: 'Invalid'}];
+            const issues2 = [{path: ['field2'], message: 'Invalid'}];
+            const context = {};
 
-            await service.submitZodError('test-url', error1);
-            await service.submitZodError('test-url', error2);
+            await service.submitZodError('test-url', issues1, context);
+            await service.submitZodError('test-url', issues2, context);
 
             // Should make 4 calls total: 2 UUID calls + 2 error submissions
             expect(mockApiService.send).toHaveBeenCalledTimes(4);
@@ -613,8 +612,9 @@ describe('SubmissionService', () => {
                 'POST',
                 'error-url',
                 expect.objectContaining({
-                    message: 'Validation error',
-                    issues: [{path: ['field1'], message: 'Invalid'}]
+                    url: 'test-url',
+                    issues: JSON.stringify(issues1),
+                    context: JSON.stringify(context)
                 }),
                 true
             );
@@ -625,8 +625,9 @@ describe('SubmissionService', () => {
                 'POST',
                 'error-url',
                 expect.objectContaining({
-                    message: 'Validation error',
-                    issues: [{path: ['field2'], message: 'Invalid'}]
+                    url: 'test-url',
+                    issues: JSON.stringify(issues2),
+                    context: JSON.stringify(context)
                 }),
                 true
             );

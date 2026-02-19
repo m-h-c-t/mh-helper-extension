@@ -1,4 +1,5 @@
 import type { HgItem, IntakeMessage } from '@scripts/types/mhct';
+import type { $ZodIssueBase } from 'zod/v4/core';
 
 import { hgItemSchema, MhctResponseSchema } from '@scripts/types/mhct';
 import { getUnixTimestamp } from '@scripts/util/time';
@@ -59,17 +60,13 @@ export class SubmissionService {
         await this.postData(this.environmentService.getRejectionIntakeUrl(), rejection);
     }
 
-    async submitZodError(url: string, error: {
-        message: string;
-        issues: unknown[];
-        context?: unknown;
-    }) {
+    async submitZodError(url: string, issues: $ZodIssueBase[], context: Record<string, unknown>): Promise<void> {
         if (this.userSettings['tracking-errors'] === false) {
             return;
         }
 
         // Avoid spamming the same error multiple times
-        const errorKey = `${error.message}:${JSON.stringify(error.issues)}`;
+        const errorKey = JSON.stringify(issues);
         if (process.env.ENV !== 'development' && this.seenZodErrors.has(errorKey)) {
             return;
         }
@@ -77,10 +74,13 @@ export class SubmissionService {
 
         const zodMessage = {
             url,
-            message: error.message,
-            issues: error.issues,
-            context: error.context,
+            issues: JSON.stringify(issues),
+            context: JSON.stringify(context),
         };
+
+        if (process.env.ENV === 'development') {
+            (zodMessage as Record<string, unknown>).XDEBUG_SESSION = 'PHPSTORM';
+        }
 
         await this.postData(this.environmentService.getErrorIntakeUrl(), zodMessage, false);
     }
