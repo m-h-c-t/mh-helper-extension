@@ -1,24 +1,26 @@
 import type { LoggerService } from '@scripts/services/logging';
 import type { SubmissionService } from '@scripts/services/submission.service';
-import type { HgResponse } from '@scripts/types/hg';
 import type { HgItem } from '@scripts/types/mhct';
+import type { z } from 'zod';
 
 import { CustomConvertibleIds as Ids } from '@scripts/util/constants';
-import { z } from 'zod';
 
-import { AjaxSuccessHandler } from './ajaxSuccessHandler';
-import { type VendingMachineReponse, type VendingMachinePurchaseType, vendingMachineResponseSchema } from './sbFactory.types';
+import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
+import { type VendingMachinePurchaseType, vendingMachineResponseSchema } from './sbFactory.types';
 
-export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
+export class SBFactoryAjaxHandler extends ValidatedAjaxSuccessHandler {
+    readonly name = 'SB Factory';
+    readonly schema = vendingMachineResponseSchema;
+
     /**
      * Create a new instance of SuperBrieFactoryHandler
      * @param logger logger to log events
-     * @param submitConvertibleCallback delegate to submit convertibles to mhct
+     * @param submissionService service to submit convertibles to mhct
      */
     constructor(
-        private readonly logger: LoggerService,
+        logger: LoggerService,
         private readonly submissionService: SubmissionService) {
-        super();
+        super(logger);
     }
 
     /**
@@ -30,19 +32,11 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
         return url.includes('mousehuntgame.com/managers/ajax/events/birthday_factory.php');
     }
 
-    async execute(responseJSON: HgResponse): Promise<void> {
-        if (!this.isVendingMachineResponse(responseJSON)) {
-            return;
-        }
-
-        await this.recordSnackPack(responseJSON);
-    }
-
     /**
      * Record Birthday snack pack submissions as convertibles in MHCT
-     * @param {import("@scripts/types/hg").HgResponse} responseJSON HitGrab ajax response from vending machine.
+     * @param responseJSON Validated HitGrab ajax response from vending machine.
      */
-    async recordSnackPack(responseJSON: VendingMachineReponse) {
+    protected async validatedExecute(responseJSON: z.infer<typeof this.schema>): Promise<void> {
         const purchase = responseJSON.vending_machine_purchase;
 
         if (!purchase) {
@@ -66,6 +60,7 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
             riftios_snack_pack: Ids.RiftiosSnackPack,
             story_seeds_snack_pack: Ids.StorySeedsSnackPack,
             fantasy_fizz_snack_pack: Ids.FantasyFizzSnackPack,
+            finale_feast_snack_pack: Ids.FinaleFeastSnackPack,
         };
 
         if (!(purchase.type in packs)) {
@@ -109,20 +104,5 @@ export class SBFactoryAjaxHandler extends AjaxSuccessHandler {
 
         this.logger.debug('SBFactoryAjaxHandler submitting snack pack', {convertible, items});
         await this.submissionService.submitEventConvertible(convertible, items);
-    }
-
-    /**
-     * Validates that the given object is a JSON response from interacting with vending machine
-     * @param responseJSON
-     * @returns
-     */
-    private isVendingMachineResponse(responseJSON: unknown): responseJSON is VendingMachineReponse {
-        const response = vendingMachineResponseSchema.safeParse(responseJSON);
-
-        if (!response.success) {
-            this.logger.warn('Unexpected vending machine response object.', z.prettifyError(response.error));
-        }
-
-        return response.success;
     }
 }

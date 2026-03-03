@@ -33,12 +33,12 @@ describe('SBFactoryAjaxHandler', () => {
     describe('execute', () => {
         it('logs if birthday response is not purchase', async () => {
             // vending_machine_purchase missing here,
-            const response = responseBuilder.build();
+            const response = responseBuilder.build() as VendingMachineReponse;
 
             await handler.execute(response);
 
-            expect(logger.warn).toHaveBeenCalledWith('Unexpected vending machine response object.', expect.anything());
-            expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
+            expect(logger.debug).toHaveBeenCalledWith('Skipped snack pack submission as this isn\'t a vending purchase');
+            expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
         });
 
         it('submits expected response one', async () => {
