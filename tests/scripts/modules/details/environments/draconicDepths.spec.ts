@@ -47,18 +47,6 @@ describe('Draconic Depths Detailer', () => {
         expect(details).toEqual(expect.objectContaining({rods: 3}));
     });
 
-    it('should add multiplier details when cavern type is invalid', () => {
-        const userPost = userBuilder.build();
-        userPost.quests.QuestDraconicDepths!.in_cavern = true;
-        if (userPost.quests.QuestDraconicDepths!.in_cavern) {
-            // @ts-expect-error - testing invalid cavern type
-            userPost.quests.QuestDraconicDepths!.cavern.type = 'invalid_cavern';
-        }
-
-        expect(() => detailer.addDetails(message, {} as User, userPost, journal))
-            .toThrow('Unknown cavern type: invalid_cavern');
-    });
-
     it('should not add details when quest is undefined', () => {
         const userPost = userBuilder.build();
         userPost.quests.QuestDraconicDepths = undefined;

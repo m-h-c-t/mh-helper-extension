@@ -24,8 +24,6 @@ export class DraconicDepthsDetailer implements IEnvironmentDetailer {
                 multiplier = 2;
             } else if (quest.cavern.type.startsWith('triple')) {
                 multiplier = 3;
-            } else {
-                throw new Error(`Unknown cavern type: ${quest.cavern.type}`);
             }
 
             return {
