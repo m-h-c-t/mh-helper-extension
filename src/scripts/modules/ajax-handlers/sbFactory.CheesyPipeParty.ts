@@ -1,26 +1,28 @@
 import type { LoggerService } from '@scripts/services/logging';
 import type { SubmissionService } from '@scripts/services/submission.service';
-import type { HgResponse } from '@scripts/types/hg';
 import type { HgItem } from '@scripts/types/mhct';
+import type { z } from 'zod';
 
 import { CustomConvertibleIds } from '@scripts/util/constants';
-import { z } from 'zod';
 
-import type { CheesyPipePartyGame, CheesyPipePartyResponse, Region } from './sbFactory.types';
+import type { CheesyPipePartyGame, Region } from './sbFactory.types';
 
-import { AjaxSuccessHandler } from './ajaxSuccessHandler';
+import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 import { cheesyPipePartyResponseSchema } from './sbFactory.types';
 
-export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
+export class CheesyPipePartyAjaxHandler extends ValidatedAjaxSuccessHandler {
+    readonly name = 'Cheesy Pipe Party';
+    readonly schema = cheesyPipePartyResponseSchema;
+
     /**
-     * Create a new instance of SuperBrieFactoryHandler
+     * Create a new instance of CheesyPipePartyAjaxHandler
      * @param logger logger to log events
-     * @param submitConvertibleCallback delegate to submit convertibles to mhct
+     * @param submissionService service to submit convertibles to mhct
      */
     constructor(
-        private readonly logger: LoggerService,
+        logger: LoggerService,
         private readonly submissionService: SubmissionService) {
-        super();
+        super(logger);
     }
 
     /**
@@ -32,24 +34,16 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
         return url.includes('mousehuntgame.com/managers/ajax/events/cheesy_pipe_party.php');
     }
 
-    async execute(responseJSON: HgResponse): Promise<void> {
-        if (!this.isCheesyPipeParty(responseJSON)) {
-            return;
-        }
-
+    /**
+     * Submit the Cheesy Pipe Party game results to MHCT
+     * @param responseJSON Validated HitGrab ajax response from Cheesy Pipe Party.
+     */
+    protected async validatedExecute(responseJSON: z.infer<typeof this.schema>): Promise<void> {
         if (!this.isGameComplete(responseJSON)) {
             this.logger.debug('Cheesy Pipe Party game is not complete.');
             return;
         }
 
-        await this.recordCheesyPipeParty(responseJSON);
-    }
-
-    /**
-     * Submit the Cheesy Pipe Party game results to MHCT
-     * @param responseJSON
-     */
-    async recordCheesyPipeParty(responseJSON: CheesyPipePartyResponse) {
         const game = responseJSON.cheesy_pipe_party_game;
 
         const revealedPrizeTiles = this.getTiles(game).filter(tile => tile.has_prize && tile.is_prize_unlocked);
@@ -114,26 +108,11 @@ export class CheesyPipePartyAjaxHandler extends AjaxSuccessHandler {
     }
 
     /**
-     * Validates that the given object is a JSON response from interacting with the Cheesy Pipe Party game
-     * @param responseJSON The JSON response object
-     * @returns Boolean indicating if the object is a Cheesy Pipe Party response
-     */
-    private isCheesyPipeParty(responseJSON: unknown): responseJSON is CheesyPipePartyResponse {
-        const response = cheesyPipePartyResponseSchema.safeParse(responseJSON);
-
-        if (!response.success) {
-            this.logger.warn('Unexpected Cheesy Pipe Party response object.', z.prettifyError(response.error));
-        }
-
-        return response.success;
-    }
-
-    /**
      * Determine if the Cheesy Pipe Party game is complete
      * @param responseJSON The JSON response object
      * @returns Boolean indicating if the game is complete
      */
-    private isGameComplete(responseJSON: CheesyPipePartyResponse): boolean {
+    private isGameComplete(responseJSON: z.infer<typeof this.schema>): boolean {
         return responseJSON.cheesy_pipe_party_game.game_active === false;
     }
 

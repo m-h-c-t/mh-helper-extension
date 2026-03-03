@@ -11,6 +11,7 @@ export class CustomConvertibleIds {
     public static readonly StorySeedsSnackPack                          = 130007;
     public static readonly BountifulBeansSnackPack                      = 130018;
     public static readonly FantasyFizzSnackPack                         = 130019;
+    public static readonly FinaleFeastSnackPack                         = 130020;
     // Cheesy Pipe Party
     public static readonly CheesyPipePartyGnawnia                       = 130100;
     public static readonly CheesyPipePartyGnawniaUpgraded               = 130101;

@@ -19,6 +19,7 @@ const vendingMachinePurchaseTypeSchema = z.enum([
     'riftios_snack_pack',
     'story_seeds_snack_pack',
     'fantasy_fizz_snack_pack',
+    'finale_feast_snack_pack'
 ]);
 
 export type VendingMachinePurchaseType = z.infer<typeof vendingMachinePurchaseTypeSchema>;
@@ -32,7 +33,8 @@ const vendingMachinePurchaseSchema = z.object({
 export type VendingMachinePurchase = z.infer<typeof vendingMachinePurchaseSchema>;
 
 export const vendingMachineResponseSchema = hgResponseSchema.extend({
-    vending_machine_purchase: vendingMachinePurchaseSchema,
+    vending_machine: z.array(z.object()).optional(),
+    vending_machine_purchase: vendingMachinePurchaseSchema.optional(),
 });
 
 export type VendingMachineReponse = z.infer<typeof vendingMachineResponseSchema>;
