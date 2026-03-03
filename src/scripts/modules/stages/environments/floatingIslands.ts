@@ -27,7 +27,7 @@ export class FloatingIslandsStager implements IStager {
         }
 
         const powerType = matcher[1];
-        let stage = '';
+        let stage;
         if (hsa.is_low_tier_island) {
             stage = `${powerType} Low`;
         } else if (hsa.is_high_tier_island) {

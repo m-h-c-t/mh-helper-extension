@@ -14,7 +14,7 @@ export class SchoolOfSorceryStager implements IStager {
             throw new Error('QuestSchoolOfSorcery is undefined');
         }
 
-        let stage = '';
+        let stage;
         if (!quest.in_course) {
             stage = 'Hallway';
         } else {

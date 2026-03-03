@@ -164,7 +164,7 @@ export class OmniboxBackground {
     }
 
     private provideSuggestions(query: string, prefix: string, items: MhctItem[], suggest: (suggestions: chrome.omnibox.SuggestResult[]) => void) {
-        let topResults: MhctItem[] = [];
+        let topResults: MhctItem[];
         if (query.length === 0) {
             topResults = items.slice(0, 5);
         } else {
