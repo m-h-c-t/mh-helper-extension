@@ -942,14 +942,16 @@ declare global {
     }
 
     /**
-     * Fixes location IDs for Living & Twisted Garden areas.
-     * @param message The message to be sent
-     * @returns
+     * Fixes the location id for Lost City, Sand Dunes, and Twisted Garden since
+     * the HG API returns the same location id whether twisted/untwisted in each environment.
+     *
+     * Differentiate between the two by using the location name to assign the correct location id.
      */
     function fixLGLocations(message: IntakeMessageBase) {
+        // Be careful of un-logical ids: Lost City and Sand Dunes are the normal side. TG is the twisted side.
         const environmentMap: Record<string, number> = {
-            'Cursed City': 5000,
-            'Sand Crypts': 5001,
+            'Lost City': 5000,
+            'Sand Dunes': 5001,
             'Twisted Garden': 5002,
         };
 
