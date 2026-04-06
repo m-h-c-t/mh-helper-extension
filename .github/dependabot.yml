@@ -5,12 +5,14 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
       interval: monthly
     versioning-strategy: increase
     groups:
+      dependencies:
+        dependency-type: "production"
       dev-dependencies:
-        patterns:
-          - "*"
+        dependency-type: "development"
+    open-pull-requests-limit: 1
