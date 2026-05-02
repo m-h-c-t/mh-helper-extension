@@ -103,7 +103,7 @@
   "dependencies": {
     "fuzzysort": "^3.1.0",
     "rxjs": "^7.8.2",
-    "tiny-lru": "^11.4.7",
-    "zod": "^4.3.6"
+    "tiny-lru": "^13.0.0",
+    "zod": "^4.4.2"
   }
 }
