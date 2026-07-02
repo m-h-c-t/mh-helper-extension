@@ -87,7 +87,7 @@
     "jquery": "^4.0.0",
     "mergician": "^2.0.2",
     "nock": "^14.0.12",
-    "qs": "^6.15.0",
+    "qs": "^6.15.2",
     "ts-loader": "^9.5.7",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^6.0.2",
