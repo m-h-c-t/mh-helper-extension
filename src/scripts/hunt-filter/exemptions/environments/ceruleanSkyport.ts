@@ -12,7 +12,11 @@ class CeruleanSkyportDockedExemption implements IMessageExemption {
         pre: IntakeMessage,
         post: IntakeMessage
     ): (keyof IntakeMessage)[] | null {
-        if (post.stage === 'Docked') {
+        if (
+            pre.location?.name === 'Cerulean Skyport' &&
+            post.location?.name === 'Cerulean Skyport' &&
+            post.stage === 'Docked'
+        ) {
             return ['cheese', 'stage'];
         }
 

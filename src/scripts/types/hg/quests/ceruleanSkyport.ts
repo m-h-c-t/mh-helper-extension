@@ -33,21 +33,21 @@ const baseCeruleanSkyportQuestSchema = z.object({
     is_shipping: z.literal(false),
     is_intercepting: z.literal(false),
     current_shipment: z.tuple([]),
-    current_raid: z.tuple([]),
+    current_raid: z.tuple([])
 });
 
 const shippingCeruleanSkyportSchema = z.object({
     is_shipping: z.literal(true),
     is_intercepting: z.literal(false),
     current_shipment: currentShipmentSchema,
-    current_raid: z.tuple([]),
+    current_raid: z.tuple([])
 });
 
 const interceptingCeruleanSkyportSchema = z.object({
     is_shipping: z.literal(false),
     is_intercepting: z.literal(true),
     current_shipment: z.tuple([]),
-    current_raid: currentRaidSchema,
+    current_raid: currentRaidSchema
 });
 
 const bothCeruleanSkyportSchema = z.object({
