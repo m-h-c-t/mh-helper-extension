@@ -3,6 +3,7 @@ import { BalacksCoveStager } from './environments/balacksCove';
 import { BountifulBeanstalkStager } from './environments/bountifulBeanstalk';
 import { BristleWoodsRiftStager } from './environments/bristleWoodsRift';
 import { BurroughsRiftStager } from './environments/burroughsRift';
+import { CeruleanSkyportStager } from './environments/ceruleanSkyport';
 import { ClawShotCityStager } from './environments/clawShotCity';
 import { ConclusionCliffsStager } from './environments/conclusionCliffs';
 import { CursedCityStager } from './environments/cursedCity';
@@ -46,6 +47,7 @@ const stageModules: IStager[] = [
     new BountifulBeanstalkStager(),
     new BristleWoodsRiftStager(),
     new BurroughsRiftStager(),
+    new CeruleanSkyportStager(),
     new ClawShotCityStager(),
     new ConclusionCliffsStager(),
     new CursedCityStager(),
