@@ -68,23 +68,6 @@ describe('Cerulean Skyport stages', () => {
         expect(message.stage).toBe('Intercepting - Fiery Warpath');
     });
 
-    it('prefers the intercepting stage when both shipping and intercepting are active', () => {
-        stager.addStage(message, getUser({
-            is_shipping: true,
-            is_intercepting: true,
-            current_shipment: {
-                type: 'gas_shipment',
-                name: 'Shipment',
-                location: {name: 'Anywhere'},
-            },
-            current_raid: {
-                type: 'fort_rox_raid',
-                name: 'Fort Rox',
-            },
-        }), {} as User, {});
-        expect(message.stage).toBe('Intercepting - Fort Rox');
-    });
-
     function getUser(quest: QuestCeruleanSkyport): User {
         return {quests: {QuestCeruleanSkyport: quest}} as User;
     }

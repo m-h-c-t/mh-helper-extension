@@ -9,7 +9,7 @@ describe('Cerulean Skyport exemptions', () => {
         const preMessage = getMessage('Shipping - Atmo', 'Brie');
         const postMessage = getMessage('Docked', 'Gouda');
 
-        expect(exemption.getExemptions(preMessage, postMessage)).toEqual(['cheese', 'stage']);
+        expect(exemption.getExemptions(preMessage, postMessage)).toEqual(['cheese', 'trap', 'stage']);
     });
 
     it('does not exempt cheese changes outside Docked transitions', () => {

@@ -50,18 +50,10 @@ const interceptingCeruleanSkyportSchema = z.object({
     current_raid: currentRaidSchema
 });
 
-const bothCeruleanSkyportSchema = z.object({
-    is_shipping: z.literal(true),
-    is_intercepting: z.literal(true),
-    current_shipment: currentShipmentSchema,
-    current_raid: currentRaidSchema
-});
-
 export const questCeruleanSkyportSchema = z.union([
     baseCeruleanSkyportQuestSchema,
     shippingCeruleanSkyportSchema,
     interceptingCeruleanSkyportSchema,
-    bothCeruleanSkyportSchema
 ]);
 
 export type QuestCeruleanSkyport = z.infer<typeof questCeruleanSkyportSchema>;

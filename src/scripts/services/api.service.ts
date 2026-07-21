@@ -41,6 +41,10 @@ export class ApiService {
             }
         }
 
+        if (process.env.ENV === 'development') {
+            url += (url.includes('?') ? '&' : '?') + 'XDEBUG_SESSION=PHPSTORM';
+        }
+
         const requestInit: RequestInit = {
             method: method,
             headers: headers,

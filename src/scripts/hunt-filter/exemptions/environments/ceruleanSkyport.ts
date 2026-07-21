@@ -5,7 +5,7 @@ import type { IntakeMessage } from '@scripts/types/mhct';
  * Allow transitions to Docked
  */
 class CeruleanSkyportDockedExemption implements IMessageExemption {
-    readonly description = 'Cerulean Skyport Docked encounter';
+    readonly description = 'Cerulean Skyport raid end';
     readonly property = 'stage';
 
     getExemptions(
@@ -15,9 +15,10 @@ class CeruleanSkyportDockedExemption implements IMessageExemption {
         if (
             pre.location?.name === 'Cerulean Skyport' &&
             post.location?.name === 'Cerulean Skyport' &&
+            pre.stage !== 'Docked' &&
             post.stage === 'Docked'
         ) {
-            return ['cheese', 'stage'];
+            return ['cheese', 'trap', 'stage'];
         }
 
         return null;
