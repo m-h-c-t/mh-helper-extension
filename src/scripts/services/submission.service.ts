@@ -103,7 +103,7 @@ export class SubmissionService {
             return;
         }
 
-        await this.postData(this.environmentService.getRhIntakeUrl(), sighting);
+        await this.postData(this.environmentService.getMainIntakeUrl(), sighting);
     }
 
     async submitTreasureMap(map: {
