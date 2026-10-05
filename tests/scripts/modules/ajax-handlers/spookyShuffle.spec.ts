@@ -42,7 +42,7 @@ describe('SpookyShuffleAjaxHandler', () => {
 
             await handler.execute(response);
 
-            expect(logger.warn).toHaveBeenCalledWith('Unexpected spooky shuffle response object.', expect.anything());
+            expect(logger.warn).toHaveBeenCalledWith('ValidatedAjaxSuccessHandler: Invalid response for Spooky Shuffle', expect.anything(), expect.anything());
             expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 

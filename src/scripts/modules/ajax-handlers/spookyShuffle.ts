@@ -5,23 +5,25 @@ import type { HgItem } from '@scripts/types/mhct';
 import { CustomConvertibleIds } from '@scripts/util/constants';
 import * as hgFuncs from '@scripts/util/hgFunctions';
 import { parseHgInt } from '@scripts/util/number';
-import { z } from 'zod';
 
 import type { SpookyShuffleResponse, TitleRange } from './spookyShuffle.types';
 
-import { AjaxSuccessHandler } from './ajaxSuccessHandler';
+import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 import { spookyShuffleResponseSchema } from './spookyShuffle.types';
 
-export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
+export class SpookyShuffleAjaxHandler extends ValidatedAjaxSuccessHandler<typeof spookyShuffleResponseSchema> {
+    readonly name = 'Spooky Shuffle';
+    readonly schema = spookyShuffleResponseSchema;
+
     /**
      * Create a new instance of SpookyShuffleAjaxHandler
      * @param logger logger to log events
-     * @param submitConvertibleCallback delegate to submit convertibles to mhct
+     * @param submissionService service to submit convertibles to mhct
      */
     constructor(
-        private readonly logger: LoggerService,
+        logger: LoggerService,
         private readonly submissionService: SubmissionService) {
-        super();
+        super(logger);
     }
 
     match(url: string): boolean {
@@ -32,12 +34,8 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
         return true;
     }
 
-    async execute(responseJSON: unknown): Promise<void> {
-        if (!this.isSpookyShuffleResponse(responseJSON)) {
-            return;
-        }
-
-        await this.recordBoard(responseJSON);
+    protected async validatedExecute(data: SpookyShuffleResponse): Promise<void> {
+        await this.recordBoard(data);
     }
 
     /**
@@ -123,21 +121,6 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
         itemMap.Gold = 431;
 
         return itemMap;
-    }
-
-    /**
-     * Validates that the given object is a JSON response from interacting with spooky shuffle board
-     * @param responseJSON
-     * @returns
-     */
-    private isSpookyShuffleResponse(responseJSON: unknown): responseJSON is SpookyShuffleResponse {
-        const response = spookyShuffleResponseSchema.safeParse(responseJSON);
-
-        if (!response.success) {
-            this.logger.warn('Unexpected spooky shuffle response object.', z.prettifyError(response.error));
-        }
-
-        return response.success;
     }
 
     static ShuffleConvertibleIds: Record<TitleRange, number> = {
