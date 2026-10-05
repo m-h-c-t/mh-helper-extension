@@ -5,7 +5,7 @@ import type { HgItem } from '@scripts/types/mhct';
 import { CustomConvertibleIds as Ids } from '@scripts/util/constants';
 
 import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
-import { type VendingMachinePurchaseType, type VendingMachineReponse, vendingMachineResponseSchema } from './sbFactory.types';
+import { type VendingMachinePurchaseType, type VendingMachineResponse, vendingMachineResponseSchema } from './sbFactory.types';
 
 export class SBFactoryAjaxHandler extends ValidatedAjaxSuccessHandler<typeof vendingMachineResponseSchema> {
     readonly name = 'SB Factory';
@@ -35,7 +35,7 @@ export class SBFactoryAjaxHandler extends ValidatedAjaxSuccessHandler<typeof ven
      * Record Birthday snack pack submissions as convertibles in MHCT
      * @param responseJSON Validated HitGrab ajax response from vending machine.
      */
-    protected async validatedExecute(responseJSON: VendingMachineReponse): Promise<void> {
+    protected async validatedExecute(responseJSON: VendingMachineResponse): Promise<void> {
         const purchase = responseJSON.vending_machine_purchase;
 
         if (!purchase) {
