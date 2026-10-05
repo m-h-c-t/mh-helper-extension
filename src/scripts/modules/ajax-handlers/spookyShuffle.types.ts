@@ -5,7 +5,8 @@ const TitleRanges = [
     'novice_journeyman',
     'master_lord',
     'baron_duke',
-    'grand_duke_plus',
+    'grand_duke',
+    'archduke_plus',
 ] as const;
 
 const titleRangeSchema = z.enum(TitleRanges);

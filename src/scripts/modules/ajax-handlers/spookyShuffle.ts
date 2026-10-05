@@ -2,7 +2,7 @@ import type { LoggerService } from '@scripts/services/logging';
 import type { SubmissionService } from '@scripts/services/submission.service';
 import type { HgItem } from '@scripts/types/mhct';
 
-import { CustomConvertibleIds } from '@scripts/util/constants';
+import { CustomConvertibleIds as Ids } from '@scripts/util/constants';
 import * as hgFuncs from '@scripts/util/hgFunctions';
 import { parseHgInt } from '@scripts/util/number';
 
@@ -10,6 +10,14 @@ import type { SpookyShuffleResponse, TitleRange } from './spookyShuffle.types';
 
 import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 import { spookyShuffleResponseSchema } from './spookyShuffle.types';
+
+const ShuffleConvertibleIds = {
+    novice_journeyman: {standard: Ids.HalloweenSpookyShuffleNovice, upgraded: Ids.HalloweenSpookyShuffleNoviceDusted},
+    master_lord: {standard: Ids.HalloweenSpookyShuffleMaster, upgraded: Ids.HalloweenSpookyShuffleMasterDusted},
+    baron_duke: {standard: Ids.HalloweenSpookyShuffleBaron, upgraded: Ids.HalloweenSpookyShuffleBaronDusted},
+    grand_duke: {standard: Ids.HalloweenSpookyShuffleGrandDuke, upgraded: Ids.HalloweenSpookyShuffleGrandDukeDusted},
+    archduke_plus: {standard: Ids.HalloweenSpookyShuffleArchduke, upgraded: Ids.HalloweenSpookyShuffleArchdukeDusted},
+} satisfies Record<TitleRange, {standard: number, upgraded: number}>;
 
 export class SpookyShuffleAjaxHandler extends ValidatedAjaxSuccessHandler<typeof spookyShuffleResponseSchema> {
     readonly name = 'Spooky Shuffle';
@@ -27,11 +35,7 @@ export class SpookyShuffleAjaxHandler extends ValidatedAjaxSuccessHandler<typeof
     }
 
     match(url: string): boolean {
-        if (!url.includes('mousehuntgame.com/managers/ajax/events/spooky_shuffle.php')) {
-            return false;
-        }
-
-        return true;
+        return url.includes('mousehuntgame.com/managers/ajax/events/spooky_shuffle.php');
     }
 
     protected async validatedExecute(data: SpookyShuffleResponse): Promise<void> {
@@ -42,7 +46,7 @@ export class SpookyShuffleAjaxHandler extends ValidatedAjaxSuccessHandler<typeof
      * Record complete Spooky Shuffle Board as convertible in MHCT
      * @param responseJSON
      */
-    async recordBoard(responseJSON: SpookyShuffleResponse) {
+    private async recordBoard(responseJSON: SpookyShuffleResponse) {
         const result = responseJSON.memory_game;
 
         if (!result.is_complete || !result.has_selected_testing_pair) {
@@ -50,65 +54,57 @@ export class SpookyShuffleAjaxHandler extends ValidatedAjaxSuccessHandler<typeof
             return;
         }
 
-        const convertibleContent: HgItem[] = [];
-        const processed = new Set<string>();
-        try {
-            // We don't know the item id's of the cards. Hit MH inventory API to get the item names and ids
-            // to convert the names to ids.
-            const itemMap = await this.fetchItemNameToIdMap();
-
-            result.cards.forEach((c) => {
-                // All cards need to be revealed and also exist in name to id map.
-                // An error here typically means:
-                // 1. Didn't fetch the required item classification
-                // 2. The item isn't in the users inventory (unlikely unless the user used it between start and finish of the board).
-                if (!c.is_revealed || itemMap[c.name] == null) {
-                    throw new Error(`Item '${c.name}' wasn't found in item map. Check its classification type`);
-                }
-
-                // Two of each card means we don't want to double process the same item
-                if (processed.has(c.name)) {
-                    return;
-                }
-                processed.add(c.name);
-
-                convertibleContent.push({
-                    id: itemMap[c.name],
-                    name: c.name,
-                    quantity: c.quantity,
-                });
-            });
-        } catch (error) {
-            if (error instanceof Error) {
-                this.logger.warn(error.message);
-                return;
-            }
+        const tierName = result.reward_tiers.find(r => r.type === result.title_range)?.name;
+        if (!tierName) {
+            this.logger.warn(`Spooky Shuffle reward tier '${result.title_range}' wasn't found in reward_tiers`);
+            return;
         }
 
-        const id = result.is_upgraded
-            ? SpookyShuffleAjaxHandler.UpgradedShuffleConvertibleIds[result.title_range]
-            : SpookyShuffleAjaxHandler.ShuffleConvertibleIds[result.title_range];
-        const tierName = result.reward_tiers.find(r => r.type == result.title_range)?.name;
+        const ids = ShuffleConvertibleIds[result.title_range];
 
         // Example convertible names:
         // Spooky Shuffle (Novice to Journyperson)
-        // Upgraded Spooky Shuffle (Grand Duke and up)
-        let convertibleName = `Spooky Shuffle (${tierName})`;
-        if (result.is_upgraded) {
-            convertibleName = `Upgraded ${convertibleName}`;
-        }
-
+        // Upgraded Spooky Shuffle (Archduke and up)
         const convertible: HgItem = {
-            id: id,
-            name: convertibleName,
+            id: result.is_upgraded ? ids.upgraded : ids.standard,
+            name: result.is_upgraded ? `Upgraded Spooky Shuffle (${tierName})` : `Spooky Shuffle (${tierName})`,
             quantity: 1,
         };
+
+        // We don't know the item id's of the cards. Hit MH inventory API to get the item names and ids
+        // to convert the names to ids.
+        const itemMap = await this.fetchItemNameToIdMap();
+
+        const convertibleContent: HgItem[] = [];
+        const processed = new Set<string>();
+        for (const c of result.cards) {
+            // All cards need to be revealed and also exist in name to id map.
+            // A miss here typically means:
+            // 1. Didn't fetch the required item classification
+            // 2. The item isn't in the users inventory (unlikely unless the user used it between start and finish of the board).
+            if (!c.is_revealed || itemMap[c.name] == null) {
+                this.logger.warn(`Item '${c.name}' wasn't found in item map. Check its classification type`);
+                return;
+            }
+
+            // Two of each card means we don't want to double process the same item
+            if (processed.has(c.name)) {
+                continue;
+            }
+            processed.add(c.name);
+
+            convertibleContent.push({
+                id: itemMap[c.name],
+                name: c.name,
+                quantity: c.quantity,
+            });
+        }
 
         this.logger.debug('Shuffle Board: ', {convertible, items: convertibleContent});
         await this.submissionService.submitEventConvertible(convertible, convertibleContent);
     }
 
-    async fetchItemNameToIdMap(): Promise<Record<string, number>> {
+    private async fetchItemNameToIdMap(): Promise<Record<string, number>> {
         // async fetch of all items that are of the same classification of the rewards in spooky shuffle
         const itemArray = await hgFuncs.getItemsByClass(['bait', 'stat', 'trinket', 'crafting_item', 'potion', 'convertible'], true);
 
@@ -122,18 +118,4 @@ export class SpookyShuffleAjaxHandler extends ValidatedAjaxSuccessHandler<typeof
 
         return itemMap;
     }
-
-    static ShuffleConvertibleIds: Record<TitleRange, number> = {
-        novice_journeyman: CustomConvertibleIds.HalloweenSpookyShuffleNovice,
-        master_lord: CustomConvertibleIds.HalloweenSpookyShuffleMaster,
-        baron_duke: CustomConvertibleIds.HalloweenSpookyShuffleBaron,
-        grand_duke_plus: CustomConvertibleIds.HalloweenSpookyShuffleGrandDuke,
-    };
-
-    static UpgradedShuffleConvertibleIds: Record<TitleRange, number> = {
-        novice_journeyman: CustomConvertibleIds.HalloweenSpookyShuffleNoviceDusted,
-        master_lord: CustomConvertibleIds.HalloweenSpookyShuffleMasterDusted,
-        baron_duke: CustomConvertibleIds.HalloweenSpookyShuffleBaronDusted,
-        grand_duke_plus: CustomConvertibleIds.HalloweenSpookyShuffleGrandDukeDusted,
-    };
 }
