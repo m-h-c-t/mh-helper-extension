@@ -141,7 +141,7 @@ describe('SpookyShuffleAjaxHandler', () => {
             );
         });
 
-        it('submits upgraded duke board', async () => {
+        it('submits upgraded archduke board', async () => {
             mockedGetItemsByClass.mockReturnValue(Promise.resolve([
                 {
                     name: 'Test Item',
@@ -155,11 +155,11 @@ describe('SpookyShuffleAjaxHandler', () => {
                 has_selected_testing_pair: true,
                 reward_tiers: [
                     {
-                        name: 'Grand Test Title and up',
-                        type: 'grand_duke_plus',
+                        name: 'Archduke Test Title and up',
+                        type: 'arch_duke_plus',
                     },
                 ],
-                title_range: 'grand_duke_plus',
+                title_range: 'arch_duke_plus',
                 cards: [
                     {
                         id: 1,
@@ -185,8 +185,8 @@ describe('SpookyShuffleAjaxHandler', () => {
             await handler.execute(response);
 
             const expectedConvertible = {
-                id: CustomConvertibleIds.HalloweenSpookyShuffleGrandDukeDusted,
-                name: 'Upgraded Spooky Shuffle (Grand Test Title and up)',
+                id: CustomConvertibleIds.HalloweenSpookyShuffleArchDukeDusted,
+                name: 'Upgraded Spooky Shuffle (Archduke Test Title and up)',
                 quantity: 1,
             };
 
@@ -223,11 +223,11 @@ describe('SpookyShuffleAjaxHandler', () => {
                 has_selected_testing_pair: true,
                 reward_tiers: [
                     {
-                        name: 'Grand Test Title and up',
-                        type: 'grand_duke_plus',
+                        name: 'Archduke Test Title and up',
+                        type: 'arch_duke_plus',
                     },
                 ],
-                title_range: 'grand_duke_plus',
+                title_range: 'arch_duke_plus',
                 cards: [
                     {
                         id: 1,
