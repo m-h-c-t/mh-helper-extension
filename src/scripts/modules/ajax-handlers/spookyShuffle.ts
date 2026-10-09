@@ -143,14 +143,14 @@ export class SpookyShuffleAjaxHandler extends AjaxSuccessHandler {
     static ShuffleConvertibleIds: Record<TitleRange, number> = {
         novice_journeyman: CustomConvertibleIds.HalloweenSpookyShuffleNovice,
         master_lord: CustomConvertibleIds.HalloweenSpookyShuffleMaster,
-        baron_duke: CustomConvertibleIds.HalloweenSpookyShuffleBaron,
-        grand_duke_plus: CustomConvertibleIds.HalloweenSpookyShuffleGrandDuke,
+        baron_grand_duke: CustomConvertibleIds.HalloweenSpookyShuffleBaron,
+        arch_duke_plus: CustomConvertibleIds.HalloweenSpookyShuffleArchDuke,
     };
 
     static UpgradedShuffleConvertibleIds: Record<TitleRange, number> = {
         novice_journeyman: CustomConvertibleIds.HalloweenSpookyShuffleNoviceDusted,
         master_lord: CustomConvertibleIds.HalloweenSpookyShuffleMasterDusted,
-        baron_duke: CustomConvertibleIds.HalloweenSpookyShuffleBaronDusted,
-        grand_duke_plus: CustomConvertibleIds.HalloweenSpookyShuffleGrandDukeDusted,
+        baron_grand_duke: CustomConvertibleIds.HalloweenSpookyShuffleBaronDusted,
+        arch_duke_plus: CustomConvertibleIds.HalloweenSpookyShuffleArchDukeDusted,
     };
 }
