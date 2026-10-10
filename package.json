@@ -93,7 +93,7 @@
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.0.10",
+    "vitest": "^5.0.3",
     "vitest-mock-extended": "^4.0.0",
     "web-ext": "^10.6.0",
     "webextension-polyfill": "^0.12.0",
