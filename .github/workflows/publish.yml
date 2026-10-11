@@ -8,6 +8,9 @@ on:
           For Major.Minor.Custom version number (NO LEADING ZEROS) e.g. 1.1.1.
         required: false
 
+permissions:
+  contents: read
+
 jobs:
 
   generate-version:
@@ -57,6 +60,8 @@ jobs:
 
   create-zip:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create release and push version tag
     needs:
       - generate-version
     strategy:
