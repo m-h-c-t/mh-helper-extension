@@ -155,11 +155,11 @@ describe('SpookyShuffleAjaxHandler', () => {
                 has_selected_testing_pair: true,
                 reward_tiers: [
                     {
-                        name: 'Archtest Title and up',
-                        type: 'archduke_plus',
+                        name: 'Archduke Test Title and up',
+                        type: 'arch_duke_plus',
                     },
                 ],
-                title_range: 'archduke_plus',
+                title_range: 'arch_duke_plus',
                 cards: [
                     {
                         id: 1,
@@ -186,7 +186,7 @@ describe('SpookyShuffleAjaxHandler', () => {
 
             const expectedConvertible = {
                 id: CustomConvertibleIds.HalloweenSpookyShuffleArchdukeDusted,
-                name: 'Upgraded Spooky Shuffle (Archtest Title and up)',
+                name: 'Upgraded Spooky Shuffle (Archduke Test Title and up)',
                 quantity: 1,
             };
 
@@ -223,11 +223,11 @@ describe('SpookyShuffleAjaxHandler', () => {
                 has_selected_testing_pair: true,
                 reward_tiers: [
                     {
-                        name: 'Grand Test Title',
-                        type: 'grand_duke',
+                        name: 'Archduke Test Title and up',
+                        type: 'arch_duke_plus',
                     },
                 ],
-                title_range: 'grand_duke',
+                title_range: 'arch_duke_plus',
                 cards: [
                     {
                         id: 1,
@@ -254,12 +254,10 @@ describe('SpookyShuffleAjaxHandler', () => {
             {titleRange: 'novice_journeyman', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleNoviceDusted},
             {titleRange: 'master_lord', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleMaster},
             {titleRange: 'master_lord', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleMasterDusted},
-            {titleRange: 'baron_duke', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleBaron},
-            {titleRange: 'baron_duke', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleBaronDusted},
-            {titleRange: 'grand_duke', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleGrandDuke},
-            {titleRange: 'grand_duke', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleGrandDukeDusted},
-            {titleRange: 'archduke_plus', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleArchduke},
-            {titleRange: 'archduke_plus', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleArchdukeDusted},
+            {titleRange: 'baron_grand_duke', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleBaron},
+            {titleRange: 'baron_grand_duke', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleBaronDusted},
+            {titleRange: 'arch_duke_plus', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleArchduke},
+            {titleRange: 'arch_duke_plus', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleArchdukeDusted},
         ])('submits $titleRange board (upgraded: $isUpgraded) with convertible id $expectedId', async ({titleRange, isUpgraded, expectedId}) => {
             mockedGetItemsByClass.mockReturnValue(Promise.resolve([
                 {
@@ -317,7 +315,7 @@ describe('SpookyShuffleAjaxHandler', () => {
                         type: 'novice_journeyman',
                     },
                 ],
-                title_range: 'archduke_plus',
+                title_range: 'arch_duke_plus',
                 cards: [
                     {
                         id: 1,
@@ -335,7 +333,7 @@ describe('SpookyShuffleAjaxHandler', () => {
 
             await handler.execute(response);
 
-            expect(logger.warn).toHaveBeenCalledWith(`Spooky Shuffle reward tier 'archduke_plus' wasn't found in reward_tiers`);
+            expect(logger.warn).toHaveBeenCalledWith(`Spooky Shuffle reward tier 'arch_duke_plus' wasn't found in reward_tiers`);
             expect(mockedGetItemsByClass).not.toHaveBeenCalled();
             expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
         });

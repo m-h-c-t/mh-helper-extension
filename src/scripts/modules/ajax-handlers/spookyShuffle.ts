@@ -14,9 +14,8 @@ import { spookyShuffleResponseSchema } from './spookyShuffle.types';
 const ShuffleConvertibleIds = {
     novice_journeyman: {standard: Ids.HalloweenSpookyShuffleNovice, upgraded: Ids.HalloweenSpookyShuffleNoviceDusted},
     master_lord: {standard: Ids.HalloweenSpookyShuffleMaster, upgraded: Ids.HalloweenSpookyShuffleMasterDusted},
-    baron_duke: {standard: Ids.HalloweenSpookyShuffleBaron, upgraded: Ids.HalloweenSpookyShuffleBaronDusted},
-    grand_duke: {standard: Ids.HalloweenSpookyShuffleGrandDuke, upgraded: Ids.HalloweenSpookyShuffleGrandDukeDusted},
-    archduke_plus: {standard: Ids.HalloweenSpookyShuffleArchduke, upgraded: Ids.HalloweenSpookyShuffleArchdukeDusted},
+    baron_grand_duke: {standard: Ids.HalloweenSpookyShuffleBaron, upgraded: Ids.HalloweenSpookyShuffleBaronDusted},
+    arch_duke_plus: {standard: Ids.HalloweenSpookyShuffleArchduke, upgraded: Ids.HalloweenSpookyShuffleArchdukeDusted},
 } satisfies Record<TitleRange, {standard: number, upgraded: number}>;
 
 export class SpookyShuffleAjaxHandler extends ValidatedAjaxSuccessHandler<typeof spookyShuffleResponseSchema> {

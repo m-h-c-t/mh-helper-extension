@@ -4,9 +4,8 @@ import z from 'zod';
 const TitleRanges = [
     'novice_journeyman',
     'master_lord',
-    'baron_duke',
-    'grand_duke',
-    'archduke_plus',
+    'baron_grand_duke',
+    'arch_duke_plus',
 ] as const;
 
 const titleRangeSchema = z.enum(TitleRanges);

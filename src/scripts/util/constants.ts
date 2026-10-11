@@ -55,6 +55,6 @@ export class CustomConvertibleIds {
     public static readonly HalloweenSpookyShuffleBaronDusted            = 130015;
     public static readonly HalloweenSpookyShuffleGrandDuke              = 130016;
     public static readonly HalloweenSpookyShuffleGrandDukeDusted        = 130017;
-    public static readonly HalloweenSpookyShuffleArchduke               = 130018;
-    public static readonly HalloweenSpookyShuffleArchdukeDusted         = 130019;
+    public static readonly HalloweenSpookyShuffleArchduke               = 130021;
+    public static readonly HalloweenSpookyShuffleArchdukeDusted         = 130022;
 }
