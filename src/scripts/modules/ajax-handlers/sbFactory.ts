@@ -1,14 +1,13 @@
 import type { LoggerService } from '@scripts/services/logging';
 import type { SubmissionService } from '@scripts/services/submission.service';
 import type { HgItem } from '@scripts/types/mhct';
-import type { z } from 'zod';
 
 import { CustomConvertibleIds as Ids } from '@scripts/util/constants';
 
 import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
-import { type VendingMachinePurchaseType, vendingMachineResponseSchema } from './sbFactory.types';
+import { type VendingMachinePurchaseType, type VendingMachineResponse, vendingMachineResponseSchema } from './sbFactory.types';
 
-export class SBFactoryAjaxHandler extends ValidatedAjaxSuccessHandler {
+export class SBFactoryAjaxHandler extends ValidatedAjaxSuccessHandler<typeof vendingMachineResponseSchema> {
     readonly name = 'SB Factory';
     readonly schema = vendingMachineResponseSchema;
 
@@ -36,7 +35,7 @@ export class SBFactoryAjaxHandler extends ValidatedAjaxSuccessHandler {
      * Record Birthday snack pack submissions as convertibles in MHCT
      * @param responseJSON Validated HitGrab ajax response from vending machine.
      */
-    protected async validatedExecute(responseJSON: z.infer<typeof this.schema>): Promise<void> {
+    protected async validatedExecute(responseJSON: VendingMachineResponse): Promise<void> {
         const purchase = responseJSON.vending_machine_purchase;
 
         if (!purchase) {

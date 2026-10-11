@@ -8,30 +8,25 @@ export abstract class AjaxSuccessHandler {
     abstract execute(responseJSON: HgResponse): Promise<void>;
 }
 
-export abstract class ValidatedAjaxSuccessHandler extends AjaxSuccessHandler {
+export abstract class ValidatedAjaxSuccessHandler<TSchema extends z.ZodType> extends AjaxSuccessHandler {
     abstract readonly name: string;
-    abstract readonly schema: z.ZodSchema;
+    abstract readonly schema: TSchema;
 
     constructor(protected readonly logger: LoggerService) {
         super();
     }
 
     async execute(responseJSON: HgResponse): Promise<void> {
-        let data: z.infer<typeof this.schema>;
-        try {
-            data = this.schema.parse(responseJSON);
-        } catch (e) {
-            if (e instanceof z.ZodError) {
-                this.logger.warn(`ValidatedAjaxSuccessHandler: Invalid response for ${this.name}`, z.prettifyError(e), {
-                    response: responseJSON,
-                });
-            }
-
+        const result = this.schema.safeParse(responseJSON);
+        if (!result.success) {
+            this.logger.warn(`ValidatedAjaxSuccessHandler: Invalid response for ${this.name}`, z.prettifyError(result.error), {
+                response: responseJSON,
+            });
             return;
         }
 
-        await this.validatedExecute(data);
+        await this.validatedExecute(result.data);
     }
 
-    protected abstract validatedExecute(data: z.infer<typeof this.schema>): Promise<void>;
+    protected abstract validatedExecute(data: z.output<TSchema>): Promise<void>;
 }

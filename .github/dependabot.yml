@@ -11,8 +11,11 @@ updates:
       interval: monthly
     versioning-strategy: increase
     groups:
-      dependencies:
-        dependency-type: "production"
-      dev-dependencies:
-        dependency-type: "development"
+      all-dependencies:
+        patterns:
+          - "*"
+      security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
     open-pull-requests-limit: 1
