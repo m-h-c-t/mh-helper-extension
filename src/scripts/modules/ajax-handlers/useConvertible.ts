@@ -1,13 +1,13 @@
 import type { LoggerService } from '@scripts/services/logging';
 import type { SubmissionService } from '@scripts/services/submission.service';
+import type { HgConvertibleResponse } from '@scripts/types/hg';
 import type { HgItem } from '@scripts/types/mhct';
-import type { z } from 'zod';
 
 import { hgConvertibleResponseSchema } from '@scripts/types/hg';
 
 import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 
-export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
+export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler<typeof hgConvertibleResponseSchema> {
     readonly name = 'Use Convertible';
     readonly schema = hgConvertibleResponseSchema;
 
@@ -21,7 +21,7 @@ export class UseConvertibleAjaxHandler extends ValidatedAjaxSuccessHandler {
         return url.includes('mousehuntgame.com/managers/ajax/users/useconvertible.php');
     }
 
-    protected async validatedExecute(data: z.infer<typeof this.schema>): Promise<void> {
+    protected async validatedExecute(data: HgConvertibleResponse): Promise<void> {
         if (!data.convertible_open) {
             this.logger.info(`${this.name}: Likely that a treasure map was opened, skipping convertible submission`);
             return;

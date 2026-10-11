@@ -1,4 +1,4 @@
-import type { SpookyShuffleResponse, SpookyShuffleStatus } from '@scripts/modules/ajax-handlers/spookyShuffle.types';
+import type { SpookyShuffleResponse, SpookyShuffleStatus, TitleRange } from '@scripts/modules/ajax-handlers/spookyShuffle.types';
 import type { LoggerService } from '@scripts/services/logging';
 import type { SubmissionService } from '@scripts/services/submission.service';
 
@@ -42,7 +42,7 @@ describe('SpookyShuffleAjaxHandler', () => {
 
             await handler.execute(response);
 
-            expect(logger.warn).toHaveBeenCalledWith('Unexpected spooky shuffle response object.', expect.anything());
+            expect(logger.warn).toHaveBeenCalledWith('ValidatedAjaxSuccessHandler: Invalid response for Spooky Shuffle', expect.anything(), expect.anything());
             expect(submissionService.submitEventConvertible).toHaveBeenCalledTimes(0);
         });
 
@@ -185,7 +185,7 @@ describe('SpookyShuffleAjaxHandler', () => {
             await handler.execute(response);
 
             const expectedConvertible = {
-                id: CustomConvertibleIds.HalloweenSpookyShuffleArchDukeDusted,
+                id: CustomConvertibleIds.HalloweenSpookyShuffleArchdukeDusted,
                 name: 'Upgraded Spooky Shuffle (Archduke Test Title and up)',
                 quantity: 1,
             };
@@ -246,6 +246,114 @@ describe('SpookyShuffleAjaxHandler', () => {
             await handler.execute(response);
 
             expect(logger.warn).toHaveBeenCalledWith(`Item 'Test Item' wasn't found in item map. Check its classification type`);
+            expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
+        });
+
+        it.each<{titleRange: TitleRange, isUpgraded: boolean, expectedId: number}>([
+            {titleRange: 'novice_journeyman', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleNovice},
+            {titleRange: 'novice_journeyman', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleNoviceDusted},
+            {titleRange: 'master_lord', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleMaster},
+            {titleRange: 'master_lord', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleMasterDusted},
+            {titleRange: 'baron_grand_duke', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleBaron},
+            {titleRange: 'baron_grand_duke', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleBaronDusted},
+            {titleRange: 'arch_duke_plus', isUpgraded: false, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleArchduke},
+            {titleRange: 'arch_duke_plus', isUpgraded: true, expectedId: CustomConvertibleIds.HalloweenSpookyShuffleArchdukeDusted},
+        ])('submits $titleRange board (upgraded: $isUpgraded) with convertible id $expectedId', async ({titleRange, isUpgraded, expectedId}) => {
+            mockedGetItemsByClass.mockReturnValue(Promise.resolve([
+                {
+                    name: 'Test Item',
+                    item_id: 1234,
+                },
+            ]));
+
+            const result: SpookyShuffleStatus = {
+                is_complete: true,
+                is_upgraded: isUpgraded,
+                has_selected_testing_pair: true,
+                reward_tiers: [
+                    {
+                        name: 'Tier Name',
+                        type: titleRange,
+                    },
+                ],
+                title_range: titleRange,
+                cards: [
+                    {
+                        id: 1,
+                        name: 'Test Item',
+                        is_matched: true,
+                        is_revealed: true,
+                        quantity: 1,
+                    },
+                ],
+            };
+            const response: SpookyShuffleResponse = {
+                ...responseBuilder.build(),
+                memory_game: result,
+            };
+
+            await handler.execute(response);
+
+            expect(submissionService.submitEventConvertible).toHaveBeenCalledWith(
+                {
+                    id: expectedId,
+                    name: isUpgraded ? 'Upgraded Spooky Shuffle (Tier Name)' : 'Spooky Shuffle (Tier Name)',
+                    quantity: 1,
+                },
+                [{id: 1234, name: 'Test Item', quantity: 1}]
+            );
+        });
+
+        it('warns and skips when title range is missing from reward tiers', async () => {
+            const result: SpookyShuffleStatus = {
+                is_complete: true,
+                is_upgraded: false,
+                has_selected_testing_pair: true,
+                reward_tiers: [
+                    {
+                        name: 'Some Other Tier',
+                        type: 'novice_journeyman',
+                    },
+                ],
+                title_range: 'arch_duke_plus',
+                cards: [
+                    {
+                        id: 1,
+                        name: 'Test Item',
+                        is_matched: true,
+                        is_revealed: true,
+                        quantity: 1,
+                    },
+                ],
+            };
+            const response: SpookyShuffleResponse = {
+                ...responseBuilder.build(),
+                memory_game: result,
+            };
+
+            await handler.execute(response);
+
+            expect(logger.warn).toHaveBeenCalledWith(`Spooky Shuffle reward tier 'arch_duke_plus' wasn't found in reward_tiers`);
+            expect(mockedGetItemsByClass).not.toHaveBeenCalled();
+            expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
+        });
+
+        it('rejects legacy grand_duke_plus title range', async () => {
+            const response = {
+                ...responseBuilder.build(),
+                memory_game: {
+                    is_complete: true,
+                    is_upgraded: false,
+                    has_selected_testing_pair: true,
+                    reward_tiers: [{name: 'Grand Duke and up', type: 'grand_duke_plus'}],
+                    title_range: 'grand_duke_plus',
+                    cards: [],
+                },
+            };
+
+            await handler.execute(response);
+
+            expect(logger.warn).toHaveBeenCalledWith('ValidatedAjaxSuccessHandler: Invalid response for Spooky Shuffle', expect.anything(), expect.anything());
             expect(submissionService.submitEventConvertible).not.toHaveBeenCalled();
         });
     });

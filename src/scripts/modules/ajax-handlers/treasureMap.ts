@@ -6,39 +6,43 @@ import { z } from 'zod';
 
 import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 
-export class TreasureMapHandler extends ValidatedAjaxSuccessHandler {
+const treasureMapResponseSchema = hgResponseSchema.extend({
+    treasure_map_inventory: z.object({
+        relic_hunter_hint: z.string(),
+    }).optional(),
+    treasure_map: z.object({
+        name: z.string().transform(name => name
+            .replace(/ treasure/i, '')
+            .replace(/rare /i, '')
+            .replace(/common /i, '')
+            .replace(/Ardouous/i, 'Arduous'),
+        ),
+        map_id: z.coerce.number(),
+        goals: z.object({
+            mouse: z.array(z.object({
+                unique_id: z.coerce.number(),
+                name: z.string(),
+            })),
+        }),
+    }).optional(),
+});
+
+type TreasureMapResponse = z.infer<typeof treasureMapResponseSchema>;
+
+export class TreasureMapHandler extends ValidatedAjaxSuccessHandler<typeof treasureMapResponseSchema> {
     constructor(logger: LoggerService,
         private readonly submissionService: SubmissionService) {
         super(logger);
     }
 
     readonly name = 'Treasure Map';
-    readonly schema = hgResponseSchema.extend({
-        treasure_map_inventory: z.object({
-            relic_hunter_hint: z.string(),
-        }).optional(),
-        treasure_map: z.object({
-            name: z.string().transform(name => name
-                .replace(/ treasure/i, '')
-                .replace(/rare /i, '')
-                .replace(/common /i, '')
-                .replace(/Ardouous/i, 'Arduous'),
-            ),
-            map_id: z.coerce.number(),
-            goals: z.object({
-                mouse: z.array(z.object({
-                    unique_id: z.coerce.number(),
-                    name: z.string(),
-                })),
-            }),
-        }).optional(),
-    });
+    readonly schema = treasureMapResponseSchema;
 
     match(url: string): boolean {
         return url.includes('mousehuntgame.com/managers/ajax/users/treasuremap_v2.php');
     }
 
-    protected async validatedExecute(data: z.infer<typeof this.schema>): Promise<void> {
+    protected async validatedExecute(data: TreasureMapResponse): Promise<void> {
         const hint = data.treasure_map_inventory?.relic_hunter_hint;
         if (hint) {
             await this.submissionService.submitRelicHunterHint(hint);

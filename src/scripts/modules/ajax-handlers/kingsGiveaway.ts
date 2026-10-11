@@ -2,7 +2,6 @@ import type { LoggerService } from '@scripts/services/logging';
 import type { MouseRipApiService } from '@scripts/services/mouserip-api.service';
 import type { SubmissionService } from '@scripts/services/submission.service';
 import type { HgItem } from '@scripts/types/mhct';
-import type { z } from 'zod';
 
 import { CustomConvertibleIds } from '@scripts/util/constants';
 
@@ -11,7 +10,7 @@ import type { KingsGiveawayResponse } from './kingsGiveaway.types';
 import { ValidatedAjaxSuccessHandler } from './ajaxSuccessHandler';
 import { kingsGiveawayResponseSchema } from './kingsGiveaway.types';
 
-export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
+export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler<typeof kingsGiveawayResponseSchema> {
     private itemCache: Record<string, number> | null = null;
     readonly name = 'King\'s Giveaway';
     readonly schema = kingsGiveawayResponseSchema;
@@ -31,7 +30,7 @@ export class KingsGiveawayAjaxHandler extends ValidatedAjaxSuccessHandler {
         return true;
     }
 
-    protected async validatedExecute(data: z.infer<typeof this.schema>): Promise<void> {
+    protected async validatedExecute(data: KingsGiveawayResponse): Promise<void> {
         await this.recordPrizePack(data);
         await this.recordVault(data);
     }
