@@ -1,4 +1,4 @@
-import type { VendingMachinePurchase, VendingMachineReponse } from '@scripts/modules/ajax-handlers/sbFactory.types';
+import type { VendingMachinePurchase, VendingMachineResponse } from '@scripts/modules/ajax-handlers/sbFactory.types';
 import type { LoggerService } from '@scripts/services/logging';
 import type { SubmissionService } from '@scripts/services/submission.service';
 import type { InventoryItem } from '@scripts/types/hg';
@@ -33,7 +33,7 @@ describe('SBFactoryAjaxHandler', () => {
     describe('execute', () => {
         it('logs if birthday response is not purchase', async () => {
             // vending_machine_purchase missing here,
-            const response = responseBuilder.build() as VendingMachineReponse;
+            const response = responseBuilder.build() as VendingMachineResponse;
 
             await handler.execute(response);
 
@@ -45,7 +45,7 @@ describe('SBFactoryAjaxHandler', () => {
             const hgResponse = responseBuilder.withInventory(
                 testResponses.responseOne.inventory
             ).build();
-            const response: VendingMachineReponse = {
+            const response: VendingMachineResponse = {
                 ...hgResponse,
                 vending_machine_purchase: testResponses.responseOne.vending_machine_purchase,
             };
@@ -86,7 +86,7 @@ describe('SBFactoryAjaxHandler', () => {
             const hgResponse = responseBuilder.withInventory(
                 testResponses.responseTwo.inventory
             ).build();
-            const response: VendingMachineReponse = {
+            const response: VendingMachineResponse = {
                 ...hgResponse,
                 vending_machine_purchase: testResponses.responseTwo.vending_machine_purchase,
             };
