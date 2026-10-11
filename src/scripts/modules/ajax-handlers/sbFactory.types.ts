@@ -37,7 +37,7 @@ export const vendingMachineResponseSchema = hgResponseSchema.extend({
     vending_machine_purchase: vendingMachinePurchaseSchema.optional(),
 });
 
-export type VendingMachineReponse = z.infer<typeof vendingMachineResponseSchema>;
+export type VendingMachineResponse = z.infer<typeof vendingMachineResponseSchema>;
 
 // #endregion Vending Machine Schema
 
