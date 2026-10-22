@@ -8,13 +8,9 @@ export class MouseRipApiService {
     ) {}
 
     async getAllItems(): Promise<MouseRipItem[]> {
-        const response = await this.apiService.send('GET', 'https://api.mouse.rip/items', null, true, headers => this.alterHeaders(headers));
+        const response = await this.apiService.send('GET', 'https://api.mouse.rip/items', null, true);
 
         return mouseRipItemSchema.array().parse(response);
-    }
-
-    private alterHeaders(headers: Headers): void {
-        headers.set('X-Requested-With', 'MHCT');
     }
 }
 
