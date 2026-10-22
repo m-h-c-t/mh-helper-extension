@@ -1,6 +1,10 @@
 import { param } from '@scripts/util/param';
 
 export class ApiService {
+    constructor(
+        private readonly getVersion: () => number | string
+    ) {}
+
     /**
      * Sends an HTTP request to the specified URL.
      *
@@ -16,12 +20,14 @@ export class ApiService {
      * @throws Error if the response status is not 200 or 204
      *
      * @remarks
+     * - Every request carries an X-Requested-By header identifying MHCT and the extension version
      * - For string bodies, Content-Type is set to application/json
      * - For object bodies, they are converted to URL-encoded format
      * - If hasResponse is true, sets Accept header to application/json
      */
     async send(method: 'GET' | 'POST', url: string, body: unknown, hasResponse: boolean, alterHeaders?: (headers: Headers) => void): Promise<unknown> {
         const headers = new Headers();
+        headers.set('X-Requested-By', `MHCT/${this.getVersion()}`);
         if (hasResponse) {
             headers.append('Accept', 'application/json');
         }
