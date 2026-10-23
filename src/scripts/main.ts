@@ -52,7 +52,7 @@ declare global {
     const isDev = process.env.ENV === 'development';
     const logger = new ConsoleLogger(isDev, shouldFilter);
     const extensionLog = new ExtensionLog();
-    const apiService = new ApiService();
+    const apiService = new ApiService(() => mhhh_version);
     const environmentService = new EnvironmentService();
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const submissionService = new SubmissionService(logger, environmentService, apiService, getSettingsAsync,
@@ -296,14 +296,13 @@ declare global {
         }
 
         const payload = {
-            'map_id': mapId,
-            'action': 'map_info',
-            'uh': user.unique_hash,
-            'last_read_journal_entry_id': lastReadJournalEntryId,
-            'X-Requested-By': `MHCT/${mhhh_version}`,
+            map_id: mapId,
+            action: 'map_info',
+            uh: user.unique_hash,
+            last_read_journal_entry_id: lastReadJournalEntryId,
         };
-        $.post('https://www.mousehuntgame.com/managers/ajax/users/treasuremap_v2.php', payload, null, 'json')
-            .done((data) => {
+        apiService.send('POST', 'https://www.mousehuntgame.com/managers/ajax/users/treasuremap_v2.php', payload, true)
+            .then((data: any) => {
                 if (data) {
                     if (!data.treasure_map || data.treasure_map.view_state === 'noMap') {
                         return;
@@ -317,6 +316,9 @@ declare global {
                         '<input type="hidden" name="' + input_name + '" value="' + mice.join(glue) +
                         '"></form>').appendTo('body').submit().remove();
                 }
+            })
+            .catch((error) => {
+                logger.error('Failed to fetch treasure map info', error);
             });
     }
 

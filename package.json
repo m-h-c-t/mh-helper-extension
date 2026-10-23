@@ -74,7 +74,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/eslint-plugin": "^1.6.14",
     "@webext-core/messaging": "^2.3.0",
-    "concurrently": "^9.2.4",
+    "concurrently": "^9.2.5",
     "copy-webpack-plugin": "^14.0.0",
     "cross-env": "^10.1.0",
     "eslint": "^10.2.0",
@@ -95,7 +95,7 @@
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.11",
     "vitest-mock-extended": "^4.0.0",
-    "web-ext": "^10.6.0",
+    "web-ext": "^10.8.0",
     "webextension-polyfill": "^0.12.0",
     "webpack": "^5.105.4",
     "webpack-cli": "^7.0.2"
