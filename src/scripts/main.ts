@@ -621,8 +621,10 @@ declare global {
                 void extensionLog.log(LogLevel.Info, {
                     prize_mouse_journal: markup,
                 });
-            } else if (css_class.search(/desert_heater_base_trigger/) !== -1 && css_class.search(/fail/) === -1) {
-                // Handle a Desert Heater Base loot proc.
+            } else if (css_class.search(/\bactive\b/) === -1
+                && css_class.search(/desert_heater_base_trigger/) !== -1) {
+                // Pool original, Chrome, and Ultimate Chrome drops under Desert Heater Base.
+                if (css_class.search(/fail/) !== -1) { return; }
                 const data = markup.render_data.text;
                 const quantityRegex = /mouse dropped ([\d,]+) <a class/;
                 const nameRegex = />(.+?)<\/a>/g; // "g" flag used for stickiness
@@ -724,8 +726,11 @@ declare global {
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
-            } else if (css_class.search(/queso_cannonstorm_base_trigger/) !== -1) {
+            } else if (css_class.search(/\bactive\b/) === -1
+                && css_class.search(/queso_cannonstorm_base_trigger/) !== -1) {
                 const data = markup.render_data.text;
+                if (css_class.search(/fail/) !== -1 || data.includes('nothing was found within the rubble')) { return; }
+                // Pool original, Chrome, and Ultimate Chrome drops under Queso Cannonstorm Base.
                 const qcbprocRegex = /item\.php\?item_type=(.*?)"/g;
                 const matchResults = [...data.matchAll(qcbprocRegex)];
                 if (matchResults.length == 4) {
@@ -743,7 +748,33 @@ declare global {
                             name: baseResultItem.name,
                             quantity: 1,
                         }];
-                        logger.debug('Submitting Queso Cannonstorm Base: ', {queso_cannonstorm_base_loot: items});
+                        logger.debug(`Submitting ${convertible.name}: `, {queso_cannonstorm_base_loot: items});
+
+                        void submissionService.submitItemConvertible(convertible, items);
+                    }
+                }
+            } else if (css_class.search(/aurora_base_trigger/) !== -1) {
+                // Aurora, Chrome Living Garden, and Ultimate Chrome share this proc class.
+                const data = markup.render_data.text;
+                if (css_class.search(/fail/) !== -1) { return; }
+                const essenceprocRegex = /(?:([\d,]+)\s+)?<a\b[^>]*href=["'][^"']*item\.php\?item_type=(essence_[a-i]_crafting_item)["'][^>]*>/;
+                const essenceMatch = essenceprocRegex.exec(data);
+                if (essenceMatch) {
+                    const resultItem = essenceMatch[2];
+                    const baseResultItem = getItemFromInventoryByType(resultItem);
+                    const lootQty = parseInt((essenceMatch[1] ?? '1').replace(/,/g, ''), 10);
+                    if (baseResultItem && lootQty > 0) {
+                        const convertible = {
+                            id: 2865, // Pool Aurora, Chrome Living Garden, and Ultimate Chrome essence drops.
+                            name: 'Aurora Base',
+                            quantity: 1,
+                        };
+                        const items = [{
+                            id: baseResultItem.item_id,
+                            name: baseResultItem.name,
+                            quantity: lootQty,
+                        }];
+                        logger.debug(`Submitting ${convertible.name}: `, {aurora_base_loot: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
