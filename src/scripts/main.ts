@@ -619,14 +619,10 @@ declare global {
                 void extensionLog.log(LogLevel.Info, {
                     prize_mouse_journal: markup,
                 });
-            } else if (hunt_response.user.base_item_id !== 4116 && css_class.search(/\bactive\b/) === -1
-                && (css_class.search(/desert_heater_base_trigger/) !== -1
-                    || (hunt_response.user.base_item_id === 4100
-                        && markup.render_data.text.includes('Chrome Desert Heater Base') && markup.render_data.text.includes('mouse dropped')))) {
-                // Handle original and Chrome Desert Heater Base loot procs.
+            } else if (css_class.search(/\bactive\b/) === -1
+                && css_class.search(/desert_heater_base_trigger/) !== -1) {
+                // Pool original, Chrome, and Ultimate Chrome drops under Desert Heater Base.
                 if (css_class.search(/fail/) !== -1) { return; }
-                const isChrome = hunt_response.user.base_item_id === 4100;
-                const baseName = isChrome ? 'Chrome Desert Heater Base' : 'Desert Heater Base';
                 const data = markup.render_data.text;
                 const quantityRegex = /mouse dropped ([\d,]+) <a class/;
                 const nameRegex = />(.+?)<\/a>/g; // "g" flag used for stickiness
@@ -640,24 +636,24 @@ declare global {
                     const loot = getItemFromInventoryByName(lootName);
 
                     if (!lootQty || !loot) {
-                        void extensionLog.log(LogLevel.Warn, `Failed to find inventory loot for ${baseName}`, {
+                        void extensionLog.log(LogLevel.Warn, `Failed to find inventory loot for Desert Heater Base`, {
                             desert_heater_journal: markup,
                             inventory: hunt_response.inventory,
                             loot: lootName,
                         });
                     } else {
                         const convertible = {
-                            id: 2952, // Pool original and Chrome Desert Heater Base drops.
+                            id: 2952, // Desert Heater Base's item ID
                             name: 'Desert Heater Base',
                             quantity: 1,
                         };
                         const items = [{id: loot.item_id, name: lootName, quantity: lootQty}];
-                        logger.debug(`${baseName} proc`, {desert_heater_loot: items});
+                        logger.debug('Desert Heater Base proc', {desert_heater_loot: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 } else {
-                    void extensionLog.log(LogLevel.Warn, `Regex quantity and loot name failed for ${baseName}`, {
+                    void extensionLog.log(LogLevel.Warn, `Regex quantity and loot name failed for Desert Heater Base`, {
                         desert_heater_journal: markup,
                         inventory: hunt_response.inventory,
                     });
@@ -728,12 +724,11 @@ declare global {
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
-            } else if (hunt_response.user.base_item_id !== 4116 && css_class.search(/\bactive\b/) === -1
-                && (css_class.search(/queso_cannonstorm_base_trigger/) !== -1
-                    || (hunt_response.user.base_item_id === 4086
-                        && markup.render_data.text.includes('Chrome Queso Cannonstorm Base') && markup.render_data.text.includes('revealing')))) {
+            } else if (css_class.search(/\bactive\b/) === -1
+                && css_class.search(/queso_cannonstorm_base_trigger/) !== -1) {
                 const data = markup.render_data.text;
                 if (css_class.search(/fail/) !== -1 || data.includes('nothing was found within the rubble')) { return; }
+                // Pool original, Chrome, and Ultimate Chrome drops under Queso Cannonstorm Base.
                 const qcbprocRegex = /item\.php\?item_type=(.*?)"/g;
                 const matchResults = [...data.matchAll(qcbprocRegex)];
                 if (matchResults.length == 4) {
@@ -742,7 +737,7 @@ declare global {
                     const baseResultItem = getItemFromInventoryByType(resultItem);
                     if (baseResultItem) {
                         const convertible = {
-                            id: 3526, // Pool original and Chrome Queso Cannonstorm Base drops.
+                            id: 3526, // Queso Cannonstorm Base's item ID
                             name: 'Queso Cannonstorm Base',
                             quantity: 1,
                         };
@@ -756,14 +751,8 @@ declare global {
                         void submissionService.submitItemConvertible(convertible, items);
                     }
                 }
-            } else if ((hunt_response.user.base_item_id === 2865 || hunt_response.user.base_item_id === 4114)
-                && css_class.search(/\bactive\b/) === -1
-                && (css_class.search(/(?:aurora|essential_living_garden)_base/) !== -1
-                    || (markup.render_data.text.includes('Chrome Essential Living Garden Base')
-                        && /item_type=essence_[a-i]_crafting_item/.test(markup.render_data.text))
-                    || (markup.render_data.text.includes('Aurora Base')
-                        && /item_type=essence_[a-i]_crafting_item/.test(markup.render_data.text)))) {
-                // Aurora and Chrome essence proc formats are inferred.
+            } else if (css_class.search(/aurora_base_trigger/) !== -1) {
+                // Aurora, Chrome Living Garden, and Ultimate Chrome share this proc class.
                 const data = markup.render_data.text;
                 if (css_class.search(/fail/) !== -1) { return; }
                 const essenceprocRegex = /(?:([\d,]+)\s+)?<a\b[^>]*href=["'][^"']*item\.php\?item_type=(essence_[a-i]_crafting_item)["'][^>]*>/;
@@ -774,7 +763,7 @@ declare global {
                     const lootQty = parseInt((essenceMatch[1] ?? '1').replace(/,/g, ''), 10);
                     if (baseResultItem && lootQty > 0) {
                         const convertible = {
-                            id: 2865, // Pool Aurora and Chrome Essential Living Garden Base essence drops.
+                            id: 2865, // Pool Aurora, Chrome Living Garden, and Ultimate Chrome essence drops.
                             name: 'Aurora Base',
                             quantity: 1,
                         };
@@ -784,39 +773,6 @@ declare global {
                             quantity: lootQty,
                         }];
                         logger.debug(`Submitting ${convertible.name}: `, {aurora_base_loot: items});
-
-                        void submissionService.submitItemConvertible(convertible, items);
-                    }
-                }
-            } else if (hunt_response.user.base_item_id === 4116 && css_class.search(/\bactive\b/) === -1
-                && (css_class.search(/desert_heater_base_trigger|queso_cannonstorm_base_trigger|(?:aurora|essential_living_garden)_base/) !== -1
-                    || (markup.render_data.text.includes('Ultimate Chrome Base')
-                        && /mouse dropped|revealing|item_type=essence_[a-i]_crafting_item/.test(markup.render_data.text)))) {
-                const data = markup.render_data.text;
-                if (css_class.search(/fail/) !== -1 || data.includes('nothing was found within the rubble')) { return; }
-                const baseprocRegex = /(?:mouse dropped|revealing) ([\d,]+)\s+<a\b[^>]*href=["'][^"']*item\.php\?item_type=([^"'&]+)[^"']*["'][^>]*>/;
-                let lootMatch = baseprocRegex.exec(data);
-                if (!lootMatch && css_class.search(/desert_heater|queso_cannonstorm/) === -1
-                    && !/Flameshard|Solidified Amber Queso/.test(data)) {
-                    const essenceprocRegex = /(?:([\d,]+)\s+)?<a\b[^>]*href=["'][^"']*item\.php\?item_type=(essence_[a-i]_crafting_item)["'][^>]*>/;
-                    lootMatch = essenceprocRegex.exec(data);
-                }
-                if (lootMatch) {
-                    const resultItem = lootMatch[2];
-                    const baseResultItem = getItemFromInventoryByType(resultItem);
-                    const lootQty = parseInt((lootMatch[1] ?? '1').replace(/,/g, ''), 10);
-                    if (baseResultItem && lootQty > 0) {
-                        const convertible = {
-                            id: 4116, // Ultimate Chrome Base's item ID
-                            name: 'Ultimate Chrome Base',
-                            quantity: 1,
-                        };
-                        const items = [{
-                            id: baseResultItem.item_id,
-                            name: baseResultItem.name,
-                            quantity: lootQty,
-                        }];
-                        logger.debug('Submitting Ultimate Chrome Base: ', {ultimate_chrome_base_loot: items});
 
                         void submissionService.submitItemConvertible(convertible, items);
                     }
