@@ -68,7 +68,7 @@ describe('MHCT Friend Hunt Submission', () => {
     }
 
     const lootItem = {item_id: 4242, name: 'Tool Token', type: 'mhct_tool_token_stat_item', quantity: 50};
-    const linkedLootText = 'I went on a hunt with <a href="https://www.mousehuntgame.com/hunterprofile.php">A Friend</a>'
+    const linkedLootText = 'I went on a hunt with <a href="https://www.mousehuntgame.com/hunterprofile.php" onclick="hg.utils.User.showProfile(1); return false;">A Friend</a>'
         + ` where I was successful in my hunt! I caught a <a href="https://www.mousehuntgame.com/" onclick="hg.views.MouseView.show('mhct'); return false;">MouseHunt Community Tools Mouse</a>.`
         + '<br /><br /><b>The mouse also dropped the following loot:</b><br />'
         + `3 <a class="loot" title="" href="https://www.mousehuntgame.com/item.php?item_type=${lootItem.type}" onclick="hg.views.ItemView.show('${lootItem.type}'); return false;">Tool Tokens</a>`;

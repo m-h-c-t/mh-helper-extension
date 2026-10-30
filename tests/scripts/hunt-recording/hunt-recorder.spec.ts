@@ -77,6 +77,20 @@ describe('HuntRecorder', () => {
         expect(msg.trap.id).toBe(before.user.weapon_item_id);
     });
 
+    it('extracts the mouse, not the friend, when the friend link has an onclick', () => {
+        const entry = structuredClone(linkedEntryFixture);
+        entry.render_data.text = entry.render_data.text.replace(
+            '<a href="https://www.mousehuntgame.com/hunterprofile.php">',
+            '<a href="https://www.mousehuntgame.com/hunterprofile.php" onclick="hg.utils.User.showProfile(1); return false;">'
+        );
+        expect(entry.render_data.text).toContain('return false;">A Friend</a>');
+
+        recorder.record({type: 'linked', before, after, entry});
+
+        expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+        expect(submissionService.submitHunt.mock.calls[0][0].mouse).toBe('Admiral Arrrgh');
+    });
+
     it('resolves linked loot from after.inventory when present', () => {
         recorder.record({type: 'linked', before, after, entry: linkedEntryFixture});
 

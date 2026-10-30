@@ -17,6 +17,8 @@ import { z } from 'zod';
 import type { HuntEvidence } from './hunt-evidence';
 import type { CachedItem, ItemCache } from './item-cache';
 
+import { isLinkedEntry } from './journal';
+
 type ResolveItem = (itemType: string) => CachedItem | undefined;
 
 export class HuntRecorder {
@@ -235,8 +237,14 @@ export class HuntRecorder {
             } else {
                 throw new Error(`Unknown "catch" journal css: ${journal_css}`);
             }
+            let text = journal.render_data.text;
+            if (isLinkedEntry(journal_css)) {
+                // Linked entries start with "went on a hunt with <a>friend</a>"; prefer the mouse link itself.
+                const mouseLink = /<a\b[^>]*MouseView\.show[^>]*>.*?<\/a>/i.exec(text)?.[0];
+                text = mouseLink ?? text.replace(/^.*?went on a hunt with\s*<a\b[^>]*>.*?<\/a>/i, '');
+            }
             // Remove HTML tags and other text around the mouse name.
-            message.mouse = journal.render_data.text
+            message.mouse = text
                 .replace(/^.*?;">/, '') // Remove all text through the first sequence of `;">`
                 .replace(/<\/a>.*/i, '') // Remove text after the first <a href>'s closing tag </a>
                 .replace(/ mouse$/i, ''); // Remove " [Mm]ouse" if it is not a part of the name (e.g. Dread Pirate Mousert)
