@@ -15,6 +15,9 @@ import { parseHgInt } from '@scripts/util/number';
 import { z } from 'zod';
 
 import type { HuntEvidence } from './hunt-evidence';
+import type { CachedItem, ItemCache } from './item-cache';
+
+type ResolveItem = (itemType: string) => CachedItem | undefined;
 
 export class HuntRecorder {
     private readonly location_stager_lookup: Record<string, IStager> = {};
@@ -24,6 +27,7 @@ export class HuntRecorder {
         private readonly logger: LoggerService,
         private readonly rejectionEngine: IntakeRejectionEngine,
         private readonly submissionService: SubmissionService,
+        private readonly itemCache: Pick<ItemCache, 'get'>,
     ) {
         for (const stager of stagers.stageModules) {
             this.location_stager_lookup[stager.environment] = stager;
@@ -39,11 +43,29 @@ export class HuntRecorder {
         const user_pre = pre_response.user;
         const user_post = post_response.user;
 
+        const fromInventory = getItemFromInventory(post_response.inventory);
+        let loot: Loot[] | undefined;
+        if (evidence.type === 'linked') {
+            // page.php (the linked "after") has no inventory, so fall back to items learned from earlier responses.
+            const parsed = this.parseLoot(hunt, type => fromInventory(type) ?? this.itemCache.get(type));
+            if (parsed && parsed.unresolved.length > 0) {
+                this.logger.debug(`Linked hunt dropped: unresolved loot ${parsed.unresolved.join(', ')}`);
+                return;
+            }
+            loot = parsed?.loot;
+        } else {
+            const parsed = this.parseLoot(hunt, fromInventory);
+            for (const itemType of parsed?.unresolved ?? []) {
+                this.logger.debug(`Looted "${itemType}", but it is not in user inventory`);
+            }
+            loot = parsed?.loot;
+        }
+
         let message_pre;
         let message_post;
         try {
             // Create two intake messages. One based on pre-response. The other based on post-response.
-            ({message_pre, message_post} = this.createIntakeMessage(pre_response, post_response, hunt));
+            ({message_pre, message_post} = this.createIntakeMessage(pre_response, post_response, hunt, loot));
             if (evidence.type === 'linked') {
                 message_pre.hunt_details = {...message_pre.hunt_details, hunt_type: 'linked'};
                 message_post.hunt_details = {...message_post.hunt_details, hunt_type: 'linked'};
@@ -81,12 +103,14 @@ export class HuntRecorder {
      * @param before The pre-hunt object
      * @param after The post-hunt object
      * @param hunt Journal entry corresponding with the hunt
+     * @param loot Loot parsed from the hunt's journal entry
      * @returns
      */
     private createIntakeMessage(
         before: HgResponse,
         after: HgResponse,
-        hunt: JournalMarkup
+        hunt: JournalMarkup,
+        loot: Loot[] | undefined
     ): {message_pre: IntakeMessage, message_post: IntakeMessage} {
         const preMessageBase = this.createMessageFromHunt(hunt, before);
         const postMessageBase = this.createMessageFromHunt(hunt, after);
@@ -104,7 +128,6 @@ export class HuntRecorder {
         this.addHuntDetails(message_pre, before.user, after.user, hunt);
         this.addHuntDetails(message_post, after.user, after.user, hunt);
 
-        const loot = this.parseLoot(hunt, after.inventory);
         if (loot && loot.length > 0) {
             message_pre.loot = loot;
             message_post.loot = loot;
@@ -318,15 +341,10 @@ export class HuntRecorder {
     /**
      * Extract loot information from the hunt's journal entry.
      * @param hunt The journal entry corresponding to the active hunt.
-     * @param inventory The inventory object in hg server response, has item info
+     * @param resolveItem Looks up an item's id and name by its item_type
+     * @returns The resolved loot and the item types that could not be resolved
      */
-    private parseLoot(hunt: JournalMarkup, inventory: Inventory | undefined): Loot[] | undefined {
-        const getItemFromInventoryByType = (itemType: string): InventoryItem | undefined => {
-            if (inventory != null && !Array.isArray(inventory)) {
-                return inventory[itemType];
-            }
-        };
-
+    private parseLoot(hunt: JournalMarkup, resolveItem: ResolveItem): {loot: Loot[], unresolved: string[]} | undefined {
         let hunt_description = hunt.render_data.text;
         if (!hunt_description.includes('following loot:')) { return; }
 
@@ -334,14 +352,15 @@ export class HuntRecorder {
         // Use a stricter regex to split on closing anchor tags like </a> with optional whitespace
         const loot_array = hunt_description.split(/<\/a\s*>/gi).filter(i => i.trim());
         const lootList = [];
+        const unresolved: string[] = [];
         for (const item_text of loot_array) {
             const item_name = /item\.php\?item_type=(.*?)"/.exec(item_text)?.[1];
             const item_amount = parseHgInt(/\d+[\d,]*/.exec(item_text)?.[0] ?? '0');
             const plural_name = $($.parseHTML(item_text)).filter('a').text();
 
-            const inventory_item = getItemFromInventoryByType(item_name ?? '');
+            const inventory_item = resolveItem(item_name ?? '');
             if (!inventory_item) {
-                this.logger.debug(`Looted "${item_name}", but it is not in user inventory`);
+                unresolved.push(item_name ?? '');
                 continue;
             }
 
@@ -358,6 +377,14 @@ export class HuntRecorder {
             lootList.push(loot_object);
         }
 
-        return lootList;
+        return {loot: lootList, unresolved};
     }
+}
+
+function getItemFromInventory(inventory: Inventory | undefined): ResolveItem {
+    return (itemType: string): InventoryItem | undefined => {
+        if (inventory != null && !Array.isArray(inventory)) {
+            return inventory[itemType];
+        }
+    };
 }

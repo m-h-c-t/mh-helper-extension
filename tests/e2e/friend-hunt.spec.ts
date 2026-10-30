@@ -67,13 +67,19 @@ describe('MHCT Friend Hunt Submission', () => {
         return `<div class='${cssClass}' data-entry-id='${id}'></div>`;
     }
 
-    function markup(id: number, cssClass: string, timestamp: number) {
+    const lootItem = {item_id: 4242, name: 'Tool Token', type: 'mhct_tool_token_stat_item', quantity: 50};
+    const linkedLootText = 'I went on a hunt with <a href="https://www.mousehuntgame.com/hunterprofile.php">A Friend</a>'
+        + ` where I was successful in my hunt! I caught a <a href="https://www.mousehuntgame.com/" onclick="hg.views.MouseView.show('mhct'); return false;">MouseHunt Community Tools Mouse</a>.`
+        + '<br /><br /><b>The mouse also dropped the following loot:</b><br />'
+        + `3 <a class="loot" title="" href="https://www.mousehuntgame.com/item.php?item_type=${lootItem.type}" onclick="hg.views.ItemView.show('${lootItem.type}'); return false;">Tool Tokens</a>`;
+
+    function markup(id: number, cssClass: string, timestamp: number, text = 'MouseHunt Community Tools Mouse') {
         return [{
             render_data: {
                 entry_id: id,
                 css_class: cssClass,
                 entry_timestamp: timestamp,
-                text: 'MouseHunt Community Tools Mouse',
+                text,
                 environment: 'Test Environment',
                 entry_date: '12:00 am',
                 mouse_type: 'mhct',
@@ -81,16 +87,18 @@ describe('MHCT Friend Hunt Submission', () => {
         }];
     }
 
-    function linkedPost(postUser: User, entryId: number): HgResponse {
+    function linkedPost(postUser: User, entryId: number, text?: string): HgResponse {
         return new HgResponseBuilder()
             .withUnknown({hunters_horn_message: {type: 'recent_linked_turn'}})
             .withUser(postUser)
-            .withJournalMarkup(markup(entryId, 'entry short linked catchsuccess', 1212100))
+            .withJournalMarkup(markup(entryId, 'entry short linked catchsuccessloot', 1212100, text))
+            .withSuccess(0)
             .build();
     }
 
     /** Seeds the snapshot through a normal active hunt and waits for its intake request. */
     async function seedActiveHunt(args: {entryId: number, preUser: User, postUser: User, preEntries: string}) {
+        // Real activeturn responses carry the inventory, which teaches the item cache.
         server.setPageResponse(
             new HgResponseBuilder()
                 .withPage({journal: {entries_string: args.preEntries}})
@@ -103,6 +111,7 @@ describe('MHCT Friend Hunt Submission', () => {
                 .withActiveTurn(true)
                 .withUser(args.postUser)
                 .withJournalMarkup(markup(args.entryId, 'entry short active catchsuccess', args.postUser.last_active_turn_timestamp))
+                .withInventory({[lootItem.type]: lootItem})
                 .withAuras({})
                 .build()
         );
@@ -168,9 +177,11 @@ describe('MHCT Friend Hunt Submission', () => {
                 })
                 .withUser(linkedUser)
                 .withAuras({})
+                // Real page.php responses have an empty inventory; loot resolves from the item cache.
+                .withUnknown({inventory: []})
                 .build()
         );
-        server.setActiveTurnResponse(linkedPost(linkedUser, 101));
+        server.setActiveTurnResponse(linkedPost(linkedUser, 101, linkedLootText));
 
         const intakeRequestEvent = server.on('request', intakeUrl);
         await soundHorn();
@@ -183,6 +194,8 @@ describe('MHCT Friend Hunt Submission', () => {
                 hunt_details: expect.objectContaining({hunt_type: 'linked'}),
                 entry_id: '101',
                 trap: expect.objectContaining({id: '1111'}),
+                mouse: 'MouseHunt Community Tools',
+                loot: [expect.objectContaining({id: '4242', name: 'Tool Token', amount: '3'})],
             }));
 
             // Also proves the recorder + flush used by the negative tests sees a linked intake.

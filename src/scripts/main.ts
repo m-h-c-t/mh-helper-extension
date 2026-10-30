@@ -9,6 +9,7 @@ import type { User } from './types/hg';
 import { IntakeRejectionEngine } from './hunt-filter/engine';
 import { ActiveHuntEvidence } from './hunt-recording/active-hunt-evidence';
 import { HuntRecorder } from './hunt-recording/hunt-recorder';
+import { ItemCache } from './hunt-recording/item-cache';
 import { buildLinkedHuntEvidence } from './hunt-recording/linked-hunt-evidence';
 import { SnapshotStore } from './hunt-recording/snapshot-store';
 import * as successHandlers from './modules/ajax-handlers';
@@ -57,9 +58,10 @@ declare global {
         showFlashMessage
     );
     const activeHuntEvidence = new ActiveHuntEvidence(logger, rejectionEngine, submissionService, extensionLog, () => userSettings);
-    const huntRecorder = new HuntRecorder(logger, rejectionEngine, submissionService);
     const interceptorService = new InterceptorService(logger, extensionLog, submissionService);
     const snapshotStore = new SnapshotStore(interceptorService);
+    const itemCache = new ItemCache(interceptorService);
+    const huntRecorder = new HuntRecorder(logger, rejectionEngine, submissionService, itemCache);
     const mouseRipApiService = new MouseRipApiService(apiService);
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
@@ -415,6 +417,7 @@ declare global {
     function addAjaxHandlers() {
         if (userSettings['tracking-hunts']) {
             snapshotStore.init();
+            itemCache.init();
             setupPreHuntFetch();
         }
 
