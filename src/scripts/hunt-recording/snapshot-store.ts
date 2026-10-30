@@ -35,3 +35,17 @@ export class SnapshotStore {
         return this.snapshot;
     }
 }
+
+/**
+ * Reads the latest snapshot, then runs `fetch`. The order matters: the fetched page.php
+ * response also passes through the interceptor and would otherwise replace the snapshot
+ * that a linked hunt must be verified against.
+ */
+export async function readSnapshotThenFetch<T>(
+    snapshotStore: Pick<SnapshotStore, 'latest'>,
+    fetch: () => Promise<T>,
+): Promise<{snapshot: Snapshot | null, after: T}> {
+    const snapshot = snapshotStore.latest();
+    const after = await fetch();
+    return {snapshot, after};
+}

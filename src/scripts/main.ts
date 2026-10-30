@@ -11,7 +11,7 @@ import { ActiveHuntEvidence } from './hunt-recording/active-hunt-evidence';
 import { HuntRecorder } from './hunt-recording/hunt-recorder';
 import { ItemCache } from './hunt-recording/item-cache';
 import { buildLinkedHuntEvidence } from './hunt-recording/linked-hunt-evidence';
-import { SnapshotStore } from './hunt-recording/snapshot-store';
+import { readSnapshotThenFetch, SnapshotStore } from './hunt-recording/snapshot-store';
 import * as successHandlers from './modules/ajax-handlers';
 import { BadgeTimer } from './modules/badge-timer/badge-timer';
 import { CrownTracker } from './modules/crown-tracker/crown-tracker';
@@ -362,11 +362,9 @@ declare global {
                 return;
             }
 
-            // Read the snapshot before fetching page.php, whose response also passes through the interceptor.
-            const snapshot = snapshotStore.latest();
-
             logger.debug('Fetching user object before hunting', performance.now());
-            const pageResponse = await apiService.send('POST',
+            // The snapshot is read before fetching page.php, whose response also passes through the interceptor.
+            const {snapshot, after: pageResponse} = await readSnapshotThenFetch(snapshotStore, () => apiService.send('POST',
                 '/managers/ajax/pages/page.php',
                 {
                     sn: 'Hitgrab',
@@ -376,7 +374,7 @@ declare global {
                     uh: user.unique_hash
                 },
                 true
-            );
+            ));
 
             const handleResponse = (responseEvent: ResponseEventParams) => {
                 if (responseEvent.requestId !== requestEvent.requestId) {
