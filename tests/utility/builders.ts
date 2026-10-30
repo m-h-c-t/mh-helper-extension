@@ -18,6 +18,7 @@ function clone<T>(obj: T): T {
 */
 
 export class HgResponseBuilder {
+    success: 0 | 1 = 1;
     activeTurn?: boolean;
     user?: User;
     page?: unknown;
@@ -25,6 +26,11 @@ export class HgResponseBuilder {
     inventory?: Record<string, InventoryItem>;
     trapImage?: {auras: Record<string, {status: 'active' | 'hidden'}>};
     unknown?: object;
+
+    withSuccess(success: 0 | 1) {
+        this.success = success;
+        return this;
+    }
 
     withActiveTurn(active: boolean) {
         this.activeTurn = active;
@@ -77,7 +83,7 @@ export class HgResponseBuilder {
         }];
 
         return {
-            success: 1,
+            success: this.success,
             active_turn: this.activeTurn,
             user: clone(this.user),
             page: clone(this.page),
