@@ -18,6 +18,7 @@ import { CrownTracker } from './modules/crown-tracker/crown-tracker';
 import { ExtensionLog } from './modules/extension-log/extension-log';
 import { ApiService } from './services/api.service';
 import { EnvironmentService } from './services/environment.service';
+import { HgGlobalsService } from './services/hg-globals.service';
 import { InterceptorService } from './services/interceptor.service';
 import { ConsoleLogger, LogLevel } from './services/logging';
 import { MouseRipApiService } from './services/mouserip-api.service';
@@ -49,6 +50,7 @@ declare global {
     const extensionLog = new ExtensionLog();
     const apiService = new ApiService(() => mhhh_version);
     const environmentService = new EnvironmentService();
+    const hgGlobals = new HgGlobalsService();
     const rejectionEngine = new IntakeRejectionEngine(logger);
     const submissionService = new SubmissionService(logger, environmentService, apiService, getSettingsAsync,
         () => ({
@@ -57,7 +59,7 @@ declare global {
         }),
         showFlashMessage
     );
-    const activeHuntEvidence = new ActiveHuntEvidence(logger, rejectionEngine, submissionService, extensionLog, () => userSettings);
+    const activeHuntEvidence = new ActiveHuntEvidence(logger, rejectionEngine, submissionService, extensionLog, hgGlobals, () => userSettings);
     const interceptorService = new InterceptorService(logger, extensionLog, submissionService);
     const snapshotStore = new SnapshotStore(interceptorService);
     const itemCache = new ItemCache(interceptorService);
@@ -156,6 +158,7 @@ declare global {
     // Create hunter id hash using Crypto Web API
     // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
     async function createHunterIdHash() {
+        const user = hgGlobals.getUser();
         if (typeof user.user_id === 'undefined') {
             // No problem if user is not logged in yet.
             // This function will be called on logins (ajaxSuccess on session.php)
@@ -287,6 +290,7 @@ declare global {
             return;
         }
 
+        const user = hgGlobals.getUser();
         const mapId = user.quests.QuestRelicHunter?.default_map_id;
 
         if (!mapId) {
@@ -298,7 +302,7 @@ declare global {
             map_id: mapId,
             action: 'map_info',
             uh: user.unique_hash,
-            last_read_journal_entry_id: lastReadJournalEntryId,
+            last_read_journal_entry_id: hgGlobals.getLastReadJournalEntryId(),
         };
         apiService.send('POST', 'https://www.mousehuntgame.com/managers/ajax/users/treasuremap_v2.php', payload, true)
             .then((data: any) => {
@@ -370,8 +374,8 @@ declare global {
                     sn: 'Hitgrab',
                     hg_is_ajax: 1,
                     page_class: 'Camp',
-                    last_read_journal_entry_id: lastReadJournalEntryId,
-                    uh: user.unique_hash
+                    last_read_journal_entry_id: hgGlobals.getLastReadJournalEntryId(),
+                    uh: hgGlobals.getUser().unique_hash
                 },
                 true
             ));

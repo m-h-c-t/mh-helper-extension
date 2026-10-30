@@ -1,5 +1,6 @@
 import type { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
 import type { ExtensionLog } from '@scripts/modules/extension-log/extension-log';
+import type { HgGlobalsService } from '@scripts/services/hg-globals.service';
 import type { LoggerService } from '@scripts/services/logging';
 import type { UserSettings } from '@scripts/services/settings/settings.service';
 import type { SubmissionService } from '@scripts/services/submission.service';
@@ -20,6 +21,7 @@ export class ActiveHuntEvidence {
         private readonly rejectionEngine: IntakeRejectionEngine,
         private readonly submissionService: SubmissionService,
         private readonly extensionLog: ExtensionLog,
+        private readonly hgGlobals: HgGlobalsService,
         private readonly getSettings: () => UserSettings,
     ) { }
 
@@ -319,7 +321,8 @@ export class ActiveHuntEvidence {
                 more_details.pirate_sleigh_trigger = true;
                 this.logger.debug('Pirate Sleigh proc', {procs: more_details});
             } else if (css_class.search(/rainbowQuillSpecialEffect/) !== -1) {
-                if (user.environment_name == 'Afterword Acres' || user.environment_name == 'Epilogue Falls') {
+                const environment_name = this.hgGlobals.getUser().environment_name;
+                if (environment_name == 'Afterword Acres' || environment_name == 'Epilogue Falls') {
                     more_details.rainbow_quill_trigger = true;
                 }
                 this.logger.debug('Rainbow Quill proc', {procs: more_details});
