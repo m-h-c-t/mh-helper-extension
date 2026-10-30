@@ -76,4 +76,10 @@ describe('hgResponseSchema', () => {
             hunters_horn_message: {type: 'recent_linked_turn', title: 't'}});
         expect(parsed.hunters_horn_message?.type).toBe('recent_linked_turn');
     });
+
+    it.each([[null], [[]]])('tolerates hunters_horn_message %j', (value) => {
+        const result = hgResponseSchema.safeParse({...new HgResponseBuilder().build(), success: 0, hunters_horn_message: value});
+        expect(result.success).toBe(true);
+        expect(result.data?.hunters_horn_message).toBeUndefined();
+    });
 });

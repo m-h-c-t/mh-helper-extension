@@ -14,7 +14,10 @@ export const hgResponseSchema = z.object({
     journal_markup: z.array(journalMarkupSchema).optional(),
     inventory: inventorySchema.optional(),
     trap_image: trapImageSchema.optional(),
-    hunters_horn_message: z.object({type: z.string()}).loose().optional(),
+    // PHP may send null or an empty array when there is no message; normalize both to undefined.
+    hunters_horn_message: z.union([z.object({type: z.string()}).loose(), z.null(), z.tuple([])])
+        .transform(message => (message == null || Array.isArray(message) ? undefined : message))
+        .optional(),
 }).loose(); // Allow other unknown keys since many responses have extra data used elsewhere (e.g. ajax success handlers)
 
 export type HgResponse = z.infer<typeof hgResponseSchema>;

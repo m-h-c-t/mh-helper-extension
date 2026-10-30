@@ -2,6 +2,7 @@ import type { LinkedHuntContext } from '@scripts/hunt-filter/linkedRules';
 import type { LoggerService } from '@scripts/services/logging';
 
 import { buildLinkedHuntEvidence } from '@scripts/hunt-recording/linked-hunt-evidence';
+import { hgResponseSchema } from '@scripts/types/hg';
 import { mock } from 'vitest-mock-extended';
 
 import { HgResponseBuilder, UserBuilder } from '../../utility/builders';
@@ -104,6 +105,12 @@ describe('buildLinkedHuntEvidence', () => {
     ])('rejects: %s', (_, mutate) => {
         const ctx = validContext();
         mutate(ctx);
+        expect(buildLinkedHuntEvidence(ctx, logger)).toBeNull();
+    });
+
+    it.each([[null], [[]]])('rejects (rule 1) a post whose hunters_horn_message is %j', (value) => {
+        const ctx = validContext();
+        ctx.post = hgResponseSchema.parse({...ctx.post, hunters_horn_message: value});
         expect(buildLinkedHuntEvidence(ctx, logger)).toBeNull();
     });
 
