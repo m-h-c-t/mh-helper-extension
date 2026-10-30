@@ -2,16 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import type { ResponseEventParams } from './services/interceptor.service';
 import type { UserSettings } from './services/settings/settings.service';
 import type { User } from './types/hg';
 
-import { IntakeRejectionEngine } from './hunt-filter/engine';
-import { ActiveHuntEvidence } from './hunt-recording/active-hunt-evidence';
-import { HuntRecorder } from './hunt-recording/hunt-recorder';
-import { ItemCache } from './hunt-recording/item-cache';
-import { buildLinkedHuntEvidence } from './hunt-recording/linked-hunt-evidence';
-import { readSnapshotThenFetch, SnapshotStore } from './hunt-recording/snapshot-store';
+import { HuntTracker } from './hunt-recording/hunt-tracker';
 import * as successHandlers from './modules/ajax-handlers';
 import { BadgeTimer } from './modules/badge-timer/badge-timer';
 import { CrownTracker } from './modules/crown-tracker/crown-tracker';
@@ -23,7 +17,6 @@ import { InterceptorService } from './services/interceptor.service';
 import { ConsoleLogger, LogLevel } from './services/logging';
 import { MouseRipApiService } from './services/mouserip-api.service';
 import { SubmissionService } from './services/submission.service';
-import { hgResponseSchema } from './types/hg';
 import { HornHud } from './util/hornHud';
 
 declare global {
@@ -51,7 +44,6 @@ declare global {
     const apiService = new ApiService(() => mhhh_version);
     const environmentService = new EnvironmentService();
     const hgGlobals = new HgGlobalsService();
-    const rejectionEngine = new IntakeRejectionEngine(logger);
     const submissionService = new SubmissionService(logger, environmentService, apiService, getSettingsAsync,
         () => ({
             hunter_id_hash,
@@ -59,11 +51,8 @@ declare global {
         }),
         showFlashMessage
     );
-    const activeHuntEvidence = new ActiveHuntEvidence(logger, rejectionEngine, submissionService, extensionLog, hgGlobals, () => userSettings);
     const interceptorService = new InterceptorService(logger, extensionLog, submissionService);
-    const snapshotStore = new SnapshotStore(interceptorService);
-    const itemCache = new ItemCache(interceptorService);
-    const huntRecorder = new HuntRecorder(logger, rejectionEngine, submissionService, itemCache);
+    const huntTracker = new HuntTracker(logger, interceptorService, apiService, submissionService, extensionLog, hgGlobals, () => userSettings);
     const mouseRipApiService = new MouseRipApiService(apiService);
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
@@ -356,71 +345,10 @@ declare global {
         });
     }
 
-    /**
-     * Before allowing a hunt submission, first request an updated user object that reflects the effect
-     * of any outside actions, such as setup changes from the mobile app, a different tab, or trap checks.
-     */
-    function setupPreHuntFetch() {
-        interceptorService.on('request', async (requestEvent) => {
-            if (requestEvent.url.pathname !== '/managers/ajax/turns/activeturn.php') {
-                return;
-            }
-
-            logger.debug('Fetching user object before hunting', performance.now());
-            // The snapshot is read before fetching page.php, whose response also passes through the interceptor.
-            const {snapshot, after: pageResponse} = await readSnapshotThenFetch(snapshotStore, () => apiService.send('POST',
-                '/managers/ajax/pages/page.php',
-                {
-                    sn: 'Hitgrab',
-                    hg_is_ajax: 1,
-                    page_class: 'Camp',
-                    last_read_journal_entry_id: hgGlobals.getLastReadJournalEntryId(),
-                    uh: hgGlobals.getUser().unique_hash
-                },
-                true
-            ));
-
-            const handleResponse = (responseEvent: ResponseEventParams) => {
-                if (responseEvent.requestId !== requestEvent.requestId) {
-                    return;
-                }
-
-                interceptorService.off('response', handleResponse);
-                const post = responseEvent.response;
-
-                if (post.success === 1) {
-                    const evidence = activeHuntEvidence.build(pageResponse, post);
-                    if (evidence) huntRecorder.record(evidence);
-                    return;
-                }
-
-                if (post.success === 0 && post.hunters_horn_message?.type === 'recent_linked_turn') {
-                    const afterParse = hgResponseSchema.safeParse(pageResponse);
-                    if (!afterParse.success) {
-                        logger.debug('Linked hunt dropped: unexpected page response');
-                        return;
-                    }
-
-                    const evidence = buildLinkedHuntEvidence({
-                        snapshot,
-                        after: afterParse.data,
-                        post,
-                        nowSeconds: Math.floor(Date.now() / 1000),
-                    }, logger);
-                    if (evidence) huntRecorder.record(evidence);
-                }
-            };
-
-            interceptorService.on('response', handleResponse);
-        });
-    }
-
     // Listening routers
     function addAjaxHandlers() {
         if (userSettings['tracking-hunts']) {
-            snapshotStore.init();
-            itemCache.init();
-            setupPreHuntFetch();
+            huntTracker.init();
         }
 
         interceptorService.on('request', async (details) => {

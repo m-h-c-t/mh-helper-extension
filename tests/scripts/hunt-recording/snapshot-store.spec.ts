@@ -1,7 +1,7 @@
 import type { InterceptorService, ResponseEventParams } from '@scripts/services/interceptor.service';
 
 import { getMaxEntryId } from '@scripts/hunt-recording/journal';
-import { readSnapshotThenFetch, SnapshotStore } from '@scripts/hunt-recording/snapshot-store';
+import { SnapshotStore } from '@scripts/hunt-recording/snapshot-store';
 import { HgResponseBuilder } from '@tests/utility/builders';
 import { mock } from 'vitest-mock-extended';
 
@@ -55,25 +55,5 @@ describe('SnapshotStore', () => {
         const response = qualifying();
         listener({response} as ResponseEventParams);
         expect(store.latest()?.response).toBe(response);
-    });
-});
-
-describe('readSnapshotThenFetch', () => {
-    it('returns the snapshot taken before the fetch, even if the fetched response replaces it', async () => {
-        const store = new SnapshotStore(mock<InterceptorService>());
-        const preClick = new HgResponseBuilder().withAuras({}).build();
-        const pagePhp = new HgResponseBuilder().withAuras({}).build();
-        store.record(preClick);
-
-        const result = await readSnapshotThenFetch(store, async () => {
-            // The page.php response passes through the interceptor (and qualifies as a snapshot) during the await.
-            await Promise.resolve();
-            store.record(pagePhp);
-            return pagePhp;
-        });
-
-        expect(result.snapshot?.response).toBe(preClick);
-        expect(result.after).toBe(pagePhp);
-        expect(store.latest()?.response).toBe(pagePhp);
     });
 });
