@@ -13,7 +13,7 @@ const intakeUrl = 'https://www.mhct.win/intake.php';
 const realSetTimeout = globalThis.setTimeout;
 
 // main is loaded once per spec file, so the snapshot carries over between tests.
-// These tests must stay in this order.
+// Tests that need a snapshot seed their own through an active hunt; the no-snapshot test must run first.
 describe('MHCT Friend Hunt Submission', () => {
     let server: MockServer;
     let intakeRequests: string[];
@@ -207,24 +207,36 @@ describe('MHCT Friend Hunt Submission', () => {
     });
 
     it('does not resubmit on a second click', async () => {
-        const linkedUser = user({num: 1, last: 1212100});
+        await seedActiveHunt({
+            entryId: 150,
+            preUser: user({num: 5, last: 1211000, next: 0}),
+            postUser: user({num: 6, last: 1211500}),
+            preEntries: entry(149, 'entry short active catchsuccess'),
+        });
+
+        const linkedUser = user({num: 6, last: 1212100});
         server.setPageResponse(
             new HgResponseBuilder()
                 .withPage({
                     journal: {
-                        entries_string: entry(101, 'entry short linked catchsuccess') + entry(100, 'entry short active catchsuccess'),
+                        entries_string: entry(151, 'entry short linked catchsuccess') + entry(150, 'entry short active catchsuccess'),
                     },
                 })
                 .withUser(linkedUser)
                 .withAuras({})
                 .build()
         );
-        server.setActiveTurnResponse(linkedPost(linkedUser, 101));
+        server.setActiveTurnResponse(linkedPost(linkedUser, 151));
 
         await soundHorn();
         await flush();
+        expect(intakeCount()).toBe(1);
 
-        expect(intakeCount()).toBe(0);
+        // Same responses again: the linked entry is now at or below the snapshot's maxEntryId.
+        await soundHorn();
+        await flush();
+        expect(intakeCount()).toBe(1);
+
         LoggingAssertions.expectNoWarningsOrErrors();
     });
 
