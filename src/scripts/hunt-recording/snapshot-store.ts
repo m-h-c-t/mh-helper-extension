@@ -26,7 +26,9 @@ export class SnapshotStore {
             return;
         }
 
-        this.snapshot = {response, maxEntryId: getMaxEntryId(response)};
+        // Responses without journal data report 0; never move the high-water mark backwards.
+        const maxEntryId = Math.max(getMaxEntryId(response), this.snapshot?.maxEntryId ?? 0);
+        this.snapshot = {response, maxEntryId};
     }
 
     latest(): Snapshot | null {

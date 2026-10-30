@@ -27,6 +27,18 @@ describe('SnapshotStore', () => {
         expect(store.latest()).toEqual({response: b, maxEntryId: getMaxEntryId(b)});
     });
 
+    it('keeps the previous maxEntryId when a later qualifying response has no journal data', () => {
+        const withJournal = new HgResponseBuilder()
+            .withAuras({})
+            .withPage({journal: {entries_string: `<div class='entry short active' data-entry-id='500'></div>`}})
+            .withJournalMarkup([])
+            .build();
+        const noJournal = new HgResponseBuilder().withAuras({}).withJournalMarkup([]).build();
+        store.record(withJournal);
+        store.record(noJournal);
+        expect(store.latest()).toEqual({response: noJournal, maxEntryId: 500});
+    });
+
     it('ignores responses without trap_image', () => {
         const a = qualifying();
         const noTrapImage = new HgResponseBuilder().build();
