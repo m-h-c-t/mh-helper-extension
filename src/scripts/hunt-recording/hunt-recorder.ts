@@ -44,6 +44,10 @@ export class HuntRecorder {
         try {
             // Create two intake messages. One based on pre-response. The other based on post-response.
             ({message_pre, message_post} = this.createIntakeMessage(pre_response, post_response, hunt));
+            if (evidence.type === 'linked') {
+                message_pre.hunt_details = {...message_pre.hunt_details, hunt_type: 'linked'};
+                message_post.hunt_details = {...message_post.hunt_details, hunt_type: 'linked'};
+            }
         } catch (error) {
             this.logger.error('Something went wrong creating message', error);
         }
@@ -58,7 +62,8 @@ export class HuntRecorder {
         if (!validated) {
             // collect limited info for stage and location rejections
             const invalidProperties = this.rejectionEngine.getInvalidIntakeMessageProperties(message_pre, message_post);
-            if (invalidProperties.has('stage') || invalidProperties.has('location')) {
+            // Linked hunts never report rejection telemetry.
+            if (evidence.type !== 'linked' && (invalidProperties.has('stage') || invalidProperties.has('location'))) {
                 const rejection_message = this.createRejectionMessage(message_pre, message_post);
                 void this.submissionService.submitRejection(rejection_message);
             }
