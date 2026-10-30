@@ -4,7 +4,8 @@ import type { HgResponse, JournalMarkup } from '@scripts/types/hg';
 import { isLinkedEntry, isTurnEntry, parseJournalEntriesString } from '@scripts/hunt-recording/journal';
 import { pageCampSchema } from '@scripts/types/hg/page';
 
-export const LINKED_MAX_AGE_SECONDS = 3600;
+/** The backend accepts linked hunts up to 3600s old; keep a 60s margin for submission latency. */
+export const LINKED_MAX_AGE_SECONDS = 3600 - 60;
 export const LINKED_CLOCK_SKEW_SECONDS = 30;
 
 export interface LinkedHuntContext {

@@ -95,7 +95,7 @@ describe('buildLinkedHuntEvidence', () => {
             replaceEntry(c, 0, [103, 'entry short active catchsuccessloot']);
         }],
         ['rule 4: entry missing from post journal_markup', (c) => { c.post.journal_markup = []; }],
-        ['rule 5: older than 3600s', (c) => { c.nowSeconds = 1000 + 3601; }],
+        ['rule 5: older than 3540s', (c) => { c.nowSeconds = 1000 + 3541; }],
         ['rule 5: more than 30s in the future', (c) => { c.nowSeconds = 1000 - 31; }],
         ['rule 6: before turn timestamp not older', (c) => { c.snapshot!.response.user.last_active_turn_timestamp = 1000; }],
         ['rule 7: after turn timestamp mismatch', (c) => { c.after.user.last_active_turn_timestamp = 999; }],
@@ -114,7 +114,7 @@ describe('buildLinkedHuntEvidence', () => {
         expect(buildLinkedHuntEvidence(ctx, logger)).toBeNull();
     });
 
-    it.each([1000 + 3600, 1000 - 30])('accepts at the edges of the age window (now=%i)', (now) => {
+    it.each([1000 + 3540, 1000 - 30])('accepts at the edges of the age window (now=%i)', (now) => {
         const ctx = validContext();
         ctx.nowSeconds = now;
         expect(buildLinkedHuntEvidence(ctx, logger)).not.toBeNull();
