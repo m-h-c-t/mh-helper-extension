@@ -120,6 +120,16 @@ describe('buildLinkedHuntEvidence', () => {
         expect(buildLinkedHuntEvidence(ctx, logger)).not.toBeNull();
     });
 
+    it('accepts (rule 3) when the lowest entry id on the page is exactly maxEntryId + 1', () => {
+        const ctx = validContext();
+        setEntries(ctx,
+            [103, 'entry short linked catchsuccessloot'],
+            [102, 'entry short misc custom larryGift'],
+            [101, 'entry short itemtransaction shop_purchase'],
+        );
+        expect(buildLinkedHuntEvidence(ctx, logger)).not.toBeNull();
+    });
+
     it('logs failures at debug only', () => {
         const l = mock<LoggerService>();
         const ctx = validContext();
