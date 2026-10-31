@@ -53,7 +53,7 @@ describe('HuntRecorder', () => {
         after = buildResponse();
         submissionService = mock<SubmissionService>();
         logger = mock<LoggerService>();
-        itemCache = new ItemCache(mock());
+        itemCache = new ItemCache(mock(), mock(), mock());
         recorder = new HuntRecorder(logger, new IntakeRejectionEngine(logger), submissionService, itemCache);
     });
 

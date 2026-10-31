@@ -8,7 +8,8 @@ export class MouseRipApiService {
     ) {}
 
     async getAllItems(): Promise<MouseRipItem[]> {
-        const response = await this.apiService.send('GET', 'https://api.mouse.rip/items', null, true);
+        // Only request the fields in mouseRipItemSchema; the full item objects are ~20x larger.
+        const response = await this.apiService.send('GET', 'https://api.mouse.rip/items?fields=id,type,name', null, true);
 
         return mouseRipItemSchema.array().parse(response);
     }

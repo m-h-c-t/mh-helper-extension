@@ -48,7 +48,7 @@ export class HuntRecorder {
         const fromInventory = getItemFromInventory(post_response.inventory);
         let loot: Loot[] | undefined;
         if (evidence.type === 'linked') {
-            // page.php (the linked "after") has no inventory, so fall back to items learned from earlier responses.
+            // page.php (the linked "after") has no inventory, so fall back to the item cache.
             const parsed = this.parseLoot(hunt, type => fromInventory(type) ?? this.itemCache.get(type));
             if (parsed && parsed.unresolved.length > 0) {
                 this.logger.debug(`Linked hunt dropped: unresolved loot ${parsed.unresolved.join(', ')}`);

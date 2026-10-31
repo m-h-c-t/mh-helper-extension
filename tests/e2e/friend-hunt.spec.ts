@@ -6,6 +6,7 @@ import nock from 'nock';
 import qs from 'qs';
 
 import MockServer from './util/mockServer';
+import { mouseRipItems } from './util/mouseRipItems';
 import { soundHorn } from './util/soundHorn';
 
 const intakeUrl = 'https://www.mhct.win/intake.php';
@@ -67,7 +68,8 @@ describe('MHCT Friend Hunt Submission', () => {
         return `<div class='${cssClass}' data-entry-id='${id}'></div>`;
     }
 
-    const lootItem = {item_id: 4242, name: 'Tool Token', type: 'mhct_tool_token_stat_item', quantity: 50};
+    // Only mouse.rip knows this item; no response in these tests carries it in an inventory.
+    const lootItem = mouseRipItems[0];
     const linkedLootText = 'I went on a hunt with <a href="https://www.mousehuntgame.com/hunterprofile.php" onclick="hg.utils.User.showProfile(1); return false;">A Friend</a>'
         + ` where I was successful in my hunt! I caught a <a href="https://www.mousehuntgame.com/" onclick="hg.views.MouseView.show('mhct'); return false;">MouseHunt Community Tools Mouse</a>.`
         + '<br /><br /><b>The mouse also dropped the following loot:</b><br />'
@@ -98,7 +100,6 @@ describe('MHCT Friend Hunt Submission', () => {
 
     /** Seeds the snapshot through a normal active hunt and waits for its intake request. */
     async function seedActiveHunt(args: {entryId: number, preUser: User, postUser: User, preEntries: string}) {
-        // Real activeturn responses carry the inventory, which teaches the item cache.
         server.setPageResponse(
             new HgResponseBuilder()
                 .withPage({journal: {entries_string: args.preEntries}})
@@ -111,7 +112,6 @@ describe('MHCT Friend Hunt Submission', () => {
                 .withActiveTurn(true)
                 .withUser(args.postUser)
                 .withJournalMarkup(markup(args.entryId, 'entry short active catchsuccess', args.postUser.last_active_turn_timestamp))
-                .withInventory({[lootItem.type]: lootItem})
                 .withAuras({})
                 .build()
         );
@@ -177,7 +177,7 @@ describe('MHCT Friend Hunt Submission', () => {
                 })
                 .withUser(linkedUser)
                 .withAuras({})
-                // Real page.php responses have an empty inventory; loot resolves from the item cache.
+                // Real page.php responses have an empty inventory; loot resolves from the mouse.rip item list.
                 .withUnknown({inventory: []})
                 .build()
         );

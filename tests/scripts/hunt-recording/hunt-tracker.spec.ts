@@ -4,6 +4,7 @@ import type { ApiService } from '@scripts/services/api.service';
 import type { HgGlobalsService } from '@scripts/services/hg-globals.service';
 import type { InterceptorEventMap, InterceptorService, RequestEventParams, ResponseEventParams } from '@scripts/services/interceptor.service';
 import type { LoggerService } from '@scripts/services/logging';
+import type { MouseRipApiService, MouseRipItem } from '@scripts/services/mouserip-api.service';
 import type { UserSettings } from '@scripts/services/settings/settings.service';
 import type { SubmissionService } from '@scripts/services/submission.service';
 import type { HgResponse } from '@scripts/types/hg';
@@ -45,6 +46,7 @@ describe('HuntTracker', () => {
     let apiService: ReturnType<typeof mock<ApiService>>;
     let submissionService: ReturnType<typeof mock<SubmissionService>>;
     let hgGlobals: ReturnType<typeof mock<HgGlobalsService>>;
+    let mouseRipApi: ReturnType<typeof mock<MouseRipApiService>>;
     let tracker: HuntTracker;
 
     const soundHorn = async (requestId: string, post: HgResponse) => {
@@ -65,7 +67,12 @@ describe('HuntTracker', () => {
         hgGlobals = mock<HgGlobalsService>();
         hgGlobals.getUser.mockReturnValue(new UserBuilder().build());
         hgGlobals.getLastReadJournalEntryId.mockReturnValue(1337);
+        mouseRipApi = mock<MouseRipApiService>();
+        mouseRipApi.getAllItems.mockResolvedValue([]);
+    });
 
+    /** Constructed per test (not in beforeEach) so tests can stub mouse.rip before init loads the item list. */
+    const startTracker = () => {
         tracker = new HuntTracker(
             mock<LoggerService>(),
             interceptor as unknown as InterceptorService,
@@ -73,12 +80,18 @@ describe('HuntTracker', () => {
             submissionService,
             mock<ExtensionLog>(),
             hgGlobals,
+            mouseRipApi,
             () => ({'tracking-events': false}) as UserSettings,
         );
         tracker.init();
-    });
+    };
+
+    /** Lets async work queued by the tracker (the item cache wait, submission) run. */
+    const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
     describe('active hunts', () => {
+        beforeEach(startTracker);
+
         const pagePre = () => new HgResponseBuilder()
             .withPage({journal: {entries_string: `data-entry-id='0'`}})
             .build();
@@ -133,12 +146,19 @@ describe('HuntTracker', () => {
 
     describe('linked hunts', () => {
         const nowSeconds = () => Math.floor(Date.now() / 1000);
+        const lootType = 'mhct_tool_token_stat_item';
+        const lootText = `I went on a hunt with a friend where I was successful in my hunt! I caught a `
+            + `<a href="https://www.mousehuntgame.com/" onclick="hg.views.MouseView.show('mhct'); return false;">MouseHunt Community Tools Mouse</a>.`
+            + '<br /><br /><b>The mouse also dropped the following loot:</b><br />'
+            + `3 <a class="loot" title="" href="https://www.mousehuntgame.com/item.php?item_type=${lootType}" onclick="hg.views.ItemView.show('${lootType}'); return false;">Tool Tokens</a>`;
+        const toolToken: MouseRipItem = {id: 4242, type: lootType, name: 'Tool Token'};
 
         const withTurn = (last_active_turn_timestamp: number) => new UserBuilder()
             .withTurn({num_active_turns: 1, next_activeturn_seconds: 900, last_active_turn_timestamp, activeturn_wait_seconds: 900})
             .build();
 
-        it('uses the snapshot from before the page.php fetch, even though page.php replaces it', async () => {
+        /** Seeds a before-snapshot through an active hunt, then sounds the horn into a qualifying friend hunt. */
+        const huntWithFriend = async (text = 'MouseHunt Community Tools Mouse') => {
             const linkedTimestamp = nowSeconds() - 20;
 
             // The previous active hunt is the before-snapshot.
@@ -165,6 +185,7 @@ describe('HuntTracker', () => {
                     `<div class='entry short linked catchsuccess' data-entry-id='101'></div>` +
                     `<div class='entry short active catchsuccess' data-entry-id='100'></div>`,
                 }})
+                .withUnknown({inventory: []})
                 .build();
 
             // Like the real page.php call, its response passes through the interceptor before the fetch resolves.
@@ -183,13 +204,20 @@ describe('HuntTracker', () => {
                 .withJournalMarkup([{
                     render_data: {
                         entry_id: 101, css_class: 'entry short linked catchsuccess', entry_timestamp: linkedTimestamp,
-                        text: 'MouseHunt Community Tools Mouse', environment: 'Test Environment', entry_date: '', mouse_type: 'mhct',
+                        text, environment: 'Test Environment', entry_date: '', mouse_type: 'mhct',
                     },
                 }])
                 .withUnknown({success: 0, hunters_horn_message: {type: 'recent_linked_turn'}})
                 .build();
 
             await soundHorn('r1', linkedPost);
+            await settle();
+        };
+
+        it('uses the snapshot from before the page.php fetch, even though page.php replaces it', async () => {
+            startTracker();
+
+            await huntWithFriend();
 
             expect(submissionService.submitHunt).toHaveBeenCalledOnce();
             const message = submissionService.submitHunt.mock.calls[0][0];
@@ -197,10 +225,49 @@ describe('HuntTracker', () => {
             expect(message.hunt_details?.hunt_type).toBe('linked');
         });
 
+        it('resolves loot from the mouse.rip item list', async () => {
+            mouseRipApi.getAllItems.mockResolvedValue([toolToken]);
+            startTracker();
+
+            await huntWithFriend(lootText);
+
+            expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+            expect(submissionService.submitHunt.mock.calls[0][0].loot).toEqual([
+                expect.objectContaining({id: 4242, name: 'Tool Token', amount: 3}),
+            ]);
+        });
+
+        it('waits for the mouse.rip item list when the horn sounds before it loads', async () => {
+            let finishLoading!: (items: MouseRipItem[]) => void;
+            mouseRipApi.getAllItems.mockReturnValue(new Promise((resolve) => { finishLoading = resolve; }));
+            startTracker();
+
+            await huntWithFriend(lootText);
+            expect(submissionService.submitHunt).not.toHaveBeenCalled();
+
+            finishLoading([toolToken]);
+            await settle();
+
+            expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+            expect(submissionService.submitHunt.mock.calls[0][0].loot).toEqual([
+                expect.objectContaining({id: 4242}),
+            ]);
+        });
+
+        it('drops a friend hunt whose loot mouse.rip does not know', async () => {
+            startTracker();
+
+            await huntWithFriend(lootText);
+
+            expect(submissionService.submitHunt).not.toHaveBeenCalled();
+        });
+
         it('ignores unsuccessful responses that are not friend hunts', async () => {
+            startTracker();
             apiService.send.mockResolvedValue(new HgResponseBuilder().build());
 
             await soundHorn('r1', new HgResponseBuilder().withUnknown({success: 0}).build());
+            await settle();
 
             expect(submissionService.submitHunt).not.toHaveBeenCalled();
         });

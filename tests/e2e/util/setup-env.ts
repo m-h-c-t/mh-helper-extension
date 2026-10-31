@@ -4,6 +4,8 @@ import { UserBuilder } from '@tests/utility/builders';
 import $ from 'jquery';
 import nock from 'nock';
 
+import { mouseRipItems } from './mouseRipItems';
+
 export const mockLoggerService = {
     debug: vi.fn(),
     info: vi.fn(),
@@ -16,6 +18,11 @@ export const mockLoggerService = {
 
 beforeAll(async () => {
     nock.disableNetConnect();
+    nock('https://api.mouse.rip')
+        .defaultReplyHeaders({'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'})
+        .get('/items')
+        .query({fields: 'id,type,name'})
+        .reply(200, mouseRipItems);
     const mainLoaded = setupMain();
     vi
         .useFakeTimers()

@@ -3,6 +3,7 @@ import type { ApiService } from '@scripts/services/api.service';
 import type { HgGlobalsService } from '@scripts/services/hg-globals.service';
 import type { InterceptorService, RequestEventParams, ResponseEventParams } from '@scripts/services/interceptor.service';
 import type { LoggerService } from '@scripts/services/logging';
+import type { MouseRipApiService } from '@scripts/services/mouserip-api.service';
 import type { UserSettings } from '@scripts/services/settings/settings.service';
 import type { SubmissionService } from '@scripts/services/submission.service';
 import type { HgResponse } from '@scripts/types/hg';
@@ -39,11 +40,12 @@ export class HuntTracker {
         submissionService: SubmissionService,
         extensionLog: ExtensionLog,
         private readonly hgGlobals: HgGlobalsService,
+        mouseRipApiService: MouseRipApiService,
         getSettings: () => UserSettings,
     ) {
         const rejectionEngine = new IntakeRejectionEngine(logger);
         this.snapshotStore = new SnapshotStore(interceptorService);
-        this.itemCache = new ItemCache(interceptorService);
+        this.itemCache = new ItemCache(logger, interceptorService, mouseRipApiService);
         this.activeHuntEvidence = new ActiveHuntEvidence(logger, rejectionEngine, submissionService, extensionLog, hgGlobals, getSettings);
         this.huntRecorder = new HuntRecorder(logger, rejectionEngine, submissionService, this.itemCache);
     }
@@ -81,13 +83,13 @@ export class HuntTracker {
             }
 
             this.interceptorService.off('response', handleResponse);
-            this.onActiveTurnResponse(snapshot, pageResponse, responseEvent.response);
+            void this.onActiveTurnResponse(snapshot, pageResponse, responseEvent.response);
         };
 
         this.interceptorService.on('response', handleResponse);
     }
 
-    private onActiveTurnResponse(snapshot: Snapshot | null, pageResponse: unknown, post: HgResponse): void {
+    private async onActiveTurnResponse(snapshot: Snapshot | null, pageResponse: unknown, post: HgResponse): Promise<void> {
         if (post.success === 1) {
             const evidence = this.activeHuntEvidence.build(pageResponse, post);
             if (evidence) this.huntRecorder.record(evidence);
@@ -107,7 +109,11 @@ export class HuntTracker {
                 post,
                 nowSeconds: Math.floor(Date.now() / 1000),
             }, this.logger);
-            if (evidence) this.huntRecorder.record(evidence);
+            if (!evidence) return;
+
+            // Linked loot resolves from the item cache, whose mouse.rip list may still be loading right after page load.
+            await this.itemCache.ready;
+            this.huntRecorder.record(evidence);
         }
     }
 }

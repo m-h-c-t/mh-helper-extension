@@ -52,8 +52,8 @@ declare global {
         showFlashMessage
     );
     const interceptorService = new InterceptorService(logger, extensionLog, submissionService);
-    const huntTracker = new HuntTracker(logger, interceptorService, apiService, submissionService, extensionLog, hgGlobals, () => userSettings);
     const mouseRipApiService = new MouseRipApiService(apiService);
+    const huntTracker = new HuntTracker(logger, interceptorService, apiService, submissionService, extensionLog, hgGlobals, mouseRipApiService, () => userSettings);
     const ajaxSuccessHandlers = [
         new successHandlers.BountifulBeanstalkRoomTrackerAjaxHandler(logger, showFlashMessage),
         new successHandlers.GWHGolemAjaxHandler(logger, showFlashMessage),
