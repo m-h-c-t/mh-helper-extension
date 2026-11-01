@@ -86,8 +86,14 @@ describe('HuntTracker', () => {
         tracker.init();
     };
 
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     /** Lets async work queued by the tracker (the item cache wait, submission) run. */
-    const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+    const settle = () => vi.isFakeTimers()
+        ? vi.advanceTimersByTimeAsync(0)
+        : new Promise(resolve => setTimeout(resolve, 0));
 
     describe('active hunts', () => {
         beforeEach(startTracker);
@@ -251,6 +257,40 @@ describe('HuntTracker', () => {
             expect(submissionService.submitHunt).toHaveBeenCalledOnce();
             expect(submissionService.submitHunt.mock.calls[0][0].loot).toEqual([
                 expect.objectContaining({id: 4242}),
+            ]);
+        });
+
+        it('does not wait for the mouse.rip item list when the friend hunt has no loot', async () => {
+            mouseRipApi.getAllItems.mockReturnValue(new Promise(() => undefined));
+            startTracker();
+
+            await huntWithFriend();
+
+            expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+        });
+
+        it('records with the cached items once the wait for a stalled mouse.rip item list expires', async () => {
+            vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+            mouseRipApi.getAllItems.mockReturnValue(new Promise(() => undefined));
+            startTracker();
+
+            await huntWithFriend(lootText);
+            expect(submissionService.submitHunt).not.toHaveBeenCalled();
+
+            // An inventory seen while waiting teaches the cache the loot item.
+            await interceptor.emit('response', {
+                url: new URL('https://www.mousehuntgame.com/managers/ajax/users/userInventory.php'),
+                requestId: 'inventory',
+                request: {},
+                response: new HgResponseBuilder()
+                    .withInventory({[lootType]: {item_id: 4242, name: 'Tool Token', type: lootType, quantity: 3}})
+                    .build(),
+            });
+            await vi.advanceTimersByTimeAsync(10_000);
+
+            expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+            expect(submissionService.submitHunt.mock.calls[0][0].loot).toEqual([
+                expect.objectContaining({id: 4242, name: 'Tool Token', amount: 3}),
             ]);
         });
 

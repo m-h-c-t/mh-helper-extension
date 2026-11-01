@@ -72,6 +72,35 @@ describe('ItemCache', () => {
         expect(cache.get('cursed_gold_stat_item')).toEqual({item_id: 2, name: 'Cursed Gold'});
     });
 
+    describe('whenReady', () => {
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it('resolves when the mouse.rip item list loads', async () => {
+            mouseRipApi.getAllItems.mockResolvedValue([{id: 80, type: 'brie_cheese', name: 'Brie Cheese'}]);
+
+            cache.init();
+            await cache.whenReady(10_000);
+
+            expect(cache.get('brie_cheese')).toEqual({item_id: 80, name: 'Brie Cheese'});
+        });
+
+        it('resolves after the timeout when the mouse.rip item list stalls', async () => {
+            vi.useFakeTimers();
+            mouseRipApi.getAllItems.mockReturnValue(new Promise(() => undefined));
+            cache.init();
+
+            let resolved = false;
+            void cache.whenReady(1000).then(() => { resolved = true; });
+
+            await vi.advanceTimersByTimeAsync(999);
+            expect(resolved).toBe(false);
+            await vi.advanceTimersByTimeAsync(1);
+            expect(resolved).toBe(true);
+        });
+    });
+
     it('resolves ready and keeps working when mouse.rip fails', async () => {
         mouseRipApi.getAllItems.mockRejectedValue(new Error('offline'));
 

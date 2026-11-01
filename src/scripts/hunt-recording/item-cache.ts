@@ -27,6 +27,22 @@ export class ItemCache {
         return this.loading;
     }
 
+    /** Resolves once {@link ready} does, or after `timeoutMs`, whichever comes first. */
+    async whenReady(timeoutMs: number): Promise<void> {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const timeout = new Promise<void>((resolve) => {
+            timer = setTimeout(() => {
+                this.logger.debug('Stopped waiting for the mouse.rip item list');
+                resolve();
+            }, timeoutMs);
+        });
+        try {
+            await Promise.race([this.loading, timeout]);
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
     init(): void {
         this.interceptorService.on('response', ({response}) => this.record(response));
         this.loading = this.load();

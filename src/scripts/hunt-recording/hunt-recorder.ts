@@ -45,18 +45,16 @@ export class HuntRecorder {
         const user_pre = pre_response.user;
         const user_post = post_response.user;
 
-        const fromInventory = getItemFromInventory(post_response.inventory);
         let loot: Loot[] | undefined;
         if (evidence.type === 'linked') {
-            // page.php (the linked "after") has no inventory, so fall back to the item cache.
-            const parsed = this.parseLoot(hunt, type => fromInventory(type) ?? this.itemCache.get(type));
+            const parsed = this.parseLinkedLoot(evidence);
             if (parsed && parsed.unresolved.length > 0) {
                 this.logger.debug(`Linked hunt dropped: unresolved loot ${parsed.unresolved.join(', ')}`);
                 return;
             }
             loot = parsed?.loot;
         } else {
-            const parsed = this.parseLoot(hunt, fromInventory);
+            const parsed = this.parseLoot(hunt, getItemFromInventory(post_response.inventory));
             for (const itemType of parsed?.unresolved ?? []) {
                 this.logger.debug(`Looted "${itemType}", but it is not in user inventory`);
             }
@@ -344,6 +342,17 @@ export class HuntRecorder {
         if (locationHuntDetails || globalHuntDetails.length >= 0) {
             message.hunt_details = Object.assign({}, locationHuntDetails, ...globalHuntDetails, otherJournalDetails);
         }
+    }
+
+    /** Whether a linked hunt has loot that neither its response inventory nor the item cache can resolve yet. */
+    hasUnresolvedLoot(evidence: HuntEvidence): boolean {
+        return evidence.type === 'linked' && (this.parseLinkedLoot(evidence)?.unresolved.length ?? 0) > 0;
+    }
+
+    private parseLinkedLoot(evidence: HuntEvidence): {loot: Loot[], unresolved: string[]} | undefined {
+        // page.php (the linked "after") has no inventory, so fall back to the item cache.
+        const fromInventory = getItemFromInventory(evidence.after.inventory);
+        return this.parseLoot(evidence.entry, type => fromInventory(type) ?? this.itemCache.get(type));
     }
 
     /**

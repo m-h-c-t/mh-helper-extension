@@ -19,6 +19,9 @@ import { ItemCache } from './item-cache';
 import { buildLinkedHuntEvidence } from './linked-hunt-evidence';
 import { SnapshotStore } from './snapshot-store';
 
+/** How long a linked hunt with unresolved loot waits for the mouse.rip item list before recording with what is cached. */
+const ITEM_LIST_WAIT_MS = 10_000;
+
 /**
  * Records hunts when the horn is sounded.
  *
@@ -112,7 +115,11 @@ export class HuntTracker {
             if (!evidence) return;
 
             // Linked loot resolves from the item cache, whose mouse.rip list may still be loading right after page load.
-            await this.itemCache.ready;
+            // Bound the wait: the request has no timeout, and the page.php response already advanced the snapshot,
+            // so a hunt held here could not be recovered by a later horn.
+            if (this.huntRecorder.hasUnresolvedLoot(evidence)) {
+                await this.itemCache.whenReady(ITEM_LIST_WAIT_MS);
+            }
             this.huntRecorder.record(evidence);
         }
     }
