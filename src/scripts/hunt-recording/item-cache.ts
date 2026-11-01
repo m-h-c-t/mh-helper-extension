@@ -63,6 +63,14 @@ export class ItemCache {
         return this.items.get(itemType);
     }
 
+    getByName(name: string): CachedItem | undefined {
+        for (const item of this.items.values()) {
+            if (item.name === name) {
+                return item;
+            }
+        }
+    }
+
     private async load(): Promise<void> {
         try {
             const items = await this.mouseRipApiService.getAllItems();

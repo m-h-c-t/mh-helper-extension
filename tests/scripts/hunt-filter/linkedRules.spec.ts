@@ -1,13 +1,27 @@
 import type { LinkedHuntContext } from '@scripts/hunt-filter/linkedRules';
+import type { HuntRecorder } from '@scripts/hunt-recording/hunt-recorder';
+import type { ItemCache } from '@scripts/hunt-recording/item-cache';
+import type { ExtensionLog } from '@scripts/modules/extension-log/extension-log';
 import type { LoggerService } from '@scripts/services/logging';
+import type { UserSettings } from '@scripts/services/settings/settings.service';
+import type { SubmissionService } from '@scripts/services/submission.service';
 
-import { buildLinkedHuntEvidence } from '@scripts/hunt-recording/linked-hunt-evidence';
+import { BonusJournalEntries } from '@scripts/hunt-recording/bonus-journal-entries';
+import { LinkedHuntEvidence } from '@scripts/hunt-recording/linked-hunt-evidence';
 import { hgResponseSchema } from '@scripts/types/hg';
 import { mock } from 'vitest-mock-extended';
 
 import { HgResponseBuilder, UserBuilder } from '../../utility/builders';
 
-const logger = mock<LoggerService>();
+/** Builds evidence from a context, running at the context's `nowSeconds`. */
+async function buildLinkedHuntEvidence(ctx: LinkedHuntContext, logger = mock<LoggerService>()) {
+    vi.setSystemTime(ctx.nowSeconds * 1000);
+    const itemCache = mock<ItemCache>();
+    const bonusEntries = new BonusJournalEntries(logger, mock<SubmissionService>(), mock<ExtensionLog>(), itemCache, () => ({}) as UserSettings);
+    const linkedHuntEvidence = new LinkedHuntEvidence(logger, bonusEntries, itemCache, mock<HuntRecorder>());
+
+    return linkedHuntEvidence.build(ctx.snapshot, ctx.after, ctx.post);
+}
 
 const turn = (last: number) => ({
     num_active_turns: 5,
@@ -65,11 +79,19 @@ function validContext(): LinkedHuntContext {
     return {snapshot: {response: before, maxEntryId: 100}, after, post, nowSeconds: 1019};
 }
 
-describe('buildLinkedHuntEvidence', () => {
-    it('builds linked evidence from a valid context', () => {
+describe('LinkedHuntEvidence', () => {
+    beforeEach(() => {
+        vi.useFakeTimers({toFake: ['Date']});
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('builds linked evidence from a valid context', async () => {
         const ctx = validContext();
-        expect(buildLinkedHuntEvidence(ctx, logger)).toEqual({
-            type: 'linked', before: ctx.snapshot!.response, after: ctx.after, entry: ctx.post.journal_markup![0],
+        expect(await buildLinkedHuntEvidence(ctx)).toEqual({
+            type: 'linked', before: ctx.snapshot!.response, after: ctx.after, entry: {...ctx.post.journal_markup![0], more_details: {}},
         });
     });
 
@@ -102,39 +124,39 @@ describe('buildLinkedHuntEvidence', () => {
         ['rule 7: post turn timestamp mismatch', (c) => { c.post.user.last_active_turn_timestamp = 999; }],
         ['rule 8: active turn in between', (c) => { c.after.user.num_active_turns += 1; }],
         ['rule 9: different user', (c) => { c.after.user.user_id += 1; }],
-    ])('rejects: %s', (_, mutate) => {
+    ])('rejects: %s', async (_, mutate) => {
         const ctx = validContext();
         mutate(ctx);
-        expect(buildLinkedHuntEvidence(ctx, logger)).toBeNull();
+        expect(await buildLinkedHuntEvidence(ctx)).toBeNull();
     });
 
-    it.each([[null], [[]]])('rejects (rule 1) a post whose hunters_horn_message is %j', (value) => {
+    it.each([[null], [[]]])('rejects (rule 1) a post whose hunters_horn_message is %j', async (value) => {
         const ctx = validContext();
         ctx.post = hgResponseSchema.parse({...ctx.post, hunters_horn_message: value});
-        expect(buildLinkedHuntEvidence(ctx, logger)).toBeNull();
+        expect(await buildLinkedHuntEvidence(ctx)).toBeNull();
     });
 
-    it.each([1000 + 3540, 1000 - 30])('accepts at the edges of the age window (now=%i)', (now) => {
+    it.each([1000 + 3540, 1000 - 30])('accepts at the edges of the age window (now=%i)', async (now) => {
         const ctx = validContext();
         ctx.nowSeconds = now;
-        expect(buildLinkedHuntEvidence(ctx, logger)).not.toBeNull();
+        expect(await buildLinkedHuntEvidence(ctx)).not.toBeNull();
     });
 
-    it('accepts (rule 3) when the lowest entry id on the page is exactly maxEntryId + 1', () => {
+    it('accepts (rule 3) when the lowest entry id on the page is exactly maxEntryId + 1', async () => {
         const ctx = validContext();
         setEntries(ctx,
             [103, 'entry short linked catchsuccessloot'],
             [102, 'entry short misc custom larryGift'],
             [101, 'entry short itemtransaction shop_purchase'],
         );
-        expect(buildLinkedHuntEvidence(ctx, logger)).not.toBeNull();
+        expect(await buildLinkedHuntEvidence(ctx)).not.toBeNull();
     });
 
-    it('logs failures at debug only', () => {
+    it('logs failures at debug only', async () => {
         const l = mock<LoggerService>();
         const ctx = validContext();
         ctx.snapshot = null;
-        buildLinkedHuntEvidence(ctx, l);
+        await buildLinkedHuntEvidence(ctx, l);
         expect(l.debug).toHaveBeenCalled();
         expect(l.warn).not.toHaveBeenCalled();
         expect(l.error).not.toHaveBeenCalled();

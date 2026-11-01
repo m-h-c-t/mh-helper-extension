@@ -7,7 +7,7 @@ import type { LoggerService } from '@scripts/services/logging';
 import type { MouseRipApiService, MouseRipItem } from '@scripts/services/mouserip-api.service';
 import type { UserSettings } from '@scripts/services/settings/settings.service';
 import type { SubmissionService } from '@scripts/services/submission.service';
-import type { HgResponse } from '@scripts/types/hg';
+import type { HgResponse, JournalMarkup } from '@scripts/types/hg';
 
 import { HuntTracker } from '@scripts/hunt-recording/hunt-tracker';
 import { HgResponseBuilder, UserBuilder } from '@tests/utility/builders';
@@ -40,6 +40,23 @@ class FakeInterceptor {
 }
 
 const activeTurnUrl = new URL('https://www.mousehuntgame.com/managers/ajax/turns/activeturn.php');
+
+const cherryPotion: MouseRipItem = {id: 1234, type: 'cherry_potion', name: 'Cherry Potion'};
+const boilingCauldronTrap = {id: 3304, name: 'Boiling Cauldron Trap', quantity: 1};
+
+/** A Boiling Cauldron Trap proc, as it appears in journal_markup ahead of the hunt it came with. */
+const cauldronBonusEntry = (entry_id: number, entry_timestamp: number): JournalMarkup => ({
+    render_data: {
+        entry_id,
+        css_class: 'entry short misc custom boiling_cauldron_potion_bonus boon_potion_bonus minimalJournalImage',
+        entry_timestamp,
+        text: 'My Boiling Cauldron Trap summoned additional arcane energy from my Alchemist\'s Cookbook Base and brewed 2 '
+            + '<a class="" title="" href="https://www.mousehuntgame.com/item.php?item_type=cherry_potion" onclick="hg.views.ItemView.show(\'cherry_potion\'); return false;">Cherry Potions</a>!',
+        environment: '',
+        entry_date: '',
+        mouse_type: '',
+    },
+});
 
 describe('HuntTracker', () => {
     let interceptor: FakeInterceptor;
@@ -143,6 +160,63 @@ describe('HuntTracker', () => {
             expect(submissionService.submitHunt).not.toHaveBeenCalled();
         });
 
+        it('records an active hunt without modifying the intercepted journal entry', async () => {
+            apiService.send.mockResolvedValue(pagePre());
+            const post = activeTurnPost();
+            Object.freeze(post.journal_markup![0]);
+
+            await soundHorn('r1', post);
+
+            expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+            expect(post.journal_markup![0]).not.toHaveProperty('more_details');
+        });
+
+        describe('with a bonus journal entry', () => {
+            const activeTurnPostWithCauldron = (inventory: Parameters<HgResponseBuilder['withInventory']>[0]) => {
+                const post = activeTurnPost();
+                post.journal_markup = [cauldronBonusEntry(1, 418), {
+                    ...post.journal_markup![0],
+                    render_data: {...post.journal_markup![0].render_data, entry_id: 2},
+                }];
+                post.inventory = inventory;
+                return post;
+            };
+
+            it('adds the bonus detail to the hunt and submits the convertible from the activeturn inventory', async () => {
+                apiService.send.mockResolvedValue(pagePre());
+
+                await soundHorn('r1', activeTurnPostWithCauldron({
+                    cherry_potion: {item_id: 1234, name: 'Cherry Potion', type: 'cherry_potion', quantity: 2},
+                }));
+
+                expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+                expect(submissionService.submitHunt.mock.calls[0][0].hunt_details).toEqual(expect.objectContaining({
+                    boiling_cauldron_trap_bonus: true,
+                }));
+                expect(submissionService.submitItemConvertible).toHaveBeenCalledExactlyOnceWith(boilingCauldronTrap, [
+                    {id: 1234, name: 'Cherry Potion', quantity: 1},
+                ]);
+            });
+
+            it('falls back to the item cache when the activeturn inventory lacks the convertible item', async () => {
+                apiService.send.mockResolvedValue(pagePre());
+                await interceptor.emit('response', {
+                    url: new URL('https://www.mousehuntgame.com/managers/ajax/users/userInventory.php'),
+                    requestId: 'inventory',
+                    request: {},
+                    response: new HgResponseBuilder()
+                        .withInventory({cherry_potion: {item_id: 1234, name: 'Cherry Potion', type: 'cherry_potion', quantity: 2}})
+                        .build(),
+                });
+
+                await soundHorn('r1', activeTurnPostWithCauldron({}));
+
+                expect(submissionService.submitItemConvertible).toHaveBeenCalledExactlyOnceWith(boilingCauldronTrap, [
+                    {id: 1234, name: 'Cherry Potion', quantity: 1},
+                ]);
+            });
+        });
+
         it('ignores requests to other endpoints', async () => {
             await interceptor.emit('request', {url: new URL('https://www.mousehuntgame.com/managers/ajax/pages/page.php'), requestId: 'r1', request: {}});
 
@@ -163,9 +237,15 @@ describe('HuntTracker', () => {
             .withTurn({num_active_turns: 1, next_activeturn_seconds: 900, last_active_turn_timestamp, activeturn_wait_seconds: 900})
             .build();
 
-        /** Seeds a before-snapshot through an active hunt, then sounds the horn into a qualifying friend hunt. */
-        const huntWithFriend = async (text = 'MouseHunt Community Tools Mouse') => {
-            const linkedTimestamp = nowSeconds() - 20;
+        /**
+         * Seeds a before-snapshot through an active hunt, then sounds the horn into a friend hunt
+         * that qualifies unless `ageSeconds` puts it outside the allowed window.
+         * Bonus entries take the ids after the snapshot, and the linked entry comes after them.
+         */
+        const huntWithFriend = async (text = 'MouseHunt Community Tools Mouse', {ageSeconds = 20, withCauldron = false} = {}) => {
+            const linkedTimestamp = nowSeconds() - ageSeconds;
+            const bonusEntries = withCauldron ? [cauldronBonusEntry(101, linkedTimestamp - 3)] : [];
+            const linkedEntryId = 101 + bonusEntries.length;
 
             // The previous active hunt is the before-snapshot.
             await interceptor.emit('response', {
@@ -188,7 +268,8 @@ describe('HuntTracker', () => {
                 .withAuras({})
                 .withUser(withTurn(linkedTimestamp))
                 .withPage({journal: {entries_string:
-                    `<div class='entry short linked catchsuccess' data-entry-id='101'></div>` +
+                    `<div class='entry short linked catchsuccess' data-entry-id='${linkedEntryId}'></div>` +
+                    bonusEntries.map(e => `<div class='${e.render_data.css_class}' data-entry-id='${e.render_data.entry_id}'></div>`).join('') +
                     `<div class='entry short active catchsuccess' data-entry-id='100'></div>`,
                 }})
                 .withUnknown({inventory: []})
@@ -209,10 +290,10 @@ describe('HuntTracker', () => {
                 .withUser(withTurn(linkedTimestamp))
                 .withJournalMarkup([{
                     render_data: {
-                        entry_id: 101, css_class: 'entry short linked catchsuccess', entry_timestamp: linkedTimestamp,
+                        entry_id: linkedEntryId, css_class: 'entry short linked catchsuccess', entry_timestamp: linkedTimestamp,
                         text, environment: 'Test Environment', entry_date: '', mouse_type: 'mhct',
                     },
-                }])
+                }, ...bonusEntries])
                 .withUnknown({success: 0, hunters_horn_message: {type: 'recent_linked_turn'}})
                 .build();
 
@@ -300,6 +381,50 @@ describe('HuntTracker', () => {
             await huntWithFriend(lootText);
 
             expect(submissionService.submitHunt).not.toHaveBeenCalled();
+        });
+
+        describe('with a bonus journal entry', () => {
+            it('adds the bonus detail to the hunt and submits the convertible from the mouse.rip item list', async () => {
+                mouseRipApi.getAllItems.mockResolvedValue([cherryPotion]);
+                startTracker();
+
+                await huntWithFriend(undefined, {withCauldron: true});
+
+                expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+                const message = submissionService.submitHunt.mock.calls[0][0];
+                expect(message.entry_id).toBe(102);
+                expect(message.hunt_details).toEqual(expect.objectContaining({boiling_cauldron_trap_bonus: true}));
+                expect(submissionService.submitItemConvertible).toHaveBeenCalledExactlyOnceWith(boilingCauldronTrap, [
+                    {id: 1234, name: 'Cherry Potion', quantity: 1},
+                ]);
+            });
+
+            it('waits for the mouse.rip item list to resolve the convertible item', async () => {
+                let finishLoading!: (items: MouseRipItem[]) => void;
+                mouseRipApi.getAllItems.mockReturnValue(new Promise((resolve) => { finishLoading = resolve; }));
+                startTracker();
+
+                await huntWithFriend(undefined, {withCauldron: true});
+                expect(submissionService.submitItemConvertible).not.toHaveBeenCalled();
+
+                finishLoading([cherryPotion]);
+                await settle();
+
+                expect(submissionService.submitItemConvertible).toHaveBeenCalledExactlyOnceWith(boilingCauldronTrap, [
+                    {id: 1234, name: 'Cherry Potion', quantity: 1},
+                ]);
+                expect(submissionService.submitHunt).toHaveBeenCalledOnce();
+            });
+
+            it('does not submit the convertible when the friend hunt fails the linked checks', async () => {
+                mouseRipApi.getAllItems.mockResolvedValue([cherryPotion]);
+                startTracker();
+
+                await huntWithFriend(undefined, {withCauldron: true, ageSeconds: 4000});
+
+                expect(submissionService.submitHunt).not.toHaveBeenCalled();
+                expect(submissionService.submitItemConvertible).not.toHaveBeenCalled();
+            });
         });
 
         it('ignores unsuccessful responses that are not friend hunts', async () => {

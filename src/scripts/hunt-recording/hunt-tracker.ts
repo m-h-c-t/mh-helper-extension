@@ -9,18 +9,15 @@ import type { SubmissionService } from '@scripts/services/submission.service';
 import type { HgResponse } from '@scripts/types/hg';
 
 import { IntakeRejectionEngine } from '@scripts/hunt-filter/engine';
-import { hgResponseSchema } from '@scripts/types/hg';
 
 import type { Snapshot } from './snapshot-store';
 
 import { ActiveHuntEvidence } from './active-hunt-evidence';
+import { BonusJournalEntries } from './bonus-journal-entries';
 import { HuntRecorder } from './hunt-recorder';
 import { ItemCache } from './item-cache';
-import { buildLinkedHuntEvidence } from './linked-hunt-evidence';
+import { LinkedHuntEvidence } from './linked-hunt-evidence';
 import { SnapshotStore } from './snapshot-store';
-
-/** How long a linked hunt with unresolved loot waits for the mouse.rip item list before recording with what is cached. */
-const ITEM_LIST_WAIT_MS = 10_000;
 
 /**
  * Records hunts when the horn is sounded.
@@ -34,6 +31,7 @@ export class HuntTracker {
     private readonly snapshotStore: SnapshotStore;
     private readonly itemCache: ItemCache;
     private readonly activeHuntEvidence: ActiveHuntEvidence;
+    private readonly linkedHuntEvidence: LinkedHuntEvidence;
     private readonly huntRecorder: HuntRecorder;
 
     constructor(
@@ -49,8 +47,10 @@ export class HuntTracker {
         const rejectionEngine = new IntakeRejectionEngine(logger);
         this.snapshotStore = new SnapshotStore(interceptorService);
         this.itemCache = new ItemCache(logger, interceptorService, mouseRipApiService);
-        this.activeHuntEvidence = new ActiveHuntEvidence(logger, rejectionEngine, submissionService, extensionLog, hgGlobals, getSettings);
+        const bonusEntries = new BonusJournalEntries(logger, submissionService, extensionLog, this.itemCache, getSettings);
         this.huntRecorder = new HuntRecorder(logger, rejectionEngine, submissionService, this.itemCache);
+        this.activeHuntEvidence = new ActiveHuntEvidence(logger, rejectionEngine, bonusEntries);
+        this.linkedHuntEvidence = new LinkedHuntEvidence(logger, bonusEntries, this.itemCache, this.huntRecorder);
     }
 
     init(): void {
@@ -86,41 +86,16 @@ export class HuntTracker {
             }
 
             this.interceptorService.off('response', handleResponse);
-            void this.onActiveTurnResponse(snapshot, pageResponse, responseEvent.response);
+            void this.onTurnResponse(snapshot, pageResponse, responseEvent.response);
         };
 
         this.interceptorService.on('response', handleResponse);
     }
 
-    private async onActiveTurnResponse(snapshot: Snapshot | null, pageResponse: unknown, post: HgResponse): Promise<void> {
-        if (post.success === 1) {
-            const evidence = this.activeHuntEvidence.build(pageResponse, post);
-            if (evidence) this.huntRecorder.record(evidence);
-            return;
-        }
-
-        if (post.success === 0 && post.hunters_horn_message?.type === 'recent_linked_turn') {
-            const afterParse = hgResponseSchema.safeParse(pageResponse);
-            if (!afterParse.success) {
-                this.logger.debug('Linked hunt dropped: unexpected page response');
-                return;
-            }
-
-            const evidence = buildLinkedHuntEvidence({
-                snapshot,
-                after: afterParse.data,
-                post,
-                nowSeconds: Math.floor(Date.now() / 1000),
-            }, this.logger);
-            if (!evidence) return;
-
-            // Linked loot resolves from the item cache, whose mouse.rip list may still be loading right after page load.
-            // Bound the wait: the request has no timeout, and the page.php response already advanced the snapshot,
-            // so a hunt held here could not be recovered by a later horn.
-            if (this.huntRecorder.hasUnresolvedLoot(evidence)) {
-                await this.itemCache.whenReady(ITEM_LIST_WAIT_MS);
-            }
-            this.huntRecorder.record(evidence);
-        }
+    private async onTurnResponse(snapshot: Snapshot | null, pageResponse: unknown, turnResponse: HgResponse): Promise<void> {
+        const evidence = turnResponse.success === 1
+            ? this.activeHuntEvidence.build(pageResponse, turnResponse)
+            : await this.linkedHuntEvidence.build(snapshot, pageResponse, turnResponse);
+        if (evidence) this.huntRecorder.record(evidence);
     }
 }

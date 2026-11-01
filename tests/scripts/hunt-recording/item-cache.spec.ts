@@ -72,6 +72,18 @@ describe('ItemCache', () => {
         expect(cache.get('cursed_gold_stat_item')).toEqual({item_id: 2, name: 'Cursed Gold'});
     });
 
+    it('finds items by name', async () => {
+        mouseRipApi.getAllItems.mockResolvedValue([{id: 80, type: 'brie_cheese', name: 'Brie Cheese'}]);
+        cache.record(withInventory());
+
+        cache.init();
+        await cache.ready;
+
+        expect(cache.getByName('Brie Cheese')).toEqual({item_id: 80, name: 'Brie Cheese'});
+        expect(cache.getByName('Cursed Gold')).toEqual({item_id: 2, name: 'Cursed Gold'});
+        expect(cache.getByName('Gouda Cheese')).toBeUndefined();
+    });
+
     describe('whenReady', () => {
         afterEach(() => {
             vi.useRealTimers();

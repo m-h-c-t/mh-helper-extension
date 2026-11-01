@@ -4,5 +4,5 @@ export interface HuntEvidence {
     type: 'active' | 'linked';
     before: HgResponse;
     after: HgResponse;
-    entry: JournalMarkup;
+    entry: JournalMarkup & {more_details?: Record<string, unknown>};
 }
