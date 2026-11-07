@@ -22,10 +22,10 @@ describe('ApiService', () => {
         'https://www.mousehuntgame.com/managers/ajax/pages/page.php',
         'https://www.mhct.win/uuid.php',
         'https://api.mouse.rip/items',
-    ])('sends X-Requested-By header to %s', async (url) => {
+    ])('sends X-Requested-With header to %s', async (url) => {
         await apiService.send('POST', url, {foo: 'bar'}, false);
 
-        expect(getSentRequest().headers.get('X-Requested-By')).toBe('MHCT/123456');
+        expect(getSentRequest().headers.get('X-Requested-With')).toBe('MHCT/123456');
     });
 
     it('reads the version at send time', async () => {
@@ -35,14 +35,14 @@ describe('ApiService', () => {
         version = 999;
         await apiService.send('GET', 'https://www.mhct.win/', null, false);
 
-        expect(getSentRequest().headers.get('X-Requested-By')).toBe('MHCT/999');
+        expect(getSentRequest().headers.get('X-Requested-With')).toBe('MHCT/999');
     });
 
     it('lets alterHeaders override the header', async () => {
         await apiService.send('GET', 'https://www.mhct.win/', null, false, (headers) => {
-            headers.set('X-Requested-By', 'custom');
+            headers.set('X-Requested-With', 'custom');
         });
 
-        expect(getSentRequest().headers.get('X-Requested-By')).toBe('custom');
+        expect(getSentRequest().headers.get('X-Requested-With')).toBe('custom');
     });
 });
