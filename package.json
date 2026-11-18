@@ -87,7 +87,7 @@
     "jquery": "^4.0.0",
     "mergician": "^2.0.2",
     "nock": "^14.0.12",
-    "qs": "^6.15.2",
+    "qs": "^6.16.1",
     "ts-loader": "^9.5.7",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^6.0.2",
@@ -104,6 +104,6 @@
     "fuzzysort": "^4.0.2",
     "rxjs": "^7.8.2",
     "tiny-lru": "^13.0.0",
-    "zod": "^4.5.4"
+    "zod": "^4.6.6"
   }
 }
