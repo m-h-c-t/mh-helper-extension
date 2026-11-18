@@ -27,7 +27,7 @@ export class ApiService {
      */
     async send(method: 'GET' | 'POST', url: string, body: unknown, hasResponse: boolean, alterHeaders?: (headers: Headers) => void): Promise<unknown> {
         const headers = new Headers();
-        headers.set('X-Requested-By', `MHCT/${this.getVersion()}`);
+        headers.set('X-Requested-With', `MHCT/${this.getVersion()}`);
         if (hasResponse) {
             headers.append('Accept', 'application/json');
         }
